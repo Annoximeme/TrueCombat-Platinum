@@ -5,14 +5,19 @@ Browsers can't speak the UDP master/server protocol, so this small service
 does it for the website and serves the result as JSON over HTTP:
 
   GET /servers.json                 live public servers (schema tcp-servers/1)
-  GET /leaderboard.json?period=all  player rankings from match reports (tcp-leaderboard/1)
-  GET /leaderboard.json?period=30d
+  GET /leaderboard.json?period=all|30d&sort=rating|xp|kills|kd|headshots|wins
+                                    player rankings and ranks (tcp-leaderboard/1)
+  GET /player.json?id=<player id>   one player's profile (tcp-player/1)
+  GET /search.json?q=<name>         find players by name
+  GET /recent.json, /ranks.json     latest matches, the rank table
+  POST /api/v1/match                signed match report from a ranked server
   GET /health
 
 Every <interval> seconds it asks the master server for the list
 ("getservers <protocol> empty full"), then asks each game server for its
-status ("getstatus"). Match reports (schema tcp-match/1, see README.md) are
-JSON files that game servers drop into --stats-dir.
+status ("getstatus"). Player stats and ranks live in tcp_stats.py (SQLite,
+--stats-db): ranked servers upload signed reports, and a server on the same
+machine can also drop tcp-match/1 files into --stats-dir.
 
 Python 3.8+ standard library only. Put it behind an HTTPS reverse proxy
 (Caddy, nginx, Cloudflare Tunnel) and set TCP_API in docs/js/site.js to its
@@ -23,7 +28,6 @@ public URL.
 import argparse
 import concurrent.futures
 import datetime as dt
-import hashlib
 import json
 import pathlib
 import re
@@ -33,6 +37,8 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
+
+import tcp_stats
 
 OOB = b"\xff\xff\xff\xff"
 COLOR = re.compile(r"\^[0-9A-Za-z]")
@@ -148,71 +154,6 @@ def server_entry(addr, status, modes):
     }
 
 
-# ------------------------------------------------------------------ stats
-def player_id(raw):
-    """Never publish GUIDs or IPs: a short one-way hash is enough to tell players apart."""
-    return hashlib.sha256(("tcp-lb:" + str(raw)).encode()).hexdigest()[:16]
-
-
-def load_matches(stats_dir):
-    out = []
-    if not stats_dir:
-        return out
-    for path in sorted(pathlib.Path(stats_dir).glob("*.json")):
-        try:
-            m = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
-        if m.get("schema") != "tcp-match/1" or m.get("practice"):
-            continue
-        try:
-            m["_ended"] = dt.datetime.fromisoformat(m["ended"].replace("Z", "+00:00"))
-        except (KeyError, ValueError, AttributeError):
-            continue
-        out.append(m)
-    return out
-
-
-def leaderboard(matches, period, min_matches=3):
-    since = None
-    if period == "30d":
-        since = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)
-    agg, count = {}, 0
-    for m in matches:
-        if since and m["_ended"] < since:
-            continue
-        count += 1
-        for p in m.get("players", []):
-            pid = player_id(p.get("guid") or p.get("id") or p.get("name"))
-            a = agg.setdefault(pid, {"id": pid, "name": "", "matches": 0, "kills": 0, "deaths": 0,
-                                     "headshots": 0, "wins": 0, "timePlayed": 0, "_w": {}, "_last": None})
-            if a["_last"] is None or m["_ended"] >= a["_last"]:
-                a["name"], a["_last"] = clean(p.get("name", ""), 36), m["_ended"]
-            a["matches"] += 1
-            for k, src in (("kills", "kills"), ("deaths", "deaths"), ("headshots", "headshots"),
-                           ("wins", "roundsWon"), ("timePlayed", "timePlayed")):
-                try:
-                    a[k] += max(0, int(p.get(src, 0)))
-                except (TypeError, ValueError):
-                    pass
-            for w, ws in (p.get("weapons") or {}).items():
-                try:
-                    a["_w"][w] = a["_w"].get(w, 0) + int(ws.get("kills", 0))
-                except (TypeError, ValueError, AttributeError):
-                    pass
-    players = []
-    for a in agg.values():
-        if a["matches"] < min_matches:
-            continue
-        top = max(a["_w"].items(), key=lambda kv: kv[1])[0] if a["_w"] else ""
-        a = {k: v for k, v in a.items() if not k.startswith("_")}
-        a["topWeapon"] = clean(top, 24)
-        players.append(a)
-    players.sort(key=lambda a: -a["kills"])
-    return {"schema": "tcp-leaderboard/1", "updated": now_iso(), "period": period,
-            "minMatches": min_matches, "matches": count, "players": players[:500]}
-
-
 # ------------------------------------------------------------------ service
 class Bridge:
     def __init__(self, args):
@@ -225,7 +166,8 @@ class Bridge:
                 self.modes[k.strip()] = v.strip()
         self.lock = threading.Lock()
         self.servers = {"schema": "tcp-servers/1", "updated": None, "master": {"online": False}, "servers": []}
-        self.boards = {}
+        self.stats = tcp_stats.StatsStore(args.stats_db or ":memory:", allow_cheats=args.allow_cheats,
+                                          min_matches=args.min_matches)
 
     def refresh(self):
         try:
@@ -239,12 +181,11 @@ class Bridge:
                 for addr, st in zip(addrs, pool.map(query_status, addrs[: self.args.max_servers])):
                     if st:
                         servers.append(server_entry(addr, st, self.modes))
-        matches = load_matches(self.args.stats_dir)
-        boards = {p: leaderboard(matches, p, self.args.min_matches) for p in ("all", "30d")}
+        if self.args.stats_dir:
+            self.stats.import_dir(self.args.stats_dir)
         with self.lock:
             self.servers = {"schema": "tcp-servers/1", "updated": now_iso(),
                             "master": {"online": online, "listed": len(addrs)}, "servers": servers}
-            self.boards = boards
 
     def loop(self):
         while True:
@@ -268,7 +209,7 @@ def make_handler(bridge):
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
-            self.send_header("Cache-Control", "public, max-age=30")
+            self.send_header("Cache-Control", "public, max-age=30" if self.command != "POST" else "no-store")
             origin = self.headers.get("Origin", "")
             allowed = [o.strip() for o in bridge.args.cors.split(",")]
             if "*" in allowed:
@@ -285,12 +226,22 @@ def make_handler(bridge):
             with bridge.lock:
                 if u.path == "/servers.json":
                     return self.send_json(bridge.servers)
-                if u.path == "/leaderboard.json":
-                    period = parse_qs(u.query).get("period", ["all"])[0]
-                    return self.send_json(bridge.boards.get(period) or bridge.boards.get("all") or leaderboard([], "all"))
                 if u.path == "/health":
                     return self.send_json({"ok": True, "updated": bridge.servers["updated"]})
+            r = tcp_stats.handle_get(bridge.stats, u.path, parse_qs(u.query))
+            if r:
+                return self.send_json(r[1], r[0])
             self.send_json({"error": "not found"}, 404)
+
+        def do_POST(self):
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                n = 0
+            if n > tcp_stats.MAX_BODY:
+                return self.send_json({"error": "report too large"}, 413)
+            r = tcp_stats.handle_post(bridge.stats, urlparse(self.path).path, self.headers, self.rfile.read(n))
+            self.send_json(*((r[1], r[0]) if r else ({"error": "not found"}, 404)))
 
         do_HEAD = do_GET
 
@@ -304,7 +255,9 @@ def main(argv=None):
     ap.add_argument("--listen", default="127.0.0.1:8090", help="HTTP host:port")
     ap.add_argument("--interval", type=int, default=60, help="seconds between refreshes")
     ap.add_argument("--max-servers", type=int, default=256)
-    ap.add_argument("--stats-dir", default="", help="folder with tcp-match/1 JSON reports")
+    ap.add_argument("--stats-db", default="", help="SQLite file for player stats (empty = in memory)")
+    ap.add_argument("--stats-dir", default="", help="also import tcp-match/1 files from this local folder")
+    ap.add_argument("--allow-cheats", action="store_true", help="accept matches played with cheats on (tests)")
     ap.add_argument("--min-matches", type=int, default=3)
     ap.add_argument("--cors", default="https://truecombat.eu,https://www.truecombat.eu",
                     help="comma-separated allowed origins, or *")

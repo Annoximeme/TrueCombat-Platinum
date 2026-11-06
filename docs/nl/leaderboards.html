@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ranglijsten · TrueCombat: Platinum</title>
-<meta name="description" content="Ranglijsten van TrueCombat: Platinum: kills, K/D, headshots en overwinningen op publieke servers.">
+<meta name="description" content="Ranglijsten van TrueCombat: Platinum: rangen, skill-ratings, kills, K/D, headshots en overwinningen op gerankte servers.">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/nl/leaderboards.html">
 <meta property="og:type" content="website">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="nl_NL">
 <meta property="og:title" content="Ranglijsten · TrueCombat: Platinum">
-<meta property="og:description" content="Ranglijsten van TrueCombat: Platinum: kills, K/D, headshots en overwinningen op publieke servers.">
+<meta property="og:description" content="Ranglijsten van TrueCombat: Platinum: rangen, skill-ratings, kills, K/D, headshots en overwinningen op gerankte servers.">
 <meta property="og:image" content="https://truecombat.eu/img/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -61,7 +61,7 @@
   <div class="wrap">
     <span class="eyebrow">Ranglijsten</span>
     <h1>Topspelers</h1>
-    <p class="lede">Kills, deaths, headshots en gewonnen rondes uit potjes op publieke servers. Alleen spelers met minstens drie uitgespeelde potjes komen in de ranglijst.</p>
+    <p class="lede">Rang, skill-rating en gevechtsresultaten uit elk potje op een gerankte server. Geen account nodig: na drie uitgespeelde potjes sta je hier vanzelf.</p>
   </div>
 </section>
 
@@ -75,15 +75,21 @@
           <button type="button" data-period="30d" aria-pressed="false">30 dagen</button>
         </div>
         <div class="tabs" role="group" aria-label="Sorteren op">
-          <button type="button" data-sort="kills" aria-pressed="true">Kills</button>
+          <button type="button" data-sort="rating" aria-pressed="true">Rating</button>
+          <button type="button" data-sort="xp" aria-pressed="false">Rang</button>
+          <button type="button" data-sort="kills" aria-pressed="false">Kills</button>
           <button type="button" data-sort="kd" aria-pressed="false">K/D</button>
           <button type="button" data-sort="hs" aria-pressed="false">Headshots</button>
           <button type="button" data-sort="wins" aria-pressed="false">Winst</button>
         </div>
+        <form class="lb-search" role="search" data-lb-search>
+          <input type="search" name="q" minlength="2" maxlength="36" placeholder="Zoek een speler" aria-label="Zoek een speler">
+        </form>
       </div>
+      <div class="lb-profile" data-lb-profile hidden></div>
       <div class="table-scroll">
         <table class="srv-table lb-table">
-          <thead><tr><th>#</th><th>Speler</th><th>Potjes</th><th>Kills</th><th>Deaths</th><th>K/D</th><th>HS</th><th>Winst</th><th>Topwapen</th></tr></thead>
+          <thead><tr><th>#</th><th>Speler</th><th>Rang</th><th>Rating</th><th>Potjes</th><th>Kills</th><th>K/D</th><th>HS</th><th>Winst</th><th>Topwapen</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -99,12 +105,12 @@
       <h2>Hoe de ranglijst werkt</h2>
     </div>
     <div class="stat-cards">
-      <div><b>Kills en deaths</b><span>Elke kill op een server in de lijst. Teamkills tellen niet mee.</span></div>
-      <div><b>Headshots</b><span>Als deel van je kills.</span></div>
-      <div><b>Winst</b><span>Rondes die je team won terwijl jij erin zat.</span></div>
-      <div><b>Topwapen</b><span>Het wapen waarmee je de meeste kills maakte.</span></div>
+      <div><b>Rang</b><span>Verdien je met ervaring: kills, headshots, gewonnen rondes, doelen, gewonnen potjes en speeltijd. 21 rangen, van Recruit tot General. Teamkills kosten ervaring.</span></div>
+      <div><b>Skill-rating</b><span>Iedereen begint op 1000. Versla je een sterkere ploeg, dan stijg je meer; verlies je van een zwakkere, dan zak je meer. Je aandeel hangt af van hoe lang je meespeelde.</span></div>
+      <div><b>Gevechtsresultaten</b><span>Kills, deaths en headshots tegen de vijand. Teamkills en zelfmoorden worden apart bijgehouden.</span></div>
+      <div><b>Winst</b><span>Potjes die je team won. Je profiel toont ook je wapens, trefzekerheid en je laatste 20 potjes.</span></div>
     </div>
-    <p class="yt-note" style="margin-top:20px">Alleen servers die meedoen sturen potjesverslagen, en oefenpotjes tellen nooit mee. Spelers worden uit elkaar gehouden met een versleutelde ID, nooit met hun IP-adres.</p>
+    <p class="yt-note" style="margin-top:20px">Alleen gerankte servers geven potjes door, en elk verslag is ondertekend met de eigen sleutel van die server. Oefenpotjes, potjes met cheats aan en bots tellen nooit mee. De game herkent je aan een sleutel die hij bij de eerste start op je pc aanmaakt, dus je hoeft je nergens aan te melden. Alleen een versleutelde ID wordt getoond, nooit die sleutel of je IP-adres. Bewaar je <code>etkey</code>-bestand bij een herinstallatie en je rang gaat mee.</p>
   </div>
 </section>
 </main>

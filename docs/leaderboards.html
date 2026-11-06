@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Leaderboards · TrueCombat: Platinum</title>
-<meta name="description" content="TrueCombat: Platinum leaderboards: kills, K/D, headshots and wins from public servers.">
+<meta name="description" content="TrueCombat: Platinum leaderboards: ranks, skill ratings, kills, K/D, headshots and wins from ranked servers.">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/leaderboards.html">
 <meta property="og:type" content="website">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="Leaderboards · TrueCombat: Platinum">
-<meta property="og:description" content="TrueCombat: Platinum leaderboards: kills, K/D, headshots and wins from public servers.">
+<meta property="og:description" content="TrueCombat: Platinum leaderboards: ranks, skill ratings, kills, K/D, headshots and wins from ranked servers.">
 <meta property="og:image" content="https://truecombat.eu/img/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -61,7 +61,7 @@
   <div class="wrap">
     <span class="eyebrow">Leaderboards</span>
     <h1>Top players</h1>
-    <p class="lede">Kills, deaths, headshots and round wins from matches on public servers. Rankings only count players who have finished at least three matches.</p>
+    <p class="lede">Rank, skill rating and combat record from every match on a ranked server. No account needed: you appear here automatically after three completed matches.</p>
   </div>
 </section>
 
@@ -75,15 +75,21 @@
           <button type="button" data-period="30d" aria-pressed="false">30 days</button>
         </div>
         <div class="tabs" role="group" aria-label="Sort by">
-          <button type="button" data-sort="kills" aria-pressed="true">Kills</button>
+          <button type="button" data-sort="rating" aria-pressed="true">Rating</button>
+          <button type="button" data-sort="xp" aria-pressed="false">Rank</button>
+          <button type="button" data-sort="kills" aria-pressed="false">Kills</button>
           <button type="button" data-sort="kd" aria-pressed="false">K/D</button>
           <button type="button" data-sort="hs" aria-pressed="false">Headshots</button>
           <button type="button" data-sort="wins" aria-pressed="false">Wins</button>
         </div>
+        <form class="lb-search" role="search" data-lb-search>
+          <input type="search" name="q" minlength="2" maxlength="36" placeholder="Find a player" aria-label="Find a player">
+        </form>
       </div>
+      <div class="lb-profile" data-lb-profile hidden></div>
       <div class="table-scroll">
         <table class="srv-table lb-table">
-          <thead><tr><th>#</th><th>Player</th><th>Matches</th><th>Kills</th><th>Deaths</th><th>K/D</th><th>HS</th><th>Wins</th><th>Top weapon</th></tr></thead>
+          <thead><tr><th>#</th><th>Player</th><th>Rank</th><th>Rating</th><th>Matches</th><th>Kills</th><th>K/D</th><th>HS</th><th>Wins</th><th>Top weapon</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -99,12 +105,12 @@
       <h2>How rankings work</h2>
     </div>
     <div class="stat-cards">
-      <div><b>Kills and deaths</b><span>Every frag on a listed server. Team kills are not counted.</span></div>
-      <div><b>Headshots</b><span>Shown as a share of your kills.</span></div>
-      <div><b>Wins</b><span>Rounds your team won while you were on it.</span></div>
-      <div><b>Top weapon</b><span>The gun you got the most kills with.</span></div>
+      <div><b>Rank</b><span>Earned through experience: kills, headshots, round wins, objectives, match wins and time in the field. 21 ranks, from Recruit to General. Team kills cost experience.</span></div>
+      <div><b>Skill rating</b><span>Everyone starts at 1000. Beat a stronger side and you gain more; lose to a weaker one and you drop more. Your share depends on how long you played.</span></div>
+      <div><b>Combat record</b><span>Kills, deaths and headshots against the enemy. Team kills and suicides are tracked separately.</span></div>
+      <div><b>Wins</b><span>Matches your team won. Your profile also lists your weapons, accuracy and last 20 matches.</span></div>
     </div>
-    <p class="yt-note" style="margin-top:20px">Only servers that opt in send match reports, and practice matches are never counted. Players are told apart by a scrambled ID, never by their IP address.</p>
+    <p class="yt-note" style="margin-top:20px">Only ranked servers report matches, and every report is signed with that server's own key. Practice matches, matches with cheats enabled and bots never count. The game recognises you by a key it creates on your PC the first time it starts, so there is nothing to sign up for. Only a scrambled ID is published, never that key or your IP address. Keep your <code>etkey</code> file when you reinstall and your rank comes with you.</p>
   </div>
 </section>
 </main>
