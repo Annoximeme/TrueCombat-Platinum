@@ -10,8 +10,21 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="TrueCombat: Platinum">
 <meta property="og:description" content="A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows. Free download.">
-<meta property="og:image" content="img/og.jpg">
+<link rel="canonical" href="https://truecombat.eu/">
+<meta property="og:url" content="https://truecombat.eu/">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:image" content="https://truecombat.eu/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="TrueCombat: Platinum logo over the Northport map">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TrueCombat: Platinum">
+<meta name="twitter:description" content="A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows. Free download.">
+<meta name="twitter:image" content="https://truecombat.eu/img/og.jpg">
+<link rel="preload" as="image" href="img/logo.webp" fetchpriority="high">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoGame","name":"TrueCombat: Platinum","url":"https://truecombat.eu/","image":"https://truecombat.eu/img/og.jpg","description":"A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows.","genre":["Tactical shooter","First-person shooter"],"gamePlatform":"Windows","operatingSystem":"Windows 10, Windows 11 (64-bit)","applicationCategory":"Game","playMode":"MultiPlayer","author":{"@type":"Organization","name":"Team Terminus"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"downloadUrl":"https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest"}
+</script>
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,7 +39,7 @@
   --line: #262e3b;
   --fg: #e8eaef;
   --muted: #9aa3b3;
-  --dim: #6d7686;
+  --dim: #868f9f;
   --red: #d63b3b;         /* launcher PLAY red */
   --red-hi: #ef5050;
   --amber: #e7a73c;       /* HUD compass lamp */
@@ -98,12 +111,19 @@ kbd, code { font-family: var(--f-mono); font-size: 0.82em; background: var(--pan
 .nav-links a { text-decoration: none; color: var(--muted); font: 600 0.95rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; }
 .nav-links a:hover { color: var(--fg); }
 .nav .btn { padding: 8px 14px; font-size: .9rem; background: var(--red); border-color: transparent; color: #fff; }
-@media (max-width: 900px) { .nav-links { display: none; } .nav .btn { margin-left: auto; } }
+.menu { display: none; position: relative; margin-left: auto; }
+.menu summary { list-style: none; cursor: pointer; display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 6px; color: var(--fg); }
+.menu summary::-webkit-details-marker { display: none; }
+.menu nav { position: absolute; right: 0; top: calc(100% + 10px); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: grid; min-width: 200px; box-shadow: 0 20px 40px -12px rgba(0,0,0,.7); }
+.menu nav a { text-decoration: none; padding: 10px 12px; border-radius: 4px; font: 600 1rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+.menu nav a:hover { background: var(--panel-2); color: var(--fg); }
+@media (max-width: 900px) { .nav-links { display: none; } .menu { display: block; } .nav .wrap { gap: 10px; } }
+@media (max-width: 440px) { .nav-brand { font-size: .88rem; gap: 8px; letter-spacing: .05em; } .nav-brand img { width: 26px; height: 26px; } .nav .btn { padding: 8px 11px; } }
 
 /* ---------- hero ---------- */
 .hero { position: relative; isolation: isolate; overflow: hidden; border-bottom: 1px solid var(--line); }
 .slides { position: absolute; inset: 0; z-index: -2; }
-.slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.6s ease; transform: scale(1.06); }
+.slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.6s ease; transform: scale(1.06); }
 .slide.on { opacity: 1; animation: drift 14s linear forwards; }
 .slide:first-child { opacity: 1; }
 .slides.started .slide:first-child:not(.on) { opacity: 0; }
@@ -251,7 +271,7 @@ kbd, code { font-family: var(--f-mono); font-size: 0.82em; background: var(--pan
 .release[open] .chev { transform: rotate(180deg); }
 .release .body { padding: 0 22px 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 36px; border-top: 1px solid var(--line); padding-top: 20px; }
 .release .body section { min-width: 0; }
-.release h4 { margin: 0 0 8px; font: 700 .85rem/1 var(--f-display); letter-spacing: .16em; text-transform: uppercase; color: var(--red-hi); }
+.release h3 { margin: 0 0 8px; font: 700 .85rem/1 var(--f-display); letter-spacing: .16em; text-transform: uppercase; color: var(--red-hi); }
 .release ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--muted); font-size: .93rem; }
 .release ul li::marker { color: var(--dim); }
 .release .latest { font: 700 .7rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; background: var(--red); color: #fff; padding: 5px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle; }
@@ -277,7 +297,7 @@ kbd, code { font-family: var(--f-mono); font-size: 0.82em; background: var(--pan
 /* ---------- download ---------- */
 .download { background:
   linear-gradient(180deg, rgba(13,16,22,.88), rgba(13,16,22,.96)),
-  url("img/map-railhouse.jpg") center / cover; }
+  url("img/map-railhouse-640.webp") center / cover; }
 .dl-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
 .dl-main { display: grid; gap: 22px; min-width: 0; }
 .steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 14px; }
@@ -328,6 +348,12 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
       <li><a href="#patch-notes">Patch notes</a></li>
       <li><a href="#servers">Servers</a></li>
     </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Sections">
+        <a href="#about">About</a><a href="#gallery">Gallery</a><a href="#graphics">Graphics</a><a href="#launcher">Launcher</a><a href="#patch-notes">Patch notes</a><a href="#servers">Servers</a><a href="#faq">FAQ</a>
+      </nav>
+    </details>
     <a class="btn" href="#download">Download</a>
   </div>
 </header>
@@ -336,14 +362,14 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
 
 <section class="hero" aria-label="TrueCombat: Platinum">
   <div class="slides" id="slides">
-    <div class="slide" data-name="Northport" style="background-image:url('img/map-northport.jpg')"></div>
-    <div class="slide" data-name="Railhouse" style="background-image:url('img/map-railhouse.jpg')"></div>
-    <div class="slide" data-name="Stadtrand" style="background-image:url('img/map-stadtrand.jpg')"></div>
-    <div class="slide" data-name="Village" style="background-image:url('img/map-village.jpg')"></div>
-    <div class="slide" data-name="Snow" style="background-image:url('img/map-snow.jpg')"></div>
+    <img class="slide" data-name="Northport" src="img/map-northport.webp" srcset="img/map-northport-640.webp 640w, img/map-northport.webp 1280w" sizes="100vw" alt="" fetchpriority="high">
+    <img class="slide" data-name="Railhouse" data-src="img/map-railhouse.webp" data-srcset="img/map-railhouse-640.webp 640w, img/map-railhouse.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Stadtrand" data-src="img/map-stadtrand.webp" data-srcset="img/map-stadtrand-640.webp 640w, img/map-stadtrand.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Village" data-src="img/map-village.webp" data-srcset="img/map-village-640.webp 640w, img/map-village.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Snow" data-src="img/map-snow.webp" data-srcset="img/map-snow-640.webp 640w, img/map-snow.webp 1280w" sizes="100vw" alt="">
   </div>
   <div class="wrap">
-    <img class="hero-logo" src="img/logo.webp" alt="TrueCombat: Platinum" width="900" height="512">
+    <img class="hero-logo" src="img/logo.webp" fetchpriority="high" decoding="async" alt="TrueCombat: Platinum" width="900" height="512">
     <h1>TrueCombat: Elite, rebuilt for <em>modern Windows</em>.</h1>
     <p class="lede">A native 64-bit rebuild of the classic tactical shooter, drawn with DirectX 12. The original maps, soldiers and HUD, with a new launcher that hosts servers and keeps your game up to date.</p>
     <div class="hero-cta">
@@ -382,7 +408,7 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
         <div role="listitem"><b>128 Hz</b><span>Optional server rate</span></div>
       </div>
     </div>
-    <div class="vf"><img src="img/shot-dlaa.jpg" alt="Railhouse backyard in DirectX 12 with DLAA, a soldier standing against a brick wall" width="1280" height="720" loading="lazy"></div>
+    <div class="vf"><img src="img/shot-dlaa.webp" srcset="img/shot-dlaa-640.webp 640w, img/shot-dlaa.webp 1280w" sizes="(max-width: 900px) 100vw, 640px" alt="Railhouse backyard in DirectX 12 with DLAA, a soldier standing against a brick wall" width="1280" height="720" loading="lazy"></div>
   </div>
 </section>
 
@@ -426,7 +452,7 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
     </div>
 
     <figure class="strip">
-      <div class="vf"><img src="img/player-models.jpg" alt="Six views of the original TC:E soldier models: first person, third person standing, running, firing, reloading and blob shadows" width="1920" height="720" loading="lazy"></div>
+      <div class="vf"><img src="img/player-models.webp" srcset="img/player-models-640.webp 640w, img/player-models.webp 1920w" sizes="(max-width: 1180px) 100vw, 1150px" alt="Six views of the original TC:E soldier models: first person, third person standing, running, firing, reloading and blob shadows" width="1920" height="720" loading="lazy"></div>
       <figcaption>Original TC:E soldier models with their animations and ground shadows: standing, running, firing, reloading.</figcaption>
     </figure>
   </div>
@@ -440,16 +466,16 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
       <p class="lede">Every image is a straight capture from the DirectX 12 renderer. No paintovers.</p>
     </div>
     <div class="gallery" id="gallery-grid">
-      <figure class="shot wide"><img src="img/map-northport.jpg" alt="Northport docks in daylight" width="1280" height="720" loading="lazy"><figcaption><b>Northport</b><span>Distance fog, DX12</span></figcaption><button type="button" aria-label="Enlarge Northport"></button></figure>
-      <figure class="shot wide"><img src="img/map-railhouse.jpg" alt="Railhouse at night, an archway over the tracks" width="1280" height="720" loading="lazy"><figcaption><b>Railhouse</b><span>Night, DX12</span></figcaption><button type="button" aria-label="Enlarge Railhouse"></button></figure>
-      <figure class="shot"><img src="img/map-stadtrand.jpg" alt="Stadtrand, a narrow fogged alley" width="1280" height="720" loading="lazy"><figcaption><b>Stadtrand</b><span>Fogged alley</span></figcaption><button type="button" aria-label="Enlarge Stadtrand"></button></figure>
-      <figure class="shot"><img src="img/map-village.jpg" alt="Village barn interior with hay bales" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Barn</span></figcaption><button type="button" aria-label="Enlarge Village"></button></figure>
-      <figure class="shot"><img src="img/map-snow.jpg" alt="Snow map, a covered loading area" width="1280" height="720" loading="lazy"><figcaption><b>Snow</b><span>Winter map</span></figcaption><button type="button" aria-label="Enlarge Snow"></button></figure>
-      <figure class="shot"><img src="img/shot-smoke.jpg" alt="M83 smoke grenade cloud in the Railhouse backyard" width="1280" height="720" loading="lazy"><figcaption><b>M83 smoke</b><span>Map-lit</span></figcaption><button type="button" aria-label="Enlarge M83 smoke"></button></figure>
-      <figure class="shot"><img src="img/shot-crouch.jpg" alt="A crouched soldier beside a brick wall" width="1280" height="720" loading="lazy"><figcaption><b>Crouched</b><span>Smaller target</span></figcaption><button type="button" aria-label="Enlarge crouched"></button></figure>
-      <figure class="shot"><img src="img/shot-hosted.jpg" alt="Hosted match on Northport during warmup" width="1280" height="720" loading="lazy"><figcaption><b>Hosted match</b><span>Launcher-hosted server</span></figcaption><button type="button" aria-label="Enlarge hosted match"></button></figure>
-      <figure class="shot wide"><img src="img/hud-scoreboard.jpg" alt="HUD chat, kill feed and scoreboard" width="1300" height="580" loading="lazy"><figcaption><b>Chat, kill feed, scores</b><span>Coming in v0.30</span></figcaption><button type="button" aria-label="Enlarge HUD chat and scoreboard"></button></figure>
-      <figure class="shot wide"><img src="img/stances.jpg" alt="Standing, crouched and prone stances" width="1500" height="450" loading="lazy"><figcaption><b>Stances</b><span>Stand · crouch · prone</span></figcaption><button type="button" aria-label="Enlarge stances"></button></figure>
+      <figure class="shot wide"><img src="img/map-northport.webp" srcset="img/map-northport-640.webp 640w, img/map-northport.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Northport docks in daylight" width="1280" height="720" loading="lazy"><figcaption><b>Northport</b><span>Distance fog, DX12</span></figcaption><button type="button" aria-label="Enlarge Northport"></button></figure>
+      <figure class="shot wide"><img src="img/map-railhouse.webp" srcset="img/map-railhouse-640.webp 640w, img/map-railhouse.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Railhouse at night, an archway over the tracks" width="1280" height="720" loading="lazy"><figcaption><b>Railhouse</b><span>Night, DX12</span></figcaption><button type="button" aria-label="Enlarge Railhouse"></button></figure>
+      <figure class="shot"><img src="img/map-stadtrand.webp" srcset="img/map-stadtrand-640.webp 640w, img/map-stadtrand.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Stadtrand, a narrow fogged alley" width="1280" height="720" loading="lazy"><figcaption><b>Stadtrand</b><span>Fogged alley</span></figcaption><button type="button" aria-label="Enlarge Stadtrand"></button></figure>
+      <figure class="shot"><img src="img/map-village.webp" srcset="img/map-village-640.webp 640w, img/map-village.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Village barn interior with hay bales" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Barn</span></figcaption><button type="button" aria-label="Enlarge Village"></button></figure>
+      <figure class="shot"><img src="img/map-snow.webp" srcset="img/map-snow-640.webp 640w, img/map-snow.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Snow map, a covered loading area" width="1280" height="720" loading="lazy"><figcaption><b>Snow</b><span>Winter map</span></figcaption><button type="button" aria-label="Enlarge Snow"></button></figure>
+      <figure class="shot"><img src="img/shot-smoke.webp" srcset="img/shot-smoke-640.webp 640w, img/shot-smoke.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="M83 smoke grenade cloud in the Railhouse backyard" width="1280" height="720" loading="lazy"><figcaption><b>M83 smoke</b><span>Map-lit</span></figcaption><button type="button" aria-label="Enlarge M83 smoke"></button></figure>
+      <figure class="shot"><img src="img/shot-crouch.webp" srcset="img/shot-crouch-640.webp 640w, img/shot-crouch.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="A crouched soldier beside a brick wall" width="1280" height="720" loading="lazy"><figcaption><b>Crouched</b><span>Smaller target</span></figcaption><button type="button" aria-label="Enlarge crouched"></button></figure>
+      <figure class="shot"><img src="img/shot-hosted.webp" srcset="img/shot-hosted-640.webp 640w, img/shot-hosted.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Hosted match on Northport during warmup" width="1280" height="720" loading="lazy"><figcaption><b>Hosted match</b><span>Launcher-hosted server</span></figcaption><button type="button" aria-label="Enlarge hosted match"></button></figure>
+      <figure class="shot wide"><img src="img/hud-scoreboard.webp" srcset="img/hud-scoreboard-640.webp 640w, img/hud-scoreboard.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="HUD chat, kill feed and scoreboard" width="1300" height="580" loading="lazy"><figcaption><b>Chat, kill feed, scores</b><span>Coming in v0.30</span></figcaption><button type="button" aria-label="Enlarge HUD chat and scoreboard"></button></figure>
+      <figure class="shot wide"><img src="img/stances.webp" srcset="img/stances-640.webp 640w, img/stances.webp 1500w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Standing, crouched and prone stances" width="1500" height="450" loading="lazy"><figcaption><b>Stances</b><span>Stand · crouch · prone</span></figcaption><button type="button" aria-label="Enlarge stances"></button></figure>
     </div>
   </div>
 </section>
@@ -473,8 +499,8 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
     </div>
     <div class="vf">
       <div class="compare" id="compare" style="--pos:50%">
-        <img id="cmp-right" src="img/preset-ultra.jpg" alt="Railhouse backyard on the Ultra preset" width="1280" height="680">
-        <img class="top" src="img/preset-low.jpg" alt="Railhouse backyard on the Low preset" width="1280" height="680">
+        <img id="cmp-right" src="img/preset-ultra.webp" loading="lazy" alt="Railhouse backyard on the Ultra preset" width="1280" height="680">
+        <img class="top" src="img/preset-low.webp" loading="lazy" alt="Railhouse backyard on the Low preset" width="1280" height="680">
         <span class="tag l">Low</span>
         <span class="tag r" id="cmp-tag">Ultra</span>
         <span class="handle"></span>
@@ -486,7 +512,7 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
 
 <section class="band" id="launcher">
   <div class="wrap launcher">
-    <div class="vf shot-frame"><img src="img/launcher.jpg" alt="The TrueCombat: Platinum launcher with Join a server, Display settings and the PLAY button" width="1140" height="805" loading="lazy"></div>
+    <div class="vf shot-frame"><img src="img/launcher.webp" srcset="img/launcher-640.webp 640w, img/launcher.webp 1280w" sizes="(max-width: 900px) 100vw, 640px" alt="The TrueCombat: Platinum launcher with Join a server, Display settings and the PLAY button" width="1140" height="805" loading="lazy"></div>
     <div class="section-head" style="margin:0">
       <span class="eyebrow">Launcher</span>
       <h2>Ready when you are</h2>
@@ -526,89 +552,89 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
       <h2>Recent updates</h2>
     </div>
     <div class="notes">
-      <details class="release" open>
+      <details class="release" data-ver="v0.29.0" open>
         <summary><span class="ver">v0.29.0<span class="latest">Latest</span></span><span class="sum">The launcher becomes a hub with a living map header, a server list and news. Smoother movement online.</span><span class="meta">#50 · 0.29.0-sandbox20 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
-          <section><h4>Launcher</h4><ul>
+          <section><h3>Launcher</h3><ul>
             <li>The header moves slowly through real in-game shots of all six maps.</li>
             <li>New Play, Servers and News tabs.</li>
             <li>Servers shows favorites, recent servers and your own server as cards with map, players and ping.</li>
             <li>Pick the starting map from picture cards when hosting.</li>
           </ul></section>
-          <section><h4>Updates</h4><ul>
+          <section><h3>Updates</h3><ul>
             <li>Updates are signed by Team Terminus. Only signed updates install.</li>
             <li>See download speed and time left, cancel, or open What's new.</li>
           </ul></section>
-          <section><h4>Multiplayer</h4><ul>
+          <section><h3>Multiplayer</h3><ul>
             <li>Fewer camera jolts when packets arrive late or go missing.</li>
             <li>Respawns and practice resets stay instant, without a camera slide.</li>
             <li>Movement-correction smoothing can be tuned or turned off in the console.</li>
           </ul></section>
-          <section><h4>Status</h4><ul>
+          <section><h3>Status</h3><ul>
             <li>No public server list yet. The Servers tab shows servers you have saved or joined.</li>
             <li>Tested on one PC over local connections.</li>
           </ul></section>
         </div>
       </details>
 
-      <details class="release">
+      <details class="release" data-ver="v0.28.0">
         <summary><span class="ver">v0.28.0</span><span class="sum">Restyled launcher with a built-in update bar, optional DLSS/DLAA and a new connection version.</span><span class="meta">#49 · 0.28.0-sandbox19 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
-          <section><h4>Launcher</h4><ul>
+          <section><h3>Launcher</h3><ul>
             <li>New title bar with the game emblem, your version and matching window buttons.</li>
             <li>Update bar above PLAY: check, download, verify and install on restart.</li>
             <li>Text stays sharp when the window is resized.</li>
           </ul></section>
-          <section><h4>Graphics</h4><ul>
+          <section><h3>Graphics</h3><ul>
             <li>Optional NVIDIA DLSS and DLAA for RTX cards. <code>r_dx12Dlss 1</code> for DLAA, 2 to 5 for DLSS quality levels.</li>
             <li>Recovers more gracefully when a renderer fails to start.</li>
           </ul></section>
-          <section><h4>Multiplayer</h4><ul>
+          <section><h3>Multiplayer</h3><ul>
             <li>New connection version. 0.28.0 and 0.27.0 cannot play together.</li>
             <li>A clear message explains a version mismatch.</li>
           </ul></section>
         </div>
       </details>
 
-      <details class="release">
+      <details class="release" data-ver="v0.27.0">
         <summary><span class="ver">v0.27.0</span><span class="sum">The new launcher, sprinting, crouching, going prone, stamina and head/body/leg hits.</span><span class="meta">#48 · 0.27.0-sandbox18 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
-          <section><h4>New launcher</h4><ul>
+          <section><h3>New launcher</h3><ul>
             <li>PLAY, Safe start and Open game menu.</li>
             <li>Saved player name, favorite and recent servers, and a check whether a server answers.</li>
             <li>Host Practice, Elimination, Team Elimination or Point Capture.</li>
           </ul></section>
-          <section><h4>Movement</h4><ul>
+          <section><h3>Movement</h3><ul>
             <li>Sprint with <kbd>Shift</kbd>, crouch with <kbd>C</kbd>, go prone with <kbd>X</kbd>.</li>
             <li>Running, sprinting, crouching and crawling speeds follow the original values.</li>
           </ul></section>
-          <section><h4>Combat</h4><ul>
+          <section><h3>Combat</h3><ul>
             <li>Shots hit the head, body or legs separately, each with its own damage.</li>
             <li>Crouched and prone players are smaller targets.</li>
           </ul></section>
-          <section><h4>HUD</h4><ul>
+          <section><h3>HUD</h3><ul>
             <li>The stamina bar drains and refills as you move.</li>
             <li>The stance icon shows standing, crouched or prone.</li>
           </ul></section>
         </div>
       </details>
 
-      <details class="release">
+      <details class="release" data-ver="v0.24.0">
         <summary><span class="ver">v0.24.0</span><span class="sum">DirectX 12 in the game's own window, the original soldier models, the M83 smoke grenade and the original HUD.</span><span class="meta">#47 · 0.24.0-sandbox17 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
-          <section><h4>DirectX 12</h4><ul>
+          <section><h3>DirectX 12</h3><ul>
             <li>Everything is drawn with DirectX 12. The old separate viewer is gone.</li>
             <li>Falls back to OpenGL automatically if DirectX 12 can't run.</li>
           </ul></section>
-          <section><h4>Players and weapons</h4><ul>
+          <section><h3>Players and weapons</h3><ul>
             <li>Original TC:E soldier models with animations and ground shadows.</li>
             <li>M83 smoke grenade on <kbd>4</kbd>, one per life.</li>
           </ul></section>
-          <section><h4>Original HUD</h4><ul>
+          <section><h3>Original HUD</h3><ul>
             <li>Original layout, fonts, compass, stamina bar, round clock and objective lines.</li>
             <li>The body silhouette changes colour as you take damage.</li>
           </ul></section>
-          <section><h4>Multiplayer</h4><ul>
+          <section><h3>Multiplayer</h3><ul>
             <li>Hosts can run the server at 128 updates per second. The default stays at 20.</li>
             <li>Fixed a rare failure to rejoin after a map change on a bad connection.</li>
           </ul></section>
@@ -742,7 +768,7 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
 (function () {
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* hero slideshow, like the launcher header */
+  /* hero slideshow, like the launcher header; later slides load after the page */
   var wrap = document.getElementById('slides');
   var slides = Array.prototype.slice.call(wrap.children);
   var nameEl = document.getElementById('slide-name');
@@ -755,28 +781,109 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
   }
   show(0);
   if (!reduce) {
-    setInterval(function () { wrap.classList.add('started'); cur = (cur + 1) % slides.length; show(cur); }, 6500);
+    window.addEventListener('load', function () {
+      slides.forEach(function (s) {
+        if (s.dataset.src) { s.srcset = s.dataset.srcset; s.src = s.dataset.src; }
+      });
+      setInterval(function () {
+        var next = (cur + 1) % slides.length;
+        if (!slides[next].complete) return;
+        wrap.classList.add('started'); cur = next; show(cur);
+      }, 6500);
+    });
   }
 
-  /* latest release from GitHub; the static values stay if this fails */
+  /* releases from GitHub: download button and patch notes. The static HTML stays if this fails. */
+  var API = 'https://api.github.com/repos/Annoximeme/TrueCombat-Platinum/releases?per_page=8';
   var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  fetch('https://api.github.com/repos/Annoximeme/TrueCombat-Platinum/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (rel) {
+  function fmtDate(iso) { var d = new Date(iso); return d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function inline(t) {
+    return esc(t)
+      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
+  }
+  function parseNotes(body) {
+    var lines = (body || '').replace(/\r/g, '').split('\n');
+    var out = { num: '', build: '', summary: '', sections: [] }, sec = null;
+    lines.forEach(function (raw) {
+      var l = raw.trim(); if (!l) return;
+      var h = /^\*\*([^*]+)\*\*\s*(.*)$/.exec(l);
+      if (h && !h[2]) {
+        var t = h[1].trim();
+        var num = /Patch Notes\s*#(\d+)/i.exec(t);
+        if (num) { out.num = num[1]; return; }
+        if (/^TRUECOMBAT/i.test(t)) return;
+        sec = { title: t.charAt(0) + t.slice(1).toLowerCase(), items: [] };
+        if (!/^development$/i.test(t)) out.sections.push(sec);
+        return;
+      }
+      if (h && /Packaged Native Sandbox/i.test(h[1])) { out.build = h[2].trim(); return; }
+      if (h) return; /* other header fields such as the full TC:E build */
+      if (/^[-*]\s+/.test(l)) { if (sec) sec.items.push(l.replace(/^[-*]\s+/, '')); return; }
+      if (!sec && !out.summary) out.summary = l.replace(/^New download for the native 64-bit sandbox\.\s*/i, '');
+    });
+    return out;
+  }
+  function renderNotes(releases) {
+    var box = document.querySelector('.notes');
+    var seen = {};
+    var html = releases.slice(0, 5).map(function (rel, i) {
+      var n = parseNotes(rel.body);
+      if (!n.sections.length) return '';
       var m = /^v?(\d+\.\d+\.\d+)/.exec(rel.tag_name || '');
-      var zip = (rel.assets || []).filter(function (a) { return /Windows-x64\.zip$/i.test(a.name); })[0];
+      var ver = m ? 'v' + m[1] : esc(rel.tag_name);
+      seen[ver] = true;
+      var meta = (n.num ? '#' + n.num + ' · ' : '') + esc(n.build || rel.tag_name) + ' · ' + fmtDate(rel.published_at);
+      var secs = n.sections.map(function (sec) {
+        return '<section><h3>' + esc(sec.title) + '</h3><ul>' + sec.items.map(function (it) { return '<li>' + inline(it) + '</li>'; }).join('') + '</ul></section>';
+      }).join('');
+      return '<details class="release"' + (i === 0 ? ' open' : '') + '><summary><span class="ver">' + ver + (i === 0 ? '<span class="latest">Latest</span>' : '') +
+        '</span><span class="sum">' + inline(n.summary) + '</span><span class="meta">' + meta +
+        ' <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary><div class="body">' + secs + '</div></details>';
+    }).join('');
+    if (!html) return;
+    /* keep older hand-written entries that are not in the API answer */
+    var older = Array.prototype.slice.call(box.querySelectorAll('.release[data-ver]')).filter(function (d) { return !seen[d.dataset.ver]; });
+    older.forEach(function (d) { d.open = false; var b = d.querySelector('.latest'); if (b) b.remove(); });
+    box.innerHTML = html;
+    older.slice(0, Math.max(0, 5 - Object.keys(seen).length)).forEach(function (d) { box.appendChild(d); });
+  }
+  function applyReleases(list) {
+    var rels = list.filter(function (r) { return !r.draft && !r.prerelease; });
+    if (!rels.length) return;
+    renderNotes(rels);
+    /* the download button points at the newest release that has a full zip */
+    for (var i = 0; i < rels.length; i++) {
+      var zip = (rels[i].assets || []).filter(function (a) { return /Windows-x64\.zip$/i.test(a.name); })[0];
+      if (!zip) continue;
+      var m = /^v?(\d+\.\d+\.\d+)/.exec(rels[i].tag_name || '');
+      var mb = Math.round(zip.size / 1048576).toLocaleString('en') + ' MB';
       document.querySelectorAll('[data-version]').forEach(function (el) { if (m) el.textContent = 'v' + m[1]; });
-      if (zip) {
-        var mb = Math.round(zip.size / 1048576);
-        document.querySelectorAll('[data-size]').forEach(function (el) { el.textContent = mb.toLocaleString('en') + ' MB'; });
-        document.querySelectorAll('[data-download]').forEach(function (el) { el.href = zip.browser_download_url; });
-      }
-      if (rel.published_at) {
-        var d = new Date(rel.published_at);
-        document.querySelectorAll('[data-date]').forEach(function (el) { el.textContent = d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); });
-      }
-    })
-    .catch(function () {});
+      document.querySelectorAll('[data-size]').forEach(function (el) { el.textContent = mb; });
+      document.querySelectorAll('[data-date]').forEach(function (el) { el.textContent = fmtDate(rels[i].published_at); });
+      document.querySelectorAll('[data-download]').forEach(function (el) { el.href = zip.browser_download_url; });
+      break;
+    }
+  }
+  var cached = null;
+  try { cached = JSON.parse(sessionStorage.getItem('tcp-releases') || 'null'); } catch (e) {}
+  if (cached && Date.now() - cached.t < 30 * 60 * 1000) {
+    applyReleases(cached.data);
+  } else {
+    fetch(API, { headers: { Accept: 'application/vnd.github+json' } })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (list) {
+        var slim = list.map(function (r) { return { tag_name: r.tag_name, draft: r.draft, prerelease: r.prerelease, published_at: r.published_at, body: r.body, assets: (r.assets || []).map(function (a) { return { name: a.name, size: a.size, browser_download_url: a.browser_download_url }; }) }; });
+        try { sessionStorage.setItem('tcp-releases', JSON.stringify({ t: Date.now(), data: slim })); } catch (e) {}
+        applyReleases(slim);
+      })
+      .catch(function () {});
+  }
+
+  /* mobile menu closes after a pick */
+  var menu = document.getElementById('menu');
+  if (menu) menu.addEventListener('click', function (e) { if (e.target.tagName === 'A') menu.open = false; });
 
   /* preset comparison */
   var cmp = document.getElementById('compare');
@@ -788,7 +895,7 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
     b.addEventListener('click', function () {
       document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
       var p = b.dataset.preset;
-      right.src = 'img/preset-' + p + '.jpg';
+      right.src = 'img/preset-' + p + '.webp';
       right.alt = 'Railhouse backyard on the ' + b.textContent + ' preset';
       tag.textContent = b.textContent;
     });
