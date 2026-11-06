@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrueCombat: Platinum</title>
+<meta name="description" content="TrueCombat: Platinum is een native 64-bit DirectX 12-versie van TrueCombat: Elite voor Windows, met de originele maps, soldaten en HUD. Gratis te downloaden.">
+<meta name="theme-color" content="#0d1016">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TrueCombat: Platinum">
+<meta property="og:description" content="Een native 64-bit DirectX 12-versie van TrueCombat: Elite voor Windows. Gratis te downloaden.">
+<link rel="canonical" href="https://truecombat.eu/nl/">
+<meta property="og:url" content="https://truecombat.eu/nl/">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:image" content="https://truecombat.eu/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="TrueCombat: Platinum logo over the Northport map">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TrueCombat: Platinum">
+<meta name="twitter:description" content="Een native 64-bit DirectX 12-versie van TrueCombat: Elite voor Windows. Gratis te downloaden.">
+<meta name="twitter:image" content="https://truecombat.eu/img/og.jpg">
+<link rel="preload" as="image" href="../img/logo.webp" fetchpriority="high">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"VideoGame","name":"TrueCombat: Platinum","url":"https://truecombat.eu/","image":"https://truecombat.eu/img/og.jpg","description":"A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows.","genre":["Tactical shooter","First-person shooter"],"gamePlatform":"Windows","operatingSystem":"Windows 10, Windows 11 (64-bit)","applicationCategory":"Game","playMode":"MultiPlayer","author":{"@type":"Organization","name":"Team Terminus"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"downloadUrl":"https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest","sameAs":["https://github.com/Annoximeme/TrueCombat-Platinum","https://discord.gg/8kcHdg2Hch"]}
+</script>
+<!--alt-->
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<!--nav-->
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Wapens</a></li>
+      <li><a href="guide.html">Gids</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Ranglijsten</a></li>
+      <li><a href="news.html">Nieuws</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Onderdelen">
+        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="news.html">Nieuws</a><hr><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="../" hreflang="en" lang="en" title="English">EN</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+
+<section class="hero" aria-label="TrueCombat: Platinum">
+  <div class="slides" id="slides">
+    <img class="slide" data-name="Northport" src="../img/map-northport.webp" srcset="../img/map-northport-640.webp 640w, ../img/map-northport.webp 1280w" sizes="100vw" alt="" fetchpriority="high">
+    <img class="slide" data-name="Railhouse" data-src="../img/map-railhouse.webp" data-srcset="../img/map-railhouse-640.webp 640w, ../img/map-railhouse.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Delta" data-src="../img/map-delta.webp" data-srcset="../img/map-delta-640.webp 640w, ../img/map-delta.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Stadtrand" data-src="../img/map-stadtrand.webp" data-srcset="../img/map-stadtrand-640.webp 640w, ../img/map-stadtrand.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Village" data-src="../img/map-village.webp" data-srcset="../img/map-village-640.webp 640w, ../img/map-village.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Snow" data-src="../img/map-snow.webp" data-srcset="../img/map-snow-640.webp 640w, ../img/map-snow.webp 1280w" sizes="100vw" alt="">
+  </div>
+  <div class="wrap">
+    <img class="hero-logo" src="../img/logo.webp" fetchpriority="high" decoding="async" alt="TrueCombat: Platinum" width="900" height="512">
+    <h1>TrueCombat: Elite, opnieuw gebouwd voor <em>modern Windows</em>.</h1>
+    <p class="lede">Een native 64-bit versie van de klassieke tactische shooter, getekend met DirectX 12. De originele maps, soldaten en HUD, met een nieuwe launcher die servers host en je spel up-to-date houdt.</p>
+    <div class="hero-cta">
+      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.29.0-sandbox20/TrueCombat-Platinum-0.29.0-sandbox20-Windows-x64.zip">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
+        <span class="stack"><span class="big">Download <span data-version>v0.29.0</span></span><span class="small">Windows x64 · <span data-size>767 MB</span> · gratis</span></span>
+      </a>
+      <a class="btn btn-ghost" href="#patch-notes">Wat is er nieuw</a>
+    </div>
+    <div class="hero-meta">
+      <span>DirectX 12 met OpenGL als terugval</span>
+      <span>Optioneel NVIDIA DLSS / DLAA</span>
+      <span>Ontwikkeld door RaziC* · Team Terminus</span>
+    </div>
+  </div>
+  <div class="hero-caption" aria-hidden="true"><span id="slide-name">Northport</span> · in-game DX12 <span class="dots" id="dots"></span></div>
+</section>
+
+<div class="status">
+  <div class="wrap">
+    <strong>Vroege sandbox</strong>
+    <span>Bewegen, raakzones, de HUD en hosten werken. Terugslag, spreiding, doorboring en de originele rondes worden nog opnieuw gebouwd.</span>
+  </div>
+</div>
+
+<section class="band" id="about">
+  <div class="wrap about">
+    <div class="copy">
+      <span class="eyebrow">Het project</span>
+      <h2>Het spel dat je kent, op een engine die geen 20 jaar oud is</h2>
+      <p><strong>TrueCombat: Elite</strong> was een realistische moderne-oorlogsconversie voor Enemy Territory: één leven per ronde, echte wapens en maps gemaakt voor rustig, voorzichtig spel. Het draait nog steeds als 32-bit mod op een engine uit 2003.</p>
+      <p><strong>TrueCombat: Platinum</strong> bouwt het opnieuw als native 64-bit Windows-spel. De renderer is nieuwe DirectX 12-code, de HUD is pixel voor pixel vergeleken met het origineel, en de bewegingssnelheden komen rechtstreeks uit de originele waarden. Werkt DirectX 12 niet goed, dan draait Veilig starten het op OpenGL.</p>
+      <div class="spec" role="list">
+        <div role="listitem"><b>x64</b><span>Native client &amp; server</span></div>
+        <div role="listitem"><b>DX12</b><span>Standaard renderer</span></div>
+        <div role="listitem"><b>128 Hz</b><span>Optionele serversnelheid</span></div>
+      </div>
+    </div>
+    <div class="vf"><img src="../img/shot-dlaa.webp" srcset="../img/shot-dlaa-640.webp 640w, ../img/shot-dlaa.webp 1280w" sizes="(max-width: 900px) 100vw, 640px" alt="Achtertuin van Railhouse in DirectX 12 met DLAA, een soldaat tegen een bakstenen muur" width="1280" height="720" loading="lazy"></div>
+  </div>
+</section>
+
+<section class="band" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Wat zit erin</span>
+      <h2>Stuk voor stuk opgebouwd uit het origineel</h2>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8 21h8M12 17v4"/></svg>
+        <h3>DirectX 12-renderer</h3>
+        <p>Alles wordt met DirectX 12 in het eigen venster van het spel getekend. Randvereffening, omgevingsschaduwen, HDR, bloom en verscherping zijn optioneel. Oudere pc's vallen automatisch terug op OpenGL.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+        <h3>De originele HUD</h3>
+        <p>Indeling, lettertypen, kompas, staminabalk, rondeklok en doelregels uit TC:E. Het lichaamssilhouet kleurt geel, oranje en rood als je geraakt wordt.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><path d="M12 7.5v6M8 10h8M12 13.5l-3 7M12 13.5l3 7"/></svg>
+        <h3>Sprinten, hurken, liggen</h3>
+        <p>Houd <kbd>Shift</kbd> ingedrukt om te sprinten tot je stamina op is, <kbd>C</kbd> om te hurken, <kbd>X</kbd> om te gaan liggen. De snelheden volgen de originele TC:E-waarden, en springen tijdens het lopen kost stamina.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="4.5" r="2.5"/><rect x="8.5" y="8" width="7" height="7" rx="1"/><path d="M10 15v6M14 15v6"/></svg>
+        <h3>Treffers op hoofd, romp en benen</h3>
+        <p>Elk schot raakt een zone met eigen schade. Gehurkte en liggende spelers zijn een kleiner doelwit.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 15a5 5 0 0 1 1-9.9A6 6 0 0 1 19 8a4 4 0 0 1-1 7.9"/><path d="M5 19h14M8 22h8"/></svg>
+        <h3>M83-rookgranaat</h3>
+        <p>Druk op <kbd>4</kbd> en gooi. Eén per leven, belicht door de map, zoals in het origineel.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
+        <h3>Ondertekende updates</h3>
+        <p>De launcher zoekt op GitHub naar nieuwe versies, toont downloadsnelheid en resterende tijd, en installeert alleen updates die door Team Terminus zijn ondertekend. Je instellingen en servers blijven bewaard.</p>
+      </article>
+    </div>
+
+    <figure class="strip">
+      <div class="vf"><img src="../img/player-models.webp" srcset="../img/player-models-640.webp 640w, ../img/player-models.webp 1920w" sizes="(max-width: 1180px) 100vw, 1150px" alt="Zes beelden van de originele TC:E-soldaatmodellen: first person, third person staand, rennend, vurend, herladend en met grondschaduw" width="1920" height="720" loading="lazy"></div>
+      <figcaption>Originele TC:E-soldaatmodellen met hun animaties en grondschaduwen: staan, rennen, vuren, herladen.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band" id="trailer">
+  <div class="wrap trailer-grid">
+    <div class="vf">
+      <div class="yt" data-yt="pb1IvJOg7Lg" data-start="32" data-title="TrueCombat-gameplayvideo">
+        <img src="../img/map-railhouse.webp" srcset="../img/map-railhouse-640.webp 640w, ../img/map-railhouse.webp 1280w" sizes="(max-width: 900px) 100vw, 720px" alt="" width="1280" height="720" loading="lazy">
+        <button type="button" aria-label="Speel de gameplayvideo af"><span><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5l13 7.5-13 7.5z"/></svg></span></button>
+      </div>
+    </div>
+    <div class="section-head" style="margin:0">
+      <span class="eyebrow">Kijk</span>
+      <h2>Gameplay</h2>
+      <p class="lede">Eén leven per ronde, echte wapens en maps gemaakt voor geduldig, tactisch spel. De video begint bij 0:32.</p>
+      <p class="yt-note">De video speelt af via YouTube in de privacyvriendelijke modus. Er wordt niets van YouTube geladen tot je op afspelen drukt.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="maps">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div><span class="eyebrow">Maps</span>
+      <h2>Alle zes originele maps</h2></div>
+      <a class="btn btn-ghost" href="maps.html">Bekijk alle maps</a>
+    </div>
+    <div class="map-cards">
+      <a class="map-card" href="maps.html#delta"><img src="../img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Delta</b><small>Industriestraten</small></span></a>
+      <a class="map-card" href="maps.html#northport"><img src="../img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Northport</b><small>Havenloodsen</small></span></a>
+      <a class="map-card" href="maps.html#railhouse"><img src="../img/map-railhouse-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Railhouse</b><small>Rangeerterrein</small></span></a>
+      <a class="map-card" href="maps.html#snow"><img src="../img/map-snow-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Snow</b><small>Industrie in de winter</small></span></a>
+      <a class="map-card" href="maps.html#stadtrand"><img src="../img/map-stadtrand-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Stadtrand</b><small>Rand van de stad</small></span></a>
+      <a class="map-card" href="maps.html#village"><img src="../img/map-village-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Village</b><small>Dorp</small></span></a>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="gallery">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Galerij</span>
+      <h2>In het spel vastgelegd</h2>
+      <p class="lede">Elke afbeelding komt rechtstreeks uit de DirectX 12-renderer. Niets bijgewerkt.</p>
+    </div>
+    <div class="gallery" id="gallery-grid">
+      <figure class="shot wide"><img src="../img/map-northport.webp" srcset="../img/map-northport-640.webp 640w, ../img/map-northport.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="De dokken van Northport bij daglicht" width="1280" height="720" loading="lazy"><figcaption><b>Northport</b><span>Mist in de verte, DX12</span></figcaption><button type="button" aria-label="Northport vergroten"></button></figure>
+      <figure class="shot wide"><img src="../img/map-railhouse.webp" srcset="../img/map-railhouse-640.webp 640w, ../img/map-railhouse.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Railhouse bij nacht, een boog over het spoor" width="1280" height="720" loading="lazy"><figcaption><b>Railhouse</b><span>Nacht, DX12</span></figcaption><button type="button" aria-label="Railhouse vergroten"></button></figure>
+      <figure class="shot"><img src="../img/map-stadtrand.webp" srcset="../img/map-stadtrand-640.webp 640w, ../img/map-stadtrand.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Stadtrand, een smalle steeg in de mist" width="1280" height="720" loading="lazy"><figcaption><b>Stadtrand</b><span>Mistige steeg</span></figcaption><button type="button" aria-label="Stadtrand vergroten"></button></figure>
+      <figure class="shot"><img src="../img/map-village.webp" srcset="../img/map-village-640.webp 640w, ../img/map-village.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Schuur in Village met hooibalen" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Schuur</span></figcaption><button type="button" aria-label="Village vergroten"></button></figure>
+      <figure class="shot"><img src="../img/map-snow.webp" srcset="../img/map-snow-640.webp 640w, ../img/map-snow.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="De map Snow, een overdekte laadplaats" width="1280" height="720" loading="lazy"><figcaption><b>Snow</b><span>Wintermap</span></figcaption><button type="button" aria-label="Snow vergroten"></button></figure>
+      <figure class="shot"><img src="../img/shot-smoke.webp" srcset="../img/shot-smoke-640.webp 640w, ../img/shot-smoke.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Rookwolk van een M83-granaat in de achtertuin van Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>M83-rook</b><span>Belicht door de map</span></figcaption><button type="button" aria-label="M83-rook vergroten"></button></figure>
+      <figure class="shot"><img src="../img/shot-crouch.webp" srcset="../img/shot-crouch-640.webp 640w, ../img/shot-crouch.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Een gehurkte soldaat naast een bakstenen muur" width="1280" height="720" loading="lazy"><figcaption><b>Gehurkt</b><span>Kleiner doelwit</span></figcaption><button type="button" aria-label="Gehurkt vergroten"></button></figure>
+      <figure class="shot"><img src="../img/shot-hosted.webp" srcset="../img/shot-hosted-640.webp 640w, ../img/shot-hosted.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Gehost potje op Northport tijdens de warming-up" width="1280" height="720" loading="lazy"><figcaption><b>Gehost potje</b><span>Server gehost vanuit de launcher</span></figcaption><button type="button" aria-label="Gehost potje vergroten"></button></figure>
+      <figure class="shot wide"><img src="../img/hud-scoreboard.webp" srcset="../img/hud-scoreboard-640.webp 640w, ../img/hud-scoreboard.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="HUD-chat, killfeed en scorebord" width="1300" height="580" loading="lazy"><figcaption><b>Chat, killfeed, scores</b><span>Onderdeel van v0.30</span></figcaption><button type="button" aria-label="HUD-chat en scorebord vergroten"></button></figure>
+      <figure class="shot wide"><img src="../img/stances.webp" srcset="../img/stances-640.webp 640w, ../img/stances.webp 1500w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Staande, gehurkte en liggende houding" width="1500" height="450" loading="lazy"><figcaption><b>Houdingen</b><span>Staan · hurken · liggen</span></figcaption><button type="button" aria-label="Houdingen vergroten"></button></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band compare-band" id="graphics">
+  <div class="wrap compare-grid">
+    <div class="compare-copy">
+      <span class="eyebrow">Graphics</span>
+      <h2>Originele look, of verbeterd</h2>
+      <p>Sleep over de afbeelding om de originele look met de nieuwe presets te vergelijken. Zelfde plek, zelfde frame: de achtertuin van Railhouse op 1080p.</p>
+      <div class="tabs" role="group" aria-label="Preset om met Laag te vergelijken">
+        <button type="button" data-preset="high" aria-pressed="false">High</button>
+        <button type="button" data-preset="ultra" aria-pressed="true">Ultra</button>
+      </div>
+      <ul class="preset-list">
+        <li><b>Low</b><span>De originele look: standaard filtering, geen extra effecten.</span></li>
+        <li><b>High</b><span>Nieuwe standaard. De effecten kosten ongeveer 1,0 ms per frame op een RTX 4080 SUPER.</span></li>
+        <li><b>Ultra</b><span>Voegt NVIDIA DLAA toe op RTX-kaarten, ongeveer 1,2 ms per frame.</span></li>
+      </ul>
+      <p class="note">De presets komen met v0.30, samen met 2× opgeschaalde HD-textures voor de wereld, modellen, HUD en menu's. DLSS en DLAA werken al in v0.29: typ <code>r_dx12Dlss 1</code> in de console en daarna <code>vid_restart</code>.</p>
+    </div>
+    <div class="vf">
+      <div class="compare" id="compare" style="--pos:50%">
+        <img id="cmp-right" src="../img/preset-ultra.webp" loading="lazy" alt="Achtertuin van Railhouse op de preset Ultra" width="1280" height="680">
+        <img class="top" src="../img/preset-low.webp" loading="lazy" alt="Achtertuin van Railhouse op de preset Low" width="1280" height="680">
+        <span class="tag l">Low</span>
+        <span class="tag r" id="cmp-tag">Ultra</span>
+        <span class="handle"></span>
+        <input type="range" id="cmp-range" min="0" max="100" value="50" aria-label="Positie van de vergelijkingslijn">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="launcher">
+  <div class="wrap launcher">
+    <div class="vf shot-frame"><img src="../img/launcher.webp" srcset="../img/launcher-640.webp 640w, ../img/launcher.webp 1280w" sizes="(max-width: 900px) 100vw, 640px" alt="De TrueCombat: Platinum-launcher met Verbinden met een server, Weergave-instellingen en de knop PLAY" width="1140" height="805" loading="lazy"></div>
+    <div class="section-head" style="margin:0">
+      <span class="eyebrow">Launcher</span>
+      <h2>Eén launcher voor alles</h2>
+      <ul class="checks">
+        <li><span><b>PLAY</b> start DirectX 12 met je opgeslagen instellingen. <b>Safe start</b> gebruikt OpenGL in een venster van 1280 × 720.</span></li>
+        <li><span><b>Host een server</b> vanuit de launcher: Practice, Elimination, Team Elimination of Point Capture, met je eigen naam, spelerslimiet, maprotatie en poort.</span></li>
+        <li><span><b>Tabblad Servers</b> met favorieten en recente servers als kaarten, met map, spelers en ping. Dubbelklik om mee te doen.</span></li>
+        <li><span><b>Tabblad Nieuws</b> met de laatste patchnotes, en een updatebalk die nieuwe versies downloadt, controleert en installeert.</span></li>
+        <li><span><b>Grafische opties</b> voor resolutie, venstermodus, filtering, randvereffening, verversingssnelheid, framelimiet en een FPS-teller.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="servers">
+  <div class="wrap servers">
+    <div class="copy">
+      <span class="eyebrow">Servers</span>
+      <h2>Publieke serverlijst</h2>
+      <p>Servers die gehost worden met <b>List publicly</b> aan, verschijnen hier en in het tabblad Servers van de launcher zolang de masterserver online is.</p>
+      <p>Je kunt altijd vanuit de launcher hosten en je adres delen. Anderen verbinden standaard via UDP-poort <code>27971</code>. Iedereen in een potje heeft dezelfde versie nodig.</p>
+      <p class="hero-cta" style="margin:0"><a class="btn btn-ghost" href="servers.html">Alle servers</a> <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg> Zoek een potje op Discord</a></p>
+    </div>
+    <div class="server-card" data-servers="5" aria-live="polite">
+      <header><h3>Nu online</h3><span class="pill">Bezig…</span></header>
+      <table class="srv-table">
+        <thead><tr><th>Server</th><th>Map</th><th>Spelers</th><th>Modus</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="srv-empty">Nog geen publieke servers. Deze lijst vult zich vanzelf zodra de masterserver draait.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="patch-notes">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Patchnotes</span>
+      <h2>Recente updates</h2>
+    </div>
+    <div class="notes" data-releases="5">
+<!--releases-->
+      <details class="release" id="v0.29.0" data-ver="v0.29.0" open>
+        <summary><span class="ver">v0.29.0<span class="latest">Nieuwste</span></span><span class="sum">The launcher becomes a full hub with a living map header, a server list and in-launcher news, and movement looks smoother online.</span><span class="meta">#50 · 0.29.0-sandbox20 · 5 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Launcher</h3><ul>
+            <li>The header now moves slowly through real in-game shots of all six maps and cross-fades between them.</li>
+            <li>New Play, Servers and News tabs.</li>
+            <li>Servers shows your favorite and recent servers and your own server as cards with a map picture, player count and ping. Click a card to pick it, double-click or press JOIN to play, and use the star to save a favorite.</li>
+            <li>News shows the latest patch notes inside the launcher.</li>
+            <li>Hosting &amp; favorites (formerly Servers &amp; hosting) now lets you pick the starting map from picture cards.</li>
+            <li>Smoother hover effects, rounded window corners on Windows 11, a larger window on high-resolution screens and dark drop-down lists.</li>
+          </ul></section>
+          <section><h3>Updates</h3><ul>
+            <li>Updates are now signed by Team Terminus. The launcher only installs updates that carry a valid signature.</li>
+            <li>While an update downloads you can see its speed and time left, cancel it, or open What's new.</li>
+          </ul></section>
+          <section><h3>Multiplayer</h3><ul>
+            <li>Fewer camera jolts from small movement corrections when packets arrive late or go missing.</li>
+            <li>Respawns and practice resets stay instant, without a camera slide.</li>
+            <li>Respawning players no longer slide between their old and new positions.</li>
+            <li>Movement-correction smoothing can be adjusted or turned off through the console.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Still unfinished: recoil, spread, penetration, leaning, ladders, swimming, aiming down sights and the original round rules.</li>
+            <li>There is no public server list yet. The Servers tab shows servers you have saved or joined before.</li>
+            <li>Tested on one PC over local connections. Separate PCs and the internet are not verified yet.</li>
+            <li>Use the separate RC8 download for complete TC:E matches.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" id="v0.28.0" data-ver="v0.28.0">
+        <summary><span class="ver">v0.28.0</span><span class="sum">It brings the restyled launcher with a built-in update bar, optional DLSS/DLAA, steadier startup and a new connection version.</span><span class="meta">#49 · 0.28.0-sandbox19 · 5 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Launcher</h3><ul>
+            <li>New title bar that blends into the artwork, with the game emblem, your version and window buttons that match the rest of the launcher.</li>
+            <li>New update bar above the PLAY button. It shows your version, checks for new versions, downloads and verifies them, and installs them on restart. Your settings, profile and server data are kept. It checks the official TrueCombat: Platinum releases on GitHub each time the launcher opens.</li>
+            <li>Servers &amp; hosting, Advanced graphics and the graphics report now have proper headers and grouped panels.</li>
+            <li>Smoother corners, soft shadows, icons on the section headings and clearer drop-down lists.</li>
+            <li>Text stays sharp when the launcher window is resized.</li>
+            <li>The Advanced graphics window no longer cuts off its notes and buttons.</li>
+          </ul></section>
+          <section><h3>Graphics</h3><ul>
+            <li>Added optional NVIDIA DLSS and DLAA for RTX graphics cards. It is off by default. Enter r_dx12Dlss 1 in the console for DLAA, or 2 to 5 for the DLSS quality levels, then vid_restart.</li>
+            <li>The game now recovers more gracefully when a graphics renderer fails to start.</li>
+          </ul></section>
+          <section><h3>Multiplayer</h3><ul>
+            <li>New connection version. Version 0.28.0 cannot join 0.27.0 or older servers, and older versions cannot join 0.28.0 servers.</li>
+            <li>A clear message now explains when your game and the server do not match.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Still unfinished: recoil, spread, penetration, leaning, ladders, swimming, aiming down sights and the original round rules.</li>
+            <li>Tested on one PC over local connections. Separate PCs and the internet are not verified yet.</li>
+            <li>Use the separate RC8 download for complete TC:E matches.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" data-ver="v0.27.0">
+        <summary><span class="ver">v0.27.0</span><span class="sum">The new launcher, sprinting, crouching, going prone, stamina and head/body/leg hits.</span><span class="meta">#48 · 0.27.0-sandbox18 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>New launcher</h3><ul>
+            <li>PLAY, Safe start and Open game menu.</li>
+            <li>Saved player name, favorite and recent servers, and a check whether a server answers.</li>
+            <li>Host Practice, Elimination, Team Elimination or Point Capture.</li>
+          </ul></section>
+          <section><h3>Movement</h3><ul>
+            <li>Sprint with <kbd>Shift</kbd>, crouch with <kbd>C</kbd>, go prone with <kbd>X</kbd>.</li>
+            <li>Running, sprinting, crouching and crawling speeds follow the original values.</li>
+          </ul></section>
+          <section><h3>Combat</h3><ul>
+            <li>Shots hit the head, body or legs separately, each with its own damage.</li>
+            <li>Crouched and prone players are smaller targets.</li>
+          </ul></section>
+          <section><h3>HUD</h3><ul>
+            <li>The stamina bar drains and refills as you move.</li>
+            <li>The stance icon shows standing, crouched or prone.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" data-ver="v0.24.0">
+        <summary><span class="ver">v0.24.0</span><span class="sum">DirectX 12 in the game's own window, the original soldier models, the M83 smoke grenade and the original HUD.</span><span class="meta">#47 · 0.24.0-sandbox17 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>DirectX 12</h3><ul>
+            <li>Everything is drawn with DirectX 12. The old separate viewer is gone.</li>
+            <li>Falls back to OpenGL automatically if DirectX 12 can't run.</li>
+          </ul></section>
+          <section><h3>Players and weapons</h3><ul>
+            <li>Original TC:E soldier models with animations and ground shadows.</li>
+            <li>M83 smoke grenade on <kbd>4</kbd>, one per life.</li>
+          </ul></section>
+          <section><h3>Original HUD</h3><ul>
+            <li>Original layout, fonts, compass, stamina bar, round clock and objective lines.</li>
+            <li>The body silhouette changes colour as you take damage.</li>
+          </ul></section>
+          <section><h3>Multiplayer</h3><ul>
+            <li>Hosts can run the server at 128 updates per second. The default stays at 20.</li>
+            <li>Fixed a rare failure to rejoin after a map change on a bad connection.</li>
+          </ul></section>
+        </div>
+      </details>
+<!--/releases-->
+    </div>
+    <p class="all-notes">Elke update staat op de <a href="news.html">nieuwspagina</a>, met een <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">RSS-feed</a>. Downloads staan op <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">GitHub Releases</a>. De patchnotes zelf zijn in het Engels.</p>
+  </div>
+</section>
+
+<section class="band" id="roadmap">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Planning</span>
+      <h2>Wat eraan komt</h2>
+    </div>
+    <div class="road">
+      <div class="road-col done">
+        <h3>Nu speelbaar <small data-version>v0.29.0</small></h3>
+        <ul>
+          <li>DirectX 12-renderer met OpenGL via Safe start</li>
+          <li>Optioneel NVIDIA DLSS en DLAA</li>
+          <li>Originele soldaatmodellen en HUD</li>
+          <li>Sprinten, hurken, liggen en stamina</li>
+          <li>Treffers op hoofd, romp en benen</li>
+          <li>M83-rook</li>
+          <li>Hosten vanuit de launcher en ondertekende updates</li>
+        </ul>
+      </div>
+      <div class="road-col next">
+        <h3>Hierna <small>v0.30</small></h3>
+        <ul>
+          <li>De grafische presets Low / High / Ultra</li>
+          <li>HD-textures voor de wereld, modellen, HUD en menu's</li>
+          <li>De originele chat, killfeed en het scorebord</li>
+          <li>Onderhandse worp met de M83</li>
+          <li>Veel kleinere updates</li>
+          <li>Ondersteuning voor de publieke serverlijst</li>
+        </ul>
+      </div>
+      <div class="road-col later">
+        <h3>Daarna</h3>
+        <ul>
+          <li>Het volledige TC:E-arsenaal, mes en granaten</li>
+          <li>Terugslag, spreiding en doorboring</li>
+          <li>Leunen, ladders, zwemmen en richten over het vizier</li>
+          <li>De originele rondes en doelen</li>
+          <li>Testen tussen aparte pc's en via internet</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band download" id="download">
+  <div class="wrap dl-grid">
+    <div class="dl-main">
+      <span class="eyebrow">Download</span>
+      <h2>Download TrueCombat: Platinum</h2>
+      <ol class="steps">
+        <li><span><b>Download</b> <span class="mono">TrueCombat-Platinum-…-Windows-x64.zip</span> van de nieuwste release.</span></li>
+        <li><span><b>Pak de hele map uit</b> op een plek waar je kunt schrijven, zoals Documenten of Games. Niet in Program Files.</span></li>
+        <li><span><b>Start TrueCombatPlatinum.exe</b>, kies een naam en druk op PLAY. Daarna houdt de launcher zichzelf up-to-date.</span></li>
+      </ol>
+      <div class="hero-cta">
+        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.29.0-sandbox20/TrueCombat-Platinum-0.29.0-sandbox20-Windows-x64.zip">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="stack"><span class="big">Download <span data-version>v0.29.0</span></span><span class="small"><span data-size>767 MB</span> zip · <span data-date>5 nov 2026</span></span></span>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Alle releases</a>
+      </div>
+    </div>
+    <aside class="reqs">
+      <h3>Wat je nodig hebt</h3>
+      <dl>
+        <dt>Systeem</dt><dd>Windows 10 of 11, 64-bit</dd>
+        <dt>Graphics</dt><dd>Een DirectX 12-kaart. Oudere kaarten kunnen Safe start (OpenGL) gebruiken.</dd>
+        <dt>DLSS / DLAA</dt><dd>Optioneel, NVIDIA RTX-kaarten</dd>
+        <dt>Schijf</dt><dd>Ongeveer 800 MB download</dd>
+        <dt>Inbegrepen</dt><dd>Alles wat je nodig hebt om te spelen. Geen aparte installatie van TC:E of Enemy Territory.</dd>
+      </dl>
+    </aside>
+  </div>
+</section>
+
+<section class="band" id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Vragen</span>
+      <h2>Voordat je speelt</h2>
+    </div>
+    <div class="faq">
+      <div><h3>Ik ben nieuw. Waar begin ik?</h3><p>Lees de <a href="guide.html">beginnersgids</a> voor de besturing, de spelmodi en een paar tips waarmee je langer overleeft. Op de <a href="weapons.html">wapenpagina</a> staat elk wapen uit TC:E.</p></div>
+      <div><h3>Is het gratis?</h3><p>Ja. Download het van GitHub Releases en speel. Elke release bevat de broncode en de licenties voor de originele spelbestanden.</p></div>
+      <div><h3>Ik wil erover schrijven</h3><p>Download de <a href="press.html">perskit</a> met logo's, screenshots en een factsheet.</p></div>
+      <div><h3>Kan ik online spelen?</h3><p>Je kunt servers hosten en joinen vanuit de launcher. Tot nu toe is het getest op één pc met lokale verbindingen, dus verwacht nog wat ruwe randjes tussen aparte pc's en via internet.</p></div>
+      <div><h3>Is dit de complete TC:E?</h3><p>Nog niet. Het is een native sandbox: bewegen, raakzones, de HUD en hosten werken, terwijl terugslag, spreiding, doorboring en de originele rondes nog opnieuw gebouwd worden.</p></div>
+      <div><h3>Waar vind ik spelers?</h3><p>Word lid van de <a href="https://discord.gg/8kcHdg2Hch">TrueCombat: Platinum Discord</a>. Daar worden potjes georganiseerd, servers gedeeld en nieuwe versies als eerste aangekondigd.</p></div>
+      <div><h3>DirectX 12 start niet. Wat nu?</h3><p>Druk op <b>Safe start</b> in de launcher. Dan draait het spel op OpenGL in een venster van 1280 × 720, en het spel valt ook zelf terug op OpenGL als DirectX 12 faalt.</p></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <img src="../img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
+      <div class="who">
+        <b>Team Terminus</b>
+        <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+      </div>
+      <nav aria-label="Voettekst">
+        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a>
+        <a href="maps.html">Maps</a>
+        <a href="weapons.html">Wapens</a>
+        <a href="guide.html">Gids</a>
+        <a href="servers.html">Servers</a>
+        <a href="leaderboards.html">Ranglijsten</a>
+        <a href="news.html">Nieuws</a>
+        <a href="press.html">Perskit</a>
+        <a href="./#download">Download</a>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Screenshotviewer">
+  <button class="lb-btn lb-close" type="button" aria-label="Sluiten">✕</button>
+  <button class="lb-btn lb-prev" type="button" aria-label="Vorige">‹</button>
+  <figure><img id="lb-img" alt=""><figcaption id="lb-cap"></figcaption></figure>
+  <button class="lb-btn lb-next" type="button" aria-label="Volgende">›</button>
+</div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* hero slideshow, like the launcher header; later slides load after the page */
+  var wrap = document.getElementById('slides');
+  var slides = Array.prototype.slice.call(wrap.children);
+  var nameEl = document.getElementById('slide-name');
+  var dots = document.getElementById('dots');
+  slides.forEach(function () { dots.appendChild(document.createElement('i')); });
+  var cur = 0;
+  function show(i) {
+    slides.forEach(function (s, k) { s.classList.toggle('on', k === i); dots.children[k].classList.toggle('on', k === i); });
+    nameEl.textContent = slides[i].dataset.name;
+  }
+  show(0);
+  if (!reduce) {
+    window.addEventListener('load', function () {
+      slides.forEach(function (s) {
+        if (s.dataset.src) { s.srcset = s.dataset.srcset; s.src = s.dataset.src; }
+      });
+      setInterval(function () {
+        var next = (cur + 1) % slides.length;
+        if (!slides[next].complete) return;
+        wrap.classList.add('started'); cur = next; show(cur);
+      }, 6500);
+    });
+  }
+
+  /* preset comparison */
+  var cmp = document.getElementById('compare');
+  var range = document.getElementById('cmp-range');
+  range.addEventListener('input', function () { cmp.style.setProperty('--pos', range.value + '%'); });
+  var right = document.getElementById('cmp-right');
+  var tag = document.getElementById('cmp-tag');
+  document.querySelectorAll('[data-preset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      var p = b.dataset.preset;
+      right.src = '../img/preset-' + p + '.webp';
+      right.alt = 'Achtertuin van Railhouse op de preset ' + b.textContent;
+      tag.textContent = b.textContent;
+    });
+  });
+
+  /* lightbox */
+  var shots = Array.prototype.slice.call(document.querySelectorAll('#gallery-grid .shot'));
+  var lb = document.getElementById('lightbox');
+  var lbImg = document.getElementById('lb-img');
+  var lbCap = document.getElementById('lb-cap');
+  var at = 0, opener = null;
+  function open(i) {
+    at = (i + shots.length) % shots.length;
+    var img = shots[at].querySelector('img');
+    lbImg.src = img.src; lbImg.alt = img.alt;
+    lbCap.textContent = shots[at].querySelector('b').textContent + ' · ' + img.alt;
+    lb.hidden = false;
+    lb.querySelector('.lb-close').focus();
+  }
+  function close() { lb.hidden = true; if (opener) opener.focus(); }
+  shots.forEach(function (s, i) { s.querySelector('button').addEventListener('click', function (e) { opener = e.currentTarget; open(i); }); });
+  lb.querySelector('.lb-close').addEventListener('click', close);
+  lb.querySelector('.lb-prev').addEventListener('click', function () { open(at - 1); });
+  lb.querySelector('.lb-next').addEventListener('click', function () { open(at + 1); });
+  lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (lb.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') open(at - 1);
+    if (e.key === 'ArrowRight') open(at + 1);
+  });
+})();
+</script>
+<script src="../js/site.js"></script>
+</body>
+</html>

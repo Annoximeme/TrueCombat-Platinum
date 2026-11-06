@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Beginner's guide · TrueCombat: Platinum</title>
+<meta name="description" content="Get started with TrueCombat: Platinum: install, default controls, movement and stamina, game modes and tips for staying alive.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/guide.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://truecombat.eu/guide.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Beginner's guide · TrueCombat: Platinum">
+<meta property="og:description" content="Get started with TrueCombat: Platinum: install, default controls, movement and stamina, game modes and tips for staying alive.">
+<meta property="og:image" content="https://truecombat.eu/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og.jpg">
+<!--alt-->
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/guide.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/guide.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/guide.html">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--nav-->
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Weapons</a></li>
+      <li><a href="guide.html" aria-current="page">Guide</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Leaderboards</a></li>
+      <li><a href="news.html">News</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Sections">
+        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="news.html">News</a><hr><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/guide.html" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="nl/guide.html" hreflang="nl" lang="nl" title="Nederlands">NL</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<section class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">Beginner's guide</span>
+    <h1>Basic training</h1>
+    <p class="lede">Everything you need before your first match: installation, controls, movement and stamina, game modes and field tactics.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap doc">
+    <nav class="doc-toc" aria-label="On this page">
+      <a href="#start">Get in</a><a href="#controls">Controls</a><a href="#movement">Movement</a><a href="#damage">Damage</a><a href="#modes">Game modes</a><a href="#tips">Tactics</a><a href="#hosting">Hosting</a>
+    </nav>
+    <div class="doc-body">
+      <section id="start">
+        <span class="eyebrow">01</span>
+        <h2>Get in</h2>
+        <ol>
+          <li><b>Download</b> the latest zip from the <a href="./#download">download section</a> and <b>extract the whole folder</b> somewhere you can write to, such as Documents or Games. Not Program Files.</li>
+          <li><b>Run TrueCombatPlatinum.exe.</b> Type your player name. It is saved for next time.</li>
+          <li><b>Join or host.</b> Enter a server address and press <b>PLAY</b>, pick one from the Servers tab, or press <b>Host a server</b> to start your own and join it.</li>
+          <li><b>Pick a team and loadout</b> in the deployment menu when the map loads.</li>
+        </ol>
+        <p class="callout"><b>Game won't start?</b> Press <b>Safe start</b> in the launcher. It runs the game on OpenGL in a 1280 × 720 window and leaves your normal settings alone.</p>
+      </section>
+
+      <section id="controls">
+        <span class="eyebrow">02</span>
+        <h2>Controls</h2>
+        <p>These are the defaults. Change them in the game's options menu under Controls.</p>
+        <div class="key-grid">
+          <table class="keys">
+            <caption>Moving</caption>
+            <tr><th>Move</th><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td></tr>
+            <tr><th>Sprint</th><td><kbd>Shift</kbd> (hold)</td></tr>
+            <tr><th>Jump</th><td><kbd>Space</kbd></td></tr>
+            <tr><th>Crouch</th><td><kbd>C</kbd> (toggles)</td></tr>
+            <tr><th>Prone</th><td><kbd>X</kbd></td></tr>
+            <tr><th>Lean left / right</th><td><kbd>Q</kbd><kbd>E</kbd><span class="soon">Coming</span></td></tr>
+            <tr><th>Use</th><td><kbd>F</kbd></td></tr>
+          </table>
+          <table class="keys">
+            <caption>Fighting</caption>
+            <tr><th>Fire</th><td>Left mouse</td></tr>
+            <tr><th>Aim / underhand throw</th><td>Right mouse</td></tr>
+            <tr><th>Reload</th><td><kbd>R</kbd></td></tr>
+            <tr><th>Fire mode</th><td><kbd>G</kbd></td></tr>
+            <tr><th>M83 smoke</th><td><kbd>4</kbd></td></tr>
+            <tr><th>Scoreboard</th><td><kbd>Tab</kbd></td></tr>
+            <tr><th>Chat / team chat</th><td><kbd>T</kbd><kbd>Y</kbd></td></tr>
+            <tr><th>Screenshot</th><td><kbd>F11</kbd></td></tr>
+          </table>
+        </div>
+      </section>
+
+      <section id="movement">
+        <span class="eyebrow">03</span>
+        <h2>Movement and stamina</h2>
+        <p>Speeds come straight from the original TC:E values. Sprinting is about half again as fast as running, and crouching or crawling cuts you to well under half.</p>
+        <div class="speeds" role="list">
+          <div role="listitem"><b>143</b><i style="width:100%"></i><span>Sprint</span></div>
+          <div role="listitem"><b>98</b><i style="width:69%"></i><span>Run</span></div>
+          <div role="listitem"><b>81</b><i style="width:57%"></i><span>Walk</span></div>
+          <div role="listitem"><b>41</b><i style="width:29%"></i><span>Crouch</span></div>
+          <div role="listitem"><b>38</b><i style="width:27%"></i><span>Prone</span></div>
+        </div>
+        <p class="yt-note">Units per second with a rifle, on the default server settings.</p>
+        <ul>
+          <li><b>Stamina</b> is the bar on your HUD. A full bar gives you about 13 seconds of sprinting with a rifle. Heavier weapons drain it faster.</li>
+          <li>It refills when you stand still, walk slowly, crouch or lie down. Don't arrive at a fight with an empty bar.</li>
+          <li><b>Jumping on the move costs stamina</b>, and jumping again soon after costs more. You can't jump while crouched or prone. Pressing jump while crouched stands you up.</li>
+          <li><b>Crouch toggles</b>: press <kbd>C</kbd> once to go down and again to stand. Type <code>cg_toggleCrouch 0</code> in the console if you'd rather hold it.</li>
+          <li>Moving backwards or sideways is slower than moving forwards.</li>
+        </ul>
+      </section>
+
+      <section id="damage">
+        <span class="eyebrow">04</span>
+        <h2>Damage</h2>
+        <p>Every shot hits the <b>head</b>, <b>body</b> or <b>legs</b>, and each does different damage. The body silhouette on your HUD turns yellow, orange and then red as you get hurt.</p>
+        <p>Crouched and prone players are smaller targets, so getting low is often the best defence. The damage, magazine and fire rate of every gun are on the <a href="weapons.html">weapons page</a>.</p>
+      </section>
+
+      <section id="modes">
+        <span class="eyebrow">05</span>
+        <h2>Game modes</h2>
+        <div class="modes">
+          <div>
+            <h3>In Platinum today</h3>
+            <ul>
+              <li><b>Practice</b>: a map to yourself with practice targets. Learn the routes and try out the controls.</li>
+              <li><b>Elimination</b>: every player for themselves, one life per round.</li>
+              <li><b>Team elimination</b>: two teams, one life each per round. Wipe out the other side to take the round.</li>
+              <li><b>Point capture</b>: take the capture point and hold it.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>From the original TC:E</h3>
+            <ul>
+              <li><b>Flag capture</b>: bring the flag home, first team to three.</li>
+              <li><b>Bomb</b>: attackers plant at site A or B within five minutes, defenders stop them.</li>
+              <li><b>Team deathmatch</b>: first team to 20 kills.</li>
+            </ul>
+            <p class="yt-note">The original round rules and objectives are still being rebuilt.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tips">
+        <span class="eyebrow">06</span>
+        <h2>Field tactics</h2>
+        <div class="tip-grid">
+          <div class="tip"><h3>Slow down</h3><p>You get one life per round. Walking into a room you haven't checked is how most rounds end. Let the other player make the noise.</p></div>
+          <div class="tip"><h3>Get low</h3><p>Crouch before you peek and go prone behind low cover. A smaller target survives the first shot more often.</p></div>
+          <div class="tip"><h3>Save your sprint</h3><p>Sprint between cover, not into a fight. Arrive with stamina left so you can still get out.</p></div>
+          <div class="tip"><h3>Smoke the open ground</h3><p>Throw the M83 with <kbd>4</kbd> to block a sight line before you cross a street or a yard. You only get one per life.</p></div>
+          <div class="tip"><h3>Reload behind cover</h3><p>Count your shots and reload when you're safe, not when someone comes round the corner.</p></div>
+          <div class="tip"><h3>Talk to your team</h3><p>Use team chat on <kbd>Y</kbd> to call out where you saw someone. Find a squad on the <a href="https://discord.gg/8kcHdg2Hch">Discord</a>.</p></div>
+        </div>
+      </section>
+
+      <section id="hosting">
+        <span class="eyebrow">07</span>
+        <h2>Hosting a match</h2>
+        <ol>
+          <li>In the launcher, press <b>Host a server</b>. Choose the mode, the server name, the player limit, the starting map and the rotation.</li>
+          <li>Switch on <b>List publicly</b> to show up on the <a href="servers.html">server list</a> while the master server is online.</li>
+          <li>For players outside your home network, allow UDP port <code>27971</code> in Windows Firewall and forward it on your router to the hosting PC.</li>
+          <li>Keep the PC awake while people play. Everyone needs the same game version as the server.</li>
+        </ol>
+      </section>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
+      <div class="who">
+        <b>Team Terminus</b>
+        <span>TrueCombat: Platinum is developed by RaziC*.</span>
+      </div>
+      <nav aria-label="Footer">
+        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a>
+        <a href="maps.html">Maps</a>
+        <a href="weapons.html">Weapons</a>
+        <a href="guide.html">Guide</a>
+        <a href="servers.html">Servers</a>
+        <a href="leaderboards.html">Leaderboards</a>
+        <a href="news.html">News</a>
+        <a href="press.html">Press kit</a>
+        <a href="./#download">Download</a>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js"></script>
+</body>
+</html>
