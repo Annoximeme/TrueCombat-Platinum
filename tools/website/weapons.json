@@ -1,0 +1,580 @@
+{
+ "source": "TrueCombat: Elite 0.49b gear file and weapon table, recovered in WEAPON-MAP-PARITY.md",
+ "groups": [
+  {
+   "id": "pistols",
+   "title_en": "Pistols",
+   "title_nl": "Pistolen",
+   "sub_en": "Secondary slot. Akimbo pairs reload slower.",
+   "sub_nl": "Secundair slot. Akimbo-paren herladen langzamer.",
+   "weapons": [
+    {
+     "name": "Beretta",
+     "full": "Beretta 92",
+     "team": "specops",
+     "slot": "secondary",
+     "caliber": "9×19 mm",
+     "damage": 54,
+     "clip": 15,
+     "reserve": 45,
+     "cycle": 100,
+     "reload": 2200,
+     "modes": [
+      "semi"
+     ]
+    },
+    {
+     "name": "Glock",
+     "full": "Glock 19",
+     "team": "terror",
+     "slot": "secondary",
+     "caliber": "9×19 mm",
+     "damage": 54,
+     "clip": 15,
+     "reserve": 45,
+     "cycle": 100,
+     "reload": 2200,
+     "modes": [
+      "semi"
+     ]
+    },
+    {
+     "name": "Desert Eagle",
+     "full": "IMI Desert Eagle",
+     "team": "both",
+     "slot": "secondary",
+     "caliber": ".50 AE",
+     "damage": 77,
+     "clip": 7,
+     "reserve": 21,
+     "cycle": 200,
+     "reload": 2200,
+     "modes": [
+      "semi"
+     ]
+    },
+    {
+     "name": "Akimbo Beretta",
+     "full": "2× Beretta 92",
+     "team": "specops",
+     "slot": "secondary",
+     "caliber": "9×19 mm",
+     "damage": 54,
+     "clip": 15,
+     "reserve": 45,
+     "cycle": 100,
+     "reload": 2700,
+     "modes": [
+      "semi"
+     ]
+    },
+    {
+     "name": "Akimbo Glock",
+     "full": "2× Glock 19",
+     "team": "terror",
+     "slot": "secondary",
+     "caliber": "9×19 mm",
+     "damage": 54,
+     "clip": 15,
+     "reserve": 45,
+     "cycle": 100,
+     "reload": 2700,
+     "modes": [
+      "semi"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "smgs",
+   "title_en": "Submachine guns",
+   "title_nl": "Machinepistolen",
+   "sub_en": "Fast fire, light to carry, short range.",
+   "sub_nl": "Snel vuur, licht om te dragen, korte afstand.",
+   "weapons": [
+    {
+     "name": "MAC-10",
+     "full": "Ingram MAC-10 machine pistol",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": ".45 ACP",
+     "damage": 40,
+     "clip": 30,
+     "reserve": 60,
+     "cycle": 50,
+     "reload": 2200,
+     "modes": [
+      "semi",
+      "auto"
+     ],
+     "full_nl": "Ingram MAC-10 machinepistool"
+    },
+    {
+     "name": "MAC-10 SD",
+     "full": "Ingram MAC-10, suppressed",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": ".45 ACP",
+     "damage": 40,
+     "clip": 30,
+     "reserve": 60,
+     "cycle": 50,
+     "reload": 2200,
+     "modes": [
+      "semi",
+      "auto"
+     ],
+     "suppressed": 1,
+     "full_nl": "Ingram MAC-10 met demper"
+    },
+    {
+     "name": "MP5/10",
+     "full": "H&K MP5/10 submachine gun",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": ".40 S&W",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 75,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto",
+      "3-burst"
+     ],
+     "full_nl": "H&K MP5/10 machinepistool"
+    },
+    {
+     "name": "MP5SD",
+     "full": "H&K MP5SD, integrally suppressed",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": "9×19 mm",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 75,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto",
+      "3-burst"
+     ],
+     "suppressed": 1,
+     "subsonic": 1,
+     "full_nl": "H&K MP5SD met ingebouwde demper"
+    },
+    {
+     "name": "UMP45",
+     "full": "H&K UMP45 submachine gun",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": ".45 ACP",
+     "damage": 50,
+     "clip": 25,
+     "reserve": 75,
+     "cycle": 100,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto",
+      "2-burst"
+     ],
+     "full_nl": "H&K UMP45 machinepistool"
+    }
+   ]
+  },
+  {
+   "id": "rifles",
+   "title_en": "Rifles and carbines",
+   "title_nl": "Geweren en karabijnen",
+   "sub_en": "The all-rounders. The M4 is the one in the game today.",
+   "sub_nl": "De allrounders. De M4 zit nu al in het spel.",
+   "weapons": [
+    {
+     "name": "M4",
+     "full": "Colt M4 carbine",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": "5.56×45 mm",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 80,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto"
+     ],
+     "full_nl": "Colt M4 karabijn"
+    },
+    {
+     "name": "M4 SOPMOD",
+     "full": "Colt M4 SOPMOD with M68 sight",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": "5.56×45 mm",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 80,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto"
+     ],
+     "suppressed": 1,
+     "full_nl": "Colt M4 SOPMOD met M68-vizier"
+    },
+    {
+     "name": "M16",
+     "full": "Colt M16 rifle",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": "5.56×45 mm",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 80,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "3-burst"
+     ],
+     "full_nl": "Colt M16 geweer"
+    },
+    {
+     "name": "AKS-74U",
+     "full": "Izhmash AKS-74U carbine",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": "5.45×39 mm",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 75,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto"
+     ],
+     "full_nl": "Izhmash AKS-74U karabijn"
+    },
+    {
+     "name": "AKS-74U SD",
+     "full": "Izhmash AKS-74U, suppressed",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": "5.45×39 mm",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 75,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto"
+     ],
+     "suppressed": 1,
+     "full_nl": "Izhmash AKS-74U met demper"
+    },
+    {
+     "name": "SIG 552",
+     "full": "SIG SG 552 Commando",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": "5.56×45 mm",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 80,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto",
+      "3-burst"
+     ]
+    },
+    {
+     "name": "AK-74M Spetsnaz",
+     "full": "AK-74M Spetsnaz, suppressed",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": "5.56×45 mm",
+     "damage": 45,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 80,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto"
+     ],
+     "suppressed": 1,
+     "full_nl": "AK-74M Spetsnaz met demper"
+    },
+    {
+     "name": "AK-47",
+     "full": "Izhmash AK-47 rifle",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": "7.62×39 mm",
+     "damage": 47,
+     "clip": 30,
+     "reserve": 90,
+     "cycle": 100,
+     "reload": 2300,
+     "modes": [
+      "semi",
+      "auto"
+     ],
+     "full_nl": "Izhmash AK-47 geweer"
+    }
+   ]
+  },
+  {
+   "id": "shotguns",
+   "title_en": "Shotguns",
+   "title_nl": "Shotguns",
+   "sub_en": "Close quarters. Reload one shell at a time.",
+   "sub_nl": "Korte afstand. Laden patroon voor patroon.",
+   "weapons": [
+    {
+     "name": "M3 Super 90",
+     "full": "Benelli M3 Super 90",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": "12 gauge",
+     "damage": 150,
+     "clip": 8,
+     "reserve": 32,
+     "cycle": 150,
+     "reload": 583,
+     "modes": [
+      "semi",
+      "pump"
+     ],
+     "pellets": 9,
+     "shell": 1
+    },
+    {
+     "name": "SPAS-12",
+     "full": "Franchi SPAS-12",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": "12 gauge",
+     "damage": 150,
+     "clip": 8,
+     "reserve": 32,
+     "cycle": 150,
+     "reload": 583,
+     "modes": [
+      "semi",
+      "pump"
+     ],
+     "pellets": 9,
+     "shell": 1
+    },
+    {
+     "name": "M590 Compact",
+     "full": "Mossberg M590 Compact",
+     "team": "both",
+     "slot": "primary",
+     "caliber": "12 gauge",
+     "damage": 150,
+     "clip": 6,
+     "reserve": 32,
+     "cycle": 150,
+     "reload": 583,
+     "modes": [
+      "pump"
+     ],
+     "pellets": 9,
+     "shell": 1
+    }
+   ]
+  },
+  {
+   "id": "snipers",
+   "title_en": "Sniper rifles",
+   "title_nl": "Sluipschuttersgeweren",
+   "sub_en": "Scoped. The .338 bolt-actions hit hardest of all.",
+   "sub_nl": "Met vizier. De .338-grendelgeweren raken het hardst.",
+   "weapons": [
+    {
+     "name": "PSG-1",
+     "full": "H&K PSG-1 marksman rifle",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": "7.62×51 mm",
+     "damage": 54,
+     "clip": 10,
+     "reserve": 30,
+     "cycle": 150,
+     "reload": 2300,
+     "modes": [
+      "semi"
+     ],
+     "scope": "6×",
+     "full_nl": "H&K PSG-1 precisiegeweer"
+    },
+    {
+     "name": "M76",
+     "full": "Zastava M76 marksman rifle",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": "7.92×57 mm",
+     "damage": 54,
+     "clip": 10,
+     "reserve": 30,
+     "cycle": 150,
+     "reload": 2300,
+     "modes": [
+      "semi"
+     ],
+     "scope": "6×",
+     "full_nl": "Zastava M76 precisiegeweer"
+    },
+    {
+     "name": "R93",
+     "full": "Blaser R93 bolt-action rifle",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": ".338 Lapua",
+     "damage": 90,
+     "clip": 5,
+     "reserve": 20,
+     "cycle": 500,
+     "reload": 1538,
+     "modes": [
+      "bolt"
+     ],
+     "scope": "6×",
+     "full_nl": "Blaser R93 grendelgeweer"
+    },
+    {
+     "name": "SR-8",
+     "full": "SR-8 bolt-action rifle",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": ".338 Lapua",
+     "damage": 90,
+     "clip": 5,
+     "reserve": 20,
+     "cycle": 500,
+     "reload": 1538,
+     "modes": [
+      "bolt"
+     ],
+     "scope": "8×",
+     "full_nl": "SR-8 grendelgeweer"
+    },
+    {
+     "name": "SPR SD",
+     "full": "Special Purpose Rifle, suppressed",
+     "team": "specops",
+     "slot": "primary",
+     "caliber": "5.56×45 mm",
+     "damage": 45,
+     "clip": 20,
+     "reserve": 40,
+     "cycle": 80,
+     "reload": 2300,
+     "modes": [
+      "semi"
+     ],
+     "scope": "4×",
+     "suppressed": 1,
+     "full_nl": "Special Purpose Rifle met demper"
+    },
+    {
+     "name": "SIG 550 SD",
+     "full": "SIG SG 550 sniper, suppressed",
+     "team": "terror",
+     "slot": "primary",
+     "caliber": "5.56×45 mm",
+     "damage": 45,
+     "clip": 20,
+     "reserve": 40,
+     "cycle": 80,
+     "reload": 2300,
+     "modes": [
+      "semi"
+     ],
+     "scope": "4×",
+     "suppressed": 1,
+     "full_nl": "SIG SG 550 sniper met demper"
+    }
+   ]
+  },
+  {
+   "id": "equipment",
+   "title_en": "Knife and explosives",
+   "title_nl": "Mes en explosieven",
+   "sub_en": "Carried by both teams.",
+   "sub_nl": "Voor beide teams.",
+   "weapons": [
+    {
+     "name": "Knife",
+     "full": "Combat knife",
+     "team": "both",
+     "modes": [
+      "melee"
+     ],
+     "note_en": "Always with you. One swing every half second.",
+     "note_nl": "Heb je altijd bij je. Eén haal per halve seconde.",
+     "name_nl": "Mes",
+     "full_nl": "Gevechtsmes"
+    },
+    {
+     "name": "Mk3A2 / M26",
+     "full": "Fragmentation grenade",
+     "team": "both",
+     "modes": [
+      "thrown"
+     ],
+     "note_en": "Clears rooms and corners. Throw it and take cover.",
+     "note_nl": "Maakt kamers en hoeken leeg. Gooien en dekking zoeken.",
+     "full_nl": "Fragmentatiegranaat"
+    },
+    {
+     "name": "M83 smoke",
+     "full": "Smoke grenade",
+     "team": "both",
+     "modes": [
+      "thrown"
+     ],
+     "note_en": "In the game today on <kbd>4</kbd>, one per life. Blocks sight lines so you can cross open ground.",
+     "note_nl": "Zit nu al in het spel op <kbd>4</kbd>, één per leven. Blokkeert zichtlijnen zodat je open terrein kunt oversteken.",
+     "name_nl": "M83-rook",
+     "full_nl": "Rookgranaat"
+    },
+    {
+     "name": "XM84 stun",
+     "full": "Stun grenade",
+     "team": "both",
+     "modes": [
+      "thrown"
+     ],
+     "note_en": "Stuns whoever is caught near it. Throw it before you push in.",
+     "note_nl": "Verdooft wie er vlakbij staat. Gooi hem voordat je naar binnen gaat.",
+     "name_nl": "XM84-schok",
+     "full_nl": "Schokgranaat"
+    },
+    {
+     "name": "Dynamite",
+     "full": "Demolition charge",
+     "team": "both",
+     "modes": [
+      "placed"
+     ],
+     "note_en": "Planted on objectives in the bomb mode.",
+     "note_nl": "Wordt bij doelen geplaatst in de bommodus.",
+     "name_nl": "Dynamiet",
+     "full_nl": "Springlading"
+    }
+   ]
+  }
+ ]
+}
