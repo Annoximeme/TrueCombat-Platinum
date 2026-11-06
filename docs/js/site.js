@@ -20,7 +20,10 @@ var TCP_API = '';
       updated: 'Updated', join: 'In the launcher: Servers → Join by address',
       lbEmpty: 'No ranked matches yet. Leaderboards fill in once public servers report their matches.',
       lbOffline: 'Leaderboards go live together with the public servers.',
-      matches: 'matches', play: 'Play the trailer', notesFailed: 'GitHub could not be reached. Showing the notes built into this page.'
+      soon: 'Coming soon', matches: 'matches', rating: 'Rating', peak: 'Peak', kd: 'K/D', headshots: 'Headshots', wins: 'Wins', played: 'Played', accuracy: 'Accuracy',
+      xpTo: 'XP to', topRank: 'Highest rank reached', weapons: 'Weapons', recent: 'Recent matches', close: 'Close', notRanked: 'Not ranked yet: finish three matches.',
+      position: 'Position', noPlayer: 'No player found with that name.', unknownPlayer: 'This player has no recorded matches yet.', won: 'Win', lost: 'Loss', hours: 'h', minutes: 'min',
+      play: 'Play the trailer', notesFailed: 'GitHub could not be reached. Showing the notes built into this page.'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -31,7 +34,10 @@ var TCP_API = '';
       updated: 'Bijgewerkt', join: 'In de launcher: Servers → Verbinden met adres',
       lbEmpty: 'Nog geen gerankte potjes. De ranglijsten vullen zich zodra publieke servers hun potjes doorgeven.',
       lbOffline: 'De ranglijsten gaan live samen met de publieke servers.',
-      matches: 'potjes', play: 'Speel de trailer af', notesFailed: 'GitHub was niet bereikbaar. Je ziet de notities die in deze pagina zitten.'
+      soon: 'Binnenkort', matches: 'potjes', rating: 'Rating', peak: 'Hoogste', kd: 'K/D', headshots: 'Headshots', wins: 'Winst', played: 'Gespeeld', accuracy: 'Trefzekerheid',
+      xpTo: 'XP tot', topRank: 'Hoogste rang bereikt', weapons: 'Wapens', recent: 'Laatste potjes', close: 'Sluiten', notRanked: 'Nog niet gerankt: speel drie potjes uit.',
+      position: 'Positie', noPlayer: 'Geen speler met die naam gevonden.', unknownPlayer: 'Van deze speler zijn nog geen potjes bekend.', won: 'Winst', lost: 'Verlies', hours: 'u', minutes: 'min',
+      play: 'Speel de trailer af', notesFailed: 'GitHub was niet bereikbaar. Je ziet de notities die in deze pagina zitten.'
     }
   };
   var L = DICT[lang] || DICT.en;
@@ -192,31 +198,85 @@ var TCP_API = '';
     if (TCP_API) setInterval(function () { if (!document.hidden) load(); }, 60000);
   });
 
-  /* ---------- leaderboards (bridge JSON, schema tcp-leaderboard/1) ---------- */
+  /* ---------- leaderboards and player profiles (stats service JSON, tools/server-bridge/tcp_stats.py) ---------- */
   $all('[data-leaderboard]').forEach(function (root) {
     var tbody = root.querySelector('tbody');
     var empty = root.querySelector('.lb-empty');
-    var state = { period: 'all', sort: 'kills', data: {} };
+    var profile = root.querySelector('[data-lb-profile]');
+    var search = root.querySelector('[data-lb-search]');
+    var state = { period: 'all', sort: 'rating', data: {}, found: null };
     function num(n) { return (n || 0).toLocaleString(lang); }
+    function pct(n) { return Math.round((n || 0) * 100) + '%'; }
+    function badge(r) { return r ? '<span class="badge" title="' + esc(r.title) + '">' + esc(r.short) + '</span>' : ''; }
+    function dur(s) { var h = Math.floor((s || 0) / 3600), m = Math.round(((s || 0) % 3600) / 60); return h ? h + ' ' + L.hours + ' ' + m + ' ' + L.minutes : m + ' ' + L.minutes; }
+    function prep(p) { p.kd = p.deaths ? p.kills / p.deaths : p.kills; p.hs = p.kills ? p.headshots / p.kills : 0; p.xp = p.rank ? p.rank.xp : 0; return p; }
+    function row(p, i) {
+      return '<tr><td class="rank">' + (i + 1) + '</td><td><a class="who" href="#player=' + esc(p.id) + '">' + esc(p.name) + '</a></td>' +
+        '<td>' + badge(p.rank) + '</td><td>' + num(p.rating) + '</td><td>' + num(p.matches) + '</td><td>' + num(p.kills) +
+        '</td><td>' + p.kd.toFixed(2) + '</td><td>' + pct(p.hs) + '</td><td>' + num(p.wins) + '</td><td>' + esc(p.topWeapon || '–') + '</td></tr>';
+    }
     function draw() {
       var d = state.data[state.period];
       if (!d) return;
-      var rows = (d.players || []).slice();
-      rows.forEach(function (p) { p.kd = p.deaths ? p.kills / p.deaths : p.kills; p.hs = p.kills ? p.headshots / p.kills : 0; });
-      rows.sort(function (a, b) { return (b[state.sort] || 0) - (a[state.sort] || 0); });
+      var rows = (state.found || d.players || []).slice().map(prep);
+      rows.sort(function (a, b) { return (b[state.sort] || 0) - (a[state.sort] || 0) || (b.kills || 0) - (a.kills || 0); });
       setPill(root, true, num(d.matches) + ' ' + L.matches);
-      if (!rows.length) { empty.textContent = L.lbEmpty; empty.hidden = false; tbody.innerHTML = ''; return; }
+      if (!rows.length) { empty.textContent = state.found ? L.noPlayer : L.lbEmpty; empty.hidden = false; tbody.innerHTML = ''; return; }
       empty.hidden = true;
-      tbody.innerHTML = rows.slice(0, 100).map(function (p, i) {
-        return '<tr><td class="rank">' + (i + 1) + '</td><td><b>' + esc(p.name) + '</b></td><td>' + num(p.matches) + '</td><td>' + num(p.kills) + '</td><td>' + num(p.deaths) +
-          '</td><td>' + p.kd.toFixed(2) + '</td><td>' + Math.round(p.hs * 100) + '%</td><td>' + num(p.wins) + '</td><td>' + esc(p.topWeapon || '–') + '</td></tr>';
-      }).join('');
+      tbody.innerHTML = rows.slice(0, 100).map(row).join('');
     }
     function load() {
       if (state.data[state.period]) { draw(); return; }
-      api('/leaderboard.json?period=' + state.period).then(function (d) { state.data[state.period] = d; draw(); }, function () {
-        setPill(root, false, L.offline); empty.textContent = L.lbOffline; empty.hidden = false;
+      api('/leaderboard.json?limit=500&period=' + state.period).then(function (d) { state.data[state.period] = d; draw(); }, function () {
+        setPill(root, false, TCP_API ? L.offline : L.soon); empty.textContent = L.lbOffline; empty.hidden = false;
       });
+    }
+    function showProfile(id) {
+      if (!profile) return;
+      if (!id) { profile.hidden = true; profile.innerHTML = ''; return; }
+      api('/player.json?id=' + encodeURIComponent(id)).then(function (p) {
+        var r = p.rank || {};
+        var span = r.xpNext ? (r.xp - r.xpThis) / (r.xpNext - r.xpThis) : 1;
+        var facts = [[L.rating, num(p.rating)], [L.peak, num(p.peakRating)], [L.position, p.position ? '#' + p.position : '–'],
+          [L.matches, num(p.matches)], [L.wins, num(p.wins)], ['Kills', num(p.kills)], [L.kd, (p.deaths ? p.kills / p.deaths : p.kills).toFixed(2)],
+          [L.headshots, pct(p.kills ? p.headshots / p.kills : 0)], [L.played, dur(p.timePlayed)]];
+        var weapons = (p.weapons || []).slice(0, 6).map(function (w) {
+          return '<tr><td>' + esc(w.name) + '</td><td>' + num(w.kills) + '</td><td>' + num(w.headshots) + '</td><td>' + (w.accuracy == null ? '–' : pct(w.accuracy)) + '</td></tr>';
+        }).join('');
+        var recent = (p.recent || []).slice(0, 10).map(function (m) {
+          var c = m.ratingChange || 0;
+          return '<tr><td>' + fmtDate(m.ended) + '</td><td>' + mapLabel(m.map) + '</td><td>' + esc(m.mode || '') + '</td><td>' + (m.won ? L.won : L.lost) +
+            '</td><td>' + num(m.kills) + ' / ' + num(m.deaths) + '</td><td class="' + (c > 0 ? 'up' : c < 0 ? 'down' : '') + '">' + (c > 0 ? '+' : '') + c + '</td></tr>';
+        }).join('');
+        profile.innerHTML = '<div class="top"><div><h4>' + esc(p.name) + ' ' + badge(r) + '</h4><div class="muted">' + esc(r.title || '') +
+          (r.xpNext ? ' · ' + num(r.xpNext - r.xp) + ' ' + L.xpTo + ' ' + esc(nextTitle(r.level)) : ' · ' + L.topRank) +
+          (p.ranked ? '' : ' · ' + L.notRanked) + '</div></div><button type="button" class="close" data-close>' + L.close + '</button></div>' +
+          '<div class="xpbar"><i style="width:' + Math.max(0, Math.min(100, span * 100)).toFixed(1) + '%"></i></div>' +
+          '<div class="facts">' + facts.map(function (f) { return '<div><b>' + f[1] + '</b><span>' + f[0] + '</span></div>'; }).join('') + '</div>' +
+          (weapons ? '<div class="table-scroll"><table class="srv-table"><thead><tr><th>' + L.weapons + '</th><th>Kills</th><th>HS</th><th>' + L.accuracy + '</th></tr></thead><tbody>' + weapons + '</tbody></table></div>' : '') +
+          (recent ? '<div class="table-scroll"><table class="srv-table"><thead><tr><th colspan="6">' + L.recent + '</th></tr></thead><tbody>' + recent + '</tbody></table></div>' : '');
+        profile.hidden = false;
+        profile.scrollIntoView({ block: 'nearest' });
+      }, function () { profile.innerHTML = '<p class="muted">' + L.unknownPlayer + '</p>'; profile.hidden = false; });
+    }
+    var RANK_TITLES = null;
+    function nextTitle(level) { return RANK_TITLES && RANK_TITLES[level] ? RANK_TITLES[level].title : ''; }
+    if (TCP_API) api('/ranks.json').then(function (d) { RANK_TITLES = d.ranks; }, function () {});
+    function fromHash() { if (!TCP_API) return; var m = /player=([0-9a-f]{16})/.exec(location.hash); showProfile(m && m[1]); }
+    window.addEventListener('hashchange', fromHash);
+    if (profile) profile.addEventListener('click', function (e) {
+      if (e.target.closest('[data-close]')) { history.replaceState(null, '', location.pathname + location.search); showProfile(null); }
+    });
+    if (search && !TCP_API) search.hidden = true;
+    if (search && TCP_API) {
+      var timer = null;
+      function find() {
+        var q = search.q.value.trim();
+        if (q.length < 2) { state.found = null; draw(); return; }
+        api('/search.json?q=' + encodeURIComponent(q)).then(function (d) { state.found = d.players || []; draw(); }, function () {});
+      }
+      search.addEventListener('submit', function (e) { e.preventDefault(); find(); });
+      search.q.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(find, 300); });
     }
     $all('[data-period]', root).forEach(function (b) {
       b.addEventListener('click', function () {
@@ -231,6 +291,7 @@ var TCP_API = '';
       });
     });
     load();
+    fromHash();
   });
 
   /* ---------- click-to-play YouTube (youtube-nocookie, loads only after a click) ---------- */
