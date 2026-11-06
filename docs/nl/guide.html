@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Beginnersgids · TrueCombat: Platinum</title>
+<meta name="description" content="Begin met TrueCombat: Platinum: installeren, standaardbesturing, bewegen en stamina, spelmodi en tips om te overleven.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/guide.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://truecombat.eu/nl/guide.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Beginnersgids · TrueCombat: Platinum">
+<meta property="og:description" content="Begin met TrueCombat: Platinum: installeren, standaardbesturing, bewegen en stamina, spelmodi en tips om te overleven.">
+<meta property="og:image" content="https://truecombat.eu/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og.jpg">
+<!--alt-->
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/guide.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/guide.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/guide.html">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<!--nav-->
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Wapens</a></li>
+      <li><a href="guide.html" aria-current="page">Gids</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Ranglijsten</a></li>
+      <li><a href="news.html">Nieuws</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Onderdelen">
+        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="news.html">Nieuws</a><hr><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../guide.html" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="../guide.html" hreflang="en" lang="en" title="English">EN</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<section class="page-head">
+  <div class="wrap">
+    <span class="eyebrow">Beginnersgids</span>
+    <h1>Basistraining</h1>
+    <p class="lede">Alles wat je nodig hebt voor je eerste potje: installatie, besturing, bewegen en stamina, spelmodi en tactiek.</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap doc">
+    <nav class="doc-toc" aria-label="Op deze pagina">
+      <a href="#start">Starten</a><a href="#controls">Besturing</a><a href="#movement">Bewegen</a><a href="#damage">Schade</a><a href="#modes">Spelmodi</a><a href="#tips">Tactiek</a><a href="#hosting">Hosten</a>
+    </nav>
+    <div class="doc-body">
+      <section id="start">
+        <span class="eyebrow">01</span>
+        <h2>Starten</h2>
+        <ol>
+          <li><b>Download</b> de nieuwste zip via de <a href="./#download">downloadsectie</a> en <b>pak de hele map uit</b> op een plek waar je kunt schrijven, zoals Documenten of Games. Niet in Program Files.</li>
+          <li><b>Start TrueCombatPlatinum.exe.</b> Typ je spelersnaam. Die wordt onthouden voor de volgende keer.</li>
+          <li><b>Doe mee of host.</b> Vul een serveradres in en druk op <b>PLAY</b>, kies er een uit het tabblad Servers, of druk op <b>Host a server</b> om je eigen server te starten en mee te doen.</li>
+          <li><b>Kies een team en uitrusting</b> in het inzetmenu als de map geladen is.</li>
+        </ol>
+        <p class="callout"><b>Start het spel niet?</b> Druk op <b>Safe start</b> in de launcher. Dan draait het spel op OpenGL in een venster van 1280 × 720, en je normale instellingen blijven ongemoeid.</p>
+      </section>
+
+      <section id="controls">
+        <span class="eyebrow">02</span>
+        <h2>Besturing</h2>
+        <p>Dit zijn de standaardtoetsen. Je wijzigt ze in het optiemenu van het spel onder Controls.</p>
+        <div class="key-grid">
+          <table class="keys">
+            <caption>Bewegen</caption>
+            <tr><th>Lopen</th><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></td></tr>
+            <tr><th>Sprinten</th><td><kbd>Shift</kbd> (ingedrukt)</td></tr>
+            <tr><th>Springen</th><td><kbd>Space</kbd></td></tr>
+            <tr><th>Hurken</th><td><kbd>C</kbd> (aan/uit)</td></tr>
+            <tr><th>Liggen</th><td><kbd>X</kbd></td></tr>
+            <tr><th>Leunen links / rechts</th><td><kbd>Q</kbd><kbd>E</kbd><span class="soon">Komt eraan</span></td></tr>
+            <tr><th>Gebruiken</th><td><kbd>F</kbd></td></tr>
+          </table>
+          <table class="keys">
+            <caption>Vechten</caption>
+            <tr><th>Vuren</th><td>Linkermuisknop</td></tr>
+            <tr><th>Richten / onderhandse worp</th><td>Rechtermuisknop</td></tr>
+            <tr><th>Herladen</th><td><kbd>R</kbd></td></tr>
+            <tr><th>Vuurmodus</th><td><kbd>G</kbd></td></tr>
+            <tr><th>M83-rook</th><td><kbd>4</kbd></td></tr>
+            <tr><th>Scorebord</th><td><kbd>Tab</kbd></td></tr>
+            <tr><th>Chat / teamchat</th><td><kbd>T</kbd><kbd>Y</kbd></td></tr>
+            <tr><th>Screenshot</th><td><kbd>F11</kbd></td></tr>
+          </table>
+        </div>
+      </section>
+
+      <section id="movement">
+        <span class="eyebrow">03</span>
+        <h2>Bewegen en stamina</h2>
+        <p>De snelheden komen rechtstreeks uit de originele TC:E-waarden. Sprinten is ongeveer anderhalf keer zo snel als rennen, en hurken of kruipen brengt je ruim onder de helft.</p>
+        <div class="speeds" role="list">
+          <div role="listitem"><b>143</b><i style="width:100%"></i><span>Sprinten</span></div>
+          <div role="listitem"><b>98</b><i style="width:69%"></i><span>Rennen</span></div>
+          <div role="listitem"><b>81</b><i style="width:57%"></i><span>Lopen</span></div>
+          <div role="listitem"><b>41</b><i style="width:29%"></i><span>Hurken</span></div>
+          <div role="listitem"><b>38</b><i style="width:27%"></i><span>Liggen</span></div>
+        </div>
+        <p class="yt-note">Eenheden per seconde met een geweer, op de standaard serverinstellingen.</p>
+        <ul>
+          <li><b>Stamina</b> is de balk op je HUD. Met een volle balk sprint je ongeveer 13 seconden met een geweer. Zwaardere wapens laten hem sneller leeglopen.</li>
+          <li>Hij loopt weer vol als je stilstaat, langzaam loopt, hurkt of ligt. Kom niet met een lege balk aan bij een gevecht.</li>
+          <li><b>Springen tijdens het lopen kost stamina</b>, en kort daarna opnieuw springen kost meer. Gehurkt of liggend kun je niet springen. Druk je gehurkt op springen, dan sta je op.</li>
+          <li><b>Hurken schakelt</b>: druk één keer op <kbd>C</kbd> om te hurken en nog eens om op te staan. Typ <code>cg_toggleCrouch 0</code> in de console als je de toets liever ingedrukt houdt.</li>
+          <li>Achteruit of zijwaarts lopen gaat langzamer dan vooruit.</li>
+        </ul>
+      </section>
+
+      <section id="damage">
+        <span class="eyebrow">04</span>
+        <h2>Schade</h2>
+        <p>Elk schot raakt het <b>hoofd</b>, de <b>romp</b> of de <b>benen</b>, elk met andere schade. Het lichaamssilhouet op je HUD kleurt geel, oranje en dan rood als je gewond raakt.</p>
+        <p>Gehurkte en liggende spelers zijn kleinere doelwitten, dus laag blijven is vaak de beste verdediging. De schade, het magazijn en de vuursnelheid van elk wapen staan op de <a href="weapons.html">wapenpagina</a>.</p>
+      </section>
+
+      <section id="modes">
+        <span class="eyebrow">05</span>
+        <h2>Spelmodi</h2>
+        <div class="modes">
+          <div>
+            <h3>Nu in Platinum</h3>
+            <ul>
+              <li><b>Practice</b>: een map voor jezelf met oefendoelen. Leer de routes en probeer de besturing uit.</li>
+              <li><b>Elimination</b>: ieder voor zich, één leven per ronde.</li>
+              <li><b>Team elimination</b>: twee teams, één leven per ronde. Schakel de andere kant uit om de ronde te winnen.</li>
+              <li><b>Point capture</b>: verover het punt en houd het vast.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Uit de originele TC:E</h3>
+            <ul>
+              <li><b>Flag capture</b>: breng de vlag naar huis, het eerste team met drie wint.</li>
+              <li><b>Bomb</b>: aanvallers plaatsen binnen vijf minuten een bom bij A of B, verdedigers houden ze tegen.</li>
+              <li><b>Team deathmatch</b>: het eerste team met 20 kills.</li>
+            </ul>
+            <p class="yt-note">De originele rondes en doelen worden nog opnieuw gebouwd.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="tips">
+        <span class="eyebrow">06</span>
+        <h2>Tactiek</h2>
+        <div class="tip-grid">
+          <div class="tip"><h3>Doe rustig aan</h3><p>Je hebt één leven per ronde. De meeste rondes eindigen doordat iemand een kamer in loopt die hij niet gecontroleerd heeft. Laat de ander het lawaai maken.</p></div>
+          <div class="tip"><h3>Blijf laag</h3><p>Hurk voordat je om een hoek kijkt en ga liggen achter lage dekking. Een kleiner doelwit overleeft vaker het eerste schot.</p></div>
+          <div class="tip"><h3>Spaar je sprint</h3><p>Sprint van dekking naar dekking, niet een gevecht in. Kom aan met stamina over, zodat je nog weg kunt.</p></div>
+          <div class="tip"><h3>Rook over open terrein</h3><p>Gooi de M83 met <kbd>4</kbd> om een zichtlijn te blokkeren voordat je een straat of plein oversteekt. Je hebt er maar één per leven.</p></div>
+          <div class="tip"><h3>Herlaad achter dekking</h3><p>Tel je schoten en herlaad als je veilig bent, niet als er iemand de hoek om komt.</p></div>
+          <div class="tip"><h3>Praat met je team</h3><p>Gebruik teamchat op <kbd>Y</kbd> om door te geven waar je iemand zag. Vind een team op de <a href="https://discord.gg/8kcHdg2Hch">Discord</a>.</p></div>
+        </div>
+      </section>
+
+      <section id="hosting">
+        <span class="eyebrow">07</span>
+        <h2>Een potje hosten</h2>
+        <ol>
+          <li>Druk in de launcher op <b>Host a server</b>. Kies de modus, de servernaam, de spelerslimiet, de startmap en de rotatie.</li>
+          <li>Zet <b>List publicly</b> aan om op de <a href="servers.html">serverlijst</a> te verschijnen zolang de masterserver online is.</li>
+          <li>Voor spelers buiten je thuisnetwerk: sta UDP-poort <code>27971</code> toe in Windows Firewall en stuur hem in je router door naar de host-pc.</li>
+          <li>Houd de pc wakker zolang er gespeeld wordt. Iedereen heeft dezelfde spelversie nodig als de server.</li>
+        </ol>
+      </section>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <img src="../img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
+      <div class="who">
+        <b>Team Terminus</b>
+        <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+      </div>
+      <nav aria-label="Voettekst">
+        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a>
+        <a href="maps.html">Maps</a>
+        <a href="weapons.html">Wapens</a>
+        <a href="guide.html">Gids</a>
+        <a href="servers.html">Servers</a>
+        <a href="leaderboards.html">Ranglijsten</a>
+        <a href="news.html">Nieuws</a>
+        <a href="press.html">Perskit</a>
+        <a href="./#download">Download</a>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js"></script>
+</body>
+</html>

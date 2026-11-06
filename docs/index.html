@@ -12,6 +12,7 @@
 <link rel="canonical" href="https://truecombat.eu/">
 <meta property="og:url" content="https://truecombat.eu/">
 <meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
 <meta property="og:image" content="https://truecombat.eu/img/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -24,6 +25,12 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"VideoGame","name":"TrueCombat: Platinum","url":"https://truecombat.eu/","image":"https://truecombat.eu/img/og.jpg","description":"A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows.","genre":["Tactical shooter","First-person shooter"],"gamePlatform":"Windows","operatingSystem":"Windows 10, Windows 11 (64-bit)","applicationCategory":"Game","playMode":"MultiPlayer","author":{"@type":"Organization","name":"Team Terminus"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"downloadUrl":"https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest","sameAs":["https://github.com/Annoximeme/TrueCombat-Platinum","https://discord.gg/8kcHdg2Hch"]}
 </script>
+<!--alt-->
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,27 +39,30 @@
 </head>
 <body>
 
+<!--nav-->
 <header class="nav">
   <div class="wrap">
     <a class="nav-brand" href="./"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
     <ul class="nav-links">
       <li><a href="maps.html">Maps</a></li>
-      <li><a href="./#gallery">Gallery</a></li>
-      <li><a href="./#graphics">Graphics</a></li>
-      <li><a href="./#patch-notes">Patch notes</a></li>
-      <li><a href="./#servers">Servers</a></li>
-      <li><a href="press.html">Press</a></li>
+      <li><a href="weapons.html">Weapons</a></li>
+      <li><a href="guide.html">Guide</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Leaderboards</a></li>
+      <li><a href="news.html">News</a></li>
     </ul>
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
       <nav aria-label="Sections">
-        <a href="maps.html">Maps</a><a href="./#about">About</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#patch-notes">Patch notes</a><a href="./#servers">Servers</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a>
+        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="news.html">News</a><hr><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/" hreflang="nl" lang="nl">Nederlands</a>
       </nav>
     </details>
+    <a class="nav-lang" href="nl/" hreflang="nl" lang="nl" title="Nederlands">NL</a>
     <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
     <a class="btn" href="./#download">Download</a>
   </div>
 </header>
+<!--/nav-->
 
 <main id="top">
 
@@ -70,7 +80,7 @@
     <h1>TrueCombat: Elite, rebuilt for <em>modern Windows</em>.</h1>
     <p class="lede">A native 64-bit rebuild of the classic tactical shooter, drawn with DirectX 12. The original maps, soldiers and HUD, with a new launcher that hosts servers and keeps your game up to date.</p>
     <div class="hero-cta">
-      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest">
+      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.29.0-sandbox20/TrueCombat-Platinum-0.29.0-sandbox20-Windows-x64.zip">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
         <span class="stack"><span class="big">Download <span data-version>v0.29.0</span></span><span class="small">Windows x64 · <span data-size>767 MB</span> · free</span></span>
       </a>
@@ -155,6 +165,23 @@
   </div>
 </section>
 
+<section class="band" id="trailer">
+  <div class="wrap trailer-grid">
+    <div class="vf">
+      <div class="yt" data-yt="pb1IvJOg7Lg" data-start="32" data-title="TrueCombat gameplay video">
+        <img src="img/map-railhouse.webp" srcset="img/map-railhouse-640.webp 640w, img/map-railhouse.webp 1280w" sizes="(max-width: 900px) 100vw, 720px" alt="" width="1280" height="720" loading="lazy">
+        <button type="button" aria-label="Play the gameplay video"><span><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5l13 7.5-13 7.5z"/></svg></span></button>
+      </div>
+    </div>
+    <div class="section-head" style="margin:0">
+      <span class="eyebrow">Watch</span>
+      <h2>Gameplay</h2>
+      <p class="lede">One life per round, real-world weapons and maps built for patient, tactical play. The video starts at 0:32.</p>
+      <p class="yt-note">The video plays from YouTube in privacy-enhanced mode. Nothing loads from YouTube until you press play.</p>
+    </div>
+  </div>
+</section>
+
 <section class="band" id="maps">
   <div class="wrap">
     <div class="section-head head-row">
@@ -189,7 +216,7 @@
       <figure class="shot"><img src="img/shot-smoke.webp" srcset="img/shot-smoke-640.webp 640w, img/shot-smoke.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="M83 smoke grenade cloud in the Railhouse backyard" width="1280" height="720" loading="lazy"><figcaption><b>M83 smoke</b><span>Map-lit</span></figcaption><button type="button" aria-label="Enlarge M83 smoke"></button></figure>
       <figure class="shot"><img src="img/shot-crouch.webp" srcset="img/shot-crouch-640.webp 640w, img/shot-crouch.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="A crouched soldier beside a brick wall" width="1280" height="720" loading="lazy"><figcaption><b>Crouched</b><span>Smaller target</span></figcaption><button type="button" aria-label="Enlarge crouched"></button></figure>
       <figure class="shot"><img src="img/shot-hosted.webp" srcset="img/shot-hosted-640.webp 640w, img/shot-hosted.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Hosted match on Northport during warmup" width="1280" height="720" loading="lazy"><figcaption><b>Hosted match</b><span>Launcher-hosted server</span></figcaption><button type="button" aria-label="Enlarge hosted match"></button></figure>
-      <figure class="shot wide"><img src="img/hud-scoreboard.webp" srcset="img/hud-scoreboard-640.webp 640w, img/hud-scoreboard.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="HUD chat, kill feed and scoreboard" width="1300" height="580" loading="lazy"><figcaption><b>Chat, kill feed, scores</b><span>Coming in v0.30</span></figcaption><button type="button" aria-label="Enlarge HUD chat and scoreboard"></button></figure>
+      <figure class="shot wide"><img src="img/hud-scoreboard.webp" srcset="img/hud-scoreboard-640.webp 640w, img/hud-scoreboard.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="HUD chat, kill feed and scoreboard" width="1300" height="580" loading="lazy"><figcaption><b>Chat, kill feed, scores</b><span>Part of v0.30</span></figcaption><button type="button" aria-label="Enlarge HUD chat and scoreboard"></button></figure>
       <figure class="shot wide"><img src="img/stances.webp" srcset="img/stances-640.webp 640w, img/stances.webp 1500w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Standing, crouched and prone stances" width="1500" height="450" loading="lazy"><figcaption><b>Stances</b><span>Stand · crouch · prone</span></figcaption><button type="button" aria-label="Enlarge stances"></button></figure>
     </div>
   </div>
@@ -199,7 +226,7 @@
   <div class="wrap compare-grid">
     <div class="compare-copy">
       <span class="eyebrow">Graphics</span>
-      <h2>Keep the original look, or don't</h2>
+      <h2>Original look, or enhanced</h2>
       <p>Drag across the image to compare the original look with the new presets. Same spot, same frame, Railhouse backyard at 1080p.</p>
       <div class="tabs" role="group" aria-label="Preset to compare against Low">
         <button type="button" data-preset="high" aria-pressed="false">High</button>
@@ -210,7 +237,7 @@
         <li><b>High</b><span>New default. Effects cost about 1.0 ms a frame on an RTX 4080 SUPER.</span></li>
         <li><b>Ultra</b><span>Adds NVIDIA DLAA on RTX cards, about 1.2 ms a frame.</span></li>
       </ul>
-      <p class="note">The Low / High / Ultra presets arrive in v0.30. DLSS and DLAA already work today: enter <code>r_dx12Dlss 1</code> in the console, then <code>vid_restart</code>.</p>
+      <p class="note">The presets come with v0.30, together with 2× upscaled HD textures for the world, models, HUD and menus. DLSS and DLAA already work in v0.29: enter <code>r_dx12Dlss 1</code> in the console, then <code>vid_restart</code>.</p>
     </div>
     <div class="vf">
       <div class="compare" id="compare" style="--pos:50%">
@@ -230,7 +257,7 @@
     <div class="vf shot-frame"><img src="img/launcher.webp" srcset="img/launcher-640.webp 640w, img/launcher.webp 1280w" sizes="(max-width: 900px) 100vw, 640px" alt="The TrueCombat: Platinum launcher with Join a server, Display settings and the PLAY button" width="1140" height="805" loading="lazy"></div>
     <div class="section-head" style="margin:0">
       <span class="eyebrow">Launcher</span>
-      <h2>Ready when you are</h2>
+      <h2>One launcher for everything</h2>
       <ul class="checks">
         <li><span><b>PLAY</b> starts DirectX 12 with your saved settings. <b>Safe start</b> uses OpenGL in a 1280 × 720 window.</span></li>
         <li><span><b>Host a server</b> from the launcher: Practice, Elimination, Team Elimination or Point Capture, with your own name, player limit, map rotation and port.</span></li>
@@ -247,15 +274,15 @@
     <div class="copy">
       <span class="eyebrow">Servers</span>
       <h2>Public server list</h2>
-      <p>The public list is built and tested. Servers hosted with <b>List publicly</b> switched on will show up here and in the launcher's Servers tab once the master server goes online.</p>
-      <p>Until then, host from the launcher and share your address. Others join you on UDP port <code>27971</code> by default. Everyone in a match needs the same version.</p>
-      <p><a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg> Find a match on Discord</a></p>
-      <p><a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg> Find a match on Discord</a></p>
+      <p>Servers hosted with <b>List publicly</b> switched on show up here and in the launcher's Servers tab while the master server is online.</p>
+      <p>You can always host from the launcher and share your address. Others join you on UDP port <code>27971</code> by default. Everyone in a match needs the same version.</p>
+      <p class="hero-cta" style="margin:0"><a class="btn btn-ghost" href="servers.html">All servers</a> <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg> Find a match on Discord</a></p>
     </div>
-    <div class="server-card" aria-live="polite">
-      <header><h3>Online now</h3><span class="pill">Master server offline</span></header>
+    <div class="server-card" data-servers="5" aria-live="polite">
+      <header><h3>Online now</h3><span class="pill">Checking…</span></header>
       <table class="srv-table">
         <thead><tr><th>Server</th><th>Map</th><th>Players</th><th>Mode</th></tr></thead>
+        <tbody></tbody>
       </table>
       <p class="srv-empty">No public servers yet. This list fills in automatically when the master server is running.</p>
     </div>
@@ -268,47 +295,61 @@
       <span class="eyebrow">Patch notes</span>
       <h2>Recent updates</h2>
     </div>
-    <div class="notes">
-      <details class="release" data-ver="v0.29.0" open>
-        <summary><span class="ver">v0.29.0<span class="latest">Latest</span></span><span class="sum">The launcher becomes a hub with a living map header, a server list and news. Smoother movement online.</span><span class="meta">#50 · 0.29.0-sandbox20 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+    <div class="notes" data-releases="5">
+<!--releases-->
+      <details class="release" id="v0.29.0" data-ver="v0.29.0" open>
+        <summary><span class="ver">v0.29.0<span class="latest">Latest</span></span><span class="sum">The launcher becomes a full hub with a living map header, a server list and in-launcher news, and movement looks smoother online.</span><span class="meta">#50 · 0.29.0-sandbox20 · 5 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Launcher</h3><ul>
-            <li>The header moves slowly through real in-game shots of all six maps.</li>
+            <li>The header now moves slowly through real in-game shots of all six maps and cross-fades between them.</li>
             <li>New Play, Servers and News tabs.</li>
-            <li>Servers shows favorites, recent servers and your own server as cards with map, players and ping.</li>
-            <li>Pick the starting map from picture cards when hosting.</li>
+            <li>Servers shows your favorite and recent servers and your own server as cards with a map picture, player count and ping. Click a card to pick it, double-click or press JOIN to play, and use the star to save a favorite.</li>
+            <li>News shows the latest patch notes inside the launcher.</li>
+            <li>Hosting &amp; favorites (formerly Servers &amp; hosting) now lets you pick the starting map from picture cards.</li>
+            <li>Smoother hover effects, rounded window corners on Windows 11, a larger window on high-resolution screens and dark drop-down lists.</li>
           </ul></section>
           <section><h3>Updates</h3><ul>
-            <li>Updates are signed by Team Terminus. Only signed updates install.</li>
-            <li>See download speed and time left, cancel, or open What's new.</li>
+            <li>Updates are now signed by Team Terminus. The launcher only installs updates that carry a valid signature.</li>
+            <li>While an update downloads you can see its speed and time left, cancel it, or open What's new.</li>
           </ul></section>
           <section><h3>Multiplayer</h3><ul>
-            <li>Fewer camera jolts when packets arrive late or go missing.</li>
+            <li>Fewer camera jolts from small movement corrections when packets arrive late or go missing.</li>
             <li>Respawns and practice resets stay instant, without a camera slide.</li>
-            <li>Movement-correction smoothing can be tuned or turned off in the console.</li>
+            <li>Respawning players no longer slide between their old and new positions.</li>
+            <li>Movement-correction smoothing can be adjusted or turned off through the console.</li>
           </ul></section>
-          <section><h3>Status</h3><ul>
-            <li>No public server list yet. The Servers tab shows servers you have saved or joined.</li>
-            <li>Tested on one PC over local connections.</li>
+          <section><h3>Known issues</h3><ul>
+            <li>Still unfinished: recoil, spread, penetration, leaning, ladders, swimming, aiming down sights and the original round rules.</li>
+            <li>There is no public server list yet. The Servers tab shows servers you have saved or joined before.</li>
+            <li>Tested on one PC over local connections. Separate PCs and the internet are not verified yet.</li>
+            <li>Use the separate RC8 download for complete TC:E matches.</li>
           </ul></section>
         </div>
       </details>
 
-      <details class="release" data-ver="v0.28.0">
-        <summary><span class="ver">v0.28.0</span><span class="sum">Restyled launcher with a built-in update bar, optional DLSS/DLAA and a new connection version.</span><span class="meta">#49 · 0.28.0-sandbox19 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.28.0" data-ver="v0.28.0">
+        <summary><span class="ver">v0.28.0</span><span class="sum">It brings the restyled launcher with a built-in update bar, optional DLSS/DLAA, steadier startup and a new connection version.</span><span class="meta">#49 · 0.28.0-sandbox19 · 5 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Launcher</h3><ul>
-            <li>New title bar with the game emblem, your version and matching window buttons.</li>
-            <li>Update bar above PLAY: check, download, verify and install on restart.</li>
-            <li>Text stays sharp when the window is resized.</li>
+            <li>New title bar that blends into the artwork, with the game emblem, your version and window buttons that match the rest of the launcher.</li>
+            <li>New update bar above the PLAY button. It shows your version, checks for new versions, downloads and verifies them, and installs them on restart. Your settings, profile and server data are kept. It checks the official TrueCombat: Platinum releases on GitHub each time the launcher opens.</li>
+            <li>Servers &amp; hosting, Advanced graphics and the graphics report now have proper headers and grouped panels.</li>
+            <li>Smoother corners, soft shadows, icons on the section headings and clearer drop-down lists.</li>
+            <li>Text stays sharp when the launcher window is resized.</li>
+            <li>The Advanced graphics window no longer cuts off its notes and buttons.</li>
           </ul></section>
           <section><h3>Graphics</h3><ul>
-            <li>Optional NVIDIA DLSS and DLAA for RTX cards. <code>r_dx12Dlss 1</code> for DLAA, 2 to 5 for DLSS quality levels.</li>
-            <li>Recovers more gracefully when a renderer fails to start.</li>
+            <li>Added optional NVIDIA DLSS and DLAA for RTX graphics cards. It is off by default. Enter r_dx12Dlss 1 in the console for DLAA, or 2 to 5 for the DLSS quality levels, then vid_restart.</li>
+            <li>The game now recovers more gracefully when a graphics renderer fails to start.</li>
           </ul></section>
           <section><h3>Multiplayer</h3><ul>
-            <li>New connection version. 0.28.0 and 0.27.0 cannot play together.</li>
-            <li>A clear message explains a version mismatch.</li>
+            <li>New connection version. Version 0.28.0 cannot join 0.27.0 or older servers, and older versions cannot join 0.28.0 servers.</li>
+            <li>A clear message now explains when your game and the server do not match.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Still unfinished: recoil, spread, penetration, leaning, ladders, swimming, aiming down sights and the original round rules.</li>
+            <li>Tested on one PC over local connections. Separate PCs and the internet are not verified yet.</li>
+            <li>Use the separate RC8 download for complete TC:E matches.</li>
           </ul></section>
         </div>
       </details>
@@ -357,8 +398,9 @@
           </ul></section>
         </div>
       </details>
+<!--/releases-->
     </div>
-    <p class="all-notes">Older notes and every download are on <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">GitHub Releases</a>.</p>
+    <p class="all-notes">Every update since the first sandbox is on the <a href="news.html">news page</a>, with an <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">RSS feed</a>. Downloads are on <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">GitHub Releases</a>.</p>
   </div>
 </section>
 
@@ -366,13 +408,14 @@
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Roadmap</span>
-      <h2>Where it stands</h2>
+      <h2>What's coming</h2>
     </div>
     <div class="road">
       <div class="road-col done">
-        <h3>Playable now <small>v0.29</small></h3>
+        <h3>Playable now <small data-version>v0.29.0</small></h3>
         <ul>
-          <li>DirectX 12 renderer, OpenGL Safe start</li>
+          <li>DirectX 12 renderer with OpenGL Safe start</li>
+          <li>Optional NVIDIA DLSS and DLAA</li>
           <li>Original soldier models and HUD</li>
           <li>Sprint, crouch, prone and stamina</li>
           <li>Head, body and leg hits</li>
@@ -383,19 +426,20 @@
       <div class="road-col next">
         <h3>Next <small>v0.30</small></h3>
         <ul>
-          <li>Public server list</li>
           <li>Low / High / Ultra graphics presets</li>
-          <li>HUD chat, kill feed and scoreboard</li>
+          <li>HD textures for the world, models, HUD and menus</li>
+          <li>The original chat, kill feed and scoreboard</li>
           <li>M83 underhand throw</li>
-          <li>Upscaled HD textures and interface</li>
+          <li>Much smaller updates</li>
+          <li>Public server list support</li>
         </ul>
       </div>
       <div class="road-col later">
-        <h3>Still to rebuild</h3>
+        <h3>After that</h3>
         <ul>
+          <li>The full TC:E weapon roster, knife and grenades</li>
           <li>Recoil, spread and penetration</li>
-          <li>Leaning, ladders and swimming</li>
-          <li>Aiming down sights</li>
+          <li>Leaning, ladders, swimming and aiming down sights</li>
           <li>The original round rules and objectives</li>
           <li>Testing across separate PCs and the internet</li>
         </ul>
@@ -415,7 +459,7 @@
         <li><span><b>Run TrueCombatPlatinum.exe</b>, pick a name and press PLAY. The launcher keeps itself up to date from then on.</span></li>
       </ol>
       <div class="hero-cta">
-        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest">
+        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.29.0-sandbox20/TrueCombat-Platinum-0.29.0-sandbox20-Windows-x64.zip">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="stack"><span class="big">Download <span data-version>v0.29.0</span></span><span class="small"><span data-size>767 MB</span> zip · <span data-date>5 Nov 2026</span></span></span>
         </a>
@@ -442,6 +486,7 @@
       <h2>Before you play</h2>
     </div>
     <div class="faq">
+      <div><h3>I'm new. Where do I start?</h3><p>Read the <a href="guide.html">beginner's guide</a> for the controls, game modes and a few tips that keep you alive longer. The <a href="weapons.html">weapons page</a> lists every gun from TC:E.</p></div>
       <div><h3>Is it free?</h3><p>Yes. Download it from GitHub Releases and play. Each release includes its source code and the licenses for the original game files.</p></div>
       <div><h3>I want to write about it</h3><p>Grab the <a href="press.html">press kit</a> with logos, screenshots and a fact sheet.</p></div>
       <div><h3>Can I play online?</h3><p>You can host and join servers from the launcher. So far it has been tested on one PC over local connections, so expect rough edges across separate PCs and the internet.</p></div>
@@ -454,10 +499,11 @@
 
 </main>
 
+<!--footer-->
 <footer>
   <div class="wrap">
     <div class="foot">
-      <img src="img/team-terminus.webp" alt="Team Terminus" width="320" height="320">
+      <img src="img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
       <div class="who">
         <b>Team Terminus</b>
         <span>TrueCombat: Platinum is developed by RaziC*.</span>
@@ -466,7 +512,13 @@
         <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
         <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
         <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a>
         <a href="maps.html">Maps</a>
+        <a href="weapons.html">Weapons</a>
+        <a href="guide.html">Guide</a>
+        <a href="servers.html">Servers</a>
+        <a href="leaderboards.html">Leaderboards</a>
+        <a href="news.html">News</a>
         <a href="press.html">Press kit</a>
         <a href="./#download">Download</a>
       </nav>
@@ -477,6 +529,7 @@
     </div>
   </div>
 </footer>
+<!--/footer-->
 
 <div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Screenshot viewer">
   <button class="lb-btn lb-close" type="button" aria-label="Close">✕</button>
@@ -513,98 +566,6 @@
       }, 6500);
     });
   }
-
-  /* releases from GitHub: download button and patch notes. The static HTML stays if this fails. */
-  var API = 'https://api.github.com/repos/Annoximeme/TrueCombat-Platinum/releases?per_page=8';
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  function fmtDate(iso) { var d = new Date(iso); return d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
-  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
-  function inline(t) {
-    return esc(t)
-      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
-      .replace(/`([^`]+)`/g, '<code>$1</code>');
-  }
-  function parseNotes(body) {
-    var lines = (body || '').replace(/\r/g, '').split('\n');
-    var out = { num: '', build: '', summary: '', sections: [] }, sec = null;
-    lines.forEach(function (raw) {
-      var l = raw.trim(); if (!l) return;
-      var h = /^\*\*([^*]+)\*\*\s*(.*)$/.exec(l);
-      if (h && !h[2]) {
-        var t = h[1].trim();
-        var num = /Patch Notes\s*#(\d+)/i.exec(t);
-        if (num) { out.num = num[1]; return; }
-        if (/^TRUECOMBAT/i.test(t)) return;
-        sec = { title: t.charAt(0) + t.slice(1).toLowerCase(), items: [] };
-        if (!/^development$/i.test(t)) out.sections.push(sec);
-        return;
-      }
-      if (h && /Packaged Native Sandbox/i.test(h[1])) { out.build = h[2].trim(); return; }
-      if (h) return; /* other header fields such as the full TC:E build */
-      if (/^[-*]\s+/.test(l)) { if (sec) sec.items.push(l.replace(/^[-*]\s+/, '')); return; }
-      if (!sec && !out.summary) out.summary = l.replace(/^New download for the native 64-bit sandbox\.\s*/i, '');
-    });
-    return out;
-  }
-  function renderNotes(releases) {
-    var box = document.querySelector('.notes');
-    var seen = {};
-    var html = releases.slice(0, 5).map(function (rel, i) {
-      var n = parseNotes(rel.body);
-      if (!n.sections.length) return '';
-      var m = /^v?(\d+\.\d+\.\d+)/.exec(rel.tag_name || '');
-      var ver = m ? 'v' + m[1] : esc(rel.tag_name);
-      seen[ver] = true;
-      var meta = (n.num ? '#' + n.num + ' · ' : '') + esc(n.build || rel.tag_name) + ' · ' + fmtDate(rel.published_at);
-      var secs = n.sections.map(function (sec) {
-        return '<section><h3>' + esc(sec.title) + '</h3><ul>' + sec.items.map(function (it) { return '<li>' + inline(it) + '</li>'; }).join('') + '</ul></section>';
-      }).join('');
-      return '<details class="release"' + (i === 0 ? ' open' : '') + '><summary><span class="ver">' + ver + (i === 0 ? '<span class="latest">Latest</span>' : '') +
-        '</span><span class="sum">' + inline(n.summary) + '</span><span class="meta">' + meta +
-        ' <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary><div class="body">' + secs + '</div></details>';
-    }).join('');
-    if (!html) return;
-    /* keep older hand-written entries that are not in the API answer */
-    var older = Array.prototype.slice.call(box.querySelectorAll('.release[data-ver]')).filter(function (d) { return !seen[d.dataset.ver]; });
-    older.forEach(function (d) { d.open = false; var b = d.querySelector('.latest'); if (b) b.remove(); });
-    box.innerHTML = html;
-    older.slice(0, Math.max(0, 5 - Object.keys(seen).length)).forEach(function (d) { box.appendChild(d); });
-  }
-  function applyReleases(list) {
-    var rels = list.filter(function (r) { return !r.draft && !r.prerelease; });
-    if (!rels.length) return;
-    renderNotes(rels);
-    /* the download button points at the newest release that has a full zip */
-    for (var i = 0; i < rels.length; i++) {
-      var zip = (rels[i].assets || []).filter(function (a) { return /Windows-x64\.zip$/i.test(a.name); })[0];
-      if (!zip) continue;
-      var m = /^v?(\d+\.\d+\.\d+)/.exec(rels[i].tag_name || '');
-      var mb = Math.round(zip.size / 1048576).toLocaleString('en') + ' MB';
-      document.querySelectorAll('[data-version]').forEach(function (el) { if (m) el.textContent = 'v' + m[1]; });
-      document.querySelectorAll('[data-size]').forEach(function (el) { el.textContent = mb; });
-      document.querySelectorAll('[data-date]').forEach(function (el) { el.textContent = fmtDate(rels[i].published_at); });
-      document.querySelectorAll('[data-download]').forEach(function (el) { el.href = zip.browser_download_url; });
-      break;
-    }
-  }
-  var cached = null;
-  try { cached = JSON.parse(sessionStorage.getItem('tcp-releases') || 'null'); } catch (e) {}
-  if (cached && Date.now() - cached.t < 30 * 60 * 1000) {
-    applyReleases(cached.data);
-  } else {
-    fetch(API, { headers: { Accept: 'application/vnd.github+json' } })
-      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(function (list) {
-        var slim = list.map(function (r) { return { tag_name: r.tag_name, draft: r.draft, prerelease: r.prerelease, published_at: r.published_at, body: r.body, assets: (r.assets || []).map(function (a) { return { name: a.name, size: a.size, browser_download_url: a.browser_download_url }; }) }; });
-        try { sessionStorage.setItem('tcp-releases', JSON.stringify({ t: Date.now(), data: slim })); } catch (e) {}
-        applyReleases(slim);
-      })
-      .catch(function () {});
-  }
-
-  /* mobile menu closes after a pick */
-  var menu = document.getElementById('menu');
-  if (menu) menu.addEventListener('click', function (e) { if (e.target.tagName === 'A') menu.open = false; });
 
   /* preset comparison */
   var cmp = document.getElementById('compare');
@@ -650,5 +611,6 @@
   });
 })();
 </script>
+<script src="js/site.js"></script>
 </body>
 </html>

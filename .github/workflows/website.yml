@@ -1,0 +1,46 @@
+name: Website
+
+# Keeps truecombat.eu in step with GitHub Releases: patch notes, the version on
+# the download buttons and the download link are rebuilt whenever a release is
+# published, edited or removed, and once a day as a safety net.
+on:
+  release:
+    types: [published, edited, deleted, released]
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: website
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Bake releases into the site
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python tools/website/release_sync.py
+          python tools/website/build.py
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- docs; then
+            echo "Website already up to date."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs
+          git commit -m "Website: update patch notes and downloads"
+          git push origin HEAD:main
