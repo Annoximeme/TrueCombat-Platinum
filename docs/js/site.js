@@ -6,7 +6,7 @@
      [data-leaderboard]           leaderboards from the bridge
      [data-yt]                    click-to-play YouTube embed (privacy-enhanced, nothing loads before a click)
    Set TCP_API to the bridge's public https URL once it is hosted. Empty means "offline". */
-var TCP_API = '';
+var TCP_API = 'https://api.truecombat.eu';
 
 (function () {
   var lang = (document.documentElement.lang || 'en').slice(0, 2);
