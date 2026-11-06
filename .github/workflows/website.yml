@@ -2,10 +2,14 @@ name: Website
 
 # Keeps truecombat.eu in step with GitHub Releases: patch notes, the version on
 # the download buttons and the download link are rebuilt whenever a release is
-# published, edited or removed, and once a day as a safety net.
+# published, edited or removed, when the roadmap or site tools change, and once
+# a day as a safety net. Roadmap items live in tools/website/roadmap.json.
 on:
   release:
     types: [published, edited, deleted, released]
+  push:
+    branches: [main]
+    paths: ["tools/website/**"]
   schedule:
     - cron: "17 5 * * *"
   workflow_dispatch:
