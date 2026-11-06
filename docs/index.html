@@ -23,338 +23,35 @@
 <meta name="twitter:image" content="https://truecombat.eu/img/og.jpg">
 <link rel="preload" as="image" href="img/logo.webp" fetchpriority="high">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"VideoGame","name":"TrueCombat: Platinum","url":"https://truecombat.eu/","image":"https://truecombat.eu/img/og.jpg","description":"A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows.","genre":["Tactical shooter","First-person shooter"],"gamePlatform":"Windows","operatingSystem":"Windows 10, Windows 11 (64-bit)","applicationCategory":"Game","playMode":"MultiPlayer","author":{"@type":"Organization","name":"Team Terminus"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"downloadUrl":"https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest"}
+{"@context":"https://schema.org","@type":"VideoGame","name":"TrueCombat: Platinum","url":"https://truecombat.eu/","image":"https://truecombat.eu/img/og.jpg","description":"A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows.","genre":["Tactical shooter","First-person shooter"],"gamePlatform":"Windows","operatingSystem":"Windows 10, Windows 11 (64-bit)","applicationCategory":"Game","playMode":"MultiPlayer","author":{"@type":"Organization","name":"Team Terminus"},"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"downloadUrl":"https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest","sameAs":["https://github.com/Annoximeme/TrueCombat-Platinum","https://discord.gg/8kcHdg2Hch"]}
 </script>
 <link rel="icon" type="image/png" href="img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
-<style>
-/* Layout: full-bleed bands (hero, gallery, presets) alternate with a 1180px content column;
-   HUD-style corner brackets frame every in-game image, like a viewfinder. Single dark look. */
-:root {
-  --bg: #0d1016;          /* graphite night, slight blue bias */
-  --panel: #141922;
-  --panel-2: #1a202b;
-  --line: #262e3b;
-  --fg: #e8eaef;
-  --muted: #9aa3b3;
-  --dim: #868f9f;
-  --red: #d63b3b;         /* launcher PLAY red */
-  --red-hi: #ef5050;
-  --amber: #e7a73c;       /* HUD compass lamp */
-  --ok: #4fbf7a;
-
-  --f-display: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --f-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
-
-  --step--1: 0.84rem;
-  --step-0: 1rem;
-  --step-1: 1.2rem;
-  --step-2: 1.6rem;
-  --step-3: clamp(2rem, 4.2vw, 2.9rem);
-  --step-4: clamp(2.4rem, 6vw, 4.2rem);
-
-  --col: 1180px;
-  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
-  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
-  color-scheme: dark;
-}
-*, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; scroll-padding-top: 72px; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font: 400 var(--step-0)/1.6 var(--f-body);
-  -webkit-font-smoothing: antialiased;
-}
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
-img { max-width: 100%; height: auto; display: block; }
-a { color: inherit; }
-:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
-[hidden] { display: none !important; }
-
-.wrap { max-width: var(--col); margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
-.band { padding-block: clamp(56px, 9vw, 112px); }
-.band + .band { border-top: 1px solid var(--line); }
-
-h1, h2, h3 { font-family: var(--f-display); font-weight: 700; line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
-h2 { font-size: var(--step-3); text-transform: uppercase; }
-h3 { font-size: var(--step-1); text-transform: uppercase; letter-spacing: 0.04em; }
-p { margin: 0; }
-.eyebrow { font: 600 var(--step--1)/1 var(--f-display); text-transform: uppercase; letter-spacing: 0.18em; color: var(--red-hi); }
-.lede { color: var(--muted); font-size: var(--step-1); max-width: 62ch; }
-.mono { font-family: var(--f-mono); font-size: 0.86em; }
-kbd, code { font-family: var(--f-mono); font-size: 0.82em; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.08em 0.4em; color: var(--fg); white-space: nowrap; }
-.section-head { display: grid; gap: 14px; margin-bottom: clamp(28px, 4vw, 44px); }
-
-/* ---------- buttons ---------- */
-.btn { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; border-radius: 6px; border: 1px solid var(--line); padding: 12px 20px; font: 600 var(--step-0)/1.1 var(--f-display); text-transform: uppercase; letter-spacing: 0.08em; transition: background-color .15s, border-color .15s, transform .15s; cursor: pointer; }
-.btn:hover { border-color: var(--dim); }
-.btn-play { background: linear-gradient(180deg, var(--red-hi), var(--red)); border-color: transparent; color: #fff; padding: 14px 26px 14px 20px; box-shadow: 0 8px 28px -10px rgba(214, 59, 59, .7); }
-.btn-play:hover { transform: translateY(-1px); border-color: transparent; }
-.btn-play svg { flex: none; }
-.btn-play .stack { display: grid; gap: 3px; text-align: left; }
-.btn-play .big { font-size: 1.35rem; letter-spacing: 0.06em; }
-.btn-play .small { font: 500 0.72rem/1 var(--f-body); letter-spacing: 0.02em; text-transform: none; opacity: .88; }
-.btn-ghost { background: rgba(13, 16, 22, .55); color: var(--fg); backdrop-filter: blur(6px); }
-
-/* ---------- nav ---------- */
-.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: rgba(13, 16, 22, .82); backdrop-filter: blur(10px) saturate(1.2); border-bottom: 1px solid var(--line); }
-.nav .wrap { display: flex; align-items: center; gap: 24px; min-height: 60px; }
-.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 1.05rem/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
-.nav-brand img { width: 30px; height: 30px; object-fit: contain; }
-.nav-brand b { color: var(--red-hi); font-weight: 700; }
-.nav-links { display: flex; gap: 22px; margin-left: auto; list-style: none; padding: 0; margin-block: 0; }
-.nav-links a { text-decoration: none; color: var(--muted); font: 600 0.95rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; }
-.nav-links a:hover { color: var(--fg); }
-.nav .btn { padding: 8px 14px; font-size: .9rem; background: var(--red); border-color: transparent; color: #fff; }
-.menu { display: none; position: relative; margin-left: auto; }
-.menu summary { list-style: none; cursor: pointer; display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 6px; color: var(--fg); }
-.menu summary::-webkit-details-marker { display: none; }
-.menu nav { position: absolute; right: 0; top: calc(100% + 10px); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; display: grid; min-width: 200px; box-shadow: 0 20px 40px -12px rgba(0,0,0,.7); }
-.menu nav a { text-decoration: none; padding: 10px 12px; border-radius: 4px; font: 600 1rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
-.menu nav a:hover { background: var(--panel-2); color: var(--fg); }
-@media (max-width: 900px) { .nav-links { display: none; } .menu { display: block; } .nav .wrap { gap: 10px; } }
-@media (max-width: 440px) { .nav-brand { font-size: .88rem; gap: 8px; letter-spacing: .05em; } .nav-brand img { width: 26px; height: 26px; } .nav .btn { padding: 8px 11px; } }
-
-/* ---------- hero ---------- */
-.hero { position: relative; isolation: isolate; overflow: hidden; border-bottom: 1px solid var(--line); }
-.slides { position: absolute; inset: 0; z-index: -2; }
-.slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.6s ease; transform: scale(1.06); }
-.slide.on { opacity: 1; animation: drift 14s linear forwards; }
-.slide:first-child { opacity: 1; }
-.slides.started .slide:first-child:not(.on) { opacity: 0; }
-@keyframes drift { from { transform: scale(1.06) translateX(0); } to { transform: scale(1.12) translateX(-1.5%); } }
-.hero::before { content: ""; position: absolute; inset: 0; z-index: -1;
-  background:
-    linear-gradient(90deg, rgba(13,16,22,.94) 0%, rgba(13,16,22,.78) 38%, rgba(13,16,22,.25) 75%, rgba(13,16,22,.35) 100%),
-    linear-gradient(0deg, var(--bg) 0%, rgba(13,16,22,0) 30%); }
-.hero .wrap { display: grid; gap: 28px; padding-block: clamp(56px, 10vw, 128px) clamp(64px, 9vw, 112px); }
-.hero-logo { width: min(520px, 88%); filter: drop-shadow(0 18px 36px rgba(0,0,0,.6)); }
-.hero h1 { font-size: var(--step-4); text-transform: uppercase; max-width: 15ch; }
-.hero h1 em { font-style: normal; color: var(--red-hi); }
-.hero .lede { color: #c9ced8; }
-.hero-cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
-.hero-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: var(--step--1); }
-.hero-meta span { display: inline-flex; align-items: center; gap: 8px; }
-.hero-meta span::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--red-hi); }
-.hero-caption { position: absolute; right: var(--gutter-r); bottom: 22px; font: 600 .78rem/1 var(--f-display); letter-spacing: .16em; text-transform: uppercase; color: rgba(232,234,239,.75); display: flex; align-items: center; gap: 10px; }
-.dots { display: flex; gap: 6px; }
-.dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(232,234,239,.3); transition: background .3s; }
-.dots i.on { background: var(--red-hi); }
-@media (max-width: 640px) {
-  .hero-caption { left: var(--gutter-l); right: auto; }
-  .hero::before { background: linear-gradient(180deg, rgba(13,16,22,.55) 0%, rgba(13,16,22,.88) 45%, var(--bg) 100%); }
-}
-
-/* ---------- status strip ---------- */
-.status { background: var(--panel); border-bottom: 1px solid var(--line); }
-.status .wrap { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: center; padding-block: 16px; font-size: var(--step--1); color: var(--muted); }
-.status strong { color: var(--amber); font: 700 .82rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; }
-
-/* ---------- viewfinder frame ---------- */
-.vf { position: relative; }
-.vf::before, .vf::after { content: ""; position: absolute; width: 18px; height: 18px; border: 2px solid var(--red-hi); pointer-events: none; z-index: 2; }
-.vf::before { left: -6px; top: -6px; border-right: 0; border-bottom: 0; }
-.vf::after { right: -6px; bottom: -6px; border-left: 0; border-top: 0; }
-.vf img { border-radius: 3px; }
-
-/* ---------- about ---------- */
-.about { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
-.about .copy { display: grid; gap: 18px; min-width: 0; }
-.about .copy p { color: var(--muted); max-width: 60ch; }
-.about .copy p strong { color: var(--fg); font-weight: 600; }
-.spec { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-top: 8px; }
-.spec div { background: var(--panel); padding: 14px 16px; display: grid; gap: 4px; }
-.spec b { font: 700 1.5rem/1 var(--f-display); letter-spacing: .02em; }
-.spec span { font-size: .78rem; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
-@media (max-width: 860px) { .about { grid-template-columns: 1fr; } }
-
-/* ---------- features ---------- */
-.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.feature { background: var(--bg); padding: 26px 24px 28px; display: grid; gap: 10px; align-content: start; min-width: 0; }
-.feature svg { width: 28px; height: 28px; color: var(--red-hi); }
-.feature p { color: var(--muted); font-size: .95rem; }
-@media (max-width: 900px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 560px) { .features { grid-template-columns: 1fr; } }
-
-/* ---------- strips (models / stances) ---------- */
-.strip { display: grid; gap: 14px; margin-top: clamp(36px, 5vw, 56px); }
-.strip figcaption { color: var(--dim); font-size: var(--step--1); }
-
-/* ---------- gallery ---------- */
-.gallery { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
-.shot { margin: 0; grid-column: span 2; position: relative; cursor: zoom-in; border-radius: 4px; overflow: hidden; background: var(--panel); }
-.shot.wide { grid-column: span 3; }
-.shot img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; transition: transform .5s ease, filter .3s; filter: saturate(.95); }
-.shot:hover img { transform: scale(1.03); filter: saturate(1.1); }
-.shot figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 14px 10px; background: linear-gradient(0deg, rgba(8,10,14,.9), rgba(8,10,14,0)); display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
-.shot figcaption b { font: 700 1rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .12em; }
-.shot figcaption span { font-size: .75rem; color: var(--muted); text-align: right; }
-.shot button { position: absolute; inset: 0; opacity: 0; border: 0; cursor: zoom-in; }
-.shot:has(button:focus-visible) { outline: 2px solid var(--amber); outline-offset: 3px; }
-@media (max-width: 860px) { .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } .shot, .shot.wide { grid-column: span 1; } }
-@media (max-width: 520px) { .gallery { grid-template-columns: 1fr; } }
-
-.lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(5,6,9,.94); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) var(--gutter-r) max(16px, env(safe-area-inset-bottom, 0px)) var(--gutter-l); }
-.lightbox figure { margin: 0; display: grid; gap: 12px; max-width: min(1280px, 100%); }
-.lightbox img { max-height: 80vh; width: auto; margin: 0 auto; border-radius: 4px; }
-.lightbox figcaption { text-align: center; color: var(--muted); font-size: var(--step--1); }
-.lightbox .lb-btn { position: absolute; background: rgba(20,25,34,.8); border: 1px solid var(--line); color: var(--fg); width: 44px; height: 44px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: grid; place-items: center; }
-.lb-close { top: max(16px, env(safe-area-inset-top, 0px)); right: var(--gutter-r); }
-.lb-prev { left: var(--gutter-l); top: 50%; }
-.lb-next { right: var(--gutter-r); top: 50%; }
-
-/* ---------- presets compare ---------- */
-.compare-band { background: var(--panel); }
-.compare-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(28px, 5vw, 56px); align-items: center; }
-.compare-copy { display: grid; gap: 18px; min-width: 0; }
-.compare-copy p { color: var(--muted); }
-.tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; width: max-content; max-width: 100%; }
-.tabs button { background: transparent; color: var(--muted); border: 0; padding: 9px 16px; font: 600 .9rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; cursor: pointer; }
-.tabs button + button { border-left: 1px solid var(--line); }
-.tabs button[aria-pressed="true"] { background: var(--red); color: #fff; }
-.preset-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.preset-list li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px; font-size: .94rem; color: var(--muted); }
-.preset-list b { font: 700 .95rem/1.5 var(--f-display); text-transform: uppercase; letter-spacing: .1em; color: var(--fg); }
-.compare { position: relative; aspect-ratio: 1280 / 680; max-width: 100%; border-radius: 4px; overflow: hidden; user-select: none; touch-action: pan-y; background: var(--bg); }
-.compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.compare .top { clip-path: inset(0 calc(100% - var(--pos, 50%)) 0 0); }
-.compare .handle { position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.3); pointer-events: none; }
-.compare .handle::after { content: "◂ ▸"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #111; font: 700 .8rem/1 var(--f-body); padding: 8px 10px; border-radius: 20px; white-space: nowrap; }
-.compare .tag { position: absolute; top: 12px; font: 700 .78rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; background: rgba(8,10,14,.75); padding: 7px 10px; border-radius: 3px; pointer-events: none; }
-.compare .tag.l { left: 12px; }
-.compare .tag.r { right: 12px; color: var(--amber); }
-.compare input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
-.compare:has(input:focus-visible) { outline: 2px solid var(--amber); outline-offset: 3px; }
-.note { font-size: var(--step--1); color: var(--dim); }
-@media (max-width: 900px) { .compare-grid { grid-template-columns: 1fr; } }
-
-/* ---------- launcher ---------- */
-.launcher { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 60px); align-items: center; }
-.launcher .shot-frame img { box-shadow: 0 30px 60px -20px rgba(0,0,0,.7); }
-.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-.checks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; color: var(--muted); }
-.checks li::before { content: ""; width: 10px; height: 10px; margin-top: 8px; border: 2px solid var(--red-hi); transform: rotate(45deg); }
-.checks b { color: var(--fg); font-weight: 600; }
-@media (max-width: 900px) { .launcher { grid-template-columns: 1fr; } }
-
-/* ---------- servers ---------- */
-.servers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
-.server-card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-.server-card header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
-.server-card header h3 { font-size: 1.05rem; }
-.pill { display: inline-flex; align-items: center; gap: 8px; font: 600 .74rem/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--line); color: var(--amber); white-space: nowrap; }
-.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-.srv-table { width: 100%; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
-.srv-table th { text-align: left; font: 600 .74rem/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); padding: 12px 18px 8px; }
-.srv-table td { padding: 10px 18px; border-top: 1px solid var(--line); color: var(--dim); }
-.srv-table td:first-child { color: var(--muted); }
-.srv-empty { padding: 20px 18px 22px; color: var(--muted); font-size: .92rem; border-top: 1px solid var(--line); }
-.servers .copy { display: grid; gap: 16px; color: var(--muted); }
-.servers .copy h2 { color: var(--fg); }
-.servers .copy b { color: var(--fg); font-weight: 600; }
-@media (max-width: 860px) { .servers { grid-template-columns: 1fr; } }
-
-/* ---------- patch notes ---------- */
-.notes { display: grid; gap: 12px; }
-.release { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
-.release summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 18px; align-items: center; padding: 18px 22px; }
-.release summary::-webkit-details-marker { display: none; }
-.release .ver { font: 800 1.6rem/1 var(--f-display); letter-spacing: .02em; }
-.release .sum { color: var(--muted); font-size: .94rem; min-width: 0; }
-.release .meta { font-family: var(--f-mono); font-size: .76rem; color: var(--dim); text-align: right; white-space: nowrap; }
-.release .chev { transition: transform .2s; color: var(--dim); }
-.release[open] .chev { transform: rotate(180deg); }
-.release .body { padding: 0 22px 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 36px; border-top: 1px solid var(--line); padding-top: 20px; }
-.release .body section { min-width: 0; }
-.release h3 { margin: 0 0 8px; font: 700 .85rem/1 var(--f-display); letter-spacing: .16em; text-transform: uppercase; color: var(--red-hi); }
-.release ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--muted); font-size: .93rem; }
-.release ul li::marker { color: var(--dim); }
-.release .latest { font: 700 .7rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; background: var(--red); color: #fff; padding: 5px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle; }
-.all-notes { margin-top: 18px; color: var(--muted); font-size: .94rem; }
-@media (max-width: 760px) {
-  .release summary { grid-template-columns: minmax(0, 1fr) auto; }
-  .release .sum { grid-column: 1 / -1; grid-row: 2; }
-  .release .meta { display: none; }
-  .release .body { grid-template-columns: 1fr; }
-}
-
-/* ---------- roadmap ---------- */
-.road { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-.road-col { border-top: 2px solid var(--line); padding-top: 16px; display: grid; gap: 12px; align-content: start; }
-.road-col.done { border-color: var(--ok); }
-.road-col.next { border-color: var(--amber); }
-.road-col.later { border-color: var(--dim); }
-.road-col h3 { display: flex; justify-content: space-between; align-items: baseline; }
-.road-col h3 small { font: 500 .78rem/1 var(--f-mono); color: var(--dim); text-transform: none; letter-spacing: 0; }
-.road-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; color: var(--muted); font-size: .94rem; }
-@media (max-width: 860px) { .road { grid-template-columns: 1fr; } }
-
-/* ---------- download ---------- */
-.download { background:
-  linear-gradient(180deg, rgba(13,16,22,.88), rgba(13,16,22,.96)),
-  url("img/map-railhouse-640.webp") center / cover; }
-.dl-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
-.dl-main { display: grid; gap: 22px; min-width: 0; }
-.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 14px; }
-.steps li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; color: var(--muted); }
-.steps li::before { content: counter(s); font: 800 1.1rem/34px var(--f-display); text-align: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; color: var(--fg); background: var(--panel); }
-.steps b { color: var(--fg); font-weight: 600; }
-.reqs { background: rgba(20,25,34,.85); border: 1px solid var(--line); border-radius: 8px; padding: 22px; display: grid; gap: 14px; }
-.reqs dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 18px; font-size: .93rem; }
-.reqs dt { color: var(--dim); font: 600 .8rem/1.6 var(--f-display); letter-spacing: .12em; text-transform: uppercase; }
-.reqs dd { margin: 0; color: var(--fg); }
-@media (max-width: 860px) { .dl-grid { grid-template-columns: 1fr; } }
-
-/* ---------- faq ---------- */
-.faq { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 48px; }
-.faq div { display: grid; gap: 8px; }
-.faq p { color: var(--muted); font-size: .95rem; }
-@media (max-width: 760px) { .faq { grid-template-columns: 1fr; } }
-
-/* ---------- footer ---------- */
-footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 44px max(44px, env(safe-area-inset-bottom, 0px)); }
-.foot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; }
-.foot img { width: 84px; }
-.foot .who { display: grid; gap: 6px; }
-.foot .who b { font: 700 1.1rem/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; }
-.foot .who span { color: var(--muted); font-size: .92rem; }
-.foot nav { display: flex; gap: 18px; flex-wrap: wrap; }
-.foot nav a { color: var(--muted); text-decoration: none; font-size: .92rem; }
-.foot nav a:hover { color: var(--fg); }
-.legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--dim); font-size: .8rem; max-width: 100ch; display: grid; gap: 6px; }
-@media (max-width: 760px) { .foot { grid-template-columns: 1fr; } }
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .slide, .slide.on { animation: none; transition: none; transform: none; }
-  .shot img, .btn { transition: none; }
-}
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="nav">
   <div class="wrap">
-    <a class="nav-brand" href="#top"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <a class="nav-brand" href="./"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
     <ul class="nav-links">
-      <li><a href="#about">About</a></li>
-      <li><a href="#gallery">Gallery</a></li>
-      <li><a href="#graphics">Graphics</a></li>
-      <li><a href="#patch-notes">Patch notes</a></li>
-      <li><a href="#servers">Servers</a></li>
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="./#gallery">Gallery</a></li>
+      <li><a href="./#graphics">Graphics</a></li>
+      <li><a href="./#patch-notes">Patch notes</a></li>
+      <li><a href="./#servers">Servers</a></li>
+      <li><a href="press.html">Press</a></li>
     </ul>
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
       <nav aria-label="Sections">
-        <a href="#about">About</a><a href="#gallery">Gallery</a><a href="#graphics">Graphics</a><a href="#launcher">Launcher</a><a href="#patch-notes">Patch notes</a><a href="#servers">Servers</a><a href="#faq">FAQ</a>
+        <a href="maps.html">Maps</a><a href="./#about">About</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#patch-notes">Patch notes</a><a href="./#servers">Servers</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a>
       </nav>
     </details>
-    <a class="btn" href="#download">Download</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
   </div>
 </header>
 
@@ -364,6 +61,7 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
   <div class="slides" id="slides">
     <img class="slide" data-name="Northport" src="img/map-northport.webp" srcset="img/map-northport-640.webp 640w, img/map-northport.webp 1280w" sizes="100vw" alt="" fetchpriority="high">
     <img class="slide" data-name="Railhouse" data-src="img/map-railhouse.webp" data-srcset="img/map-railhouse-640.webp 640w, img/map-railhouse.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Delta" data-src="img/map-delta.webp" data-srcset="img/map-delta-640.webp 640w, img/map-delta.webp 1280w" sizes="100vw" alt="">
     <img class="slide" data-name="Stadtrand" data-src="img/map-stadtrand.webp" data-srcset="img/map-stadtrand-640.webp 640w, img/map-stadtrand.webp 1280w" sizes="100vw" alt="">
     <img class="slide" data-name="Village" data-src="img/map-village.webp" data-srcset="img/map-village-640.webp 640w, img/map-village.webp 1280w" sizes="100vw" alt="">
     <img class="slide" data-name="Snow" data-src="img/map-snow.webp" data-srcset="img/map-snow-640.webp 640w, img/map-snow.webp 1280w" sizes="100vw" alt="">
@@ -458,6 +156,24 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
   </div>
 </section>
 
+<section class="band" id="maps">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div><span class="eyebrow">Maps</span>
+      <h2>All six original maps</h2></div>
+      <a class="btn btn-ghost" href="maps.html">See every map</a>
+    </div>
+    <div class="map-cards">
+      <a class="map-card" href="maps.html#delta"><img src="img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Delta</b><small>Industrial streets</small></span></a>
+      <a class="map-card" href="maps.html#northport"><img src="img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Northport</b><small>Harbour warehouses</small></span></a>
+      <a class="map-card" href="maps.html#railhouse"><img src="img/map-railhouse-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Railhouse</b><small>Rail yard</small></span></a>
+      <a class="map-card" href="maps.html#snow"><img src="img/map-snow-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Snow</b><small>Winter industrial</small></span></a>
+      <a class="map-card" href="maps.html#stadtrand"><img src="img/map-stadtrand-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Stadtrand</b><small>Town outskirts</small></span></a>
+      <a class="map-card" href="maps.html#village"><img src="img/map-village-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Village</b><small>Village</small></span></a>
+    </div>
+  </div>
+</section>
+
 <section class="band" id="gallery">
   <div class="wrap">
     <div class="section-head">
@@ -534,6 +250,8 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
       <h2>Public server list</h2>
       <p>The public list is built and tested. Servers hosted with <b>List publicly</b> switched on will show up here and in the launcher's Servers tab once the master server goes online.</p>
       <p>Until then, host from the launcher and share your address. Others join you on UDP port <code>27971</code> by default. Everyone in a match needs the same version.</p>
+      <p><a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg> Find a match on Discord</a></p>
+      <p><a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg> Find a match on Discord</a></p>
     </div>
     <div class="server-card" aria-live="polite">
       <header><h3>Online now</h3><span class="pill">Master server offline</span></header>
@@ -726,8 +444,10 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
     </div>
     <div class="faq">
       <div><h3>Is it free?</h3><p>Yes. Download it from GitHub Releases and play. Each release includes its source code and the licenses for the original game files.</p></div>
+      <div><h3>I want to write about it</h3><p>Grab the <a href="press.html">press kit</a> with logos, screenshots and a fact sheet.</p></div>
       <div><h3>Can I play online?</h3><p>You can host and join servers from the launcher. So far it has been tested on one PC over local connections, so expect rough edges across separate PCs and the internet.</p></div>
       <div><h3>Is this complete TC:E?</h3><p>Not yet. It is a native sandbox: movement, hit zones, the HUD and hosting are in, while recoil, spread, penetration and the original round rules are still being rebuilt.</p></div>
+      <div><h3>Where do I find players?</h3><p>Join the <a href="https://discord.gg/8kcHdg2Hch">TrueCombat: Platinum Discord</a>. That's where matches get organised, servers get shared and new versions are announced first.</p></div>
       <div><h3>DirectX 12 won't start. What now?</h3><p>Press <b>Safe start</b> in the launcher. It runs the game on OpenGL in a 1280 × 720 window, and the game also falls back to OpenGL by itself if DirectX 12 fails.</p></div>
     </div>
   </div>
@@ -744,10 +464,12 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
         <span>TrueCombat: Platinum is developed by RaziC*.</span>
       </div>
       <nav aria-label="Footer">
+        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
         <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
         <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
-        <a href="#patch-notes">Patch notes</a>
-        <a href="#download">Download</a>
+        <a href="maps.html">Maps</a>
+        <a href="press.html">Press kit</a>
+        <a href="./#download">Download</a>
       </nav>
     </div>
     <div class="legal">
