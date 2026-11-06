@@ -4,7 +4,8 @@
 The English pages in docs/*.html are hand-edited. This script:
   1. rewrites the navigation, footer and language links between the
      <!--nav-->, <!--footer--> and <!--alt--> markers on every page,
-  2. writes the weapon cards on weapons.html from weapons.json,
+  2. writes the weapon cards on weapons.html from weapons.json and the
+     home page roadmap from roadmap.json (columns follow the latest release),
   3. writes the Dutch pages in docs/nl/ from the English ones plus the
      translations in nl.py (it stops with an error when an English
      string it needs is no longer on the page),
@@ -213,6 +214,38 @@ def weapons_html(lang):
     return "<!--weapons-->\n" + "\n".join(out) + "\n<!--/weapons-->"
 
 
+# ---------------------------------------------------------------- roadmap
+ROAD = {"en": ("Playable now", "Next", "After that"), "nl": ("Nu speelbaar", "Hierna", "Daarna")}
+
+
+def vkey(v):
+    return tuple(int(x) for x in re.findall(r"\d+", v)[:2])
+
+
+def roadmap_html(lang, latest):
+    """latest is the newest published release, e.g. 'v0.29.0' (release_sync.py writes it into index.html)."""
+    items = json.loads((HERE / "roadmap.json").read_text(encoding="utf-8"))["items"]
+    cur = vkey(latest)
+    done = [i for i in items if i["version"] and vkey(i["version"]) <= cur]
+    future = sorted({i["version"] for i in items if i["version"] and vkey(i["version"]) > cur}, key=vkey)
+    nxt = future[0] if future else None
+    nxt_items = [i for i in items if nxt and i["version"] == nxt]
+    later = [i for i in items if i not in done and i not in nxt_items]
+    done = done[-8:]
+    h = ROAD[lang]
+
+    def col(cls, title, small, rows):
+        lis = "\n".join("          <li>%s</li>" % htmlmod.escape(r[lang]) for r in rows)
+        return ('      <div class="road-col %s">\n        <h3>%s%s</h3>\n        <ul>\n%s\n        </ul>\n      </div>'
+                % (cls, title, small, lis))
+    cols = [col("done", h[0], " <small data-version>%s</small>" % latest, done)]
+    if nxt_items:
+        cols.append(col("next", h[1], " <small>v%s</small>" % nxt, nxt_items))
+    if later:
+        cols.append(col("later", h[2], "", later))
+    return "<!--roadmap-->\n    <div class=\"road\">\n" + "\n".join(cols) + "\n    </div>\n<!--/roadmap-->"
+
+
 # ---------------------------------------------------------------- Dutch
 ASSET = re.compile(r"(?<=[\s\"'(,])(img|js|press)/")
 
@@ -249,6 +282,10 @@ def main():
         en = path.read_text(encoding="utf-8")
         if page == "weapons":
             en = put(en, "weapons", weapons_html("en"), path)
+        if page == "index":
+            m = re.search(r"data-version>(v[\d.]+)<", en)
+            latest = m.group(1) if m else "v0.0.0"
+            en = put(en, "roadmap", roadmap_html("en", latest), path)
         src = en
         en = put(en, "nav", nav("en", page), path)
         en = put(en, "footer", footer("en"), path)
@@ -256,6 +293,8 @@ def main():
         path.write_text(en, encoding="utf-8")
 
         du = src
+        if page == "index":
+            du = put(du, "roadmap", roadmap_html("nl", latest), path)
         if page == "weapons":
             du = put(du, "weapons", weapons_html("nl"), path)
         du = to_dutch(page, du)
