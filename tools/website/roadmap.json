@@ -1,0 +1,95 @@
+{
+ "_help": "Roadmap on the home page. 'version' is the release that ships the item (e.g. \"0.31\"), or null when it has no release yet. build.py moves items to 'Playable now' once that version is the latest release, shows the next version's items under 'Next', and the rest under 'After that'. Add new plans here; items are listed in this order.",
+ "items": [
+  {
+   "en": "DirectX 12 renderer with OpenGL Safe start",
+   "nl": "DirectX 12-renderer met OpenGL via Safe start",
+   "version": "0.24"
+  },
+  {
+   "en": "Original soldier models and HUD",
+   "nl": "Originele soldaatmodellen en HUD",
+   "version": "0.24"
+  },
+  {
+   "en": "M83 smoke",
+   "nl": "M83-rook",
+   "version": "0.24"
+  },
+  {
+   "en": "Sprint, crouch, prone and stamina",
+   "nl": "Sprinten, hurken, liggen en stamina",
+   "version": "0.27"
+  },
+  {
+   "en": "Head, body and leg hits",
+   "nl": "Treffers op hoofd, romp en benen",
+   "version": "0.27"
+  },
+  {
+   "en": "Optional NVIDIA DLSS and DLAA",
+   "nl": "Optioneel NVIDIA DLSS en DLAA",
+   "version": "0.28"
+  },
+  {
+   "en": "Launcher hosting and signed updates",
+   "nl": "Hosten vanuit de launcher en ondertekende updates",
+   "version": "0.29"
+  },
+  {
+   "en": "Low / High / Ultra graphics presets",
+   "nl": "De grafische presets Low / High / Ultra",
+   "version": "0.30"
+  },
+  {
+   "en": "HD textures for the world, models, HUD and menus",
+   "nl": "HD-textures voor de wereld, modellen, HUD en menu's",
+   "version": "0.30"
+  },
+  {
+   "en": "The original chat, kill feed and scoreboard",
+   "nl": "De originele chat, killfeed en het scorebord",
+   "version": "0.30"
+  },
+  {
+   "en": "M83 underhand throw",
+   "nl": "Onderhandse worp met de M83",
+   "version": "0.30"
+  },
+  {
+   "en": "Much smaller updates",
+   "nl": "Veel kleinere updates",
+   "version": "0.30"
+  },
+  {
+   "en": "Public server list support",
+   "nl": "Ondersteuning voor de publieke serverlijst",
+   "version": "0.30"
+  },
+  {
+   "en": "The full TC:E weapon roster, knife and grenades",
+   "nl": "Het volledige TC:E-arsenaal, mes en granaten",
+   "version": null
+  },
+  {
+   "en": "Recoil, spread and penetration",
+   "nl": "Terugslag, spreiding en doorboring",
+   "version": null
+  },
+  {
+   "en": "Leaning, ladders, swimming and aiming down sights",
+   "nl": "Leunen, ladders, zwemmen en richten over het vizier",
+   "version": null
+  },
+  {
+   "en": "The original round rules and objectives",
+   "nl": "De originele rondes en doelen",
+   "version": null
+  },
+  {
+   "en": "Testing across separate PCs and the internet",
+   "nl": "Testen tussen aparte pc's en via internet",
+   "version": null
+  }
+ ]
+}
