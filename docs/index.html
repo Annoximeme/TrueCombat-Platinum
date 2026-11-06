@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrueCombat: Platinum</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="TrueCombat: Platinum is a native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows, with the original maps, soldiers and HUD. Free download.">
+<meta name="theme-color" content="#0d1016">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TrueCombat: Platinum">
+<meta property="og:description" content="A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows. Free download.">
+<meta property="og:image" content="img/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-bleed bands (hero, gallery, presets) alternate with a 1180px content column;
+   HUD-style corner brackets frame every in-game image, like a viewfinder. Single dark look. */
+:root {
+  --bg: #0d1016;          /* graphite night, slight blue bias */
+  --panel: #141922;
+  --panel-2: #1a202b;
+  --line: #262e3b;
+  --fg: #e8eaef;
+  --muted: #9aa3b3;
+  --dim: #6d7686;
+  --red: #d63b3b;         /* launcher PLAY red */
+  --red-hi: #ef5050;
+  --amber: #e7a73c;       /* HUD compass lamp */
+  --ok: #4fbf7a;
+
+  --f-display: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+
+  --step--1: 0.84rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.6rem;
+  --step-3: clamp(2rem, 4.2vw, 2.9rem);
+  --step-4: clamp(2.4rem, 6vw, 4.2rem);
+
+  --col: 1180px;
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 var(--step-0)/1.6 var(--f-body);
+  -webkit-font-smoothing: antialiased;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 60; background: var(--bg); }
+img { max-width: 100%; height: auto; display: block; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: var(--col); margin: 0 auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+.band { padding-block: clamp(56px, 9vw, 112px); }
+.band + .band { border-top: 1px solid var(--line); }
+
+h1, h2, h3 { font-family: var(--f-display); font-weight: 700; line-height: 1.05; margin: 0; text-wrap: balance; letter-spacing: 0.01em; }
+h2 { font-size: var(--step-3); text-transform: uppercase; }
+h3 { font-size: var(--step-1); text-transform: uppercase; letter-spacing: 0.04em; }
+p { margin: 0; }
+.eyebrow { font: 600 var(--step--1)/1 var(--f-display); text-transform: uppercase; letter-spacing: 0.18em; color: var(--red-hi); }
+.lede { color: var(--muted); font-size: var(--step-1); max-width: 62ch; }
+.mono { font-family: var(--f-mono); font-size: 0.86em; }
+kbd, code { font-family: var(--f-mono); font-size: 0.82em; background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 0.08em 0.4em; color: var(--fg); white-space: nowrap; }
+.section-head { display: grid; gap: 14px; margin-bottom: clamp(28px, 4vw, 44px); }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; border-radius: 6px; border: 1px solid var(--line); padding: 12px 20px; font: 600 var(--step-0)/1.1 var(--f-display); text-transform: uppercase; letter-spacing: 0.08em; transition: background-color .15s, border-color .15s, transform .15s; cursor: pointer; }
+.btn:hover { border-color: var(--dim); }
+.btn-play { background: linear-gradient(180deg, var(--red-hi), var(--red)); border-color: transparent; color: #fff; padding: 14px 26px 14px 20px; box-shadow: 0 8px 28px -10px rgba(214, 59, 59, .7); }
+.btn-play:hover { transform: translateY(-1px); border-color: transparent; }
+.btn-play svg { flex: none; }
+.btn-play .stack { display: grid; gap: 3px; text-align: left; }
+.btn-play .big { font-size: 1.35rem; letter-spacing: 0.06em; }
+.btn-play .small { font: 500 0.72rem/1 var(--f-body); letter-spacing: 0.02em; text-transform: none; opacity: .88; }
+.btn-ghost { background: rgba(13, 16, 22, .55); color: var(--fg); backdrop-filter: blur(6px); }
+
+/* ---------- nav ---------- */
+.nav { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: rgba(13, 16, 22, .82); backdrop-filter: blur(10px) saturate(1.2); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; align-items: center; gap: 24px; min-height: 60px; }
+.nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font: 700 1.05rem/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+.nav-brand img { width: 30px; height: 30px; object-fit: contain; }
+.nav-brand b { color: var(--red-hi); font-weight: 700; }
+.nav-links { display: flex; gap: 22px; margin-left: auto; list-style: none; padding: 0; margin-block: 0; }
+.nav-links a { text-decoration: none; color: var(--muted); font: 600 0.95rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; }
+.nav-links a:hover { color: var(--fg); }
+.nav .btn { padding: 8px 14px; font-size: .9rem; background: var(--red); border-color: transparent; color: #fff; }
+@media (max-width: 900px) { .nav-links { display: none; } .nav .btn { margin-left: auto; } }
+
+/* ---------- hero ---------- */
+.hero { position: relative; isolation: isolate; overflow: hidden; border-bottom: 1px solid var(--line); }
+.slides { position: absolute; inset: 0; z-index: -2; }
+.slide { position: absolute; inset: 0; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.6s ease; transform: scale(1.06); }
+.slide.on { opacity: 1; animation: drift 14s linear forwards; }
+.slide:first-child { opacity: 1; }
+.slides.started .slide:first-child:not(.on) { opacity: 0; }
+@keyframes drift { from { transform: scale(1.06) translateX(0); } to { transform: scale(1.12) translateX(-1.5%); } }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(13,16,22,.94) 0%, rgba(13,16,22,.78) 38%, rgba(13,16,22,.25) 75%, rgba(13,16,22,.35) 100%),
+    linear-gradient(0deg, var(--bg) 0%, rgba(13,16,22,0) 30%); }
+.hero .wrap { display: grid; gap: 28px; padding-block: clamp(56px, 10vw, 128px) clamp(64px, 9vw, 112px); }
+.hero-logo { width: min(520px, 88%); filter: drop-shadow(0 18px 36px rgba(0,0,0,.6)); }
+.hero h1 { font-size: var(--step-4); text-transform: uppercase; max-width: 15ch; }
+.hero h1 em { font-style: normal; color: var(--red-hi); }
+.hero .lede { color: #c9ced8; }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--muted); font-size: var(--step--1); }
+.hero-meta span { display: inline-flex; align-items: center; gap: 8px; }
+.hero-meta span::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--red-hi); }
+.hero-caption { position: absolute; right: var(--gutter-r); bottom: 22px; font: 600 .78rem/1 var(--f-display); letter-spacing: .16em; text-transform: uppercase; color: rgba(232,234,239,.75); display: flex; align-items: center; gap: 10px; }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(232,234,239,.3); transition: background .3s; }
+.dots i.on { background: var(--red-hi); }
+@media (max-width: 640px) {
+  .hero-caption { left: var(--gutter-l); right: auto; }
+  .hero::before { background: linear-gradient(180deg, rgba(13,16,22,.55) 0%, rgba(13,16,22,.88) 45%, var(--bg) 100%); }
+}
+
+/* ---------- status strip ---------- */
+.status { background: var(--panel); border-bottom: 1px solid var(--line); }
+.status .wrap { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: center; padding-block: 16px; font-size: var(--step--1); color: var(--muted); }
+.status strong { color: var(--amber); font: 700 .82rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; }
+
+/* ---------- viewfinder frame ---------- */
+.vf { position: relative; }
+.vf::before, .vf::after { content: ""; position: absolute; width: 18px; height: 18px; border: 2px solid var(--red-hi); pointer-events: none; z-index: 2; }
+.vf::before { left: -6px; top: -6px; border-right: 0; border-bottom: 0; }
+.vf::after { right: -6px; bottom: -6px; border-left: 0; border-top: 0; }
+.vf img { border-radius: 3px; }
+
+/* ---------- about ---------- */
+.about { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: center; }
+.about .copy { display: grid; gap: 18px; min-width: 0; }
+.about .copy p { color: var(--muted); max-width: 60ch; }
+.about .copy p strong { color: var(--fg); font-weight: 600; }
+.spec { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-top: 8px; }
+.spec div { background: var(--panel); padding: 14px 16px; display: grid; gap: 4px; }
+.spec b { font: 700 1.5rem/1 var(--f-display); letter-spacing: .02em; }
+.spec span { font-size: .78rem; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
+@media (max-width: 860px) { .about { grid-template-columns: 1fr; } }
+
+/* ---------- features ---------- */
+.features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.feature { background: var(--bg); padding: 26px 24px 28px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.feature svg { width: 28px; height: 28px; color: var(--red-hi); }
+.feature p { color: var(--muted); font-size: .95rem; }
+@media (max-width: 900px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .features { grid-template-columns: 1fr; } }
+
+/* ---------- strips (models / stances) ---------- */
+.strip { display: grid; gap: 14px; margin-top: clamp(36px, 5vw, 56px); }
+.strip figcaption { color: var(--dim); font-size: var(--step--1); }
+
+/* ---------- gallery ---------- */
+.gallery { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.shot { margin: 0; grid-column: span 2; position: relative; cursor: zoom-in; border-radius: 4px; overflow: hidden; background: var(--panel); }
+.shot.wide { grid-column: span 3; }
+.shot img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; transition: transform .5s ease, filter .3s; filter: saturate(.95); }
+.shot:hover img { transform: scale(1.03); filter: saturate(1.1); }
+.shot figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 14px 10px; background: linear-gradient(0deg, rgba(8,10,14,.9), rgba(8,10,14,0)); display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.shot figcaption b { font: 700 1rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .12em; }
+.shot figcaption span { font-size: .75rem; color: var(--muted); text-align: right; }
+.shot button { position: absolute; inset: 0; opacity: 0; border: 0; cursor: zoom-in; }
+.shot:has(button:focus-visible) { outline: 2px solid var(--amber); outline-offset: 3px; }
+@media (max-width: 860px) { .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } .shot, .shot.wide { grid-column: span 1; } }
+@media (max-width: 520px) { .gallery { grid-template-columns: 1fr; } }
+
+.lightbox { position: fixed; inset: 0; z-index: 100; background: rgba(5,6,9,.94); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) var(--gutter-r) max(16px, env(safe-area-inset-bottom, 0px)) var(--gutter-l); }
+.lightbox figure { margin: 0; display: grid; gap: 12px; max-width: min(1280px, 100%); }
+.lightbox img { max-height: 80vh; width: auto; margin: 0 auto; border-radius: 4px; }
+.lightbox figcaption { text-align: center; color: var(--muted); font-size: var(--step--1); }
+.lightbox .lb-btn { position: absolute; background: rgba(20,25,34,.8); border: 1px solid var(--line); color: var(--fg); width: 44px; height: 44px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; display: grid; place-items: center; }
+.lb-close { top: max(16px, env(safe-area-inset-top, 0px)); right: var(--gutter-r); }
+.lb-prev { left: var(--gutter-l); top: 50%; }
+.lb-next { right: var(--gutter-r); top: 50%; }
+
+/* ---------- presets compare ---------- */
+.compare-band { background: var(--panel); }
+.compare-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: clamp(28px, 5vw, 56px); align-items: center; }
+.compare-copy { display: grid; gap: 18px; min-width: 0; }
+.compare-copy p { color: var(--muted); }
+.tabs { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; width: max-content; max-width: 100%; }
+.tabs button { background: transparent; color: var(--muted); border: 0; padding: 9px 16px; font: 600 .9rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; cursor: pointer; }
+.tabs button + button { border-left: 1px solid var(--line); }
+.tabs button[aria-pressed="true"] { background: var(--red); color: #fff; }
+.preset-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.preset-list li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px; font-size: .94rem; color: var(--muted); }
+.preset-list b { font: 700 .95rem/1.5 var(--f-display); text-transform: uppercase; letter-spacing: .1em; color: var(--fg); }
+.compare { position: relative; aspect-ratio: 1280 / 680; max-width: 100%; border-radius: 4px; overflow: hidden; user-select: none; touch-action: pan-y; background: var(--bg); }
+.compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.compare .top { clip-path: inset(0 calc(100% - var(--pos, 50%)) 0 0); }
+.compare .handle { position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.3); pointer-events: none; }
+.compare .handle::after { content: "◂ ▸"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; color: #111; font: 700 .8rem/1 var(--f-body); padding: 8px 10px; border-radius: 20px; white-space: nowrap; }
+.compare .tag { position: absolute; top: 12px; font: 700 .78rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; background: rgba(8,10,14,.75); padding: 7px 10px; border-radius: 3px; pointer-events: none; }
+.compare .tag.l { left: 12px; }
+.compare .tag.r { right: 12px; color: var(--amber); }
+.compare input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; margin: 0; }
+.compare:has(input:focus-visible) { outline: 2px solid var(--amber); outline-offset: 3px; }
+.note { font-size: var(--step--1); color: var(--dim); }
+@media (max-width: 900px) { .compare-grid { grid-template-columns: 1fr; } }
+
+/* ---------- launcher ---------- */
+.launcher { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 60px); align-items: center; }
+.launcher .shot-frame img { box-shadow: 0 30px 60px -20px rgba(0,0,0,.7); }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.checks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; color: var(--muted); }
+.checks li::before { content: ""; width: 10px; height: 10px; margin-top: 8px; border: 2px solid var(--red-hi); transform: rotate(45deg); }
+.checks b { color: var(--fg); font-weight: 600; }
+@media (max-width: 900px) { .launcher { grid-template-columns: 1fr; } }
+
+/* ---------- servers ---------- */
+.servers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+.server-card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.server-card header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.server-card header h3 { font-size: 1.05rem; }
+.pill { display: inline-flex; align-items: center; gap: 8px; font: 600 .74rem/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; padding: 6px 10px; border-radius: 20px; border: 1px solid var(--line); color: var(--amber); white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.srv-table { width: 100%; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.srv-table th { text-align: left; font: 600 .74rem/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--dim); padding: 12px 18px 8px; }
+.srv-table td { padding: 10px 18px; border-top: 1px solid var(--line); color: var(--dim); }
+.srv-table td:first-child { color: var(--muted); }
+.srv-empty { padding: 20px 18px 22px; color: var(--muted); font-size: .92rem; border-top: 1px solid var(--line); }
+.servers .copy { display: grid; gap: 16px; color: var(--muted); }
+.servers .copy h2 { color: var(--fg); }
+.servers .copy b { color: var(--fg); font-weight: 600; }
+@media (max-width: 860px) { .servers { grid-template-columns: 1fr; } }
+
+/* ---------- patch notes ---------- */
+.notes { display: grid; gap: 12px; }
+.release { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.release summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px 18px; align-items: center; padding: 18px 22px; }
+.release summary::-webkit-details-marker { display: none; }
+.release .ver { font: 800 1.6rem/1 var(--f-display); letter-spacing: .02em; }
+.release .sum { color: var(--muted); font-size: .94rem; min-width: 0; }
+.release .meta { font-family: var(--f-mono); font-size: .76rem; color: var(--dim); text-align: right; white-space: nowrap; }
+.release .chev { transition: transform .2s; color: var(--dim); }
+.release[open] .chev { transform: rotate(180deg); }
+.release .body { padding: 0 22px 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 36px; border-top: 1px solid var(--line); padding-top: 20px; }
+.release .body section { min-width: 0; }
+.release h4 { margin: 0 0 8px; font: 700 .85rem/1 var(--f-display); letter-spacing: .16em; text-transform: uppercase; color: var(--red-hi); }
+.release ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--muted); font-size: .93rem; }
+.release ul li::marker { color: var(--dim); }
+.release .latest { font: 700 .7rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; background: var(--red); color: #fff; padding: 5px 8px; border-radius: 3px; margin-left: 10px; vertical-align: middle; }
+.all-notes { margin-top: 18px; color: var(--muted); font-size: .94rem; }
+@media (max-width: 760px) {
+  .release summary { grid-template-columns: minmax(0, 1fr) auto; }
+  .release .sum { grid-column: 1 / -1; grid-row: 2; }
+  .release .meta { display: none; }
+  .release .body { grid-template-columns: 1fr; }
+}
+
+/* ---------- roadmap ---------- */
+.road { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.road-col { border-top: 2px solid var(--line); padding-top: 16px; display: grid; gap: 12px; align-content: start; }
+.road-col.done { border-color: var(--ok); }
+.road-col.next { border-color: var(--amber); }
+.road-col.later { border-color: var(--dim); }
+.road-col h3 { display: flex; justify-content: space-between; align-items: baseline; }
+.road-col h3 small { font: 500 .78rem/1 var(--f-mono); color: var(--dim); text-transform: none; letter-spacing: 0; }
+.road-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; color: var(--muted); font-size: .94rem; }
+@media (max-width: 860px) { .road { grid-template-columns: 1fr; } }
+
+/* ---------- download ---------- */
+.download { background:
+  linear-gradient(180deg, rgba(13,16,22,.88), rgba(13,16,22,.96)),
+  url("img/map-railhouse.jpg") center / cover; }
+.dl-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
+.dl-main { display: grid; gap: 22px; min-width: 0; }
+.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 14px; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; color: var(--muted); }
+.steps li::before { content: counter(s); font: 800 1.1rem/34px var(--f-display); text-align: center; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; color: var(--fg); background: var(--panel); }
+.steps b { color: var(--fg); font-weight: 600; }
+.reqs { background: rgba(20,25,34,.85); border: 1px solid var(--line); border-radius: 8px; padding: 22px; display: grid; gap: 14px; }
+.reqs dl { margin: 0; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 10px 18px; font-size: .93rem; }
+.reqs dt { color: var(--dim); font: 600 .8rem/1.6 var(--f-display); letter-spacing: .12em; text-transform: uppercase; }
+.reqs dd { margin: 0; color: var(--fg); }
+@media (max-width: 860px) { .dl-grid { grid-template-columns: 1fr; } }
+
+/* ---------- faq ---------- */
+.faq { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 48px; }
+.faq div { display: grid; gap: 8px; }
+.faq p { color: var(--muted); font-size: .95rem; }
+@media (max-width: 760px) { .faq { grid-template-columns: 1fr; } }
+
+/* ---------- footer ---------- */
+footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 44px max(44px, env(safe-area-inset-bottom, 0px)); }
+.foot { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; }
+.foot img { width: 84px; }
+.foot .who { display: grid; gap: 6px; }
+.foot .who b { font: 700 1.1rem/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; }
+.foot .who span { color: var(--muted); font-size: .92rem; }
+.foot nav { display: flex; gap: 18px; flex-wrap: wrap; }
+.foot nav a { color: var(--muted); text-decoration: none; font-size: .92rem; }
+.foot nav a:hover { color: var(--fg); }
+.legal { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--dim); font-size: .8rem; max-width: 100ch; display: grid; gap: 6px; }
+@media (max-width: 760px) { .foot { grid-template-columns: 1fr; } }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .slide, .slide.on { animation: none; transition: none; transform: none; }
+  .shot img, .btn { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="#top"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#graphics">Graphics</a></li>
+      <li><a href="#patch-notes">Patch notes</a></li>
+      <li><a href="#servers">Servers</a></li>
+    </ul>
+    <a class="btn" href="#download">Download</a>
+  </div>
+</header>
+
+<main id="top">
+
+<section class="hero" aria-label="TrueCombat: Platinum">
+  <div class="slides" id="slides">
+    <div class="slide" data-name="Northport" style="background-image:url('img/map-northport.jpg')"></div>
+    <div class="slide" data-name="Railhouse" style="background-image:url('img/map-railhouse.jpg')"></div>
+    <div class="slide" data-name="Stadtrand" style="background-image:url('img/map-stadtrand.jpg')"></div>
+    <div class="slide" data-name="Village" style="background-image:url('img/map-village.jpg')"></div>
+    <div class="slide" data-name="Snow" style="background-image:url('img/map-snow.jpg')"></div>
+  </div>
+  <div class="wrap">
+    <img class="hero-logo" src="img/logo.webp" alt="TrueCombat: Platinum" width="900" height="512">
+    <h1>TrueCombat: Elite, rebuilt for <em>modern Windows</em>.</h1>
+    <p class="lede">A native 64-bit rebuild of the classic tactical shooter, drawn with DirectX 12. The original maps, soldiers and HUD, with a new launcher that hosts servers and keeps your game up to date.</p>
+    <div class="hero-cta">
+      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
+        <span class="stack"><span class="big">Download <span data-version>v0.29.0</span></span><span class="small">Windows x64 · <span data-size>767 MB</span> · free</span></span>
+      </a>
+      <a class="btn btn-ghost" href="#patch-notes">What's new</a>
+    </div>
+    <div class="hero-meta">
+      <span>DirectX 12 with OpenGL fallback</span>
+      <span>Optional NVIDIA DLSS / DLAA</span>
+      <span>Developed by RaziC* · Team Terminus</span>
+    </div>
+  </div>
+  <div class="hero-caption" aria-hidden="true"><span id="slide-name">Northport</span> · in-game DX12 <span class="dots" id="dots"></span></div>
+</section>
+
+<div class="status">
+  <div class="wrap">
+    <strong>Early sandbox</strong>
+    <span>Movement, hit zones, the HUD and hosting are in. Recoil, spread, penetration and the original round rules are still being rebuilt.</span>
+  </div>
+</div>
+
+<section class="band" id="about">
+  <div class="wrap about">
+    <div class="copy">
+      <span class="eyebrow">The project</span>
+      <h2>The game you remember, on an engine that isn't 20 years old</h2>
+      <p><strong>TrueCombat: Elite</strong> was a realistic modern-combat total conversion for Enemy Territory: one life per round, real weapons, and maps built for slow, careful play. It still runs as a 32-bit mod on an engine from 2003.</p>
+      <p><strong>TrueCombat: Platinum</strong> rebuilds it as a native 64-bit Windows game. The renderer is new DirectX 12 code, the HUD is matched against the original pixel by pixel, and movement speeds come straight from the original values. If DirectX 12 gives you trouble, Safe start runs it on OpenGL.</p>
+      <div class="spec" role="list">
+        <div role="listitem"><b>x64</b><span>Native client &amp; server</span></div>
+        <div role="listitem"><b>DX12</b><span>Default renderer</span></div>
+        <div role="listitem"><b>128 Hz</b><span>Optional server rate</span></div>
+      </div>
+    </div>
+    <div class="vf"><img src="img/shot-dlaa.jpg" alt="Railhouse backyard in DirectX 12 with DLAA, a soldier standing against a brick wall" width="1280" height="720" loading="lazy"></div>
+  </div>
+</section>
+
+<section class="band" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">What's in it</span>
+      <h2>Built from the original, piece by piece</h2>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8 21h8M12 17v4"/></svg>
+        <h3>DirectX 12 renderer</h3>
+        <p>Everything is drawn with DirectX 12 in the game's own window. Edge smoothing, ambient shadows, HDR, bloom and sharpening are optional. Older PCs fall back to OpenGL automatically.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+        <h3>The original HUD</h3>
+        <p>Layout, fonts, compass, stamina bar, round clock and objective lines from TC:E. The body silhouette turns yellow, orange and red as you take damage.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><path d="M12 7.5v6M8 10h8M12 13.5l-3 7M12 13.5l3 7"/></svg>
+        <h3>Sprint, crouch, prone</h3>
+        <p>Hold <kbd>Shift</kbd> to sprint until your stamina runs out, <kbd>C</kbd> to crouch, <kbd>X</kbd> to go prone. Speeds follow the original TC:E values, and jumping on the move costs stamina.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="4.5" r="2.5"/><rect x="8.5" y="8" width="7" height="7" rx="1"/><path d="M10 15v6M14 15v6"/></svg>
+        <h3>Head, body and leg hits</h3>
+        <p>Every shot lands on a region with its own damage. Crouched and prone players present a smaller target.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 15a5 5 0 0 1 1-9.9A6 6 0 0 1 19 8a4 4 0 0 1-1 7.9"/><path d="M5 19h14M8 22h8"/></svg>
+        <h3>M83 smoke</h3>
+        <p>Press <kbd>4</kbd> and throw. One per life, lit by the map, the way the original did it.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
+        <h3>Signed updates</h3>
+        <p>The launcher checks GitHub for new versions, shows download speed and time left, and only installs updates signed by Team Terminus. Your settings and servers are kept.</p>
+      </article>
+    </div>
+
+    <figure class="strip">
+      <div class="vf"><img src="img/player-models.jpg" alt="Six views of the original TC:E soldier models: first person, third person standing, running, firing, reloading and blob shadows" width="1920" height="720" loading="lazy"></div>
+      <figcaption>Original TC:E soldier models with their animations and ground shadows: standing, running, firing, reloading.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band" id="gallery">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Gallery</span>
+      <h2>Captured in-game</h2>
+      <p class="lede">Every image is a straight capture from the DirectX 12 renderer. No paintovers.</p>
+    </div>
+    <div class="gallery" id="gallery-grid">
+      <figure class="shot wide"><img src="img/map-northport.jpg" alt="Northport docks in daylight" width="1280" height="720" loading="lazy"><figcaption><b>Northport</b><span>Distance fog, DX12</span></figcaption><button type="button" aria-label="Enlarge Northport"></button></figure>
+      <figure class="shot wide"><img src="img/map-railhouse.jpg" alt="Railhouse at night, an archway over the tracks" width="1280" height="720" loading="lazy"><figcaption><b>Railhouse</b><span>Night, DX12</span></figcaption><button type="button" aria-label="Enlarge Railhouse"></button></figure>
+      <figure class="shot"><img src="img/map-stadtrand.jpg" alt="Stadtrand, a narrow fogged alley" width="1280" height="720" loading="lazy"><figcaption><b>Stadtrand</b><span>Fogged alley</span></figcaption><button type="button" aria-label="Enlarge Stadtrand"></button></figure>
+      <figure class="shot"><img src="img/map-village.jpg" alt="Village barn interior with hay bales" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Barn</span></figcaption><button type="button" aria-label="Enlarge Village"></button></figure>
+      <figure class="shot"><img src="img/map-snow.jpg" alt="Snow map, a covered loading area" width="1280" height="720" loading="lazy"><figcaption><b>Snow</b><span>Winter map</span></figcaption><button type="button" aria-label="Enlarge Snow"></button></figure>
+      <figure class="shot"><img src="img/shot-smoke.jpg" alt="M83 smoke grenade cloud in the Railhouse backyard" width="1280" height="720" loading="lazy"><figcaption><b>M83 smoke</b><span>Map-lit</span></figcaption><button type="button" aria-label="Enlarge M83 smoke"></button></figure>
+      <figure class="shot"><img src="img/shot-crouch.jpg" alt="A crouched soldier beside a brick wall" width="1280" height="720" loading="lazy"><figcaption><b>Crouched</b><span>Smaller target</span></figcaption><button type="button" aria-label="Enlarge crouched"></button></figure>
+      <figure class="shot"><img src="img/shot-hosted.jpg" alt="Hosted match on Northport during warmup" width="1280" height="720" loading="lazy"><figcaption><b>Hosted match</b><span>Launcher-hosted server</span></figcaption><button type="button" aria-label="Enlarge hosted match"></button></figure>
+      <figure class="shot wide"><img src="img/hud-scoreboard.jpg" alt="HUD chat, kill feed and scoreboard" width="1300" height="580" loading="lazy"><figcaption><b>Chat, kill feed, scores</b><span>Coming in v0.30</span></figcaption><button type="button" aria-label="Enlarge HUD chat and scoreboard"></button></figure>
+      <figure class="shot wide"><img src="img/stances.jpg" alt="Standing, crouched and prone stances" width="1500" height="450" loading="lazy"><figcaption><b>Stances</b><span>Stand · crouch · prone</span></figcaption><button type="button" aria-label="Enlarge stances"></button></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band compare-band" id="graphics">
+  <div class="wrap compare-grid">
+    <div class="compare-copy">
+      <span class="eyebrow">Graphics</span>
+      <h2>Keep the original look, or don't</h2>
+      <p>Drag across the image to compare the original look with the new presets. Same spot, same frame, Railhouse backyard at 1080p.</p>
+      <div class="tabs" role="group" aria-label="Preset to compare against Low">
+        <button type="button" data-preset="high" aria-pressed="false">High</button>
+        <button type="button" data-preset="ultra" aria-pressed="true">Ultra</button>
+      </div>
+      <ul class="preset-list">
+        <li><b>Low</b><span>The original look: stock filtering, no extra effects.</span></li>
+        <li><b>High</b><span>New default. Effects cost about 1.0 ms a frame on an RTX 4080 SUPER.</span></li>
+        <li><b>Ultra</b><span>Adds NVIDIA DLAA on RTX cards, about 1.2 ms a frame.</span></li>
+      </ul>
+      <p class="note">The Low / High / Ultra presets arrive in v0.30. DLSS and DLAA already work today: enter <code>r_dx12Dlss 1</code> in the console, then <code>vid_restart</code>.</p>
+    </div>
+    <div class="vf">
+      <div class="compare" id="compare" style="--pos:50%">
+        <img id="cmp-right" src="img/preset-ultra.jpg" alt="Railhouse backyard on the Ultra preset" width="1280" height="680">
+        <img class="top" src="img/preset-low.jpg" alt="Railhouse backyard on the Low preset" width="1280" height="680">
+        <span class="tag l">Low</span>
+        <span class="tag r" id="cmp-tag">Ultra</span>
+        <span class="handle"></span>
+        <input type="range" id="cmp-range" min="0" max="100" value="50" aria-label="Comparison divider position">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="launcher">
+  <div class="wrap launcher">
+    <div class="vf shot-frame"><img src="img/launcher.jpg" alt="The TrueCombat: Platinum launcher with Join a server, Display settings and the PLAY button" width="1140" height="805" loading="lazy"></div>
+    <div class="section-head" style="margin:0">
+      <span class="eyebrow">Launcher</span>
+      <h2>Ready when you are</h2>
+      <ul class="checks">
+        <li><span><b>PLAY</b> starts DirectX 12 with your saved settings. <b>Safe start</b> uses OpenGL in a 1280 × 720 window.</span></li>
+        <li><span><b>Host a server</b> from the launcher: Practice, Elimination, Team Elimination or Point Capture, with your own name, player limit, map rotation and port.</span></li>
+        <li><span><b>Servers tab</b> with favorites and recent servers as cards, showing map, players and ping. Double-click to join.</span></li>
+        <li><span><b>News tab</b> with the latest patch notes, and an update bar that downloads, verifies and installs new versions.</span></li>
+        <li><span><b>Graphics options</b> for resolution, window mode, filtering, edge smoothing, refresh rate, frame limit and an FPS counter.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="servers">
+  <div class="wrap servers">
+    <div class="copy">
+      <span class="eyebrow">Servers</span>
+      <h2>Public server list</h2>
+      <p>The public list is built and tested. Servers hosted with <b>List publicly</b> switched on will show up here and in the launcher's Servers tab once the master server goes online.</p>
+      <p>Until then, host from the launcher and share your address. Others join you on UDP port <code>27971</code> by default. Everyone in a match needs the same version.</p>
+    </div>
+    <div class="server-card" aria-live="polite">
+      <header><h3>Online now</h3><span class="pill">Master server offline</span></header>
+      <table class="srv-table">
+        <thead><tr><th>Server</th><th>Map</th><th>Players</th><th>Mode</th></tr></thead>
+      </table>
+      <p class="srv-empty">No public servers yet. This list fills in automatically when the master server is running.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="patch-notes">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Patch notes</span>
+      <h2>Recent updates</h2>
+    </div>
+    <div class="notes">
+      <details class="release" open>
+        <summary><span class="ver">v0.29.0<span class="latest">Latest</span></span><span class="sum">The launcher becomes a hub with a living map header, a server list and news. Smoother movement online.</span><span class="meta">#50 · 0.29.0-sandbox20 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h4>Launcher</h4><ul>
+            <li>The header moves slowly through real in-game shots of all six maps.</li>
+            <li>New Play, Servers and News tabs.</li>
+            <li>Servers shows favorites, recent servers and your own server as cards with map, players and ping.</li>
+            <li>Pick the starting map from picture cards when hosting.</li>
+          </ul></section>
+          <section><h4>Updates</h4><ul>
+            <li>Updates are signed by Team Terminus. Only signed updates install.</li>
+            <li>See download speed and time left, cancel, or open What's new.</li>
+          </ul></section>
+          <section><h4>Multiplayer</h4><ul>
+            <li>Fewer camera jolts when packets arrive late or go missing.</li>
+            <li>Respawns and practice resets stay instant, without a camera slide.</li>
+            <li>Movement-correction smoothing can be tuned or turned off in the console.</li>
+          </ul></section>
+          <section><h4>Status</h4><ul>
+            <li>No public server list yet. The Servers tab shows servers you have saved or joined.</li>
+            <li>Tested on one PC over local connections.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release">
+        <summary><span class="ver">v0.28.0</span><span class="sum">Restyled launcher with a built-in update bar, optional DLSS/DLAA and a new connection version.</span><span class="meta">#49 · 0.28.0-sandbox19 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h4>Launcher</h4><ul>
+            <li>New title bar with the game emblem, your version and matching window buttons.</li>
+            <li>Update bar above PLAY: check, download, verify and install on restart.</li>
+            <li>Text stays sharp when the window is resized.</li>
+          </ul></section>
+          <section><h4>Graphics</h4><ul>
+            <li>Optional NVIDIA DLSS and DLAA for RTX cards. <code>r_dx12Dlss 1</code> for DLAA, 2 to 5 for DLSS quality levels.</li>
+            <li>Recovers more gracefully when a renderer fails to start.</li>
+          </ul></section>
+          <section><h4>Multiplayer</h4><ul>
+            <li>New connection version. 0.28.0 and 0.27.0 cannot play together.</li>
+            <li>A clear message explains a version mismatch.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release">
+        <summary><span class="ver">v0.27.0</span><span class="sum">The new launcher, sprinting, crouching, going prone, stamina and head/body/leg hits.</span><span class="meta">#48 · 0.27.0-sandbox18 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h4>New launcher</h4><ul>
+            <li>PLAY, Safe start and Open game menu.</li>
+            <li>Saved player name, favorite and recent servers, and a check whether a server answers.</li>
+            <li>Host Practice, Elimination, Team Elimination or Point Capture.</li>
+          </ul></section>
+          <section><h4>Movement</h4><ul>
+            <li>Sprint with <kbd>Shift</kbd>, crouch with <kbd>C</kbd>, go prone with <kbd>X</kbd>.</li>
+            <li>Running, sprinting, crouching and crawling speeds follow the original values.</li>
+          </ul></section>
+          <section><h4>Combat</h4><ul>
+            <li>Shots hit the head, body or legs separately, each with its own damage.</li>
+            <li>Crouched and prone players are smaller targets.</li>
+          </ul></section>
+          <section><h4>HUD</h4><ul>
+            <li>The stamina bar drains and refills as you move.</li>
+            <li>The stance icon shows standing, crouched or prone.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release">
+        <summary><span class="ver">v0.24.0</span><span class="sum">DirectX 12 in the game's own window, the original soldier models, the M83 smoke grenade and the original HUD.</span><span class="meta">#47 · 0.24.0-sandbox17 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h4>DirectX 12</h4><ul>
+            <li>Everything is drawn with DirectX 12. The old separate viewer is gone.</li>
+            <li>Falls back to OpenGL automatically if DirectX 12 can't run.</li>
+          </ul></section>
+          <section><h4>Players and weapons</h4><ul>
+            <li>Original TC:E soldier models with animations and ground shadows.</li>
+            <li>M83 smoke grenade on <kbd>4</kbd>, one per life.</li>
+          </ul></section>
+          <section><h4>Original HUD</h4><ul>
+            <li>Original layout, fonts, compass, stamina bar, round clock and objective lines.</li>
+            <li>The body silhouette changes colour as you take damage.</li>
+          </ul></section>
+          <section><h4>Multiplayer</h4><ul>
+            <li>Hosts can run the server at 128 updates per second. The default stays at 20.</li>
+            <li>Fixed a rare failure to rejoin after a map change on a bad connection.</li>
+          </ul></section>
+        </div>
+      </details>
+    </div>
+    <p class="all-notes">Older notes and every download are on <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">GitHub Releases</a>.</p>
+  </div>
+</section>
+
+<section class="band" id="roadmap">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Roadmap</span>
+      <h2>Where it stands</h2>
+    </div>
+    <div class="road">
+      <div class="road-col done">
+        <h3>Playable now <small>v0.29</small></h3>
+        <ul>
+          <li>DirectX 12 renderer, OpenGL Safe start</li>
+          <li>Original soldier models and HUD</li>
+          <li>Sprint, crouch, prone and stamina</li>
+          <li>Head, body and leg hits</li>
+          <li>M83 smoke</li>
+          <li>Launcher hosting and signed updates</li>
+        </ul>
+      </div>
+      <div class="road-col next">
+        <h3>Next <small>v0.30</small></h3>
+        <ul>
+          <li>Public server list</li>
+          <li>Low / High / Ultra graphics presets</li>
+          <li>HUD chat, kill feed and scoreboard</li>
+          <li>M83 underhand throw</li>
+          <li>Upscaled HD textures and interface</li>
+        </ul>
+      </div>
+      <div class="road-col later">
+        <h3>Still to rebuild</h3>
+        <ul>
+          <li>Recoil, spread and penetration</li>
+          <li>Leaning, ladders and swimming</li>
+          <li>Aiming down sights</li>
+          <li>The original round rules and objectives</li>
+          <li>Testing across separate PCs and the internet</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band download" id="download">
+  <div class="wrap dl-grid">
+    <div class="dl-main">
+      <span class="eyebrow">Download</span>
+      <h2>Get TrueCombat: Platinum</h2>
+      <ol class="steps">
+        <li><span><b>Download</b> the <span class="mono">TrueCombat-Platinum-…-Windows-x64.zip</span> from the latest release.</span></li>
+        <li><span><b>Extract the whole folder</b> somewhere you can write to, such as Documents or Games. Not Program Files.</span></li>
+        <li><span><b>Run TrueCombatPlatinum.exe</b>, pick a name and press PLAY. The launcher keeps itself up to date from then on.</span></li>
+      </ol>
+      <div class="hero-cta">
+        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="stack"><span class="big">Download <span data-version>v0.29.0</span></span><span class="small"><span data-size>767 MB</span> zip · <span data-date>5 Nov 2026</span></span></span>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">All releases</a>
+      </div>
+    </div>
+    <aside class="reqs">
+      <h3>What you need</h3>
+      <dl>
+        <dt>System</dt><dd>Windows 10 or 11, 64-bit</dd>
+        <dt>Graphics</dt><dd>A DirectX 12 card. Older cards can use Safe start (OpenGL).</dd>
+        <dt>DLSS / DLAA</dt><dd>Optional, NVIDIA RTX cards</dd>
+        <dt>Disk</dt><dd>About 800 MB download</dd>
+        <dt>Includes</dt><dd>Everything needed to play. No separate TC:E or Enemy Territory install.</dd>
+      </dl>
+    </aside>
+  </div>
+</section>
+
+<section class="band" id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Questions</span>
+      <h2>Before you play</h2>
+    </div>
+    <div class="faq">
+      <div><h3>Is it free?</h3><p>Yes. Download it from GitHub Releases and play. Each release includes its source code and the licenses for the original game files.</p></div>
+      <div><h3>Can I play online?</h3><p>You can host and join servers from the launcher. So far it has been tested on one PC over local connections, so expect rough edges across separate PCs and the internet.</p></div>
+      <div><h3>Is this complete TC:E?</h3><p>Not yet. It is a native sandbox: movement, hit zones, the HUD and hosting are in, while recoil, spread, penetration and the original round rules are still being rebuilt.</p></div>
+      <div><h3>DirectX 12 won't start. What now?</h3><p>Press <b>Safe start</b> in the launcher. It runs the game on OpenGL in a 1280 × 720 window, and the game also falls back to OpenGL by itself if DirectX 12 fails.</p></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/team-terminus.webp" alt="Team Terminus" width="320" height="320">
+      <div class="who">
+        <b>Team Terminus</b>
+        <span>TrueCombat: Platinum is developed by RaziC*.</span>
+      </div>
+      <nav aria-label="Footer">
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="#patch-notes">Patch notes</a>
+        <a href="#download">Download</a>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Screenshot viewer">
+  <button class="lb-btn lb-close" type="button" aria-label="Close">✕</button>
+  <button class="lb-btn lb-prev" type="button" aria-label="Previous">‹</button>
+  <figure><img id="lb-img" alt=""><figcaption id="lb-cap"></figcaption></figure>
+  <button class="lb-btn lb-next" type="button" aria-label="Next">›</button>
+</div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* hero slideshow, like the launcher header */
+  var wrap = document.getElementById('slides');
+  var slides = Array.prototype.slice.call(wrap.children);
+  var nameEl = document.getElementById('slide-name');
+  var dots = document.getElementById('dots');
+  slides.forEach(function () { dots.appendChild(document.createElement('i')); });
+  var cur = 0;
+  function show(i) {
+    slides.forEach(function (s, k) { s.classList.toggle('on', k === i); dots.children[k].classList.toggle('on', k === i); });
+    nameEl.textContent = slides[i].dataset.name;
+  }
+  show(0);
+  if (!reduce) {
+    setInterval(function () { wrap.classList.add('started'); cur = (cur + 1) % slides.length; show(cur); }, 6500);
+  }
+
+  /* latest release from GitHub; the static values stay if this fails */
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  fetch('https://api.github.com/repos/Annoximeme/TrueCombat-Platinum/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (rel) {
+      var m = /^v?(\d+\.\d+\.\d+)/.exec(rel.tag_name || '');
+      var zip = (rel.assets || []).filter(function (a) { return /Windows-x64\.zip$/i.test(a.name); })[0];
+      document.querySelectorAll('[data-version]').forEach(function (el) { if (m) el.textContent = 'v' + m[1]; });
+      if (zip) {
+        var mb = Math.round(zip.size / 1048576);
+        document.querySelectorAll('[data-size]').forEach(function (el) { el.textContent = mb.toLocaleString('en') + ' MB'; });
+        document.querySelectorAll('[data-download]').forEach(function (el) { el.href = zip.browser_download_url; });
+      }
+      if (rel.published_at) {
+        var d = new Date(rel.published_at);
+        document.querySelectorAll('[data-date]').forEach(function (el) { el.textContent = d.getUTCDate() + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); });
+      }
+    })
+    .catch(function () {});
+
+  /* preset comparison */
+  var cmp = document.getElementById('compare');
+  var range = document.getElementById('cmp-range');
+  range.addEventListener('input', function () { cmp.style.setProperty('--pos', range.value + '%'); });
+  var right = document.getElementById('cmp-right');
+  var tag = document.getElementById('cmp-tag');
+  document.querySelectorAll('[data-preset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      var p = b.dataset.preset;
+      right.src = 'img/preset-' + p + '.jpg';
+      right.alt = 'Railhouse backyard on the ' + b.textContent + ' preset';
+      tag.textContent = b.textContent;
+    });
+  });
+
+  /* lightbox */
+  var shots = Array.prototype.slice.call(document.querySelectorAll('#gallery-grid .shot'));
+  var lb = document.getElementById('lightbox');
+  var lbImg = document.getElementById('lb-img');
+  var lbCap = document.getElementById('lb-cap');
+  var at = 0, opener = null;
+  function open(i) {
+    at = (i + shots.length) % shots.length;
+    var img = shots[at].querySelector('img');
+    lbImg.src = img.src; lbImg.alt = img.alt;
+    lbCap.textContent = shots[at].querySelector('b').textContent + ' · ' + img.alt;
+    lb.hidden = false;
+    lb.querySelector('.lb-close').focus();
+  }
+  function close() { lb.hidden = true; if (opener) opener.focus(); }
+  shots.forEach(function (s, i) { s.querySelector('button').addEventListener('click', function (e) { opener = e.currentTarget; open(i); }); });
+  lb.querySelector('.lb-close').addEventListener('click', close);
+  lb.querySelector('.lb-prev').addEventListener('click', function () { open(at - 1); });
+  lb.querySelector('.lb-next').addEventListener('click', function () { open(at + 1); });
+  lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (lb.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') open(at - 1);
+    if (e.key === 'ArrowRight') open(at + 1);
+  });
+})();
+</script>
+</body>
+</html>
