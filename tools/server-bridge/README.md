@@ -15,13 +15,12 @@ python test_stats.py       # loopback test of signed uploads, ranks, ratings, pr
 Player stats and ranks live in `tcp_stats.py` (SQLite). The bridge serves them when started with
 `--stats-db`; `tcp_stats.py serve` runs the same service on its own if you want it on a different host.
 
-## Going live
+## Hosting
 
-1. Run it on the same machine as `platinum-master`, or any machine that can reach it.
-2. Put it behind HTTPS (Caddy, nginx or a Cloudflare Tunnel), for example at `https://api.truecombat.eu`.
-3. Set `TCP_API = 'https://api.truecombat.eu'` at the top of `docs/js/site.js` and run `python tools/website/build.py`.
-
-Until `TCP_API` is set, both pages show "Master server offline".
+The live instance runs on the project VPS next to `platinum-master`, behind Caddy
+at `https://api.truecombat.eu`. `TCP_API` at the top of `docs/js/site.js` points
+the site at it; after changing it, run `python tools/website/build.py`. If
+`TCP_API` is empty, both pages show "Master server offline".
 
 `--cors` limits which sites may read the JSON. It defaults to truecombat.eu.
 Game servers can set the serverinfo cvar `tcp_mode` (for example `Team elimination`) so the list shows a readable
