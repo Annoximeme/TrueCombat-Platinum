@@ -144,22 +144,22 @@
   {
    "en": "Leaning and ladders",
    "nl": "Leunen en ladders",
-   "version": null
+   "version": "0.32"
   },
   {
    "en": "Glass debris",
    "nl": "Glasscherven",
-   "version": null
+   "version": "0.32"
   },
   {
    "en": "Defusing the bomb with pliers",
    "nl": "De bom onschadelijk maken met een tang",
-   "version": null
+   "version": "0.32"
   },
   {
    "en": "Spectator mode",
    "nl": "Toeschouwersmodus",
-   "version": null
+   "version": "0.32"
   },
   {
    "en": "Aiming down sights with the original muzzle flash",
@@ -169,7 +169,7 @@
   {
    "en": "Swimming",
    "nl": "Zwemmen",
-   "version": null
+   "version": "0.32"
   },
   {
    "en": "Launcher-only download with a full Windows installer",
@@ -184,6 +184,46 @@
   {
    "en": "Competitive match mode",
    "nl": "Competitieve wedstrijdmodus",
+   "version": "0.32"
+  },
+  {
+   "en": "Original TC:E movement speed",
+   "nl": "Originele TC:E-bewegingssnelheid",
+   "version": "0.32"
+  },
+  {
+   "en": "Bots that play the objective",
+   "nl": "Bots die voor het doel spelen",
+   "version": "0.32"
+  },
+  {
+   "en": "New-player welcome and offline practice with bots",
+   "nl": "Welkom voor nieuwe spelers en offline oefenen met bots",
+   "version": "0.32"
+  },
+  {
+   "en": "Original third-person animations",
+   "nl": "Originele animaties in derde persoon",
+   "version": "0.32"
+  },
+  {
+   "en": "Suppressors in the Deployment Menu",
+   "nl": "Geluiddempers in het Deployment Menu",
+   "version": "0.32"
+  },
+  {
+   "en": "Ultrawide and 4:3 screen support",
+   "nl": "Ondersteuning voor ultrawide- en 4:3-schermen",
+   "version": "0.32"
+  },
+  {
+   "en": "Modern Ultra visuals: new tonemapping, TAA and ambient occlusion",
+   "nl": "Moderne Ultra-graphics: nieuwe tonemapping, TAA en ambient occlusion",
+   "version": null
+  },
+  {
+   "en": "Ledge climbing",
+   "nl": "Klimmen op randen",
    "version": null
   }
  ]
