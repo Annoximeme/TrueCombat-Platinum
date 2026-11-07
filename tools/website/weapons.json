@@ -189,8 +189,8 @@
    "id": "rifles",
    "title_en": "Rifles and carbines",
    "title_nl": "Geweren en karabijnen",
-   "sub_en": "The all-rounders. The M4 is the one in the game today.",
-   "sub_nl": "De allrounders. De M4 zit nu al in het spel.",
+   "sub_en": "The all-rounders: accurate at range and controllable up close.",
+   "sub_nl": "De allrounders: nauwkeurig op afstand en goed onder controle van dichtbij.",
    "weapons": [
     {
      "name": "M4",

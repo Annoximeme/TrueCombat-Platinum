@@ -132,9 +132,9 @@
    "version": "0.31"
   },
   {
-   "en": "Stats and leaderboards going live",
-   "nl": "Statistieken en ranglijsten live",
-   "version": null
+   "en": "Official EU server and live leaderboards",
+   "nl": "Officiële EU-server en live ranglijsten",
+   "version": "0.31"
   },
   {
    "en": "Easy Anti-Cheat",
@@ -162,13 +162,28 @@
    "version": null
   },
   {
-   "en": "Swimming and aiming down sights",
-   "nl": "Zwemmen en richten over het vizier",
+   "en": "Aiming down sights with the original muzzle flash",
+   "nl": "Richten over het vizier met de originele mondingsflits",
    "version": null
   },
   {
-   "en": "Testing across separate PCs and the internet",
-   "nl": "Testen tussen aparte pc's en via internet",
+   "en": "Swimming",
+   "nl": "Zwemmen",
+   "version": null
+  },
+  {
+   "en": "Launcher-only download with a full Windows installer",
+   "nl": "Alleen de launcher downloaden, met een volwaardige Windows-installer",
+   "version": null
+  },
+  {
+   "en": "Stay on an older version for modded servers",
+   "nl": "Op een oudere versie blijven voor servers met mods",
+   "version": null
+  },
+  {
+   "en": "Competitive match mode",
+   "nl": "Competitieve wedstrijdmodus",
    "version": null
   }
  ]
