@@ -1,6 +1,6 @@
 /* TrueCombat: Platinum website: shared script for every page (English and Dutch).
    Sections opt in with data attributes:
-     [data-download]              download buttons, pointed at the newest full zip
+     [data-download]              download buttons, pointed at the newest installer (TrueCombat-Platinum-Setup.exe)
      [data-releases="5"|"all"]    patch notes from GitHub Releases (static HTML stays as fallback)
      [data-servers="5"|"all"]     live server list from the bridge (tools/server-bridge)
      [data-leaderboard]           leaderboards from the bridge (rows link to player.html?id=)
@@ -136,10 +136,19 @@ var TCP_API = 'https://api.truecombat.eu';
   }
   function applyDownload(rels) {
     $all('[data-version]').forEach(function (el) { el.textContent = verOf(rels[0]); });
-    for (var i = 0; i < rels.length; i++) {
-      var zip = (rels[i].assets || []).filter(function (a) { return /Windows-x64\.zip$/i.test(a.name); })[0];
-      if (!zip) continue;
-      var mb = Math.round(zip.size / 1048576).toLocaleString(lang) + ' MB';
+    /* The installer is small and the launcher fetches the game itself. Older
+       releases without one fall back to their full zip so the button always works. */
+    var pick = function (re) {
+      for (var i = 0; i < rels.length; i++) {
+        var a = (rels[i].assets || []).filter(function (x) { return re.test(x.name); })[0];
+        if (a) return { rel: rels[i], asset: a };
+      }
+      return null;
+    };
+    var found = pick(/^TrueCombat-Platinum-Setup\.exe$/i) || pick(/Windows-x64\.zip$/i);
+    if (found) {
+      var zip = found.asset, i = rels.indexOf(found.rel);
+      var mb = Math.max(1, Math.round(zip.size / 1048576)).toLocaleString(lang) + ' MB';
       $all('[data-size]').forEach(function (el) { el.textContent = mb; });
       $all('[data-date]').forEach(function (el) { el.textContent = fmtDate(rels[i].published_at); });
       $all('[data-download]').forEach(function (el) { el.href = zip.browser_download_url; });

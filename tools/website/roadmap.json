@@ -174,12 +174,12 @@
   {
    "en": "Launcher-only download with a full Windows installer",
    "nl": "Alleen de launcher downloaden, met een volwaardige Windows-installer",
-   "version": null
+   "version": "0.32"
   },
   {
    "en": "Stay on an older version for modded servers",
    "nl": "Op een oudere versie blijven voor servers met mods",
-   "version": null
+   "version": "0.32"
   },
   {
    "en": "Competitive match mode",
