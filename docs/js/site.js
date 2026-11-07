@@ -15,7 +15,7 @@ var TCP_API = 'https://api.truecombat.eu';
   var DICT = {
     en: {
       months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-      latest: 'Latest', offline: 'Master server offline', online: 'Online', loading: 'Checking…',
+      latest: 'Latest', kindSetupLong: 'Windows installer', kindSetup: 'Installer', kindZip: 'Full game, zip', offline: 'Master server offline', online: 'Online', loading: 'Checking…',
       noServersOffline: 'No public servers yet. This list fills in automatically when the master server is running.',
       noServers: 'Nobody is hosting a public server right now. Host one from the launcher with List publicly switched on.',
       players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied',
@@ -33,7 +33,7 @@ var TCP_API = 'https://api.truecombat.eu';
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
-      latest: 'Nieuwste', offline: 'Masterserver offline', online: 'Online', loading: 'Bezig…',
+      latest: 'Nieuwste', kindSetupLong: 'Windows-installatieprogramma', kindSetup: 'Installatieprogramma', kindZip: 'Volledig spel, zip', offline: 'Masterserver offline', online: 'Online', loading: 'Bezig…',
       noServersOffline: 'Nog geen publieke servers. Deze lijst vult zich vanzelf zodra de masterserver draait.',
       noServers: 'Er host nu niemand een publieke server. Host er zelf een vanuit de launcher met Openbaar tonen aan.',
       players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd',
@@ -152,6 +152,10 @@ var TCP_API = 'https://api.truecombat.eu';
       $all('[data-size]').forEach(function (el) { el.textContent = mb; });
       $all('[data-date]').forEach(function (el) { el.textContent = fmtDate(rels[i].published_at); });
       $all('[data-download]').forEach(function (el) { el.href = zip.browser_download_url; });
+      var setup = /\.exe$/i.test(zip.name);
+      $all('[data-kind]').forEach(function (el) {
+        el.textContent = setup ? (el.dataset.kind === 'long' ? L.kindSetupLong : L.kindSetup) : L.kindZip;
+      });
       return;
     }
   }
@@ -483,7 +487,8 @@ var TCP_API = 'https://api.truecombat.eu';
     var vh = window.innerHeight || 800;
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (!en.isIntersecting) return;
+        /* reveal on entry, and also anything already scrolled past (fast scrolls, anchor jumps) */
+        if (!en.isIntersecting && en.boundingClientRect.top > 0) return;
         var el = en.target, sib = el.parentNode ? Array.prototype.indexOf.call(el.parentNode.children, el) : 0;
         el.style.transitionDelay = Math.min(sib, 5) * 60 + 'ms';
         el.classList.add('in'); io.unobserve(el);
