@@ -3,7 +3,9 @@
      [data-download]              download buttons, pointed at the newest full zip
      [data-releases="5"|"all"]    patch notes from GitHub Releases (static HTML stays as fallback)
      [data-servers="5"|"all"]     live server list from the bridge (tools/server-bridge)
-     [data-leaderboard]           leaderboards from the bridge
+     [data-leaderboard]           leaderboards from the bridge (rows link to player.html?id=)
+     [data-player]                player profile page (player.html?id=<player id>)
+     [data-gallery]               screenshot grid with filter tabs and a lightbox (media page)
      [data-yt]                    click-to-play YouTube embed (privacy-enhanced, nothing loads before a click)
    Set TCP_API to the bridge's public https URL once it is hosted. Empty means "offline". */
 var TCP_API = 'https://api.truecombat.eu';
@@ -23,7 +25,11 @@ var TCP_API = 'https://api.truecombat.eu';
       soon: 'Coming soon', matches: 'matches', rating: 'Rating', peak: 'Peak', kd: 'K/D', headshots: 'Headshots', wins: 'Wins', played: 'Played', accuracy: 'Accuracy',
       xpTo: 'XP to', topRank: 'Highest rank reached', weapons: 'Weapons', recent: 'Recent matches', close: 'Close', notRanked: 'Not ranked yet: finish three matches.',
       position: 'Position', noPlayer: 'No player found with that name.', unknownPlayer: 'This player has no recorded matches yet.', won: 'Win', lost: 'Loss', hours: 'h', minutes: 'min',
-      play: 'Play the trailer', notesFailed: 'GitHub could not be reached. Showing the notes built into this page.'
+      play: 'Play the trailer', notesFailed: 'GitHub could not be reached. Showing the notes built into this page.',
+      kills: 'Kills', deaths: 'Deaths', winRate: 'Win rate', damage: 'Damage', objectives: 'Objectives', roundsWon: 'Rounds won', teamKills: 'Team kills',
+      profile: 'Player profile', firstSeen: 'First seen', lastSeen: 'Last seen', copyLink: 'Copy profile link', linkCopied: 'Link copied',
+      trendShort: 'Rating history appears after two rated matches.', lastN: 'Last {n} matches', found: '{n} found',
+      apiOffline: 'Player stats are offline right now. Please try again in a few minutes.', screenshots: 'screenshots'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -37,7 +43,11 @@ var TCP_API = 'https://api.truecombat.eu';
       soon: 'Binnenkort', matches: 'potjes', rating: 'Rating', peak: 'Hoogste', kd: 'K/D', headshots: 'Headshots', wins: 'Winst', played: 'Gespeeld', accuracy: 'Trefzekerheid',
       xpTo: 'XP tot', topRank: 'Hoogste rang bereikt', weapons: 'Wapens', recent: 'Laatste potjes', close: 'Sluiten', notRanked: 'Nog niet gerankt: speel drie potjes uit.',
       position: 'Positie', noPlayer: 'Geen speler met die naam gevonden.', unknownPlayer: 'Van deze speler zijn nog geen potjes bekend.', won: 'Winst', lost: 'Verlies', hours: 'u', minutes: 'min',
-      play: 'Speel de trailer af', notesFailed: 'GitHub was niet bereikbaar. Je ziet de notities die in deze pagina zitten.'
+      play: 'Speel de trailer af', notesFailed: 'GitHub was niet bereikbaar. Je ziet de notities die in deze pagina zitten.',
+      kills: 'Kills', deaths: 'Doden', winRate: 'Winstpercentage', damage: 'Schade', objectives: 'Doelen', roundsWon: 'Rondes gewonnen', teamKills: 'Teamkills',
+      profile: 'Spelersprofiel', firstSeen: 'Eerst gezien', lastSeen: 'Laatst gezien', copyLink: 'Profiellink kopiëren', linkCopied: 'Link gekopieerd',
+      trendShort: 'Het ratingverloop verschijnt na twee gerankte potjes.', lastN: 'Laatste {n} potjes', found: '{n} gevonden',
+      apiOffline: 'De spelersstatistieken zijn nu offline. Probeer het over een paar minuten opnieuw.', screenshots: 'screenshots'
     }
   };
   var L = DICT[lang] || DICT.en;
@@ -199,19 +209,22 @@ var TCP_API = 'https://api.truecombat.eu';
   });
 
   /* ---------- leaderboards and player profiles (stats service JSON, tools/server-bridge/tcp_stats.py) ---------- */
+  function num(n) { return (n || 0).toLocaleString(lang); }
+  function pct(n) { return Math.round((n || 0) * 100) + '%'; }
+  function badge(r) { return r ? '<span class="badge" title="' + esc(r.title) + '">' + esc(r.short) + '</span>' : ''; }
+  function dur(s) { var h = Math.floor((s || 0) / 3600), m = Math.round(((s || 0) % 3600) / 60); return h ? h + ' ' + L.hours + ' ' + m + ' ' + L.minutes : m + ' ' + L.minutes; }
+  function kdOf(p) { return p.deaths ? p.kills / p.deaths : (p.kills || 0); }
+  function profileHref(id) { return 'player.html?id=' + encodeURIComponent(id); }
+  var PID = /^[0-9a-f]{16}$/;
+
   $all('[data-leaderboard]').forEach(function (root) {
     var tbody = root.querySelector('tbody');
     var empty = root.querySelector('.lb-empty');
-    var profile = root.querySelector('[data-lb-profile]');
     var search = root.querySelector('[data-lb-search]');
     var state = { period: 'all', sort: 'rating', data: {}, found: null };
-    function num(n) { return (n || 0).toLocaleString(lang); }
-    function pct(n) { return Math.round((n || 0) * 100) + '%'; }
-    function badge(r) { return r ? '<span class="badge" title="' + esc(r.title) + '">' + esc(r.short) + '</span>' : ''; }
-    function dur(s) { var h = Math.floor((s || 0) / 3600), m = Math.round(((s || 0) % 3600) / 60); return h ? h + ' ' + L.hours + ' ' + m + ' ' + L.minutes : m + ' ' + L.minutes; }
-    function prep(p) { p.kd = p.deaths ? p.kills / p.deaths : p.kills; p.hs = p.kills ? p.headshots / p.kills : 0; p.xp = p.rank ? p.rank.xp : 0; return p; }
+    function prep(p) { p.kd = kdOf(p); p.hs = p.kills ? p.headshots / p.kills : 0; p.xp = p.rank ? p.rank.xp : 0; return p; }
     function row(p, i) {
-      return '<tr><td class="rank">' + (i + 1) + '</td><td><a class="who" href="#player=' + esc(p.id) + '">' + esc(p.name) + '</a></td>' +
+      return '<tr><td class="rank">' + (i + 1) + '</td><td><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a></td>' +
         '<td>' + badge(p.rank) + '</td><td>' + num(p.rating) + '</td><td>' + num(p.matches) + '</td><td>' + num(p.kills) +
         '</td><td>' + p.kd.toFixed(2) + '</td><td>' + pct(p.hs) + '</td><td>' + num(p.wins) + '</td><td>' + esc(p.topWeapon || '–') + '</td></tr>';
     }
@@ -231,42 +244,9 @@ var TCP_API = 'https://api.truecombat.eu';
         setPill(root, false, TCP_API ? L.offline : L.soon); empty.textContent = L.lbOffline; empty.hidden = false;
       });
     }
-    function showProfile(id) {
-      if (!profile) return;
-      if (!id) { profile.hidden = true; profile.innerHTML = ''; return; }
-      api('/player.json?id=' + encodeURIComponent(id)).then(function (p) {
-        var r = p.rank || {};
-        var span = r.xpNext ? (r.xp - r.xpThis) / (r.xpNext - r.xpThis) : 1;
-        var facts = [[L.rating, num(p.rating)], [L.peak, num(p.peakRating)], [L.position, p.position ? '#' + p.position : '–'],
-          [L.matches, num(p.matches)], [L.wins, num(p.wins)], ['Kills', num(p.kills)], [L.kd, (p.deaths ? p.kills / p.deaths : p.kills).toFixed(2)],
-          [L.headshots, pct(p.kills ? p.headshots / p.kills : 0)], [L.played, dur(p.timePlayed)]];
-        var weapons = (p.weapons || []).slice(0, 6).map(function (w) {
-          return '<tr><td>' + esc(w.name) + '</td><td>' + num(w.kills) + '</td><td>' + num(w.headshots) + '</td><td>' + (w.accuracy == null ? '–' : pct(w.accuracy)) + '</td></tr>';
-        }).join('');
-        var recent = (p.recent || []).slice(0, 10).map(function (m) {
-          var c = m.ratingChange || 0;
-          return '<tr><td>' + fmtDate(m.ended) + '</td><td>' + mapLabel(m.map) + '</td><td>' + esc(m.mode || '') + '</td><td>' + (m.won ? L.won : L.lost) +
-            '</td><td>' + num(m.kills) + ' / ' + num(m.deaths) + '</td><td class="' + (c > 0 ? 'up' : c < 0 ? 'down' : '') + '">' + (c > 0 ? '+' : '') + c + '</td></tr>';
-        }).join('');
-        profile.innerHTML = '<div class="top"><div><h4>' + esc(p.name) + ' ' + badge(r) + '</h4><div class="muted">' + esc(r.title || '') +
-          (r.xpNext ? ' · ' + num(r.xpNext - r.xp) + ' ' + L.xpTo + ' ' + esc(nextTitle(r.level)) : ' · ' + L.topRank) +
-          (p.ranked ? '' : ' · ' + L.notRanked) + '</div></div><button type="button" class="close" data-close>' + L.close + '</button></div>' +
-          '<div class="xpbar"><i style="width:' + Math.max(0, Math.min(100, span * 100)).toFixed(1) + '%"></i></div>' +
-          '<div class="facts">' + facts.map(function (f) { return '<div><b>' + f[1] + '</b><span>' + f[0] + '</span></div>'; }).join('') + '</div>' +
-          (weapons ? '<div class="table-scroll"><table class="srv-table"><thead><tr><th>' + L.weapons + '</th><th>Kills</th><th>HS</th><th>' + L.accuracy + '</th></tr></thead><tbody>' + weapons + '</tbody></table></div>' : '') +
-          (recent ? '<div class="table-scroll"><table class="srv-table"><thead><tr><th colspan="6">' + L.recent + '</th></tr></thead><tbody>' + recent + '</tbody></table></div>' : '');
-        profile.hidden = false;
-        profile.scrollIntoView({ block: 'nearest' });
-      }, function () { profile.innerHTML = '<p class="muted">' + L.unknownPlayer + '</p>'; profile.hidden = false; });
-    }
-    var RANK_TITLES = null;
-    function nextTitle(level) { return RANK_TITLES && RANK_TITLES[level] ? RANK_TITLES[level].title : ''; }
-    if (TCP_API) api('/ranks.json').then(function (d) { RANK_TITLES = d.ranks; }, function () {});
-    function fromHash() { if (!TCP_API) return; var m = /player=([0-9a-f]{16})/.exec(location.hash); showProfile(m && m[1]); }
-    window.addEventListener('hashchange', fromHash);
-    if (profile) profile.addEventListener('click', function (e) {
-      if (e.target.closest('[data-close]')) { history.replaceState(null, '', location.pathname + location.search); showProfile(null); }
-    });
+    /* old links: leaderboards.html#player=<id> now open the profile page */
+    var old = /player=([0-9a-f]{16})/.exec(location.hash);
+    if (old) location.replace(profileHref(old[1]));
     if (search && !TCP_API) search.hidden = true;
     if (search && TCP_API) {
       var timer = null;
@@ -291,7 +271,168 @@ var TCP_API = 'https://api.truecombat.eu';
       });
     });
     load();
-    fromHash();
+  });
+
+  /* ---------- player profile page ---------- */
+  $all('[data-player]').forEach(function (root) {
+    function q(sel) { return root.querySelector(sel); }
+    var id = (new URLSearchParams(location.search).get('id') || '').toLowerCase();
+    var search = q('[data-pf-search]');
+    var results = q('[data-pf-results]');
+
+    function showSearch(players) {
+      var tb = results.querySelector('tbody'), empty = results.querySelector('.srv-empty');
+      q('[data-pf-count]').textContent = L.found.replace('{n}', players.length);
+      tb.innerHTML = players.map(function (p) {
+        return '<tr><td><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a></td><td>' + badge(p.rank) + '</td><td>' + num(p.rating) +
+          '</td><td>' + num(p.matches) + '</td><td>' + num(p.kills) + '</td><td>' + kdOf(p).toFixed(2) + '</td></tr>';
+      }).join('');
+      empty.hidden = players.length > 0;
+      results.hidden = false;
+    }
+    if (search) {
+      if (!TCP_API) search.hidden = true;
+      var timer = null;
+      var find = function () {
+        var term = search.q.value.trim();
+        if (term.length < 2) { results.hidden = true; return; }
+        api('/search.json?q=' + encodeURIComponent(term)).then(function (d) { showSearch(d.players || []); }, function () {});
+      };
+      search.addEventListener('submit', function (e) { e.preventDefault(); find(); });
+      search.q.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(find, 300); });
+    }
+
+    function missing(text) { var m = q('[data-pf-missing]'); q('[data-pf-missing-text]').textContent = text; m.hidden = false; }
+    if (!id) return;
+    if (!PID.test(id)) { missing(L.unknownPlayer); return; }
+    if (!TCP_API) { missing(L.apiOffline); return; }
+
+    function chart(p) {
+      var rec = (p.recent || []).slice().reverse();
+      var box = q('[data-pf-chart]');
+      if (rec.length < 2) { box.innerHTML = '<p class="muted">' + L.trendShort + '</p>'; q('[data-pf-trend-note]').hidden = true; return; }
+      q('[data-pf-trend-note]').textContent = L.lastN.replace('{n}', rec.length);
+      var total = rec.reduce(function (s, m) { return s + (m.ratingChange || 0); }, 0);
+      var r = p.rating - total, pts = [r];
+      rec.forEach(function (m) { r += m.ratingChange || 0; pts.push(r); });
+      var lo = Math.min.apply(null, pts), hi = Math.max.apply(null, pts);
+      if (hi - lo < 20) { var mid = (hi + lo) / 2; lo = mid - 10; hi = mid + 10; }
+      var W = 640, H = 180, P = 14;
+      function x(i) { return P + i * (W - 2 * P) / (pts.length - 1); }
+      function y(v) { return P + (hi - v) * (H - 2 * P) / (hi - lo); }
+      var line = pts.map(function (v, i) { return x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ');
+      var area = 'M' + x(0).toFixed(1) + ',' + (H - P) + ' L' + line.replace(/ /g, ' L') + ' L' + x(pts.length - 1).toFixed(1) + ',' + (H - P) + ' Z';
+      var dots = rec.map(function (m, i) {
+        return '<circle cx="' + x(i + 1).toFixed(1) + '" cy="' + y(pts[i + 1]).toFixed(1) + '" r="3.5" class="' + (m.won ? 'w' : 'l') + '"><title>' +
+          esc(fmtDate(m.ended)) + ' · ' + esc(MAPS[String(m.map || '').toLowerCase()] || m.map) + ' · ' + (m.won ? L.won : L.lost) + ' · ' + Math.round(pts[i + 1]) + '</title></circle>';
+      }).join('');
+      box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(L.rating) + ': ' + Math.round(pts[0]) + ' → ' + p.rating + '">' +
+        '<path d="' + area + '" class="area"/><polyline points="' + line + '" class="line"/>' + dots + '</svg>' +
+        '<div class="pf-scale"><span>' + Math.round(hi) + '</span><span>' + Math.round(lo) + '</span></div>';
+    }
+
+    api('/player.json?id=' + id).then(function (p) {
+      var r = p.rank || {};
+      document.title = p.name + ' · ' + L.profile + ' · TrueCombat: Platinum';
+      q('[data-pf-name]').textContent = p.name;
+      q('[data-pf-lede]').hidden = true;
+      if (search) search.hidden = true;
+      var span = r.xpNext ? (r.xp - r.xpThis) / (r.xpNext - r.xpThis) : 1;
+      var rank = q('[data-pf-rank]');
+      rank.innerHTML = '<div class="pf-rank-top">' + badge(r) + '<b>' + esc(r.title || '') + '</b><span class="muted">' + num(r.xp) + ' XP' +
+        (r.xpNext ? ' · ' + num(r.xpNext - r.xp) + ' ' + L.xpTo + ' <span data-next-title></span>' : ' · ' + L.topRank) + '</span></div>' +
+        '<div class="xpbar"><i style="width:' + Math.max(0, Math.min(100, span * 100)).toFixed(1) + '%"></i></div>' +
+        (p.ranked ? '' : '<p class="muted">' + L.notRanked + '</p>');
+      rank.hidden = false;
+      if (r.xpNext) api('/ranks.json').then(function (d) {
+        var next = (d.ranks || [])[r.level]; var el = rank.querySelector('[data-next-title]'); if (next && el) el.textContent = next.title;
+      }, function () {});
+
+      var tiles = [
+        [L.rating, num(p.rating), L.peak + ' ' + num(p.peakRating)],
+        [L.position, p.position ? '#' + num(p.position) : '–', ''],
+        [L.matches, num(p.matches), dur(p.timePlayed)],
+        [L.winRate, p.matches ? pct(p.wins / p.matches) : '–', num(p.wins) + ' ' + L.wins.toLowerCase()],
+        [L.kills, num(p.kills), num(p.deaths) + ' ' + L.deaths.toLowerCase()],
+        [L.kd, kdOf(p).toFixed(2), ''],
+        [L.headshots, pct(p.kills ? p.headshots / p.kills : 0), num(p.headshots)],
+        [L.damage, num(p.damage), ''],
+        [L.roundsWon, num(p.roundsWon), ''],
+        [L.objectives, num(p.objectives), ''],
+        [L.teamKills, num(p.teamKills), '']
+      ];
+      q('[data-pf-stats]').innerHTML = tiles.map(function (t) {
+        return '<div><span>' + t[0] + '</span><b>' + t[1] + '</b>' + (t[2] ? '<small>' + t[2] + '</small>' : '') + '</div>';
+      }).join('');
+
+      var best = Math.max.apply(null, (p.weapons || []).map(function (w) { return w.kills || 0; }).concat([1]));
+      q('[data-pf-weapons]').innerHTML = (p.weapons || []).map(function (w) {
+        return '<tr><td><b>' + esc(w.name) + '</b><span class="pf-bar"><i style="width:' + ((w.kills || 0) / best * 100).toFixed(1) + '%"></i></span></td><td>' +
+          num(w.kills) + '</td><td>' + num(w.headshots) + '</td><td>' + num(w.shots) + '</td><td>' + (w.accuracy == null ? '–' : pct(w.accuracy)) + '</td></tr>';
+      }).join('') || '<tr><td colspan="5">–</td></tr>';
+
+      q('[data-pf-matches]').innerHTML = (p.recent || []).map(function (m) {
+        var c = m.ratingChange || 0;
+        return '<tr><td>' + fmtDate(m.ended) + '</td><td>' + mapLabel(m.map) + '</td><td>' + esc(m.mode || '') + '</td><td class="' + (m.won ? 'up' : 'down') + '">' +
+          (m.won ? L.won : L.lost) + '</td><td>' + num(m.kills) + ' / ' + num(m.deaths) + '</td><td>' + num(m.headshots) + '</td><td>+' + num(m.xp) +
+          '</td><td class="' + (c > 0 ? 'up' : c < 0 ? 'down' : '') + '">' + (c > 0 ? '+' : '') + c + '</td></tr>';
+      }).join('') || '<tr><td colspan="8">–</td></tr>';
+
+      chart(p);
+
+      var foot = q('[data-pf-foot]');
+      foot.innerHTML = (p.firstSeen ? L.firstSeen + ' ' + fmtDate(p.firstSeen) : '') + (p.lastSeen ? ' · ' + L.lastSeen + ' ' + fmtDate(p.lastSeen) : '') +
+        ' · <button type="button" class="pf-copy">' + L.copyLink + '</button>';
+      foot.querySelector('.pf-copy').addEventListener('click', function (e) {
+        var b = e.currentTarget;
+        (navigator.clipboard ? navigator.clipboard.writeText(location.href) : Promise.reject()).then(function () {
+          b.textContent = L.linkCopied; setTimeout(function () { b.textContent = L.copyLink; }, 1600);
+        }, function () {});
+      });
+      q('[data-pf-body]').hidden = false;
+    }, function () { missing(L.unknownPlayer); });
+  });
+
+  /* ---------- media page: filter tabs and lightbox ---------- */
+  $all('[data-gallery]').forEach(function (grid) {
+    var shots = $all('.shot', grid);
+    var count = document.querySelector('[data-media-count]');
+    var filter = document.querySelector('[data-media-filter]');
+    function visible() { return shots.filter(function (s) { return !s.hidden; }); }
+    if (filter) $all('button[data-cat]', filter).forEach(function (b) {
+      b.addEventListener('click', function () {
+        $all('button[data-cat]', filter).forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+        var c = b.dataset.cat;
+        shots.forEach(function (s) { s.hidden = !(c === 'all' || s.dataset.cat === c); });
+        if (count) count.textContent = visible().length + ' ' + L.screenshots;
+      });
+    });
+    var lb = document.querySelector('[data-lightbox]');
+    if (!lb) return;
+    var img = lb.querySelector('img'), cap = lb.querySelector('figcaption');
+    var list = [], at = 0, opener = null;
+    function open(i) {
+      at = (i + list.length) % list.length;
+      var s = list[at], im = s.querySelector('img');
+      img.src = im.dataset.full || im.src; img.alt = im.alt;
+      cap.textContent = s.querySelector('b').textContent + ' · ' + s.querySelector('figcaption span').textContent;
+      lb.hidden = false;
+      lb.querySelector('.lb-close').focus();
+    }
+    function close() { lb.hidden = true; img.removeAttribute('src'); if (opener) opener.focus(); }
+    shots.forEach(function (s) {
+      s.querySelector('button').addEventListener('click', function (e) { opener = e.currentTarget; list = visible(); open(list.indexOf(s)); });
+    });
+    lb.querySelector('.lb-close').addEventListener('click', close);
+    lb.querySelector('.lb-prev').addEventListener('click', function () { open(at - 1); });
+    lb.querySelector('.lb-next').addEventListener('click', function () { open(at + 1); });
+    lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+    document.addEventListener('keydown', function (e) {
+      if (lb.hidden) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') open(at - 1);
+      if (e.key === 'ArrowRight') open(at + 1);
+    });
   });
 
   /* ---------- click-to-play YouTube (youtube-nocookie, loads only after a click) ---------- */
