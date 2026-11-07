@@ -75,8 +75,77 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.29.0" data-ver="v0.29.0" open>
-        <summary><span class="ver">v0.29.0<span class="latest">Latest</span></span><span class="sum">The launcher becomes a full hub with a living map header, a server list and in-launcher news, and movement looks smoother online.</span><span class="meta">#50 · 0.29.0-sandbox20 · 5 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.31.0" data-ver="v0.31.0" open>
+        <summary><span class="ver">v0.31.0<span class="latest">Latest</span></span><span class="sum">The biggest update yet. The full TC:E arsenal, real recoil and penetration, three new game modes, bots, 3D sound, the Deployment Menu, end-of-match map votes, lag compensation, player ranks and server admin tools.</span><span class="meta">#52 · 0.31.0-sandbox22 · 7 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Weapons</h3><ul>
+            <li>The full TC:E weapon roster is in, with each team's own weapons, pistols and grenades, and semi, burst and full-auto fire modes where the original had them.</li>
+            <li>Original recoil and spread. Each weapon kicks, sways and settles like TC:E, aiming (zoom key) tightens your shots, and moving, jumping and landing throw your aim off.</li>
+            <li>Bullets go through walls, doors and crates the way they did in TC:E, losing damage with every surface. Thin cover no longer saves you.</li>
+            <li>Original damage, reload times and weapon-switch times for every weapon, including shell-by-shell shotgun reloads and the nine-pellet shotgun spread.</li>
+            <li>Knife, frag, stun and smoke grenades work again, with stun and blast effects.</li>
+            <li>Weapons now show on other players, with their own original firing and reload sounds.</li>
+          </ul></section>
+          <section><h3>Game modes</h3><ul>
+            <li>New: Team Deathmatch, Flag Capture and Bomb, alongside Practice, Elimination, Team Elimination and Point Capture. Pick them in Hosting.</li>
+            <li>Map objectives, timers, rotating doors, breakable glass and wood, and all map props and ambient sounds are back.</li>
+            <li>End-of-match map vote: when a match ends, everyone votes for the next map with the number keys. Most votes wins.</li>
+          </ul></section>
+          <section><h3>Deployment menu</h3><ul>
+            <li>The original Deployment Menu is back. Choose your team, class and loadout before you spawn, or reopen it any time with the limbo menu key.</li>
+            <li>Team balance is enforced: you cannot join the bigger team.</li>
+          </ul></section>
+          <section><h3>Bots</h3><ul>
+            <li>Practice and fill games with bots. Set the number of bots and their skill (1-5) in Hosting. Bots navigate every stock map, take cover, aim with human-like reaction time and fill empty slots on your server.</li>
+          </ul></section>
+          <section><h3>Sound</h3><ul>
+            <li>Full 3D sound: gunfire, footsteps and ambience come from where they happen and follow your view.</li>
+            <li>Walls muffle sound, rooms have their own echo, and distant gunfire carries across the map.</li>
+            <li>Original surface footsteps for stone, metal, wood, grass, snow, water and more. Walking is silent, sprinting is loud.</li>
+            <li>Optional headphone 3D sound (HRTF): set s_alHRTF 1.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Lag compensation: the server checks your shot against where players were on your screen, so hits you see are hits that count.</li>
+            <li>Recoil, spread and your own shots are now predicted on your PC, so firing feels instant even with high ping.</li>
+            <li>Fewer lost inputs on unstable connections (cl_packetdup now defaults to 2).</li>
+          </ul></section>
+          <section><h3>Ranks and stats</h3><ul>
+            <li>Your kills, deaths, accuracy, headshots and wins now count towards an XP rank and a skill rating, shown on the Leaderboards page of the website. No account needed.</li>
+          </ul></section>
+          <section><h3>Server hosts</h3><ul>
+            <li>New admin commands over rcon: kick, ban, unban, ban list, and an admin log.</li>
+            <li>Edit the map rotation live with maprotation add, remove and move. It is saved and survives a restart. Set rounds per map with g_roundlimit.</li>
+            <li>Built-in cheat detection: the server flags speed hacks, timing tricks, aim snaps and altered game files.</li>
+          </ul></section>
+          <section><h3>Performance</h3><ul>
+            <li>Smoother DirectX 12: render states are prepared while the map loads instead of in the middle of a fight, removing most first-time stutters.</li>
+          </ul></section>
+          <section><h3>Launcher</h3><ul>
+            <li>The public server list is live: hosted games that choose List publicly now show up for everyone in the Servers tab.</li>
+            <li>Hosting now offers Team Deathmatch, Flag Capture and Bomb, plus bot count and skill.</li>
+            <li>If the game crashes, the launcher offers to save a crash report you can send us, and Report a problem includes it.</li>
+          </ul></section>
+          <section><h3>Also new since 0.29.0</h3><ul>
+            <li>HD textures for the world, models, HUD and menus. Remove the zzz_hd_*.pk3 files from tcetest to get the original look back.</li>
+            <li>Low / High / Ultra graphics presets. High is the default, and Ultra adds stronger effects and NVIDIA DLAA where available.</li>
+            <li>The original TC:E chat box, kill feed, death notices and Tab scoreboard.</li>
+            <li>The M83 smoke can be thrown underhand: press the zoom key with the M83 in hand.</li>
+            <li>Updates now download only the files that changed.</li>
+            <li>The Servers tab shows the public server list. Hosts can choose List publicly in Hosting &amp; favorites.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is prepared but not switched on yet.</li>
+            <li>Leaning, ladders, swimming and the spectator mode are still to come.</li>
+            <li>Your weapon choice resets after a map restart. Pick it again in the Deployment Menu.</li>
+            <li>Tested on one PC over local connections. Separate PCs and the internet are not verified yet.</li>
+            <li>Use the separate RC8 download for complete TC:E matches.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.31.0-sandbox22">GitHub ↗</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.29.0" data-ver="v0.29.0">
+        <summary><span class="ver">v0.29.0</span><span class="sum">The launcher becomes a full hub with a living map header, a server list and in-launcher news, and movement looks smoother online.</span><span class="meta">#50 · 0.29.0-sandbox20 · 5 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Launcher</h3><ul>
             <li>The header now moves slowly through real in-game shots of all six maps and cross-fades between them.</li>
