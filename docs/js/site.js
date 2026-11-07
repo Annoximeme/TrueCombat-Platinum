@@ -18,7 +18,7 @@ var TCP_API = 'https://api.truecombat.eu';
       latest: 'Latest', offline: 'Master server offline', online: 'Online', loading: 'Checking…',
       noServersOffline: 'No public servers yet. This list fills in automatically when the master server is running.',
       noServers: 'Nobody is hosting a public server right now. Host one from the launcher with List publicly switched on.',
-      players: 'players', servers: 'servers', password: 'Password', copy: 'Copy address', copied: 'Copied',
+      players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied',
       updated: 'Updated', join: 'In the launcher: Servers → Join by address',
       lbEmpty: 'No ranked matches yet. Leaderboards fill in once public servers report their matches.',
       lbOffline: 'The leaderboards are temporarily unavailable. Please check back in a few minutes.',
@@ -36,7 +36,7 @@ var TCP_API = 'https://api.truecombat.eu';
       latest: 'Nieuwste', offline: 'Masterserver offline', online: 'Online', loading: 'Bezig…',
       noServersOffline: 'Nog geen publieke servers. Deze lijst vult zich vanzelf zodra de masterserver draait.',
       noServers: 'Er host nu niemand een publieke server. Host er zelf een vanuit de launcher met Openbaar tonen aan.',
-      players: 'spelers', servers: 'servers', password: 'Wachtwoord', copy: 'Adres kopiëren', copied: 'Gekopieerd',
+      players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd',
       updated: 'Bijgewerkt', join: 'In de launcher: Servers → Verbinden met adres',
       lbEmpty: 'Nog geen gerankte potjes. De ranglijsten vullen zich zodra publieke servers hun potjes doorgeven.',
       lbOffline: 'De ranglijsten zijn tijdelijk niet beschikbaar. Probeer het over een paar minuten opnieuw.',
@@ -193,8 +193,10 @@ var TCP_API = 'https://api.truecombat.eu';
     if (empty) empty.hidden = true;
     tbody.innerHTML = list.slice(0, limit).map(function (s) {
       return '<tr><td><b>' + esc(s.name) + '</b>' + (s.password ? ' <span class="lock" title="' + L.password + '">🔒</span>' : '') +
+        (s.ranked === true ? ' <span class="srv-tag ranked" title="' + L.rankedTip + '">' + L.ranked + '</span>' :
+         s.ranked === false ? ' <span class="srv-tag" title="' + L.unrankedTip + '">' + L.unranked + '</span>' : '') +
         '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button></td>' +
-        '<td>' + mapLabel(s.map) + '</td><td>' + (s.players || 0) + ' / ' + (s.maxPlayers || '?') + '</td><td>' + esc(s.mode || '') + '</td></tr>';
+        '<td>' + mapLabel(s.map) + '</td><td>' + (s.players || 0) + ' / ' + (s.maxPlayers || '?') + (s.bots ? ' <span class="srv-bots">+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</span>' : '') + '</td><td>' + esc(s.mode || '') + '</td></tr>';
     }).join('');
     var upd = root.querySelector('.srv-updated');
     if (upd && data.updated) { upd.textContent = L.updated + ' ' + new Date(data.updated).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }); upd.hidden = false; }
