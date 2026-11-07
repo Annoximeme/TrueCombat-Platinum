@@ -608,6 +608,7 @@ PAGES["studio"] = [
     ('<span class="eyebrow">The team</span>', '<span class="eyebrow">Het team</span>'),
     ('<h2>The people behind Platinum</h2>', '<h2>De mensen achter Platinum</h2>'),
     ('alt="Portrait of Gianni, RaziC*"', 'alt="Portret van Gianni, RaziC*"'),
+    ('alt="Portrait of RavoC"', 'alt="Portret van RavoC"'),
     ('<p>Former |TexT| clan leader. Leads development across the engine, renderer and gameplay, from the DirectX 12 pipeline to the last pixel of the HUD.</p>',
      '<p>Voormalig clanleider van |TexT|. Leidt de ontwikkeling van engine, renderer en gameplay, van de DirectX 12-pipeline tot de laatste pixel van de HUD.</p>'),
     ('<p>|TexT| and SeF veteran. Leads the community side of Platinum: the Discord, playtests, match nights and the player feedback that shapes every release.</p>',
