@@ -5,7 +5,8 @@ Run by .github/workflows/website.yml whenever a release is published, edited or
 deleted (and once a day), followed by build.py for the Dutch pages. It rewrites:
   - the patch notes between <!--releases--> markers on index.html (newest 5) and news.html (all),
   - the version shown on download buttons and the roadmap ([data-version]),
-  - the size, date and link of the newest full Windows zip ([data-size], [data-date], [data-download]).
+  - the size, date and link of the newest installer, TrueCombat-Platinum-Setup.exe
+    ([data-size], [data-date], [data-download]); releases from before the installer fall back to their zip.
 
 The browser script (docs/js/site.js) renders the same notes the same way, so
 visitors see a new release right away, before this workflow has run.
@@ -144,22 +145,25 @@ def main():
         sys.exit("no releases returned")
     latest = version(rels[0])
     zip_rel, zip_asset = None, None
-    for r in rels:
-        z = [a for a in r.get("assets", []) if re.search(r"Windows-x64\.zip$", a["name"], re.I)]
-        if z:
-            zip_rel, zip_asset = r, z[0]
+    for pattern in (r"^TrueCombat-Platinum-Setup\.exe$", r"Windows-x64\.zip$"):
+        for r in rels:
+            z = [a for a in r.get("assets", []) if re.search(pattern, a["name"], re.I)]
+            if z:
+                zip_rel, zip_asset = r, z[0]
+                break
+        if zip_asset:
             break
     for name, limit in (("index.html", 5), ("news.html", 999)):
         path = DOCS / name
         text = put(path.read_text(encoding="utf-8"), rels, limit)
         text = re.sub(r"(<[^>]*\bdata-version\b[^>]*>)[^<]*(</)", lambda m: m.group(1) + latest + m.group(2), text)
         if zip_asset:
-            mb = "{:,} MB".format(round(zip_asset["size"] / 1048576))
+            mb = "{:,} MB".format(max(1, round(zip_asset["size"] / 1048576)))
             text = re.sub(r"(<span data-size>)[^<]*(</span>)", lambda m: m.group(1) + mb + m.group(2), text)
             text = re.sub(r"(<span data-date>)[^<]*(</span>)", lambda m: m.group(1) + fmt_date(zip_rel["published_at"]) + m.group(2), text)
             text = re.sub(r'(<a [^>]*data-download[^>]*href=")[^"]*(")', lambda m: m.group(1) + zip_asset["browser_download_url"] + m.group(2), text)
         path.write_text(text, encoding="utf-8")
-    print("website synced to %s (%d releases, zip %s)" % (latest, len(rels), zip_asset["name"] if zip_asset else "none"))
+    print("website synced to %s (%d releases, download %s)" % (latest, len(rels), zip_asset["name"] if zip_asset else "none"))
 
 
 if __name__ == "__main__":
