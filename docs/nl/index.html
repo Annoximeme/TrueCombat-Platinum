@@ -82,9 +82,9 @@
     <h1>TrueCombat: Elite, opnieuw gebouwd voor <em>modern Windows</em>.</h1>
     <p class="lede">De klassieke tactische shooter, opnieuw gebouwd als native 64-bit game met een DirectX 12-renderer. De originele maps, soldaten en HUD, en een launcher die je servers host en het spel up-to-date houdt.</p>
     <div class="hero-cta">
-      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.31.0-sandbox22/TrueCombat-Platinum-0.31.0-sandbox22-Windows-x64.zip">
+      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.32.0-sandbox23/TrueCombat-Platinum-Setup.exe">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
-        <span class="stack"><span class="big">Download <span data-version>v0.31.0</span></span><span class="small"><span data-kind="long">Volledig spel, zip</span> · <span data-size>1,927 MB</span> · gratis</span></span>
+        <span class="stack"><span class="big">Download <span data-version>v0.32.0</span></span><span class="small"><span data-kind="long">Windows-installatieprogramma</span> · <span data-size>7 MB</span> · gratis</span></span>
       </a>
       <a class="btn btn-ghost" href="#patch-notes">Wat is er nieuw</a>
     </div>
@@ -301,8 +301,73 @@
     </div>
     <div class="notes" data-releases="5">
 <!--releases-->
-      <details class="release" id="v0.31.0" data-ver="v0.31.0" open>
-        <summary><span class="ver">v0.31.0<span class="latest">Nieuwste</span></span><span class="sum">The biggest update yet. The full TC:E arsenal, real recoil and penetration, three new game modes, bots, 3D sound, the Deployment Menu, end-of-match map votes, lag compensation, player ranks and server admin tools.</span><span class="meta">#52 · 0.31.0-sandbox22 · 7 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.32.0" data-ver="v0.32.0" open>
+        <summary><span class="ver">v0.32.0<span class="latest">Nieuwste</span></span><span class="sum">A major update. Movement now runs at the original TC:E pace, and leaning, ladders, swimming and spectating are back. This release also brings a competitive match mode, smarter bots on every objective, a new-player welcome, a one-click installer, and a fix for the most common crash to desktop.</span><span class="meta">#53 · 0.32.0-sandbox23 · 7 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Movement and gunplay</h3><ul>
+            <li>Movement speed matches the original TC:E. Running, sprinting, crouching and going prone all move at the original speeds.</li>
+            <li>Walk and run animations now switch at the original speed, so other players move the way you remember.</li>
+            <li>Stamina recovers when you walk, stand still, crouch or go prone, like the original.</li>
+            <li>Third-person animations now follow the original TC:E set: weapon-specific stances for rifles, pistols, knife and grenades, a raise animation on weapon switch, prone pistol poses, and death animations that react to how and where a player is hit.</li>
+            <li>Bullet tracer lines are gone. Muzzle flashes now show correctly on every player and light up their surroundings on DirectX 12 and OpenGL.</li>
+          </ul></section>
+          <section><h3>New original content</h3><ul>
+            <li>Lean around corners with Q and E.</li>
+            <li>Climb ladders. Bots use them too.</li>
+            <li>Swim, dive and drown. Northport's water is fully swimmable.</li>
+            <li>Glass, wood and metal now shatter into debris.</li>
+            <li>Defusing a bomb puts the pliers in your hands.</li>
+            <li>When you die, the camera follows a living teammate and shows their health and ammo.</li>
+            <li>Suppressors: the MAC-10, MP5, M4 and AKS-74U now have a Suppressor toggle in the Deployment Menu, using the original suppressed variants and their trade-offs.</li>
+          </ul></section>
+          <section><h3>Competitive match mode</h3><ul>
+            <li>Organised matches with ready-up, an optional knife round, side pick, halftime side swap, tactical timeouts and a final score screen.</li>
+            <li>Server admins run it with the match rcon commands. Players use ready, notready, timeout, stay and swap.</li>
+          </ul></section>
+          <section><h3>Bots</h3><ul>
+            <li>Bots now play the objective. They plant and defuse the bomb, carry the flag home, and take and hold the capture point, with team callouts in chat (bot_chat).</li>
+            <li>Point Capture is fairer. The point is now placed at an equal walking distance from both spawns, and it takes 30 seconds to capture (g_captureHoldMs).</li>
+            <li>Fixed: a single bomb detonation could award the round to the attackers more than once.</li>
+          </ul></section>
+          <section><h3>New players</h3><ul>
+            <li>First launch now opens a three-step welcome: the basics, your controls, and how to start playing.</li>
+            <li>New in the launcher: Practice offline with bots starts a Railhouse Team Deathmatch against bots in one click.</li>
+            <li>New players see nine short tips during their first matches. Turn them off with cg_tips 0, or bring them back with tips_reset.</li>
+          </ul></section>
+          <section><h3>Install and updates</h3><ul>
+            <li>The download is now a small installer: TrueCombat-Platinum-Setup.exe. It installs the launcher, and the launcher downloads the game.</li>
+            <li>Choose your install folder, with desktop and Start menu shortcuts and a proper uninstaller.</li>
+            <li>New Versions button in the launcher: stay on an older release, or switch back to the latest at any time.</li>
+          </ul></section>
+          <section><h3>Online</h3><ul>
+            <li>The in-game server browser now lists official Platinum servers.</li>
+            <li>Ranked hosting: server owners can enter a ranked key in the launcher's Hosting tab, so their matches count towards the leaderboards.</li>
+            <li>Team Terminus staff now carry a verified emblem and an orange name on the scoreboard.</li>
+          </ul></section>
+          <section><h3>Interface</h3><ul>
+            <li>The HUD, scoreboard, Deployment Menu, map vote and main menu now fit every screen shape, from 4:3 to 32:9 super-ultrawide. Nothing gets cut off at the edges any more.</li>
+          </ul></section>
+          <section><h3>Performance</h3><ul>
+            <li>Removed the long freezes that happened the first time a weapon or explosion appeared in a match. Weapon and effect media now load with the map.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Fixed a crash to desktop when a player was kicked or banned, or the server restarted or shut down.</li>
+            <li>Your team, class and loadout are now kept after a map restart or map change.</li>
+            <li>The cheat detection no longer flags the game's own HD and interface files.</li>
+            <li>The speed check no longer misfires after a freeze or alt-tab.</li>
+            <li>Elimination rounds now last 5 minutes, like the original (server cvar tcp_roundtime).</li>
+            <li>Restored missing crosshairs and server-browser icons.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is prepared but not switched on yet.</li>
+            <li>Still to come: the first-person muzzle flash, a sniper scope overlay, ledge climbing, and the modern Ultra visuals.</li>
+            <li>In DirectX 12, water seen from above in third person can render black.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" id="v0.31.0" data-ver="v0.31.0">
+        <summary><span class="ver">v0.31.0</span><span class="sum">The biggest update yet. The full TC:E arsenal, real recoil and penetration, three new game modes, bots, 3D sound, the Deployment Menu, end-of-match map votes, lag compensation, player ranks and server admin tools.</span><span class="meta">#52 · 0.31.0-sandbox22 · 7 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Weapons</h3><ul>
             <li>The full TC:E weapon roster is in, with each team's own weapons, pistols and grenades, and semi, burst and full-auto fire modes where the original had them.</li>
@@ -448,28 +513,6 @@
           </ul></section>
         </div>
       </details>
-
-      <details class="release" data-ver="v0.24.0">
-        <summary><span class="ver">v0.24.0</span><span class="sum">DirectX 12 in the game's own window, the original soldier models, the M83 smoke grenade and the original HUD.</span><span class="meta">#47 · 0.24.0-sandbox17 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
-        <div class="body">
-          <section><h3>DirectX 12</h3><ul>
-            <li>Everything is drawn with DirectX 12. The old separate viewer is gone.</li>
-            <li>Falls back to OpenGL automatically if DirectX 12 can't run.</li>
-          </ul></section>
-          <section><h3>Players and weapons</h3><ul>
-            <li>Original TC:E soldier models with animations and ground shadows.</li>
-            <li>M83 smoke grenade on <kbd>4</kbd>, one per life.</li>
-          </ul></section>
-          <section><h3>Original HUD</h3><ul>
-            <li>Original layout, fonts, compass, stamina bar, round clock and objective lines.</li>
-            <li>The body silhouette changes colour as you take damage.</li>
-          </ul></section>
-          <section><h3>Multiplayer</h3><ul>
-            <li>Hosts can run the server at 128 updates per second. The default stays at 20.</li>
-            <li>Fixed a rare failure to rejoin after a map change on a bad connection.</li>
-          </ul></section>
-        </div>
-      </details>
 <!--/releases-->
     </div>
     <p class="all-notes">Elke update staat op de <a href="news.html">nieuwspagina</a>, met een <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">RSS-feed</a>. Downloads staan op <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">GitHub Releases</a>. De patchnotes zelf zijn in het Engels.</p>
@@ -485,21 +528,14 @@
     <!--roadmap-->
     <div class="road">
       <div class="road-col done">
-        <h3>Nu speelbaar <small data-version>v0.31.0</small></h3>
+        <h3>Nu speelbaar <small data-version>v0.32.0</small></h3>
         <ul>
-          <li>Het originele Deployment Menu</li>
-          <li>Stemmen op de volgende map en een aanpasbare maprotatie</li>
           <li>Lagcompensatie en voorspelde terugslag</li>
           <li>Spelersrangen en statistieken</li>
           <li>Serverbeheer en valsspeeldetectie</li>
           <li>Crashrapporten via de launcher</li>
           <li>Live publieke serverlijst</li>
           <li>Officiële EU-server en live ranglijsten</li>
-        </ul>
-      </div>
-      <div class="road-col next">
-        <h3>Hierna <small>v0.32</small></h3>
-        <ul>
           <li>Alleen de launcher downloaden, met een volwaardige Windows-installer</li>
           <li>Op een oudere versie blijven voor servers met mods</li>
         </ul>
@@ -533,9 +569,9 @@
         <li><span><b>De launcher doet de rest.</b> Hij downloadt de game, controleert elk bestand en houdt alles actueel. Updates halen alleen de gewijzigde bestanden op.</span></li>
       </ol>
       <div class="hero-cta">
-        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.31.0-sandbox22/TrueCombat-Platinum-0.31.0-sandbox22-Windows-x64.zip">
+        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.32.0-sandbox23/TrueCombat-Platinum-Setup.exe">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="stack"><span class="big">Download <span data-version>v0.31.0</span></span><span class="small"><span data-kind="short">Volledig spel, zip</span> · <span data-size>1,927 MB</span> · <span data-date>7 nov 2026</span></span></span>
+          <span class="stack"><span class="big">Download <span data-version>v0.32.0</span></span><span class="small"><span data-kind="short">Installatieprogramma</span> · <span data-size>7 MB</span> · <span data-date>7 nov 2026</span></span></span>
         </a>
         <a class="btn btn-ghost" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Alle releases</a>
       </div>
