@@ -21,9 +21,9 @@ var TCP_API = 'https://api.truecombat.eu';
       players: 'players', servers: 'servers', password: 'Password', copy: 'Copy address', copied: 'Copied',
       updated: 'Updated', join: 'In the launcher: Servers → Join by address',
       lbEmpty: 'No ranked matches yet. Leaderboards fill in once public servers report their matches.',
-      lbOffline: 'Leaderboards go live together with the public servers.',
+      lbOffline: 'The leaderboards are temporarily unavailable. Please check back in a few minutes.',
       soon: 'Coming soon', matches: 'matches', rating: 'Rating', peak: 'Peak', kd: 'K/D', headshots: 'Headshots', wins: 'Wins', played: 'Played', accuracy: 'Accuracy',
-      xpTo: 'XP to', topRank: 'Highest rank reached', weapons: 'Weapons', recent: 'Recent matches', close: 'Close', notRanked: 'Not ranked yet: finish three matches.',
+      xpTo: 'XP to', topRank: 'Highest rank reached', weapons: 'Weapons', recent: 'Recent matches', close: 'Close', notRanked: 'Not ranked yet: finish a match to get ranked.',
       position: 'Position', noPlayer: 'No player found with that name.', unknownPlayer: 'This player has no recorded matches yet.', won: 'Win', lost: 'Loss', hours: 'h', minutes: 'min',
       play: 'Play the trailer', notesFailed: 'GitHub could not be reached. Showing the notes built into this page.',
       kills: 'Kills', deaths: 'Deaths', winRate: 'Win rate', damage: 'Damage', objectives: 'Objectives', roundsWon: 'Rounds won', teamKills: 'Team kills',
@@ -39,9 +39,9 @@ var TCP_API = 'https://api.truecombat.eu';
       players: 'spelers', servers: 'servers', password: 'Wachtwoord', copy: 'Adres kopiëren', copied: 'Gekopieerd',
       updated: 'Bijgewerkt', join: 'In de launcher: Servers → Verbinden met adres',
       lbEmpty: 'Nog geen gerankte potjes. De ranglijsten vullen zich zodra publieke servers hun potjes doorgeven.',
-      lbOffline: 'De ranglijsten gaan live samen met de publieke servers.',
+      lbOffline: 'De ranglijsten zijn tijdelijk niet beschikbaar. Probeer het over een paar minuten opnieuw.',
       soon: 'Binnenkort', matches: 'potjes', rating: 'Rating', peak: 'Hoogste', kd: 'K/D', headshots: 'Headshots', wins: 'Winst', played: 'Gespeeld', accuracy: 'Trefzekerheid',
-      xpTo: 'XP tot', topRank: 'Hoogste rang bereikt', weapons: 'Wapens', recent: 'Laatste potjes', close: 'Sluiten', notRanked: 'Nog niet gerankt: speel drie potjes uit.',
+      xpTo: 'XP tot', topRank: 'Hoogste rang bereikt', weapons: 'Wapens', recent: 'Laatste potjes', close: 'Sluiten', notRanked: 'Nog niet gerankt: speel een potje uit.',
       position: 'Positie', noPlayer: 'Geen speler met die naam gevonden.', unknownPlayer: 'Van deze speler zijn nog geen potjes bekend.', won: 'Winst', lost: 'Verlies', hours: 'u', minutes: 'min',
       play: 'Speel de trailer af', notesFailed: 'GitHub was niet bereikbaar. Je ziet de notities die in deze pagina zitten.',
       kills: 'Kills', deaths: 'Doden', winRate: 'Winstpercentage', damage: 'Schade', objectives: 'Doelen', roundsWon: 'Rondes gewonnen', teamKills: 'Teamkills',
@@ -462,4 +462,26 @@ var TCP_API = 'https://api.truecombat.eu';
       });
     });
   });
+
+  /* ---------- scroll reveal (progressive: without IntersectionObserver everything is simply shown) ---------- */
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var els = $all('.band .section-head, .feature, .map-card, .trio figure, .clan, .member, .tip, .release, .weapon');
+    if (!els.length) return;
+    var vh = window.innerHeight || 800;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var el = en.target, sib = el.parentNode ? Array.prototype.indexOf.call(el.parentNode.children, el) : 0;
+        el.style.transitionDelay = Math.min(sib, 5) * 60 + 'ms';
+        el.classList.add('in'); io.unobserve(el);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    els.forEach(function (el) {
+      if (el.getBoundingClientRect().top < vh) return; /* already on screen: never hide it */
+      el.classList.add('rv'); io.observe(el);
+    });
+    document.documentElement.classList.add('js-reveal');
+  })();
 })();
