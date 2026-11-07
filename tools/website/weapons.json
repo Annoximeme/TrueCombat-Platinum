@@ -190,7 +190,7 @@
    "title_en": "Rifles and carbines",
    "title_nl": "Geweren en karabijnen",
    "sub_en": "The all-rounders: accurate at range and controllable up close.",
-   "sub_nl": "De allrounders: nauwkeurig op afstand en goed onder controle van dichtbij.",
+   "sub_nl": "De allrounders: nauwkeurig op afstand en goed te beheersen van dichtbij.",
    "weapons": [
     {
      "name": "M4",
@@ -545,8 +545,8 @@
      "modes": [
       "thrown"
      ],
-     "note_en": "In the game today on <kbd>4</kbd>, one per life. Blocks sight lines so you can cross open ground.",
-     "note_nl": "Zit nu al in het spel op <kbd>4</kbd>, één per leven. Blokkeert zichtlijnen zodat je open terrein kunt oversteken.",
+     "note_en": "Thrown with <kbd>4</kbd>, one per life. Blocks sight lines so you can cross open ground.",
+     "note_nl": "Gooi je met <kbd>4</kbd>, één per leven. Blokkeert zichtlijnen zodat je open terrein kunt oversteken.",
      "name_nl": "M83-rook",
      "full_nl": "Rookgranaat"
     },
