@@ -162,6 +162,10 @@ def main():
             text = re.sub(r"(<span data-size>)[^<]*(</span>)", lambda m: m.group(1) + mb + m.group(2), text)
             text = re.sub(r"(<span data-date>)[^<]*(</span>)", lambda m: m.group(1) + fmt_date(zip_rel["published_at"]) + m.group(2), text)
             text = re.sub(r'(<a [^>]*data-download[^>]*href=")[^"]*(")', lambda m: m.group(1) + zip_asset["browser_download_url"] + m.group(2), text)
+            is_setup = zip_asset["name"].lower().endswith(".exe")
+            kinds = {"long": "Windows installer" if is_setup else "Full game, zip",
+                     "short": "Installer" if is_setup else "Full game, zip"}
+            text = re.sub(r'(<span data-kind="(long|short)">)[^<]*(</span>)', lambda m: m.group(1) + kinds[m.group(2)] + m.group(3), text)
         path.write_text(text, encoding="utf-8")
     print("website synced to %s (%d releases, download %s)" % (latest, len(rels), zip_asset["name"] if zip_asset else "none"))
 
