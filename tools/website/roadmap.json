@@ -69,21 +69,101 @@
   {
    "en": "The full TC:E weapon roster, knife and grenades",
    "nl": "Het volledige TC:E-arsenaal, mes en granaten",
-   "version": null
+   "version": "0.31"
   },
   {
    "en": "Recoil, spread and penetration",
    "nl": "Terugslag, spreiding en doorboring",
-   "version": null
-  },
-  {
-   "en": "Leaning, ladders, swimming and aiming down sights",
-   "nl": "Leunen, ladders, zwemmen en richten over het vizier",
-   "version": null
+   "version": "0.31"
   },
   {
    "en": "The original round rules and objectives",
    "nl": "De originele rondes en doelen",
+   "version": "0.31"
+  },
+  {
+   "en": "Team Deathmatch, Flag Capture and Bomb modes",
+   "nl": "Team Deathmatch, Flag Capture en Bomb",
+   "version": "0.31"
+  },
+  {
+   "en": "Bots for practice and server fill",
+   "nl": "Bots om te oefenen en servers te vullen",
+   "version": "0.31"
+  },
+  {
+   "en": "3D sound with muffling, room echo and original footsteps",
+   "nl": "3D-geluid met demping, galm en originele voetstappen",
+   "version": "0.31"
+  },
+  {
+   "en": "The original Deployment Menu",
+   "nl": "Het originele Deployment Menu",
+   "version": "0.31"
+  },
+  {
+   "en": "End-of-match map vote and editable map rotation",
+   "nl": "Stemmen op de volgende map en een aanpasbare maprotatie",
+   "version": "0.31"
+  },
+  {
+   "en": "Lag compensation and predicted recoil",
+   "nl": "Lagcompensatie en voorspelde terugslag",
+   "version": "0.31"
+  },
+  {
+   "en": "Player ranks and stats",
+   "nl": "Spelersrangen en statistieken",
+   "version": "0.31"
+  },
+  {
+   "en": "Server admin tools and cheat detection",
+   "nl": "Serverbeheer en valsspeeldetectie",
+   "version": "0.31"
+  },
+  {
+   "en": "Crash reports from the launcher",
+   "nl": "Crashrapporten via de launcher",
+   "version": "0.31"
+  },
+  {
+   "en": "Live public server list",
+   "nl": "Live publieke serverlijst",
+   "version": "0.31"
+  },
+  {
+   "en": "Stats and leaderboards going live",
+   "nl": "Statistieken en ranglijsten live",
+   "version": null
+  },
+  {
+   "en": "Easy Anti-Cheat",
+   "nl": "Easy Anti-Cheat",
+   "version": null
+  },
+  {
+   "en": "Leaning and ladders",
+   "nl": "Leunen en ladders",
+   "version": null
+  },
+  {
+   "en": "Glass debris",
+   "nl": "Glasscherven",
+   "version": null
+  },
+  {
+   "en": "Defusing the bomb with pliers",
+   "nl": "De bom onschadelijk maken met een tang",
+   "version": null
+  },
+  {
+   "en": "Spectator mode",
+   "nl": "Toeschouwersmodus",
+   "version": null
+  },
+  {
+   "en": "Swimming and aiming down sights",
+   "nl": "Zwemmen en richten over het vizier",
    "version": null
   },
   {
