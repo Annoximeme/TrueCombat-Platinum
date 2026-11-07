@@ -27,12 +27,12 @@ DISCORD = "https://discord.gg/8kcHdg2Hch"
 GITHUB = "https://github.com/Annoximeme/TrueCombat-Platinum"
 FEED = GITHUB + "/releases.atom"
 
-PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "news", "press"]
+PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "news", "press", "studio"]
 
 LABELS = {
     "en": {
         "maps": "Maps", "weapons": "Weapons", "guide": "Guide", "servers": "Servers",
-        "leaderboards": "Leaderboards", "news": "News", "press": "Press kit", "media": "Media",
+        "leaderboards": "Leaderboards", "news": "News", "press": "Press kit", "media": "Media", "studio": "Studio",
         "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About",
         "download": "Download", "menu": "Menu", "sections": "Sections", "discord": "Join the Discord",
         "other": "Nederlands", "other_short": "NL", "footer": "Footer", "releases": "Releases",
@@ -42,7 +42,7 @@ LABELS = {
     },
     "nl": {
         "maps": "Maps", "weapons": "Wapens", "guide": "Gids", "servers": "Servers",
-        "leaderboards": "Ranglijsten", "news": "Nieuws", "press": "Perskit", "media": "Media",
+        "leaderboards": "Ranglijsten", "news": "Nieuws", "press": "Perskit", "media": "Media", "studio": "Studio",
         "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over",
         "download": "Download", "menu": "Menu", "sections": "Onderdelen", "discord": "Word lid van de Discord",
         "other": "English", "other_short": "EN", "footer": "Voettekst", "releases": "Releases",
@@ -72,7 +72,7 @@ def nav(lang, current):
     if other_href == "":
         other_href = "./"
     home = "./"
-    main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "news"]
+    main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "news", "studio"]
     active = "leaderboards" if current == "player" else current
     links = "\n".join(
         '      <li><a href="%s"%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "", L[p])
@@ -105,7 +105,7 @@ def footer(lang):
     L = LABELS[lang]
     up = "../" if lang == "nl" else ""
     items = [(DISCORD, "Discord"), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]
-    items += [(href(p), L[p]) for p in ["maps", "weapons", "media", "guide", "servers", "leaderboards", "news", "press"]]
+    items += [(href(p), L[p]) for p in ["maps", "weapons", "media", "guide", "servers", "leaderboards", "news", "studio", "press"]]
     items.append(("./#download", L["download"]))
     links = "\n".join('        <a href="%s">%s</a>' % (h, t) for h, t in items)
     return f"""<!--footer-->
