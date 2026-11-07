@@ -134,7 +134,10 @@ def query_status(addr, timeout=1.5):
 
 def server_entry(addr, status, modes):
     c = status["cvars"]
-    humans = status["players"]
+    # engine bots answer with ping 0; they fill the server but are not players
+    humans = [p for p in status["players"] if p["ping"] > 0]
+    bots = len(status["players"]) - len(humans)
+    ranked = c.get("tcp_ranked", "")
     gt = c.get("g_gametype", "")
     mode = c.get("tcp_mode") or modes.get(gt, "")
     try:
@@ -147,6 +150,8 @@ def server_entry(addr, status, modes):
         "map": clean(c.get("mapname", ""), 40),
         "mode": clean(mode, 32),
         "players": len(humans),
+        "bots": bots,
+        "ranked": None if ranked == "" else ranked not in ("0", "false", "no"),
         "maxPlayers": maxp,
         "password": c.get("g_needpass", "0") not in ("", "0"),
         "version": clean(c.get("tcp_version") or c.get("version", ""), 48),
