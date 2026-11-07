@@ -35,11 +35,16 @@ mode. Otherwise pass `--modes "2=Elimination,3=Team elimination"`.
   "master": { "online": true, "listed": 3 },
   "servers": [{
     "address": "203.0.113.5:27971", "name": "Red Server", "map": "obj_railhouse",
-    "mode": "Team elimination", "players": 2, "maxPlayers": 16, "password": false,
-    "version": "0.30.0", "playerList": [{ "name": "Gianni", "score": 12, "ping": 30 }]
+    "mode": "Team elimination", "players": 2, "bots": 6, "maxPlayers": 16, "password": false,
+    "ranked": true, "version": "0.30.0", "playerList": [{ "name": "Gianni", "score": 12, "ping": 30 }]
   }]
 }
 ```
+
+`players` and `playerList` count people only. Engine bots answer status queries with ping 0 and are
+counted in `bots` instead. `ranked` comes from the server's `tcp_ranked` serverinfo cvar (`sets tcp_ranked 1`
+on a server that reports to the leaderboards, `sets tcp_ranked 0` on one that does not); it is `null`
+when a server does not set it.
 
 ## Player stats and ranks
 
