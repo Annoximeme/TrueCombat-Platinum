@@ -4,6 +4,7 @@ date: 2026-11-07
 summary: Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.
 image: img/media-deployment.webp
 tag: Competitief
+version: 0.32.0
 ---
 Vraag iemand die TC:E serieus speelde wat er is bijgebleven, en het is zelden een publieke server. Het is een clanwedstrijd: twee tags, een geboekte server, en een ronde die beslist wordt door één goed verdedigde hoek. Platinum 0.32 brengt dat formaat terug als ingebouwde wedstrijdmodus, klaar op elke server met één commando.
 

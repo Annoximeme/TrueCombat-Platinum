@@ -4,12 +4,64 @@
   <link href="https://truecombat.eu/devlog.html"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog.html</id>
-  <updated>2026-11-07T12:00:00Z</updated>
+  <updated>2026-11-08T12:00:00Z</updated>
+  <entry>
+    <title>New light for old maps</title>
+    <link href="https://truecombat.eu/devlog-ultra-visuals.html"/>
+    <id>https://truecombat.eu/devlog-ultra-visuals.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Graphics"/>
+    <summary>The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Teaching bots to play like people</title>
+    <link href="https://truecombat.eu/devlog-smarter-bots.html"/>
+    <id>https://truecombat.eu/devlog-smarter-bots.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Bots"/>
+    <summary>Bots that never miss are no fun, and bots that ignore the objective are worse. This is how we test every change to Platinum's bots before it reaches a server.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>When the test is wrong</title>
+    <link href="https://truecombat.eu/devlog-recoil-check.html"/>
+    <id>https://truecombat.eu/devlog-recoil-check.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Testing"/>
+    <summary>Our recoil checks flagged the Desert Eagle as broken. The game was right. Here is how we found out, and why we would rather chase a false alarm than miss a real one.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>What keeps the official servers running</title>
+    <link href="https://truecombat.eu/devlog-official-servers.html"/>
+    <id>https://truecombat.eu/devlog-official-servers.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Servers"/>
+    <summary>Two official servers, a master list, live leaderboards and this website all run around the clock. Here is what happens behind the scenes when nobody is watching.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>One small installer, every version</title>
+    <link href="https://truecombat.eu/devlog-installer.html"/>
+    <id>https://truecombat.eu/devlog-installer.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Launcher"/>
+    <summary>Platinum used to be a zip of almost 800 MB. Now it is a 7 MB installer, a launcher that only downloads what changed, and a button that takes you back to any earlier release.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Match mode, built for clan nights</title>
     <link href="https://truecombat.eu/devlog-match-mode.html"/>
     <id>https://truecombat.eu/devlog-match-mode.html</id>
+    <published>2026-11-07T12:00:00Z</published>
     <updated>2026-11-07T12:00:00Z</updated>
+    <category term="Competitive"/>
     <summary>Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.</summary>
     <author><name>Team Terminus</name></author>
   </entry>
@@ -17,7 +69,9 @@
     <title>Back to full speed</title>
     <link href="https://truecombat.eu/devlog-full-speed.html"/>
     <id>https://truecombat.eu/devlog-full-speed.html</id>
+    <published>2026-11-07T12:00:00Z</published>
     <updated>2026-11-07T12:00:00Z</updated>
+    <category term="Gameplay"/>
     <summary>For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.</summary>
     <author><name>Team Terminus</name></author>
   </entry>
