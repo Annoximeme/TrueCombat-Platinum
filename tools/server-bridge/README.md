@@ -91,6 +91,11 @@ matches and 24 after that, scaled by the share of the match they played. Players
 than 60 seconds (or 30% of a short match) are not rated. `recompute` rebuilds every total and rating from the
 stored reports, for example after changing these rules.
 
+**Team balance.** Game servers with `g_balanceSkill 1` read `ratings.txt` from their home folder
+(`home/tcetest/ratings.txt`) at each map start to even out teams by skill. `serve --ratings-file <path>`
+(repeatable, one per server) rewrites it every minute; `export-ratings <path>` does it once. Players without a
+rated match are left out and count as 1000.
+
 ### `GET /player.json?id=<player id>` (`tcp-player/1`)
 
 Totals, rank with XP progress, rating and peak rating, leaderboard position, per-weapon kills, headshots and

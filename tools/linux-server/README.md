@@ -39,3 +39,7 @@ cron or a systemd timer every 10 minutes:
 ```sh
 update-server.sh /opt/truecombat truecombat-1 27960 truecombat-2 27961
 ```
+
+Server demos (`sv_autoDemo`) go to `home/tcetest/svdemos`; `kit/prune-demos.sh` removes recordings older
+than 14 days (run it daily from cron). For skill-based team balance, point the stats bridge at each
+server's ratings file: `tcp_stats.py serve --ratings-file /opt/truecombat/home/tcetest/ratings.txt`.
