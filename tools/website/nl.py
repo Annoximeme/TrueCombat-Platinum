@@ -856,3 +856,17 @@ PAGES['studio'] = [
     ('<li><b>Mappers</b><span>Help bring more TC:E maps back</span></li>', '<li><b>Mappers</b><span>Help meer TC:E-maps terug te brengen</span></li>'),
     ('<li><b>Programmers</b><span>Engine, renderer and tools</span></li>', '<li><b>Programmeurs</b><span>Engine, renderer en tools</span></li>'),
 ] + PAGES['studio']
+PAGES['studio'] = [
+    ('<span class="eyebrow">Right now</span>', '<span class="eyebrow">Op dit moment</span>'),
+    ('<h2>What we are working on now</h2>', '<h2>Waar we nu aan werken</h2>'),
+    ('<a class="btn btn-ghost" href="./#roadmap">Full roadmap</a>', '<a class="btn btn-ghost" href="./#roadmap">Volledige roadmap</a>'),
+    ('<span class="eyebrow">Built on</span>', '<span class="eyebrow">Gebouwd op</span>'),
+    ('<h2>Standing on solid ground</h2>', '<h2>Op stevige grond</h2>'),
+    ('<p class="lede">Platinum exists because of the people and technology that came before it. Credit where it is due.</p>',
+     '<p class="lede">Platinum bestaat dankzij de mensen en de technologie die ervoor kwamen. Eer wie eer toekomt.</p>'),
+    ('<span>The original game, by Team Terminator</span>', '<span>Het originele spel, door Team Terminator</span>'),
+    ('<span>The game TC:E was built on, by Splash Damage and id Software</span>', '<span>Het spel waarop TC:E werd gebouwd, door Splash Damage en id Software</span>'),
+    ('<span>The open-source engine Platinum grew from</span>', '<span>De opensource-engine waaruit Platinum is gegroeid</span>'),
+    ('<span>The modern renderer, with OpenGL as the fallback</span>', '<span>De moderne renderer, met OpenGL als terugval</span>'),
+    ('<span>Optional upscaling and anti-aliasing on RTX cards</span>', '<span>Optionele upscaling en anti-aliasing op RTX-kaarten</span>'),
+] + PAGES['studio']
