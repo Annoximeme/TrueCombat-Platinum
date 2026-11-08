@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Back to full speed · TrueCombat: Platinum</title>
+<meta name="description" content="For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-full-speed.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-full-speed.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Back to full speed">
+<meta property="og:description" content="For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-full-speed.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-full-speed.jpg">
+<!--alt-->
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-full-speed.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-full-speed.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-full-speed.html">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Weapons</a></li>
+      <li><a href="media.html">Media</a></li>
+      <li><a href="guide.html">Guide</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Leaderboards</a></li>
+      <li><a href="competitive.html">Competitive</a></li>
+      <li><a href="news.html" aria-current="page">News</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Sections">
+        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a><a href="news.html">News</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/devlog-full-speed.html" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="nl/devlog-full-speed.html" hreflang="nl" lang="nl" title="Nederlands">NL</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post">
+  <header class="page-head post-head">
+    <div class="head-art" style="background-image: url(img/map-railhouse.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog.html">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Gameplay</span><time datetime="2026-11-07">7 Nov 2026</time><span>Team Terminus</span></p>
+      <h1>Back to full speed</h1>
+      <p class="lede">For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap prose">
+<p>From the first public builds, veterans told us the same thing: Platinum looked right, sounded right, and felt a step too slow. Our own movement tests disagreed. Every speed we measured matched the values in the TC:E source data. Both sides were right, and finding out why took us back into the original game.</p>
+<h2>One factor, two meanings</h2>
+<p>TrueCombat: Elite 0.49b scales player movement by <code>g_movespeed / 127</code>. The default server value is 76, so that factor slows players to roughly 60% of their base speed. What we had missed is where the original applies it: only in game types 0 and 1, the practice and free-for-all modes. The modes TC:E was really played in, such as Flag Capture and Bomb, run under other game type numbers and never touch the factor. They run at full speed.</p>
+<p>Platinum runs all of its modes through game type 0 internally, so the practice slowdown applied everywhere. Our tests were measuring the slowed speed and finding it correct.</p>
+<p>We confirmed it two ways: against the speed table in the original 0.49b changelog, and against the 1/127 constant in the original game code. Both pointed to the same answer.</p>
+<h2>The numbers</h2>
+<p>With a rifle on default server settings, Platinum 0.32 moves at:</p>
+<ul>
+  <li><strong>238</strong> units per second sprinting</li>
+  <li><strong>163</strong> running</li>
+  <li><strong>68</strong> crouched</li>
+  <li><strong>38</strong> prone</li>
+</ul>
+<p>Those are the original TC:E speeds. The <a href="guide.html">guide</a> has the full breakdown.</p>
+<h2>What full speed broke</h2>
+<p>Faster movement exposed things the slower speed had hidden. Other players switched between their walk and run animations at the wrong moment, so the threshold now sits at 150 units per second, as in the original.</p>
+<p>The stamina system had a subtler problem. A recovery bonus was applied on every frame, even while running. At the old running speed that never showed, because running slowly enough counted as recovering anyway. At 163 units per second, players would have regained stamina while running flat out. Recovery now only happens when it should: standing still, walking, crouched or prone.</p>
+<p>While we were in there, Elimination rounds went back to their original five minutes.</p>
+<h2>Why it matters</h2>
+<p>TC:E is a game of timing. How long it takes to cross a street, reach a corner, or get back into cover is what every map is built around. Getting that wrong by 40% changes every fight on every map, and no screenshot shows it. That is why every speed in Platinum is now checked against the original data before a release ships.</p>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card">
+        <a class="post-art" href="devlog-match-mode.html" tabindex="-1" aria-hidden="true"><img src="img/media-deployment.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Competitive</span><time datetime="2026-11-07">7 Nov 2026</time></p>
+          <h2><a href="devlog-match-mode.html">Match mode, built for clan nights</a></h2>
+          <p>Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.</p>
+          <a class="more" href="devlog-match-mode.html">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
+      <div class="who">
+        <b>Team Terminus</b>
+        <span>TrueCombat: Platinum is developed by RaziC*.</span>
+      </div>
+      <nav aria-label="Footer">
+        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a>
+        <a href="maps.html">Maps</a>
+        <a href="weapons.html">Weapons</a>
+        <a href="media.html">Media</a>
+        <a href="guide.html">Guide</a>
+        <a href="servers.html">Servers</a>
+        <a href="leaderboards.html">Leaderboards</a>
+        <a href="competitive.html">Competitive</a>
+        <a href="news.html">News</a>
+        <a href="devlog.html">Devlog</a>
+        <a href="studio.html">Studio</a>
+        <a href="press.html">Press kit</a>
+        <a href="./#download">Download</a>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js"></script>
+</body>
+</html>

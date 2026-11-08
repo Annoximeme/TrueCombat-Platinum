@@ -22,7 +22,9 @@ PAGES = {
     "servers": ("shot-hosted.webp", "Find a match", "Official and community servers, live"),
     "leaderboards": ("media-map-vote.webp", "Leaderboards", "Rank, rating and combat record from every ranked match"),
     "player": ("map-stadtrand.webp", "Player profiles", "Rank, weapons and recent matches for every ranked player"),
+    "competitive": ("media-deployment.webp", "Match mode", "Ready-up, knife round, half-time and tactical timeouts"),
     "news": ("map-railhouse.webp", "Patch notes", "Every update since the first public build"),
+    "devlog": ("map-stadtrand.webp", "Devlog", "How TrueCombat: Platinum gets built"),
     "press": ("map-snow.webp", "Press kit", "Logos, unedited screenshots and a fact sheet"),
     "studio": ("map-village.webp", "Team Terminus", "The studio behind TrueCombat: Platinum"),
 }
@@ -45,12 +47,21 @@ def cover(img):
     return img.crop((x, y, x + W, y + H))
 
 
+def devlog_pages():
+    """One image per devlog post: the post's key art with its title."""
+    out = {}
+    for md in sorted((DOCS.parent / "tools" / "website" / "devlog").glob("*.en.md")):
+        meta = dict(l.split(": ", 1) for l in md.read_text(encoding="utf-8").split("---")[1].strip().splitlines())
+        out["devlog-" + md.name.split(".")[0]] = (meta["image"].split("/")[-1], "Devlog", meta["title"])
+    return out
+
+
 def main():
     logo = Image.open(DOCS / "img" / "logo.webp").convert("RGBA")
     logo = logo.resize((300, round(300 * logo.height / logo.width)), Image.LANCZOS)
     title_f = font("saira-condensed-800-latin.woff2", 132)
     sub_f = font("ibm-plex-sans-latin.woff2", 34)
-    for page, (art, title, sub) in PAGES.items():
+    for page, (art, title, sub) in {**PAGES, **devlog_pages()}.items():
         bg = cover(Image.open(DOCS / "img" / art).convert("RGB")).filter(ImageFilter.GaussianBlur(1.2))
         shade = Image.new("L", (W, H))
         px = shade.load()
