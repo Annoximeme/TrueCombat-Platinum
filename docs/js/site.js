@@ -30,7 +30,10 @@ var TCP_API = 'https://api.truecombat.eu';
       kills: 'Kills', deaths: 'Deaths', winRate: 'Win rate', damage: 'Damage', objectives: 'Objectives', roundsWon: 'Rounds won', teamKills: 'Team kills',
       profile: 'Player profile', firstSeen: 'First seen', lastSeen: 'Last seen', copyLink: 'Copy profile link', linkCopied: 'Link copied',
       trendShort: 'Rating history appears after two rated matches.', lastN: 'Last {n} matches', found: '{n} found',
-      apiOffline: 'Player stats are offline right now. Please try again in a few minutes.', screenshots: 'screenshots'
+      apiOffline: 'Player stats are offline right now. Please try again in a few minutes.', screenshots: 'screenshots',
+      specops: 'SpecOps', terrorists: 'Terrorists', draw: 'Draw', wins_: '{t} win', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Player',
+      emptyBoard: 'Only bots on the server right now. Join in and take their place.', justNow: 'just now', minAgo: '{n} min ago', hAgo: '{n} h ago', dAgo: '{n} d ago',
+      rounds: 'rounds', noResults: 'No completed matches yet. Results appear here the moment a ranked match ends.', resultsOffline: 'Match results are unavailable right now.'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -49,7 +52,10 @@ var TCP_API = 'https://api.truecombat.eu';
       kills: 'Kills', deaths: 'Doden', winRate: 'Winstpercentage', damage: 'Schade', objectives: 'Doelen', roundsWon: 'Rondes gewonnen', teamKills: 'Teamkills',
       profile: 'Spelersprofiel', firstSeen: 'Eerst gezien', lastSeen: 'Laatst gezien', copyLink: 'Profiellink kopiëren', linkCopied: 'Link gekopieerd',
       trendShort: 'Het ratingverloop verschijnt na twee gerankte potjes.', lastN: 'Laatste {n} potjes', found: '{n} gevonden',
-      apiOffline: 'De spelersstatistieken zijn nu offline. Probeer het over een paar minuten opnieuw.', screenshots: 'screenshots'
+      apiOffline: 'De spelersstatistieken zijn nu offline. Probeer het over een paar minuten opnieuw.', screenshots: 'screenshots',
+      specops: 'SpecOps', terrorists: 'Terroristen', draw: 'Gelijkspel', wins_: '{t} winnen', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Speler',
+      emptyBoard: 'Alleen bots op de server. Doe mee en neem hun plek in.', justNow: 'zojuist', minAgo: '{n} min geleden', hAgo: '{n} u geleden', dAgo: '{n} d geleden',
+      rounds: 'rondes', noResults: 'Nog geen voltooide potjes. Uitslagen verschijnen hier zodra een gerankt potje eindigt.', resultsOffline: 'Uitslagen zijn nu niet beschikbaar.'
     }
   };
   var L = DICT[lang] || DICT.en;
@@ -221,9 +227,41 @@ var TCP_API = 'https://api.truecombat.eu';
         '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button></td>' +
         '<td>' + mapLabel(s.map) + '</td><td>' + (s.players || 0) + ' / ' + (s.maxPlayers || '?') + (s.bots ? ' <span class="srv-bots">+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</span>' : '') + '</td><td>' + esc(s.mode || '') + '</td></tr>';
     }).join('');
+    renderBoards(list);
     var upd = root.querySelector('.srv-updated');
     if (upd && data.updated) { upd.textContent = L.updated + ' ' + new Date(data.updated).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }); upd.hidden = false; }
   }
+  /* live scoreboards for every server with someone on it (servers page) */
+  var IMG = (lang === 'nl' ? '../' : '') + 'img/';
+  function mapArt(m) { var n = MAPS[String(m || '').toLowerCase()]; return IMG + (n ? 'map-' + n.toLowerCase() : 'media-map-vote') + '-640.webp'; }
+  function shortName(s) { return String(s || '').replace(/^TrueCombat:\s*Platinum\s*\|\s*/i, ''); }
+  function renderBoards(list) {
+    var box = document.querySelector('[data-boards]');
+    if (!box) return;
+    var busy = list.filter(function (s) { return (s.players || 0) + (s.bots || 0) > 0; });
+    box.hidden = !busy.length;
+    box.querySelector('.boards').innerHTML = busy.map(function (s) {
+      var art = mapArt(s.map);
+      var rows = (s.playerList || []).map(function (p, i) {
+        return '<tr><td class="pos">' + (i + 1) + '</td><td class="who">' + esc(p.name) + '</td><td>' + num(p.score) + '</td><td class="ping">' + (p.ping || 0) + '</td></tr>';
+      }).join('');
+      return '<article class="board"><header style="background-image:linear-gradient(90deg,rgba(13,16,22,.94) 35%,rgba(13,16,22,.55)),url(' + art + ')">' +
+        '<div><h3>' + esc(shortName(s.name)) + '</h3><p>' + mapLabel(s.map) + ' · ' + esc(s.mode || '') + '</p></div>' +
+        '<span class="board-count"><b>' + (s.players || 0) + '</b>/' + (s.maxPlayers || '?') + (s.bots ? '<small>+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</small>' : '') + '</span></header>' +
+        (rows ? '<table class="board-table"><thead><tr><th>#</th><th>' + L.player + '</th><th>' + L.score + '</th><th>' + L.ping + '</th></tr></thead><tbody>' + rows + '</tbody></table>'
+              : '<p class="board-empty">' + L.emptyBoard + '</p>') +
+        '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button></article>';
+    }).join('');
+  }
+  var boards = document.querySelector('[data-boards]');
+  if (boards) boards.addEventListener('click', function (e) {
+    var b = e.target.closest('.addr'); if (!b) return;
+    var a = b.dataset.addr;
+    (navigator.clipboard ? navigator.clipboard.writeText(a) : Promise.reject()).then(function () {
+      b.textContent = L.copied; setTimeout(function () { b.textContent = a; }, 1400);
+    }, function () {});
+  });
+
   $all('[data-servers]').forEach(function (root) {
     root.addEventListener('click', function (e) {
       var b = e.target.closest('.addr'); if (!b) return;
@@ -237,6 +275,39 @@ var TCP_API = 'https://api.truecombat.eu';
         setPill(root, false, L.offline);
         var empty = root.querySelector('.srv-empty'); if (empty) empty.textContent = L.noServersOffline;
       });
+    }
+    load();
+    if (TCP_API) setInterval(function () { if (!document.hidden) load(); }, boards ? 30000 : 60000);
+  });
+
+  /* latest match results (servers page) */
+  function ago(iso) {
+    var s = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (!(s >= 0)) return '';
+    if (s < 90) return L.justNow;
+    if (s < 3600) return L.minAgo.replace('{n}', Math.round(s / 60));
+    if (s < 86400) return L.hAgo.replace('{n}', Math.round(s / 3600));
+    return s < 7 * 86400 ? L.dAgo.replace('{n}', Math.round(s / 86400)) : fmtDate(iso);
+  }
+  $all('[data-recent]').forEach(function (root) {
+    var list = root.querySelector('ol'), empty = root.querySelector('.srv-empty');
+    function load() {
+      api('/recent.json').then(function (d) {
+        var ms = (d.matches || []).slice(0, parseInt(root.dataset.recent, 10) || 8);
+        if (!ms.length) { empty.textContent = L.noResults; empty.hidden = false; return; }
+        empty.hidden = true;
+        list.innerHTML = ms.map(function (m) {
+          var art = mapArt(m.map);
+          var w = String(m.winner || '').toLowerCase();
+          var res = w === 'specops' || w === 'terrorists' ? '<span class="res ' + w + '">' + L.wins_.replace('{t}', L[w]) + '</span>' :
+                    (!w && m.rounds > 1 ? '<span class="res">' + L.draw + '</span>' : '');
+          var mins = Math.max(1, Math.round((m.duration || 0) / 60));
+          var bits = [esc(m.mode || ''), (m.rounds > 1 ? m.rounds + ' ' + L.rounds : ''), mins + ' ' + L.minutes, (m.players || 0) + ' ' + L.players].filter(Boolean).join(' · ');
+          var mvp = m.mvp ? '<span class="mvp"><b>' + L.mvp + '</b> <a href="' + esc(profileHref(m.mvp.id)) + '">' + esc(m.mvp.name) + '</a> · ' + m.mvp.kills + ' ' + L.kills.toLowerCase() + '</span>' : '';
+          return '<li><img src="' + art + '" alt="" width="120" height="68" loading="lazy"><div class="r-main"><p class="r-top"><b>' + mapLabel(m.map) + '</b>' + res + '</p><p class="r-sub">' + bits + '</p></div>' +
+            '<div class="r-side">' + mvp + '<span class="r-when"><time datetime="' + esc(m.ended) + '">' + ago(m.ended) + '</time>' + (m.server ? ' · ' + esc(shortName(m.server)) : '') + '</span></div></li>';
+        }).join('');
+      }, function () { empty.textContent = L.resultsOffline; empty.hidden = false; });
     }
     load();
     if (TCP_API) setInterval(function () { if (!document.hidden) load(); }, 60000);

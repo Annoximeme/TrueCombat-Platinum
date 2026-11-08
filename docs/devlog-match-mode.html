@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Match mode, built for clan nights · TrueCombat: Platinum</title>
+<meta name="description" content="Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-match-mode.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-match-mode.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Match mode, built for clan nights">
+<meta property="og:description" content="Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-match-mode.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-match-mode.jpg">
+<!--alt-->
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-match-mode.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-match-mode.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-match-mode.html">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Weapons</a></li>
+      <li><a href="media.html">Media</a></li>
+      <li><a href="guide.html">Guide</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Leaderboards</a></li>
+      <li><a href="competitive.html">Competitive</a></li>
+      <li><a href="news.html" aria-current="page">News</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Sections">
+        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a><a href="news.html">News</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/devlog-match-mode.html" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="nl/devlog-match-mode.html" hreflang="nl" lang="nl" title="Nederlands">NL</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post">
+  <header class="page-head post-head">
+    <div class="head-art" style="background-image: url(img/media-deployment.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog.html">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Competitive</span><time datetime="2026-11-07">7 Nov 2026</time><span>Team Terminus</span></p>
+      <h1>Match mode, built for clan nights</h1>
+      <p class="lede">Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap prose">
+<p>Ask anyone who played TC:E seriously what they remember, and it is rarely a public server. It is a clan match: two tags, a booked server, and a round decided by one well-held corner. Platinum 0.32 brings that format back as a built-in match mode, ready on every server with a single command.</p>
+<h2>The flow</h2>
+<p>A match starts in <strong>warmup</strong>: free play with respawns, and no automatic team balancing, so clans can line up however they like, four against five included. Players type <code>ready</code> when they are set, and the match begins the moment every player on both teams is ready. Bots never hold it up.</p>
+<p>Next comes the <strong>knife round</strong>. One round, knives only, no respawns in any mode, two minutes on the clock. The bomb and the flags stay out of play. The winners choose their side with <code>stay</code> or <code>swap</code>.</p>
+<p>Then the match goes <strong>live</strong>: twelve rounds in the round modes, or two 20-minute halves in Team Deathmatch and Flag Capture. Teams lock, and every warmup and knife round kill is wiped from the scoreboard and from the leaderboard report. At <strong>half-time</strong> the teams swap sides, and scores, clan names and remaining timeouts move with them. A team that can no longer be caught wins on the spot.</p>
+<h2>A pause that really pauses</h2>
+<p>The hardest part to get right was the timeout. A tactical timeout is only fair if nothing moves while it runs, so in Platinum the whole match freezes. Players stand still, grenades hang in the air with their fuse held, and the round clock, the bomb timer, dropped backpacks, reloads and respawn waves all keep exactly the time they had left. Play resumes after a five-second countdown.</p>
+<p>Each team gets two timeouts of 60 seconds by default. Admins can pause without a time limit.</p>
+<h2>Built to be tested</h2>
+<p>Match mode went through thirteen scripted test steps with two real game clients, on both DirectX 12 and OpenGL. Among them: a knife round that really is knives only, a side pick only the winners can make, a round clock that held through ten seconds of pause, a smoke grenade whose fuse only burned while the game was running, and a half-time swap that carried scores and names across.</p>
+<h2>Run your own</h2>
+<p>Host a server in a team mode, type <code>match on</code> in the server console, name the teams, and let both sides ready up. The <a href="competitive.html">competitive page</a> lists every command and setting. Match nights and scrims are organised on our Discord.</p>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card">
+        <a class="post-art" href="devlog-full-speed.html" tabindex="-1" aria-hidden="true"><img src="img/map-railhouse.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Gameplay</span><time datetime="2026-11-07">7 Nov 2026</time></p>
+          <h2><a href="devlog-full-speed.html">Back to full speed</a></h2>
+          <p>For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.</p>
+          <a class="more" href="devlog-full-speed.html">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <img src="img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
+      <div class="who">
+        <b>Team Terminus</b>
+        <span>TrueCombat: Platinum is developed by RaziC*.</span>
+      </div>
+      <nav aria-label="Footer">
+        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a>
+        <a href="maps.html">Maps</a>
+        <a href="weapons.html">Weapons</a>
+        <a href="media.html">Media</a>
+        <a href="guide.html">Guide</a>
+        <a href="servers.html">Servers</a>
+        <a href="leaderboards.html">Leaderboards</a>
+        <a href="competitive.html">Competitive</a>
+        <a href="news.html">News</a>
+        <a href="devlog.html">Devlog</a>
+        <a href="studio.html">Studio</a>
+        <a href="press.html">Press kit</a>
+        <a href="./#download">Download</a>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js"></script>
+</body>
+</html>
