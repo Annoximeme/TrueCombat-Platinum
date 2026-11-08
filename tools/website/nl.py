@@ -675,3 +675,7 @@ PAGES['servers'] = [
     ('<p>Casual play with ten bots filling the slots, so there is always a match to drop into. Ideal for warming up.</p>',
      '<p>Ontspannen spelen met tien bots die de plekken vullen, dus er is altijd een potje om in te stappen. Ideaal om op te warmen.</p>'),
 ] + PAGES['servers']
+PAGES['index'] = [
+    ('<header><h3>Top players</h3><span class="muted" data-top-period>Last 30 days</span><a href="leaderboards.html">Full leaderboards</a></header>',
+     '<header><h3>Topspelers</h3><span class="muted" data-top-period>Laatste 30 dagen</span><a href="leaderboards.html">Alle ranglijsten</a></header>'),
+] + PAGES['index']

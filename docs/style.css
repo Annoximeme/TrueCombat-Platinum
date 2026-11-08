@@ -812,3 +812,57 @@ body > main { flex: 1 0 auto; }
 .official .addr:hover { border-color: var(--amber); }
 .official .addr::after { content: " ⧉"; color: var(--dim); }
 @media (max-width: 760px) { .official { grid-template-columns: 1fr; } }
+
+/* ---------- 2026-11 round 3 ---------- */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* top five on the home page */
+.top-players { margin-top: 28px; }
+.top-players header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; }
+.top-players header a { margin-left: auto; color: var(--muted); font-size: var(--step--1); }
+.top-players header a::after { content: " →"; }
+.top-players ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.top-players li { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 6px; align-content: start; position: relative; }
+.top-players li:first-child { border-color: rgba(231, 167, 60, .55); background: linear-gradient(160deg, rgba(231, 167, 60, .12), transparent 60%), var(--panel); }
+.top-players .pos { font: 800 1.6rem/1 var(--f-display); color: var(--dim); }
+.top-players li:first-child .pos { color: var(--amber); }
+.top-players .who { font-weight: 600; color: var(--fg); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.top-players .who:hover { text-decoration: underline; }
+.top-players .badge { position: absolute; top: 16px; right: 16px; font: 700 .72rem/1 var(--f-mono); color: var(--amber); border: 1px solid var(--line); border-radius: 4px; padding: 3px 5px; }
+.top-players .stat { color: var(--dim); font-size: .82rem; }
+.top-players .stat b { color: var(--fg); font-family: var(--f-mono); font-weight: 500; }
+@media (max-width: 960px) { .top-players ol { grid-template-columns: repeat(2, minmax(0, 1fr)); } .top-players li:first-child { grid-column: 1 / -1; } }
+/* weapon comparison */
+.wcard header { position: relative; padding-right: 92px; }
+.wc-add { position: absolute; top: -2px; right: 0; padding: 5px 9px; background: none; border: 1px solid var(--line); border-radius: 4px; font: 600 .7rem/1 var(--f-display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); cursor: pointer; }
+.wc-add::before { content: "+ "; }
+.wc-add:hover { color: var(--fg); border-color: var(--dim); }
+.wc-add[aria-pressed="true"] { color: #0d1016; background: var(--amber); border-color: var(--amber); }
+.wc-add[aria-pressed="true"]::before { content: "✓ "; }
+.wcard.picked { border-color: rgba(231, 167, 60, .6); }
+.wcompare { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: rgba(13, 16, 22, .96); backdrop-filter: blur(10px); border-top: 1px solid var(--amber); box-shadow: 0 -12px 40px rgba(0, 0, 0, .45); padding: 16px 0 calc(14px + env(safe-area-inset-bottom, 0px)); max-height: 60vh; overflow: auto; }
+.wcompare header { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.wcompare h2 { font-size: var(--step-1); }
+.wcompare .wc-clear { margin-left: auto; padding: 8px 14px; }
+.wcompare table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.wcompare th, .wcompare td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.wcompare thead th, .wcompare tr:first-child th { font: 700 1rem/1.2 var(--f-display); text-transform: uppercase; letter-spacing: .04em; }
+.wcompare tr th[scope="row"] { color: var(--muted); font-weight: 500; width: 1%; }
+.wcompare td { font-family: var(--f-mono); }
+.wcompare td small { color: var(--dim); }
+.wcompare td.best { color: var(--amber); font-weight: 600; }
+.wc-x { margin-left: 8px; background: none; border: 0; color: var(--dim); font-size: 1.1rem; cursor: pointer; line-height: 1; }
+.wc-x:hover { color: var(--fg); }
+.wcompare .wnote { margin: 8px 0 0; color: var(--dim); font-size: .78rem; }
+body.has-compare footer { padding-bottom: 320px; }
+.wc-min { background: none; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); width: 38px; height: 38px; display: grid; place-items: center; cursor: pointer; }
+.wc-min svg { transform: rotate(180deg); transition: transform .2s; }
+.wcompare.min .wc-min svg { transform: none; }
+.wcompare.min .table-scroll, .wcompare.min .wnote { display: none; }
+.wcompare.min header { margin-bottom: 0; }
+@media (max-width: 640px) {
+  .wcompare { max-height: 52vh; padding-top: 12px; }
+  .wcompare header .muted { display: none; }
+  .wcompare th, .wcompare td { padding: 7px 8px; font-size: .84rem; }
+  .wcompare tr th[scope="row"] { white-space: normal; min-width: 92px; }
+  .wc-add { padding: 5px 7px; }
+}
