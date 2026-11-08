@@ -4,6 +4,7 @@ date: 2026-11-07
 summary: Maandenlang voelde Platinum een tikje trager dan het spel dat we kennen. De oorzaak bleek één schaalfactor, op de verkeerde plek toegepast.
 image: img/map-railhouse.webp
 tag: Gameplay
+version: 0.32.0
 ---
 Vanaf de eerste publieke builds vertelden veteranen ons hetzelfde: Platinum zag er goed uit, klonk goed, en voelde een tikje te traag. Onze eigen bewegingstests zeiden iets anders. Elke snelheid die we maten klopte met de waarden uit de TC:E-brondata. Beide kanten hadden gelijk, en om te begrijpen waarom moesten we terug het originele spel in.
 

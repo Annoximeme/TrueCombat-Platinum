@@ -4,6 +4,7 @@ date: 2026-11-07
 summary: For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.
 image: img/map-railhouse.webp
 tag: Gameplay
+version: 0.32.0
 ---
 From the first public builds, veterans told us the same thing: Platinum looked right, sounded right, and felt a step too slow. Our own movement tests disagreed. Every speed we measured matched the values in the TC:E source data. Both sides were right, and finding out why took us back into the original game.
 

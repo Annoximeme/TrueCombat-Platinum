@@ -404,35 +404,96 @@ def layout_html(lang, name):
 <!--/layout-{name}-->"""
 
 # ---------------------------------------------------------------- devlog
+# A post is tools/website/devlog/<slug>.en.md plus <slug>.nl.md, see the
+# README there. An optional "version" in the front matter ties a post to a
+# release: until that release is the newest one on the site the post is
+# marked "next update, in testing", and the next build after the release
+# turns that into "shipped in vX.Y.Z" by itself.
 DL = {
     "en": {"read": "Read the post", "feed": "TrueCombat: Platinum devlog", "back": "All devlog posts", "by": "Team Terminus", "more": "More from the devlog",
-           "months": "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()},
+           "months": "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(), "min": "{n} min read", "toc": "In this post",
+           "shipped": "Shipped in v{v}", "testing": "Next update · in testing", "all": "All posts", "filter": "Filter posts by topic",
+           "older": "Older post", "newer": "Newer post", "ask": "Questions about this post? Ask the team on Discord.",
+           "discord": "Discuss on Discord", "copy": "Copy link", "copied": "Link copied", "drag": "comparison divider position", "latest": "Latest"},
     "nl": {"read": "Lees het artikel", "feed": "TrueCombat: Platinum devlog", "back": "Alle devlogartikelen", "by": "Team Terminus", "more": "Meer uit de devlog",
-           "months": "jan feb mrt apr mei jun jul aug sep okt nov dec".split()},
+           "months": "jan feb mrt apr mei jun jul aug sep okt nov dec".split(), "min": "{n} min lezen", "toc": "In dit artikel",
+           "shipped": "Uitgebracht in v{v}", "testing": "Volgende update · in test", "all": "Alle artikelen", "filter": "Filter artikelen op onderwerp",
+           "older": "Vorig artikel", "newer": "Volgend artikel", "ask": "Vragen over dit artikel? Stel ze aan het team op Discord.",
+           "discord": "Bespreek op Discord", "copy": "Link kopiëren", "copied": "Link gekopieerd", "drag": "positie van de vergelijkingslijn", "latest": "Nieuwste"},
 }
+DISCORD = "https://discord.gg/8kcHdg2Hch"
+LATEST = None  # newest released version on the site, read from index.html
+
+
+def latest_version():
+    global LATEST
+    if LATEST is None:
+        m = re.search(r"data-version>v([\d.]+)<", (DOCS / "index.html").read_text(encoding="utf-8"))
+        LATEST = m.group(1) if m else "0.0.0"
+    return LATEST
+
+
+def vkey(v):
+    return tuple(int(x) for x in re.findall(r"\d+", v)[:3])
 
 
 def inline(s):
     s = htmlmod.escape(s, quote=False)
     s = re.sub(r"`([^`]+)`", r"<code>\1</code>", s)
     s = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", s)
+    s = re.sub(r"(?<![\w*])\*([^*\s][^*]*)\*(?![\w*])", r"<em>\1</em>", s)
     s = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2">\1</a>', s)
     return s
 
 
-def markdown(text):
-    """The small Markdown subset the devlog uses: ## headings, paragraphs,
-    - lists, **bold**, `code` and [links](url)."""
-    out = []
+def anchor(text):
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+
+
+def markdown(text, lang="en"):
+    """The small Markdown subset the devlog uses: ## and ### headings,
+    paragraphs, - and 1. lists, > callouts, **bold**, *italic*, `code`,
+    [links](url), images and before/after sliders:
+        ![Alt text](img/devlog/x.webp "Caption")
+        !compare(img/a.webp | Before label | img/b.webp | After label | Caption)
+    Returns the HTML and the list of (id, title) for every ## heading."""
+    out, toc = [], []
     for block in re.split(r"\n\s*\n", text.strip()):
         lines = block.strip().splitlines()
-        if lines[0].startswith("## "):
-            out.append("<h2>%s</h2>" % inline(lines[0][3:]))
+        first = lines[0]
+        if first.startswith("### "):
+            out.append("<h3>%s</h3>" % inline(first[4:]))
+        elif first.startswith("## "):
+            hid = anchor(first[3:])
+            toc.append((hid, first[3:]))
+            out.append('<h2 id="%s">%s</h2>' % (hid, inline(first[3:])))
         elif all(l.startswith("- ") for l in lines):
             out.append("<ul>\n" + "\n".join("  <li>%s</li>" % inline(l[2:]) for l in lines) + "\n</ul>")
+        elif all(re.match(r"\d+\. ", l) for l in lines):
+            out.append("<ol>\n" + "\n".join("  <li>%s</li>" % inline(l.split(". ", 1)[1]) for l in lines) + "\n</ol>")
+        elif all(l.startswith(">") for l in lines):
+            body = " ".join(l[1:].strip() for l in lines)
+            out.append('<aside class="callout"><p>%s</p></aside>' % inline(body))
+        elif len(lines) == 1 and first.startswith("!compare("):
+            a, la, b, lb, cap = [x.strip() for x in first[len("!compare("):-1].split("|")]
+            out.append(f"""<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="{b}" alt="{htmlmod.escape(lb)}: {htmlmod.escape(cap)}" width="1280" height="720" loading="lazy">
+    <img class="top" src="{a}" alt="{htmlmod.escape(la)}: {htmlmod.escape(cap)}" width="1280" height="720" loading="lazy">
+    <span class="tag l">{htmlmod.escape(la)}</span>
+    <span class="tag r">{htmlmod.escape(lb)}</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="{htmlmod.escape(cap)}: {DL[lang]['drag']}">
+  </div>
+  <figcaption>{inline(cap)}</figcaption>
+</figure>""")
+        elif len(lines) == 1 and re.fullmatch(r'!\[[^\]]*\]\([^)\s]+(?: "[^"]*")?\)', first):
+            m = re.fullmatch(r'!\[([^\]]*)\]\(([^)\s]+)(?: "([^"]*)")?\)', first)
+            cap = f"\n  <figcaption>{inline(m.group(3))}</figcaption>" if m.group(3) else ""
+            out.append(f'<figure class="wide">\n  <img src="{m.group(2)}" alt="{htmlmod.escape(m.group(1))}" width="1280" height="720" loading="lazy">{cap}\n</figure>')
         else:
             out.append("<p>%s</p>" % inline(" ".join(l.strip() for l in lines)))
-    return "\n".join(out)
+    return "\n".join(out), toc
 
 
 def devlog_posts(lang):
@@ -443,8 +504,18 @@ def devlog_posts(lang):
         if not m:
             sys.exit(f"{p}: missing front matter")
         meta = dict(l.split(": ", 1) for l in m.group(1).splitlines())
+        for key in ("title", "date", "summary", "image", "tag"):
+            if key not in meta:
+                sys.exit(f"{p}: front matter needs '{key}'")
+        if not (DOCS / meta["image"]).exists() or not (DOCS / meta["image"].replace(".webp", "-640.webp")).exists():
+            sys.exit(f"{p}: {meta['image']} and its -640 version must both exist in docs/")
         meta["slug"] = p.name.split(".")[0]
         meta["body"] = m.group(2)
+        words = len(re.findall(r"\w+", meta["body"]))
+        meta["minutes"] = max(1, round(words / 220))
+        for img in re.findall(r"(?:\]\(|!compare\(|\| )(img/[^)\s|]+)", meta["body"]):
+            if not (DOCS / img).exists():
+                sys.exit(f"{p}: image {img} not found in docs/")
         posts.append(meta)
     return sorted(posts, key=lambda x: (x["date"], x["slug"]), reverse=True)
 
@@ -454,20 +525,56 @@ def nice_date(lang, iso):
     return "%d %s %s" % (int(d), DL[lang]["months"][int(mo) - 1], y)
 
 
-def devlog_list(lang, posts):
+def status_chip(lang, p):
+    v = p.get("version")
+    if not v:
+        return ""
+    if vkey(v) <= vkey(latest_version()):
+        return f'<span class="state shipped">{DL[lang]["shipped"].format(v=v)}</span>'
+    return f'<span class="state testing">{DL[lang]["testing"]}</span>'
+
+
+def post_meta(lang, p, by=False):
+    T = DL[lang]
+    extra = f"<span>{T['by']}</span>" if by else ""
+    return (f'<p class="post-meta"><span class="tag">{htmlmod.escape(p["tag"])}</span>{status_chip(lang, p)}'
+            f'<time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time><span>{T["min"].format(n=p["minutes"])}</span>{extra}</p>')
+
+
+def post_cards(lang, posts, feature=False):
     T = DL[lang]
     cards = []
-    for p in posts:
-        cards.append(f"""      <article class="post-card">
-        <a class="post-art" href="devlog-{p['slug']}.html" tabindex="-1" aria-hidden="true"><img src="{p['image'].replace('.webp', '-640.webp')}" alt="" width="640" height="360" loading="lazy"></a>
+    for i, p in enumerate(posts):
+        big = feature and i == 0
+        art = p["image"] if big else p["image"].replace(".webp", "-640.webp")
+        size = 'width="1280" height="720"' if big else 'width="640" height="360"'
+        cards.append(f"""      <article class="post-card{' featured' if big else ''}" data-tag="{htmlmod.escape(p['tag'])}">
+        <a class="post-art" href="devlog-{p['slug']}.html" tabindex="-1" aria-hidden="true"><img src="{art}" alt="" {size} loading="{'eager' if big else 'lazy'}"></a>
         <div>
-          <p class="post-meta"><span class="tag">{htmlmod.escape(p['tag'])}</span><time datetime="{p['date']}">{nice_date(lang, p['date'])}</time></p>
+          {post_meta(lang, p)}
           <h2><a href="devlog-{p['slug']}.html">{htmlmod.escape(p['title'])}</a></h2>
           <p>{htmlmod.escape(p['summary'])}</p>
           <a class="more" href="devlog-{p['slug']}.html">{T['read']}</a>
         </div>
       </article>""")
-    return "<!--devlog-->\n" + "\n".join(cards) + "\n<!--/devlog-->"
+    return "\n".join(cards)
+
+
+def devlog_list(lang, posts):
+    return "<!--devlog-->\n" + post_cards(lang, posts, feature=True) + "\n<!--/devlog-->"
+
+
+def devlog_tags(lang, posts):
+    """Topic filter above the post list. Hidden until site.js wires it up."""
+    T = DL[lang]
+    counts = {}
+    for p in posts:
+        counts[p["tag"]] = counts.get(p["tag"], 0) + 1
+    btns = [f'<button type="button" data-tag="" aria-pressed="true">{T["all"]} <small>{len(posts)}</small></button>']
+    for tag in sorted(counts):
+        btns.append(f'<button type="button" data-tag="{htmlmod.escape(tag)}" aria-pressed="false">{htmlmod.escape(tag)} <small>{counts[tag]}</small></button>')
+    return (f'<!--devlog-tags-->\n    <div class="post-filter" data-post-filter role="group" aria-label="{T["filter"]}" hidden>\n      '
+            + "\n      ".join(btns) + "\n    </div>\n<!--/devlog-tags-->")
 
 
 def devlog_latest(lang, posts):
@@ -476,7 +583,7 @@ def devlog_latest(lang, posts):
     <a class="promo-card" href="devlog-{p['slug']}.html">
       <img src="{p['image'].replace('.webp', '-640.webp')}" alt="" width="640" height="360" loading="lazy">
       <div>
-        <span class="eyebrow">Devlog · <time datetime="{p['date']}">{nice_date(lang, p['date'])}</time></span>
+        <span class="eyebrow">Devlog · <time datetime="{p['date']}">{nice_date(lang, p['date'])}</time>{(' · ' + DL[lang]['testing'].split(' · ')[0]) if 'testing' in status_chip(lang, p) else ''}</span>
         <h3>{htmlmod.escape(p['title'])}</h3>
         <p>{htmlmod.escape(p['summary'])}</p>
         <span class="more">{DL[lang]['read']}</span>
@@ -492,18 +599,21 @@ def devlog_feed(lang, posts):
     <title>{esc(p['title'])}</title>
     <link href="{base}devlog-{p['slug']}.html"/>
     <id>{base}devlog-{p['slug']}.html</id>
+    <published>{p['date']}T12:00:00Z</published>
     <updated>{p.get('updated', p['date'])}T12:00:00Z</updated>
+    <category term="{htmlmod.escape(p['tag'])}"/>
     <summary>{esc(p['summary'])}</summary>
     <author><name>Team Terminus</name></author>
   </entry>
 """ for p in posts)
+    newest = max(p.get("updated", p["date"]) for p in posts)
     return f"""<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="{lang}">
   <title>{DL[lang]['feed']}</title>
   <link href="{base}devlog.html"/>
   <link rel="self" href="{base}devlog.xml"/>
   <id>{base}devlog.html</id>
-  <updated>{posts[0].get('updated', posts[0]['date'])}T12:00:00Z</updated>
+  <updated>{newest}T12:00:00Z</updated>
 {entries}</feed>
 """
 
@@ -521,16 +631,40 @@ def devlog_page(lang, post, posts, template):
     head = head.replace('content="website"', 'content="article"')
     ld = {"@context": "https://schema.org", "@type": "BlogPosting", "headline": post["title"], "description": post["summary"],
           "datePublished": post["date"], "dateModified": post.get("updated", post["date"]), "inLanguage": lang,
+          "articleSection": post["tag"], "timeRequired": "PT%dM" % post["minutes"],
           "image": SITE + "img/og-devlog-%s.jpg" % post["slug"], "mainEntityOfPage": url(lang, page),
           "author": {"@type": "Organization", "name": "Team Terminus", "url": SITE + "studio.html"},
           "publisher": {"@type": "Organization", "name": "Team Terminus", "logo": {"@type": "ImageObject", "url": SITE + "img/team-terminus.webp"}}}
-    head = head.replace("<!--alt-->", '<meta property="article:published_time" content="%s">\n<script type="application/ld+json">%s</script>\n<!--alt-->'
-                        % (post["date"], json.dumps(ld, ensure_ascii=False, separators=(",", ":"))), 1)
+    head = head.replace("<!--alt-->", '<meta property="article:published_time" content="%s">\n<meta property="article:section" content="%s">\n<script type="application/ld+json">%s</script>\n<!--alt-->'
+                        % (post["date"], htmlmod.escape(post["tag"]), json.dumps(ld, ensure_ascii=False, separators=(",", ":"))), 1)
     head = head.replace(url("en", "devlog"), url(lang, page))
     head = head.replace("img/og-devlog.jpg", "img/og-%s.jpg" % page)
     if lang == "nl":
         head = head.replace('<html lang="en">', '<html lang="nl">', 1).replace('content="en_GB"', 'content="nl_NL"')
-    others = [p for p in posts if p["slug"] != post["slug"]][:2]
+
+    body_html, toc = markdown(post["body"], lang)
+    toc_html = ""
+    if len(toc) >= 3:
+        toc_html = (f'\n      <nav class="post-toc" aria-label="{T["toc"]}">\n        <span class="eyebrow">{T["toc"]}</span>\n        <ol>\n'
+                    + "\n".join(f'          <li><a href="#{hid}">{inline(t)}</a></li>' for hid, t in toc)
+                    + "\n        </ol>\n      </nav>")
+
+    i = [p["slug"] for p in posts].index(post["slug"])
+    newer = posts[i - 1] if i > 0 else None
+    older = posts[i + 1] if i + 1 < len(posts) else None
+    def step(p, label, cls):
+        if not p:
+            return '<span></span>'
+        return f'<a class="{cls}" href="devlog-{p["slug"]}.html"><small>{label}</small>{htmlmod.escape(p["title"])}</a>'
+    pager = f"""
+      <nav class="post-pager">
+        {step(older, T['older'], 'prev')}
+        {step(newer, T['newer'], 'next')}
+      </nav>"""
+
+    # related: same topic first, then the newest others
+    others = [p for p in posts if p["slug"] != post["slug"]]
+    others = sorted(others, key=lambda p: p["tag"] != post["tag"])[:2]
     more = ""
     if others:
         more = f"""
@@ -538,7 +672,7 @@ def devlog_page(lang, post, posts, template):
   <div class="wrap">
     <div class="section-head"><span class="eyebrow">{T['more']}</span></div>
     <div class="post-list">
-{devlog_list(lang, others)[len("<!--devlog-->") + 1:-len("<!--/devlog-->") - 1]}
+{post_cards(lang, others)}
     </div>
   </div>
 </section>
@@ -552,14 +686,23 @@ def devlog_page(lang, post, posts, template):
     <div class="head-art" style="--art: url({post['image']}); --art-s: url({post['image'].replace('.webp', '-640.webp')})" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog.html">{T['back']}</a>
-      <p class="post-meta"><span class="tag">{htmlmod.escape(post['tag'])}</span><time datetime="{post['date']}">{nice_date(lang, post['date'])}</time><span>{T['by']}</span></p>
+      {post_meta(lang, post, by=True)}
       <h1>{title}</h1>
       <p class="lede">{htmlmod.escape(post['summary'])}</p>
     </div>
   </header>
   <div class="band">
-    <div class="wrap prose">
-{markdown(post['body'])}
+    <div class="wrap post-body">{toc_html}
+      <div class="prose">
+{body_html}
+      </div>
+      <div class="post-end">
+        <p>{T['ask']}</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="{DISCORD}">{T['discord']}</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="{T['copied']}">{T['copy']}</button>
+        </div>
+      </div>{pager}
     </div>
   </div>
 </article>
@@ -639,6 +782,7 @@ def main():
             en = put(en, "devlog-latest", devlog_latest("en", devlog_posts("en")), path)
         if page == "devlog":
             en = put(en, "devlog", devlog_list("en", devlog_posts("en")), path)
+            en = put(en, "devlog-tags", devlog_tags("en", devlog_posts("en")), path)
         if page == "maps":
             for name in MAPLIST:
                 en = put(en, "layout-" + name, layout_html("en", name), path)
@@ -656,6 +800,7 @@ def main():
             du = put(du, "weapons", weapons_html("nl"), path)
         if page == "devlog":
             du = put(du, "devlog", devlog_list("nl", devlog_posts("nl")), path)
+            du = put(du, "devlog-tags", devlog_tags("nl", devlog_posts("nl")), path)
         if page == "maps":
             for name in MAPLIST:
                 du = put(du, "layout-" + name, layout_html("nl", name), path)

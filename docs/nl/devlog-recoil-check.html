@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Als de test het mis heeft · TrueCombat: Platinum</title>
+<meta name="description" content="Onze terugslagcontroles keurden de Desert Eagle af. Het spel had gelijk. Zo kwamen we erachter, en daarom jagen we liever op een vals alarm dan dat we een echt probleem missen.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-recoil-check.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-recoil-check.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Als de test het mis heeft">
+<meta property="og:description" content="Onze terugslagcontroles keurden de Desert Eagle af. Het spel had gelijk. Zo kwamen we erachter, en daarom jagen we liever op een vals alarm dan dat we een echt probleem missen.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-recoil-check.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-recoil-check.jpg">
+<meta property="article:published_time" content="2026-11-08">
+<meta property="article:section" content="Testen">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Als de test het mis heeft","description":"Onze terugslagcontroles keurden de Desert Eagle af. Het spel had gelijk. Zo kwamen we erachter, en daarom jagen we liever op een vals alarm dan dat we een echt probleem missen.","datePublished":"2026-11-08","dateModified":"2026-11-08","inLanguage":"nl","articleSection":"Testen","timeRequired":"PT2M","image":"https://truecombat.eu/img/og-devlog-recoil-check.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-recoil-check.html","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio.html"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="twitter:title" content="Als de test het mis heeft">
+<meta name="twitter:description" content="Onze terugslagcontroles keurden de Desert Eagle af. Het spel had gelijk. Zo kwamen we erachter, en daarom jagen we liever op een vals alarm dan dat we een echt probleem missen.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog.html"},{"@type":"ListItem","position":3,"name":"Als de test het mis heeft","item":"https://truecombat.eu/nl/devlog-recoil-check.html"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-recoil-check.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-recoil-check.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-recoil-check.html">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Wapens</a></li>
+      <li><a href="media.html">Media</a></li>
+      <li><a href="guide.html">Gids</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Ranglijsten</a></li>
+      <li><a href="competitive.html">Competitief</a></li>
+      <li><a href="news.html" aria-current="page">Nieuws</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Onderdelen">
+        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="media.html">Media</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="competitive.html">Competitief</a><a href="news.html">Nieuws</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../devlog-recoil-check.html" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="../devlog-recoil-check.html" hreflang="en" lang="en" title="English">EN</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/media-soldier-hd.webp); --art-s: url(../img/media-soldier-hd-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog.html">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Testen</span><time datetime="2026-11-08">8 nov 2026</time><span>2 min lezen</span><span>Team Terminus</span></p>
+      <h1>Als de test het mis heeft</h1>
+      <p class="lede">Onze terugslagcontroles keurden de Desert Eagle af. Het spel had gelijk. Zo kwamen we erachter, en daarom jagen we liever op een vals alarm dan dat we een echt probleem missen.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#het-rode-lampje">Het rode lampje</a></li>
+          <li><a href="#terug-naar-het-origineel">Terug naar het origineel</a></li>
+          <li><a href="#het-juiste-repareren">Het juiste repareren</a></li>
+          <li><a href="#waarom-we-dit-vertellen">Waarom we dit vertellen</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Platinum is een herbouw van TrueCombat: Elite, dus "het voelt ongeveer goed" is nooit genoeg. Elk wapen wordt vergeleken met het originele spel: schade, vuursnelheid, spreiding, en hoe het beeld omhoog schiet en terugkomt als je vuurt. Die controles draaien automatisch, op DirectX 12 en op OpenGL, voor elke release.</p>
+<h2 id="het-rode-lampje">Het rode lampje</h2>
+<p>Tijdens routinetests voor de volgende update faalde de terugslagcontrole op één wapen. Vanuit de heup afgevuurd kwam de Desert Eagle niet terug waar de controle dat verwachtte. Na elk schot eindigde het beeld net iets hoger dan het zou moeten, en over een volledig magazijn liep dat op tot een duidelijk verschil.</p>
+<p>Zo'n uitslag wordt nooit genegeerd. Terugslag bepaalt mede wat elk wapen is, en de Desert Eagle is een wapen waar mensen sterke herinneringen aan hebben.</p>
+<h2 id="terug-naar-het-origineel">Terug naar het origineel</h2>
+<p>We gingen dus terug naar het originele spel en volgden precies wat er gebeurt als een schot wordt gelost. Elk schot heeft een trap: hoe ver het beeld omhoog wordt geduwd. Het originele spel verplaatst je beeld met de volle trap, maar begrenst hoeveel daarvan het later weer omlaag trekt.</p>
+<p>Voor de meeste wapens doet die grens er nooit toe, omdat hun trap kleiner is dan de grens. De Desert Eagle vanuit de heup is de uitzondering. Zijn trap is groter dan de grens, dus elk schot laat een kleine, blijvende klim achter die het herstel nooit terugneemt. Zo gedraagt het origineel zich, en het is een deel van waarom een Deagle vanuit de heup voelt zoals hij voelt.</p>
+<p>Platinum deed al precies hetzelfde. De controle niet: die ging ervan uit dat de volle trap werd hersteld.</p>
+<h2 id="het-juiste-repareren">Het juiste repareren</h2>
+<p>We hebben de controle aangepast, niet het spel. Met de grens erbij slaagt de Desert Eagle op DirectX 12, op OpenGL en tegen de huidige release.</p>
+<aside class="callout"><p>Hier kwam geen enkele gameplaywijziging uit. Was je bang dat de Deagle "gerepareerd" zou worden tot iets wat hij nooit was: dat gebeurt niet.</p></aside>
+<h2 id="waarom-we-dit-vertellen">Waarom we dit vertellen</h2>
+<p>Een artikel over een test die het mis had, lijkt misschien vreemd om te publiceren. Wij vinden dat het laat zien hoe Platinum gemaakt wordt. Elke waarde wordt vergeleken met het origineel, elk verschil wordt onderzocht voordat er iets verandert, en soms bewijst het onderzoek dat het spel gelijk had. Een vals alarm kost ons een middag. Een echt verschil dat erdoor glipt, kost elke speler die nog weet hoe het wapen hoort te voelen.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-official-servers.html"><small>Vorig artikel</small>Wat de officiële servers draaiende houdt</a>
+        <a class="next" href="devlog-smarter-bots.html"><small>Volgend artikel</small>Bots leren spelen als mensen</a>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-ultra-visuals.html" tabindex="-1" aria-hidden="true"><img src="../img/devlog/ultra-railhouse-ultra-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-08">8 nov 2026</time><span>3 min lezen</span></p>
+          <h2><a href="devlog-ultra-visuals.html">Nieuw licht voor oude maps</a></h2>
+          <p>De Ultra-preset brengt moderne belichting, echte oppervlaktematerialen en zonneschaduwen naar elke map op DirectX 12. Zo hebben we dat gebouwd zonder te veranderen hoe TC:E speelt.</p>
+          <a class="more" href="devlog-ultra-visuals.html">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Bots">
+        <a class="post-art" href="devlog-smarter-bots.html" tabindex="-1" aria-hidden="true"><img src="../img/media-village-yard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Bots</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-08">8 nov 2026</time><span>3 min lezen</span></p>
+          <h2><a href="devlog-smarter-bots.html">Bots leren spelen als mensen</a></h2>
+          <p>Bots die nooit missen zijn niet leuk, en bots die het doel negeren zijn nog erger. Zo testen we elke wijziging aan de bots van Platinum voordat die op een server komt.</p>
+          <a class="more" href="devlog-smarter-bots.html">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="guide.html">Gids</a><a href="media.html">Media</a><a href="./#download">Download</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="competitive.html">Competitief</a></div>
+        <div><p class="foot-h">Studio</p><a href="news.html">Nieuws</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="press.html">Perskit</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js"></script>
+</body>
+</html>
