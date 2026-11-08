@@ -92,7 +92,10 @@ except urllib.error.HTTPError as e:
     check("unknown player 404", e.code == 404)
 check("search", [p["name"] for p in get("/search.json?q=gia")["players"]] == ["Gianni"])
 check("rank table", len(get("/ranks.json")["ranks"]) == 21)
-check("recent matches", len(get("/recent.json")["matches"]) == 6)
+rec = get("/recent.json")["matches"]
+check("recent matches", len(rec) == 6)
+check("recent matches name the server and MVP", rec[0]["server"] == "Red Server" and rec[0]["mvp"]["name"] == "Gianni"
+      and rec[0]["mvp"]["kills"] == 12 and rec[0]["mvp"]["id"] == gianni["id"], rec[0])
 dax = [p for p in lb["players"] if p["name"] == "Dax"][0]
 before = {p["id"]: (p["rating"], p["rank"]["xp"]) for p in lb["players"]}
 check("recompute gives the same result", store.recompute() == 6 and

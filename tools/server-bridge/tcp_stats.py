@@ -482,9 +482,18 @@ class StatsStore:
 
     def recent(self, limit=20):
         with self.lock:
-            rows = self.db.execute("SELECT ended, map, mode, duration, rounds, winner, players FROM matches "
-                                   "ORDER BY ended DESC LIMIT ?", (max(1, min(100, limit)),)).fetchall()
-        return {"schema": "tcp-recent/1", "updated": now_iso(), "matches": [dict(r) for r in rows]}
+            rows = self.db.execute("SELECT m.server sid, m.id mid, m.ended, m.map, m.mode, m.duration, m.rounds, m.winner, "
+                                   "m.players, s.name server FROM matches m LEFT JOIN servers s ON s.id=m.server "
+                                   "ORDER BY m.ended DESC LIMIT ?", (max(1, min(100, limit)),)).fetchall()
+            matches = []
+            for r in rows:
+                m = {k: r[k] for k in ("ended", "map", "mode", "duration", "rounds", "winner", "players", "server")}
+                # the match MVP: most kills, then most XP
+                top = self.db.execute("SELECT pid, name, kills FROM match_players WHERE server=? AND match=? "
+                                      "ORDER BY kills DESC, xp DESC LIMIT 1", (r["sid"], r["mid"])).fetchone()
+                m["mvp"] = {"id": top["pid"], "name": top["name"], "kills": top["kills"]} if top and top["kills"] else None
+                matches.append(m)
+        return {"schema": "tcp-recent/1", "updated": now_iso(), "matches": matches}
 
     @staticmethod
     def ranks():

@@ -17,7 +17,7 @@ var TCP_API = 'https://api.truecombat.eu';
       months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
       latest: 'Latest', kindSetupLong: 'Windows installer', kindSetup: 'Installer', kindZip: 'Full game, zip', offline: 'Master server offline', online: 'Online', loading: 'Checking…',
       noServersOffline: 'The live server list is unreachable right now. The Servers tab in the launcher shows the same list.',
-      moreNotes: 'Show the full notes', lessNotes: 'Show less', liveNow: '{p} playing on {s} servers right now', liveIdle: '{s} servers online right now',
+      moreNotes: 'Show the full notes', topAll: 'All time', top30: 'Last 30 days', cmpAdd: 'Compare', cmpOn: 'Comparing', cmpTitle: 'Compare weapons', cmpHint: 'Pick up to three weapons to compare.', cmpClear: 'Clear', cmpDmg: 'Damage per hit', cmpRpm: 'Fire rate', cmpDps: 'Damage per second', cmpMag: 'Magazine', cmpEmpty: 'Time to empty', cmpReload: 'Full reload', cmpPellets: 'pellets', cmpNote: 'Body hits before range and armour. Shotguns count every pellet.', lessNotes: 'Show less', liveNow: '{p} playing on {s} servers right now', liveIdle: '{s} servers online right now',
       noServers: 'Nobody is hosting a public server right now. Host one from the launcher with List publicly switched on.',
       players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied',
       updated: 'Updated', join: 'In the launcher: Servers → Join by address',
@@ -30,13 +30,16 @@ var TCP_API = 'https://api.truecombat.eu';
       kills: 'Kills', deaths: 'Deaths', winRate: 'Win rate', damage: 'Damage', objectives: 'Objectives', roundsWon: 'Rounds won', teamKills: 'Team kills',
       profile: 'Player profile', firstSeen: 'First seen', lastSeen: 'Last seen', copyLink: 'Copy profile link', linkCopied: 'Link copied',
       trendShort: 'Rating history appears after two rated matches.', lastN: 'Last {n} matches', found: '{n} found',
-      apiOffline: 'Player stats are offline right now. Please try again in a few minutes.', screenshots: 'screenshots'
+      apiOffline: 'Player stats are offline right now. Please try again in a few minutes.', screenshots: 'screenshots',
+      specops: 'SpecOps', terrorists: 'Terrorists', draw: 'Draw', wins_: '{t} win', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Player',
+      emptyBoard: 'Only bots on the server right now. Join in and take their place.', justNow: 'just now', minAgo: '{n} min ago', hAgo: '{n} h ago', dAgo: '{n} d ago',
+      rounds: 'rounds', noResults: 'No completed matches yet. Results appear here the moment a ranked match ends.', resultsOffline: 'Match results are unavailable right now.'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
       latest: 'Nieuwste', kindSetupLong: 'Windows-installatieprogramma', kindSetup: 'Installatieprogramma', kindZip: 'Volledig spel, zip', offline: 'Masterserver offline', online: 'Online', loading: 'Bezig…',
       noServersOffline: 'De live serverlijst is nu niet bereikbaar. Het tabblad Servers in de launcher toont dezelfde lijst.',
-      moreNotes: 'Toon alle notities', lessNotes: 'Minder tonen', liveNow: '{p} spelers op {s} servers op dit moment', liveIdle: '{s} servers nu online',
+      moreNotes: 'Toon alle notities', topAll: 'Altijd', top30: 'Laatste 30 dagen', cmpAdd: 'Vergelijk', cmpOn: 'Vergeleken', cmpTitle: 'Wapens vergelijken', cmpHint: 'Kies tot drie wapens om te vergelijken.', cmpClear: 'Wissen', cmpDmg: 'Schade per treffer', cmpRpm: 'Vuursnelheid', cmpDps: 'Schade per seconde', cmpMag: 'Magazijn', cmpEmpty: 'Tijd tot leeg', cmpReload: 'Volledig herladen', cmpPellets: 'hagels', cmpNote: 'Rompschoten, voor afstand en bepantsering. Bij hagelgeweren telt elke hagel mee.', lessNotes: 'Minder tonen', liveNow: '{p} spelers op {s} servers op dit moment', liveIdle: '{s} servers nu online',
       noServers: 'Er host nu niemand een publieke server. Host er zelf een vanuit de launcher met Openbaar tonen aan.',
       players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd',
       updated: 'Bijgewerkt', join: 'In de launcher: Servers → Verbinden met adres',
@@ -49,7 +52,10 @@ var TCP_API = 'https://api.truecombat.eu';
       kills: 'Kills', deaths: 'Doden', winRate: 'Winstpercentage', damage: 'Schade', objectives: 'Doelen', roundsWon: 'Rondes gewonnen', teamKills: 'Teamkills',
       profile: 'Spelersprofiel', firstSeen: 'Eerst gezien', lastSeen: 'Laatst gezien', copyLink: 'Profiellink kopiëren', linkCopied: 'Link gekopieerd',
       trendShort: 'Het ratingverloop verschijnt na twee gerankte potjes.', lastN: 'Laatste {n} potjes', found: '{n} gevonden',
-      apiOffline: 'De spelersstatistieken zijn nu offline. Probeer het over een paar minuten opnieuw.', screenshots: 'screenshots'
+      apiOffline: 'De spelersstatistieken zijn nu offline. Probeer het over een paar minuten opnieuw.', screenshots: 'screenshots',
+      specops: 'SpecOps', terrorists: 'Terroristen', draw: 'Gelijkspel', wins_: '{t} winnen', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Speler',
+      emptyBoard: 'Alleen bots op de server. Doe mee en neem hun plek in.', justNow: 'zojuist', minAgo: '{n} min geleden', hAgo: '{n} u geleden', dAgo: '{n} d geleden',
+      rounds: 'rondes', noResults: 'Nog geen voltooide potjes. Uitslagen verschijnen hier zodra een gerankt potje eindigt.', resultsOffline: 'Uitslagen zijn nu niet beschikbaar.'
     }
   };
   var L = DICT[lang] || DICT.en;
@@ -221,9 +227,41 @@ var TCP_API = 'https://api.truecombat.eu';
         '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button></td>' +
         '<td>' + mapLabel(s.map) + '</td><td>' + (s.players || 0) + ' / ' + (s.maxPlayers || '?') + (s.bots ? ' <span class="srv-bots">+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</span>' : '') + '</td><td>' + esc(s.mode || '') + '</td></tr>';
     }).join('');
+    renderBoards(list);
     var upd = root.querySelector('.srv-updated');
     if (upd && data.updated) { upd.textContent = L.updated + ' ' + new Date(data.updated).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }); upd.hidden = false; }
   }
+  /* live scoreboards for every server with someone on it (servers page) */
+  var IMG = (lang === 'nl' ? '../' : '') + 'img/';
+  function mapArt(m) { var n = MAPS[String(m || '').toLowerCase()]; return IMG + (n ? 'map-' + n.toLowerCase() : 'media-map-vote') + '-640.webp'; }
+  function shortName(s) { return String(s || '').replace(/^TrueCombat:\s*Platinum\s*\|\s*/i, ''); }
+  function renderBoards(list) {
+    var box = document.querySelector('[data-boards]');
+    if (!box) return;
+    var busy = list.filter(function (s) { return (s.players || 0) + (s.bots || 0) > 0; });
+    box.hidden = !busy.length;
+    box.querySelector('.boards').innerHTML = busy.map(function (s) {
+      var art = mapArt(s.map);
+      var rows = (s.playerList || []).map(function (p, i) {
+        return '<tr><td class="pos">' + (i + 1) + '</td><td class="who">' + esc(p.name) + '</td><td>' + num(p.score) + '</td><td class="ping">' + (p.ping || 0) + '</td></tr>';
+      }).join('');
+      return '<article class="board"><header style="background-image:linear-gradient(90deg,rgba(13,16,22,.94) 35%,rgba(13,16,22,.55)),url(' + art + ')">' +
+        '<div><h3>' + esc(shortName(s.name)) + '</h3><p>' + mapLabel(s.map) + ' · ' + esc(s.mode || '') + '</p></div>' +
+        '<span class="board-count"><b>' + (s.players || 0) + '</b>/' + (s.maxPlayers || '?') + (s.bots ? '<small>+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</small>' : '') + '</span></header>' +
+        (rows ? '<table class="board-table"><thead><tr><th>#</th><th>' + L.player + '</th><th>' + L.score + '</th><th>' + L.ping + '</th></tr></thead><tbody>' + rows + '</tbody></table>'
+              : '<p class="board-empty">' + L.emptyBoard + '</p>') +
+        '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button></article>';
+    }).join('');
+  }
+  var boards = document.querySelector('[data-boards]');
+  if (boards) boards.addEventListener('click', function (e) {
+    var b = e.target.closest('.addr'); if (!b) return;
+    var a = b.dataset.addr;
+    (navigator.clipboard ? navigator.clipboard.writeText(a) : Promise.reject()).then(function () {
+      b.textContent = L.copied; setTimeout(function () { b.textContent = a; }, 1400);
+    }, function () {});
+  });
+
   $all('[data-servers]').forEach(function (root) {
     root.addEventListener('click', function (e) {
       var b = e.target.closest('.addr'); if (!b) return;
@@ -237,6 +275,39 @@ var TCP_API = 'https://api.truecombat.eu';
         setPill(root, false, L.offline);
         var empty = root.querySelector('.srv-empty'); if (empty) empty.textContent = L.noServersOffline;
       });
+    }
+    load();
+    if (TCP_API) setInterval(function () { if (!document.hidden) load(); }, boards ? 30000 : 60000);
+  });
+
+  /* latest match results (servers page) */
+  function ago(iso) {
+    var s = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (!(s >= 0)) return '';
+    if (s < 90) return L.justNow;
+    if (s < 3600) return L.minAgo.replace('{n}', Math.round(s / 60));
+    if (s < 86400) return L.hAgo.replace('{n}', Math.round(s / 3600));
+    return s < 7 * 86400 ? L.dAgo.replace('{n}', Math.round(s / 86400)) : fmtDate(iso);
+  }
+  $all('[data-recent]').forEach(function (root) {
+    var list = root.querySelector('ol'), empty = root.querySelector('.srv-empty');
+    function load() {
+      api('/recent.json').then(function (d) {
+        var ms = (d.matches || []).slice(0, parseInt(root.dataset.recent, 10) || 8);
+        if (!ms.length) { empty.textContent = L.noResults; empty.hidden = false; return; }
+        empty.hidden = true;
+        list.innerHTML = ms.map(function (m) {
+          var art = mapArt(m.map);
+          var w = String(m.winner || '').toLowerCase();
+          var res = w === 'specops' || w === 'terrorists' ? '<span class="res ' + w + '">' + L.wins_.replace('{t}', L[w]) + '</span>' :
+                    (!w && m.rounds > 1 ? '<span class="res">' + L.draw + '</span>' : '');
+          var mins = Math.max(1, Math.round((m.duration || 0) / 60));
+          var bits = [esc(m.mode || ''), (m.rounds > 1 ? m.rounds + ' ' + L.rounds : ''), mins + ' ' + L.minutes, (m.players || 0) + ' ' + L.players].filter(Boolean).join(' · ');
+          var mvp = m.mvp ? '<span class="mvp"><b>' + L.mvp + '</b> <a href="' + esc(profileHref(m.mvp.id)) + '">' + esc(m.mvp.name) + '</a> · ' + m.mvp.kills + ' ' + L.kills.toLowerCase() + '</span>' : '';
+          return '<li><img src="' + art + '" alt="" width="120" height="68" loading="lazy"><div class="r-main"><p class="r-top"><b>' + mapLabel(m.map) + '</b>' + res + '</p><p class="r-sub">' + bits + '</p></div>' +
+            '<div class="r-side">' + mvp + '<span class="r-when"><time datetime="' + esc(m.ended) + '">' + ago(m.ended) + '</time>' + (m.server ? ' · ' + esc(shortName(m.server)) : '') + '</span></div></li>';
+        }).join('');
+      }, function () { empty.textContent = L.resultsOffline; empty.hidden = false; });
     }
     load();
     if (TCP_API) setInterval(function () { if (!document.hidden) load(); }, 60000);
@@ -258,6 +329,85 @@ var TCP_API = 'https://api.truecombat.eu';
       el.hidden = false;
     }, function () {});
   });
+
+  /* top five on the home page: last 30 days, or all time while the month is still quiet */
+  $all('[data-top]').forEach(function (root) {
+    function show(d, period) {
+      var rows = (d.players || []).slice().sort(function (a, b) { return (b.rating || 0) - (a.rating || 0); }).slice(0, 5);
+      if (!rows.length) return false;
+      root.querySelector('[data-top-period]').textContent = period === '30d' ? L.top30 : L.topAll;
+      root.querySelector('ol').innerHTML = rows.map(function (p, i) {
+        return '<li><span class="pos">' + (i + 1) + '</span><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a>' + badge(p.rank) +
+          '<span class="stat"><b>' + num(p.rating) + '</b> ' + L.rating + '</span><span class="stat"><b>' + kdOf(p).toFixed(2) + '</b> ' + L.kd + '</span></li>';
+      }).join('');
+      root.hidden = false; return true;
+    }
+    api('/leaderboard.json?limit=50&period=30d').then(function (d) {
+      if (!show(d, '30d')) return api('/leaderboard.json?limit=50&period=all').then(function (a) { show(a, 'all'); });
+    }).catch(function () {});
+  });
+
+  /* weapon comparison (weapons page): cards carry their stats in data-w */
+  (function () {
+    var cards = $all('.wcard[data-w]');
+    if (!cards.length) return;
+    var picked = [];
+    var panel = document.createElement('aside');
+    panel.className = 'wcompare'; panel.hidden = true; panel.setAttribute('aria-live', 'polite');
+    document.body.appendChild(panel);
+    function nameOf(c) { return c.querySelector('h3').textContent; }
+    function stats(c) {
+      var w = JSON.parse(c.dataset.w);
+      var full = w.shell ? w.rl * w.mag : w.rl;
+      return { dmg: w.dmg, pel: w.pel, rpm: w.rpm, dps: Math.round(w.dmg * w.rpm / 60), mag: w.mag, res: w.res, empty: w.mag / w.rpm * 60, reload: full / 1000 };
+    }
+    var ROWS = [
+      ['cmpDmg', 'dmg', 1, function (s) { return s.dmg + (s.pel ? ' <small>(' + s.pel + ' ' + L.cmpPellets + ')</small>' : ''); }],
+      ['cmpRpm', 'rpm', 1, function (s) { return s.rpm + ' <small>rpm</small>'; }],
+      ['cmpDps', 'dps', 1, function (s) { return num(s.dps); }],
+      ['cmpMag', 'mag', 1, function (s) { return s.mag + ' <small>/ ' + s.res + '</small>'; }],
+      ['cmpEmpty', 'empty', 0, function (s) { return s.empty.toFixed(1) + ' s'; }],
+      ['cmpReload', 'reload', -1, function (s) { return s.reload.toFixed(1) + ' s'; }]
+    ];
+    function draw() {
+      cards.forEach(function (c) {
+        var on = picked.indexOf(c) >= 0, b = c.querySelector('.wc-add');
+        c.classList.toggle('picked', on); b.setAttribute('aria-pressed', String(on)); b.textContent = on ? L.cmpOn : L.cmpAdd;
+      });
+      if (!picked.length) { panel.hidden = true; document.body.classList.remove('has-compare'); return; }
+      var ss = picked.map(stats);
+      var head = '<tr><th scope="col"><span class="sr-only">' + L.cmpTitle + '</span></th>' + picked.map(function (c, i) {
+        return '<th scope="col">' + esc(nameOf(c)) + '<button type="button" class="wc-x" data-i="' + i + '" aria-label="' + L.close + ': ' + esc(nameOf(c)) + '">×</button></th>';
+      }).join('') + '</tr>';
+      var body = ROWS.map(function (r) {
+        var vals = ss.map(function (s) { return s[r[1]]; });
+        var best = r[2] > 0 ? Math.max.apply(null, vals) : r[2] < 0 ? Math.min.apply(null, vals) : null;
+        return '<tr><th scope="row">' + L[r[0]] + '</th>' + ss.map(function (s, i) {
+          var win = best !== null && ss.length > 1 && vals[i] === best;
+          return '<td' + (win ? ' class="best"' : '') + '>' + r[3](s) + '</td>';
+        }).join('') + '</tr>';
+      }).join('');
+      panel.innerHTML = '<div class="wrap"><header><h2>' + L.cmpTitle + '</h2><span class="muted">' + (picked.length < 3 ? L.cmpHint : '') + '</span>' +
+        '<button type="button" class="btn btn-ghost wc-clear">' + L.cmpClear + '</button><button type="button" class="wc-min" aria-expanded="' + !panel.classList.contains('min') + '" aria-label="' + L.cmpTitle + '">' + CHEV + '</button></header>' +
+        '<div class="table-scroll"><table>' + head + body + '</table></div><p class="wnote">' + L.cmpNote + '</p></div>';
+      panel.hidden = false; document.body.classList.add('has-compare');
+    }
+    panel.addEventListener('click', function (e) {
+      if (e.target.closest('.wc-clear')) { picked = []; panel.classList.remove('min'); draw(); return; }
+      var m = e.target.closest('.wc-min'); if (m) { m.setAttribute('aria-expanded', String(!panel.classList.toggle('min'))); return; }
+      var x = e.target.closest('.wc-x'); if (x) { picked.splice(+x.dataset.i, 1); draw(); }
+    });
+    cards.forEach(function (c) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'wc-add'; b.textContent = L.cmpAdd; b.setAttribute('aria-pressed', 'false');
+      c.querySelector('header').appendChild(b);
+      b.addEventListener('click', function () {
+        var i = picked.indexOf(c);
+        if (i >= 0) picked.splice(i, 1); else { if (picked.length >= 3) picked.shift(); picked.push(c); }
+        draw();
+      });
+    });
+  })();
 
   /* ---------- leaderboards and player profiles (stats service JSON, tools/server-bridge/tcp_stats.py) ---------- */
   function num(n) { return (n || 0).toLocaleString(lang); }
