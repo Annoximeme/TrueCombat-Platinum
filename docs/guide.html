@@ -25,13 +25,11 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <!--nav-->
+<a class="skip" href="#top">Skip to content</a>
 <header class="nav">
   <div class="wrap">
     <a class="nav-brand" href="./"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
@@ -48,7 +46,7 @@
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
       <nav aria-label="Sections">
-        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="news.html">News</a><a href="studio.html">Studio</a><hr><a href="media.html">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/guide.html" hreflang="nl" lang="nl">Nederlands</a>
+        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="news.html">News</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/guide.html" hreflang="nl" lang="nl">Nederlands</a>
       </nav>
     </details>
     <a class="nav-lang" href="nl/guide.html" hreflang="nl" lang="nl" title="Nederlands">NL</a>
@@ -80,7 +78,7 @@
         <ol>
           <li><b>Download the installer</b> from the <a href="./#download">download section</a>, choose a folder and let the launcher download the game.</li>
           <li><b>Open TrueCombat: Platinum</b> from the desktop or Start menu. Type your player name. It is saved for next time.</li>
-          <li><b>Join or host.</b> Enter a server address and press <b>PLAY</b>, pick one from the Servers tab, or press <b>Host a server</b> to start your own and join it.</li>
+          <li><b>Join or host.</b> Enter a server address and press <b>PLAY</b>, pick one from the Servers tab, or press <b>Host a server</b> to start your own and join it. To warm up first, <b>Practice offline with bots</b> starts a match against bots in one click.</li>
           <li><b>Pick a team and loadout</b> in the Deployment Menu when the map loads.</li>
         </ol>
         <p class="callout"><b>Game won't start?</b> Press <b>Safe start</b> in the launcher. It runs the game on OpenGL in a 1280 × 720 window and leaves your normal settings alone.</p>
@@ -98,7 +96,7 @@
             <tr><th>Jump</th><td><kbd>Space</kbd></td></tr>
             <tr><th>Crouch</th><td><kbd>C</kbd> (toggles)</td></tr>
             <tr><th>Prone</th><td><kbd>X</kbd></td></tr>
-            <tr><th>Lean left / right</th><td><kbd>Q</kbd><kbd>E</kbd><span class="soon">Coming</span></td></tr>
+            <tr><th>Lean left / right</th><td><kbd>Q</kbd><kbd>E</kbd></td></tr>
             <tr><th>Use</th><td><kbd>F</kbd></td></tr>
           </table>
           <table class="keys">
@@ -120,11 +118,10 @@
         <h2>Movement and stamina</h2>
         <p>Speeds come straight from the original TC:E values. Sprinting is about half again as fast as running, and crouching or crawling cuts you to well under half.</p>
         <div class="speeds" role="list">
-          <div role="listitem"><b>143</b><i style="width:100%"></i><span>Sprint</span></div>
-          <div role="listitem"><b>98</b><i style="width:69%"></i><span>Run</span></div>
-          <div role="listitem"><b>81</b><i style="width:57%"></i><span>Walk</span></div>
-          <div role="listitem"><b>41</b><i style="width:29%"></i><span>Crouch</span></div>
-          <div role="listitem"><b>38</b><i style="width:27%"></i><span>Prone</span></div>
+          <div role="listitem"><b>238</b><i style="width:100%"></i><span>Sprint</span></div>
+          <div role="listitem"><b>163</b><i style="width:68%"></i><span>Run</span></div>
+          <div role="listitem"><b>68</b><i style="width:29%"></i><span>Crouch</span></div>
+          <div role="listitem"><b>38</b><i style="width:16%"></i><span>Prone</span></div>
         </div>
         <p class="yt-note">Units per second with a rifle, on the default server settings.</p>
         <ul>
@@ -186,7 +183,7 @@
         <h2>Hosting a match</h2>
         <ol>
           <li>In the launcher, press <b>Host a server</b>. Choose the mode, the server name, the player limit, the starting map and the rotation.</li>
-          <li>Switch on <b>List publicly</b> to show up on the <a href="servers.html">server list</a> while the master server is online.</li>
+          <li>Switch on <b>List publicly</b> to show up on the <a href="servers.html">server list</a> and in the Servers tab of every launcher.</li>
           <li>For players outside your home network, allow UDP port <code>27971</code> in Windows Firewall and forward it on your router to the hosting PC.</li>
           <li>Keep the PC awake while people play. Everyone needs the same game version as the server.</li>
         </ol>

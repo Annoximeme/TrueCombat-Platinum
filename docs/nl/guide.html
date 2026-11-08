@@ -25,13 +25,11 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 <!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
 <header class="nav">
   <div class="wrap">
     <a class="nav-brand" href="./"><img src="../img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
@@ -48,7 +46,7 @@
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
       <nav aria-label="Onderdelen">
-        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="media.html">Media</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="news.html">Nieuws</a><a href="studio.html">Studio</a><hr><a href="media.html">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../guide.html" hreflang="en" lang="en">English</a>
+        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="media.html">Media</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="news.html">Nieuws</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../guide.html" hreflang="en" lang="en">English</a>
       </nav>
     </details>
     <a class="nav-lang" href="../guide.html" hreflang="en" lang="en" title="English">EN</a>
@@ -80,7 +78,7 @@
         <ol>
           <li><b>Download het installatieprogramma</b> via de <a href="./#download">downloadsectie</a>, kies een map en laat de launcher de game downloaden.</li>
           <li><b>Open TrueCombat: Platinum</b> via het bureaublad of het Startmenu. Typ je spelersnaam. Die wordt onthouden.</li>
-          <li><b>Doe mee of host.</b> Vul een serveradres in en druk op <b>PLAY</b>, kies er een uit het tabblad Servers, of druk op <b>Host a server</b> om je eigen server te starten en mee te doen.</li>
+          <li><b>Doe mee of host.</b> Vul een serveradres in en druk op <b>PLAY</b>, kies er een uit het tabblad Servers, of druk op <b>Host a server</b> om je eigen server te starten en mee te doen. Eerst opwarmen? <b>Practice offline with bots</b> start met één klik een potje tegen bots.</li>
           <li><b>Kies een team en uitrusting</b> in het Deployment Menu als de map geladen is.</li>
         </ol>
         <p class="callout"><b>Start het spel niet?</b> Druk op <b>Safe start</b> in de launcher. Dan draait het spel op OpenGL in een venster van 1280 × 720, en je normale instellingen blijven ongemoeid.</p>
@@ -98,7 +96,7 @@
             <tr><th>Springen</th><td><kbd>Space</kbd></td></tr>
             <tr><th>Hurken</th><td><kbd>C</kbd> (aan/uit)</td></tr>
             <tr><th>Liggen</th><td><kbd>X</kbd></td></tr>
-            <tr><th>Leunen links / rechts</th><td><kbd>Q</kbd><kbd>E</kbd><span class="soon">Komt eraan</span></td></tr>
+            <tr><th>Leunen links / rechts</th><td><kbd>Q</kbd><kbd>E</kbd></td></tr>
             <tr><th>Gebruiken</th><td><kbd>F</kbd></td></tr>
           </table>
           <table class="keys">
@@ -120,11 +118,10 @@
         <h2>Bewegen en stamina</h2>
         <p>De snelheden komen rechtstreeks uit de originele TC:E-waarden. Sprinten is ongeveer anderhalf keer zo snel als rennen, en hurken of kruipen brengt je ruim onder de helft.</p>
         <div class="speeds" role="list">
-          <div role="listitem"><b>143</b><i style="width:100%"></i><span>Sprinten</span></div>
-          <div role="listitem"><b>98</b><i style="width:69%"></i><span>Rennen</span></div>
-          <div role="listitem"><b>81</b><i style="width:57%"></i><span>Lopen</span></div>
-          <div role="listitem"><b>41</b><i style="width:29%"></i><span>Hurken</span></div>
-          <div role="listitem"><b>38</b><i style="width:27%"></i><span>Liggen</span></div>
+          <div role="listitem"><b>238</b><i style="width:100%"></i><span>Sprinten</span></div>
+          <div role="listitem"><b>163</b><i style="width:68%"></i><span>Rennen</span></div>
+          <div role="listitem"><b>68</b><i style="width:29%"></i><span>Hurken</span></div>
+          <div role="listitem"><b>38</b><i style="width:16%"></i><span>Liggen</span></div>
         </div>
         <p class="yt-note">Eenheden per seconde met een geweer, op de standaard serverinstellingen.</p>
         <ul>
@@ -186,7 +183,7 @@
         <h2>Een potje hosten</h2>
         <ol>
           <li>Druk in de launcher op <b>Host a server</b>. Kies de modus, de servernaam, de spelerslimiet, de startmap en de rotatie.</li>
-          <li>Zet <b>List publicly</b> aan om op de <a href="servers.html">serverlijst</a> te verschijnen zolang de masterserver online is.</li>
+          <li>Zet <b>List publicly</b> aan om op de <a href="servers.html">serverlijst</a> en in het tabblad Servers van elke launcher te verschijnen.</li>
           <li>Voor spelers buiten je thuisnetwerk: sta UDP-poort <code>27971</code> toe in Windows Firewall en stuur hem in je router door naar de host-pc.</li>
           <li>Houd de pc wakker zolang er gespeeld wordt. Iedereen heeft dezelfde spelversie nodig als de server.</li>
         </ol>
