@@ -159,7 +159,7 @@
   {
    "en": "First-person muzzle flash and sniper scope overlay",
    "nl": "Mondingsflits in eerste persoon en het sluipschuttersvizier",
-   "version": null
+   "version": "0.33"
   },
   {
    "en": "Swimming",
@@ -214,26 +214,66 @@
   {
    "en": "Modern Ultra visuals: new tonemapping, TAA and ambient occlusion",
    "nl": "Moderne Ultra-graphics: nieuwe tonemapping, TAA en ambient occlusion",
-   "version": null
+   "version": "0.33"
   },
   {
    "en": "Ledge climbing and original first-person animations",
    "nl": "Klimmen op randen en originele animaties in eerste persoon",
-   "version": null
+   "version": "0.33"
   },
   {
    "en": "In-game pause menu on Esc",
    "nl": "Pauzemenu in het spel onder Esc",
-   "version": null
+   "version": "0.33"
   },
   {
    "en": "Frame-time graph for performance tuning",
    "nl": "Frametijdgrafiek om de prestaties af te stellen",
-   "version": null
+   "version": "0.33"
+  },
+  {
+   "en": "Real-time sun shadows and surface materials on Ultra",
+   "nl": "Realtime zonneschaduwen en oppervlaktematerialen op Ultra",
+   "version": "0.33"
+  },
+  {
+   "en": "NVIDIA DLSS Frame Generation and Reflex",
+   "nl": "NVIDIA DLSS Frame Generation en Reflex",
+   "version": "0.33"
+  },
+  {
+   "en": "Original bullet impacts and near-miss sounds",
+   "nl": "Originele kogelinslagen en het geluid van rakelingse kogels",
+   "version": "0.33"
+  },
+  {
+   "en": "Sharper bot aim, movement and teamwork",
+   "nl": "Scherper richten, bewegen en samenwerken voor bots",
+   "version": "0.33"
+  },
+  {
+   "en": "Launcher with its own version and self-updates",
+   "nl": "Launcher met een eigen versie en eigen updates",
+   "version": "0.33"
   },
   {
    "en": "Easy Anti-Cheat",
    "nl": "Easy Anti-Cheat",
+   "version": null
+  },
+  {
+   "en": "Shadows from muzzle flashes and explosions",
+   "nl": "Schaduwen van mondingsvuur en explosies",
+   "version": null
+  },
+  {
+   "en": "Redesigned launcher",
+   "nl": "Vernieuwde launcher",
+   "version": null
+  },
+  {
+   "en": "Voice commands",
+   "nl": "Spraakcommando's",
    "version": null
   }
  ]
