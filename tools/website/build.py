@@ -203,12 +203,15 @@ def weapons_html(lang):
                         "150 damage spread over 9 pellets; reloads one shell at a time." if lang == "en"
                         else "150 schade verdeeld over 9 hagels; laadt patroon voor patroon.")
                 cls = "wcard"
+                cmp = htmlmod.escape(json.dumps({"dmg": w["damage"], "pel": w.get("pellets", 0), "rpm": rpm, "mag": w["clip"],
+                                                 "res": w["reserve"], "rl": w["reload"], "shell": bool(w.get("shell"))}, separators=(",", ":")), quote=True)
             else:
                 stats = '<p>%s</p>' % w["note_" + lang]
                 note = ""
                 cls = "wcard equip"
+                cmp = ""
             cards.append(
-                f'<article class="{cls}" data-team="{w["team"]}"><header><h3>{htmlmod.escape(w.get("name_" + lang, w["name"]))}</h3><span class="full">{htmlmod.escape(w.get("full_" + lang, w["full"]))}</span></header>'
+                f'<article class="{cls}" data-team="{w["team"]}"' + (f" data-w=\"{cmp}\"" if cmp else "") + f'><header><h3>{htmlmod.escape(w.get("name_" + lang, w["name"]))}</h3><span class="full">{htmlmod.escape(w.get("full_" + lang, w["full"]))}</span></header>'
                 f'<div class="wtags">{"".join(tags)}</div>{stats}{note}<div class="wmodes">{modes}</div></article>')
         out.append(
             f'<section class="wgroup" id="{group["id"]}"><header><h2>{group["title_" + lang]}</h2><p>{group["sub_" + lang]}</p></header>'

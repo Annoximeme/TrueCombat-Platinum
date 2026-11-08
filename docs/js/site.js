@@ -17,7 +17,7 @@ var TCP_API = 'https://api.truecombat.eu';
       months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
       latest: 'Latest', kindSetupLong: 'Windows installer', kindSetup: 'Installer', kindZip: 'Full game, zip', offline: 'Master server offline', online: 'Online', loading: 'Checking…',
       noServersOffline: 'The live server list is unreachable right now. The Servers tab in the launcher shows the same list.',
-      moreNotes: 'Show the full notes', lessNotes: 'Show less', liveNow: '{p} playing on {s} servers right now', liveIdle: '{s} servers online right now',
+      moreNotes: 'Show the full notes', topAll: 'All time', top30: 'Last 30 days', cmpAdd: 'Compare', cmpOn: 'Comparing', cmpTitle: 'Compare weapons', cmpHint: 'Pick up to three weapons to compare.', cmpClear: 'Clear', cmpDmg: 'Damage per hit', cmpRpm: 'Fire rate', cmpDps: 'Damage per second', cmpMag: 'Magazine', cmpEmpty: 'Time to empty', cmpReload: 'Full reload', cmpPellets: 'pellets', cmpNote: 'Body hits before range and armour. Shotguns count every pellet.', lessNotes: 'Show less', liveNow: '{p} playing on {s} servers right now', liveIdle: '{s} servers online right now',
       noServers: 'Nobody is hosting a public server right now. Host one from the launcher with List publicly switched on.',
       players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied',
       updated: 'Updated', join: 'In the launcher: Servers → Join by address',
@@ -36,7 +36,7 @@ var TCP_API = 'https://api.truecombat.eu';
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
       latest: 'Nieuwste', kindSetupLong: 'Windows-installatieprogramma', kindSetup: 'Installatieprogramma', kindZip: 'Volledig spel, zip', offline: 'Masterserver offline', online: 'Online', loading: 'Bezig…',
       noServersOffline: 'De live serverlijst is nu niet bereikbaar. Het tabblad Servers in de launcher toont dezelfde lijst.',
-      moreNotes: 'Toon alle notities', lessNotes: 'Minder tonen', liveNow: '{p} spelers op {s} servers op dit moment', liveIdle: '{s} servers nu online',
+      moreNotes: 'Toon alle notities', topAll: 'Altijd', top30: 'Laatste 30 dagen', cmpAdd: 'Vergelijk', cmpOn: 'Vergeleken', cmpTitle: 'Wapens vergelijken', cmpHint: 'Kies tot drie wapens om te vergelijken.', cmpClear: 'Wissen', cmpDmg: 'Schade per treffer', cmpRpm: 'Vuursnelheid', cmpDps: 'Schade per seconde', cmpMag: 'Magazijn', cmpEmpty: 'Tijd tot leeg', cmpReload: 'Volledig herladen', cmpPellets: 'hagels', cmpNote: 'Rompschoten, voor afstand en bepantsering. Bij hagelgeweren telt elke hagel mee.', lessNotes: 'Minder tonen', liveNow: '{p} spelers op {s} servers op dit moment', liveIdle: '{s} servers nu online',
       noServers: 'Er host nu niemand een publieke server. Host er zelf een vanuit de launcher met Openbaar tonen aan.',
       players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd',
       updated: 'Bijgewerkt', join: 'In de launcher: Servers → Verbinden met adres',
@@ -258,6 +258,85 @@ var TCP_API = 'https://api.truecombat.eu';
       el.hidden = false;
     }, function () {});
   });
+
+  /* top five on the home page: last 30 days, or all time while the month is still quiet */
+  $all('[data-top]').forEach(function (root) {
+    function show(d, period) {
+      var rows = (d.players || []).slice().sort(function (a, b) { return (b.rating || 0) - (a.rating || 0); }).slice(0, 5);
+      if (!rows.length) return false;
+      root.querySelector('[data-top-period]').textContent = period === '30d' ? L.top30 : L.topAll;
+      root.querySelector('ol').innerHTML = rows.map(function (p, i) {
+        return '<li><span class="pos">' + (i + 1) + '</span><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a>' + badge(p.rank) +
+          '<span class="stat"><b>' + num(p.rating) + '</b> ' + L.rating + '</span><span class="stat"><b>' + kdOf(p).toFixed(2) + '</b> ' + L.kd + '</span></li>';
+      }).join('');
+      root.hidden = false; return true;
+    }
+    api('/leaderboard.json?limit=50&period=30d').then(function (d) {
+      if (!show(d, '30d')) return api('/leaderboard.json?limit=50&period=all').then(function (a) { show(a, 'all'); });
+    }).catch(function () {});
+  });
+
+  /* weapon comparison (weapons page): cards carry their stats in data-w */
+  (function () {
+    var cards = $all('.wcard[data-w]');
+    if (!cards.length) return;
+    var picked = [];
+    var panel = document.createElement('aside');
+    panel.className = 'wcompare'; panel.hidden = true; panel.setAttribute('aria-live', 'polite');
+    document.body.appendChild(panel);
+    function nameOf(c) { return c.querySelector('h3').textContent; }
+    function stats(c) {
+      var w = JSON.parse(c.dataset.w);
+      var full = w.shell ? w.rl * w.mag : w.rl;
+      return { dmg: w.dmg, pel: w.pel, rpm: w.rpm, dps: Math.round(w.dmg * w.rpm / 60), mag: w.mag, res: w.res, empty: w.mag / w.rpm * 60, reload: full / 1000 };
+    }
+    var ROWS = [
+      ['cmpDmg', 'dmg', 1, function (s) { return s.dmg + (s.pel ? ' <small>(' + s.pel + ' ' + L.cmpPellets + ')</small>' : ''); }],
+      ['cmpRpm', 'rpm', 1, function (s) { return s.rpm + ' <small>rpm</small>'; }],
+      ['cmpDps', 'dps', 1, function (s) { return num(s.dps); }],
+      ['cmpMag', 'mag', 1, function (s) { return s.mag + ' <small>/ ' + s.res + '</small>'; }],
+      ['cmpEmpty', 'empty', 0, function (s) { return s.empty.toFixed(1) + ' s'; }],
+      ['cmpReload', 'reload', -1, function (s) { return s.reload.toFixed(1) + ' s'; }]
+    ];
+    function draw() {
+      cards.forEach(function (c) {
+        var on = picked.indexOf(c) >= 0, b = c.querySelector('.wc-add');
+        c.classList.toggle('picked', on); b.setAttribute('aria-pressed', String(on)); b.textContent = on ? L.cmpOn : L.cmpAdd;
+      });
+      if (!picked.length) { panel.hidden = true; document.body.classList.remove('has-compare'); return; }
+      var ss = picked.map(stats);
+      var head = '<tr><th scope="col"><span class="sr-only">' + L.cmpTitle + '</span></th>' + picked.map(function (c, i) {
+        return '<th scope="col">' + esc(nameOf(c)) + '<button type="button" class="wc-x" data-i="' + i + '" aria-label="' + L.close + ': ' + esc(nameOf(c)) + '">×</button></th>';
+      }).join('') + '</tr>';
+      var body = ROWS.map(function (r) {
+        var vals = ss.map(function (s) { return s[r[1]]; });
+        var best = r[2] > 0 ? Math.max.apply(null, vals) : r[2] < 0 ? Math.min.apply(null, vals) : null;
+        return '<tr><th scope="row">' + L[r[0]] + '</th>' + ss.map(function (s, i) {
+          var win = best !== null && ss.length > 1 && vals[i] === best;
+          return '<td' + (win ? ' class="best"' : '') + '>' + r[3](s) + '</td>';
+        }).join('') + '</tr>';
+      }).join('');
+      panel.innerHTML = '<div class="wrap"><header><h2>' + L.cmpTitle + '</h2><span class="muted">' + (picked.length < 3 ? L.cmpHint : '') + '</span>' +
+        '<button type="button" class="btn btn-ghost wc-clear">' + L.cmpClear + '</button><button type="button" class="wc-min" aria-expanded="' + !panel.classList.contains('min') + '" aria-label="' + L.cmpTitle + '">' + CHEV + '</button></header>' +
+        '<div class="table-scroll"><table>' + head + body + '</table></div><p class="wnote">' + L.cmpNote + '</p></div>';
+      panel.hidden = false; document.body.classList.add('has-compare');
+    }
+    panel.addEventListener('click', function (e) {
+      if (e.target.closest('.wc-clear')) { picked = []; panel.classList.remove('min'); draw(); return; }
+      var m = e.target.closest('.wc-min'); if (m) { m.setAttribute('aria-expanded', String(!panel.classList.toggle('min'))); return; }
+      var x = e.target.closest('.wc-x'); if (x) { picked.splice(+x.dataset.i, 1); draw(); }
+    });
+    cards.forEach(function (c) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'wc-add'; b.textContent = L.cmpAdd; b.setAttribute('aria-pressed', 'false');
+      c.querySelector('header').appendChild(b);
+      b.addEventListener('click', function () {
+        var i = picked.indexOf(c);
+        if (i >= 0) picked.splice(i, 1); else { if (picked.length >= 3) picked.shift(); picked.push(c); }
+        draw();
+      });
+    });
+  })();
 
   /* ---------- leaderboards and player profiles (stats service JSON, tools/server-bridge/tcp_stats.py) ---------- */
   function num(n) { return (n || 0).toLocaleString(lang); }
