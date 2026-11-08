@@ -35,7 +35,7 @@ LABELS = {
         "leaderboards": "Leaderboards", "news": "News", "press": "Press kit", "media": "Media", "studio": "Studio",
         "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About",
         "download": "Download", "menu": "Menu", "sections": "Sections", "discord": "Join the Discord",
-        "other": "Nederlands", "other_short": "NL", "footer": "Footer", "releases": "Releases",
+        "other": "Nederlands", "other_short": "NL", "skip": "Skip to content", "footer": "Footer", "releases": "Releases",
         "dev": "TrueCombat: Platinum is developed by RaziC*.", "rss": "Patch notes (RSS)",
         "legal1": "TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.",
         "legal2": "Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.",
@@ -45,7 +45,7 @@ LABELS = {
         "leaderboards": "Ranglijsten", "news": "Nieuws", "press": "Perskit", "media": "Media", "studio": "Studio",
         "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over",
         "download": "Download", "menu": "Menu", "sections": "Onderdelen", "discord": "Word lid van de Discord",
-        "other": "English", "other_short": "EN", "footer": "Voettekst", "releases": "Releases",
+        "other": "English", "other_short": "EN", "skip": "Naar de inhoud", "footer": "Voettekst", "releases": "Releases",
         "dev": "TrueCombat: Platinum wordt ontwikkeld door RaziC*.", "rss": "Patchnotes (RSS)",
         "legal1": "TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.",
         "legal2": "De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.",
@@ -79,8 +79,9 @@ def nav(lang, current):
         for p in main)
     menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
     menu += '<hr><a href="%s">%s</a><a href="%s#graphics">%s</a><a href="%s#faq">%s</a><a href="%s">%s</a><a href="%s">Discord</a><a href="%s" hreflang="%s" lang="%s">%s</a>' % (
-        href("media"), L["gallery"], home, L["graphics"], home, L["faq"], href("press"), L["press"], DISCORD, other_href, other, other, L["other"])
+        home + "#gallery", L["gallery"], home, L["graphics"], home, L["faq"], href("press"), L["press"], DISCORD, other_href, other, other, L["other"])
     return f"""<!--nav-->
+<a class="skip" href="#top">{L['skip']}</a>
 <header class="nav">
   <div class="wrap">
     <a class="nav-brand" href="{home}"><img src="{up}img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
