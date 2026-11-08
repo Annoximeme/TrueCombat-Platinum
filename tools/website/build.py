@@ -541,7 +541,7 @@ def post_meta(lang, p, by=False):
             f'<time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time><span>{T["min"].format(n=p["minutes"])}</span>{extra}</p>')
 
 
-def post_cards(lang, posts, feature=False):
+def post_cards(lang, posts, feature=False, h="h2"):
     T = DL[lang]
     cards = []
     for i, p in enumerate(posts):
@@ -552,7 +552,7 @@ def post_cards(lang, posts, feature=False):
         <a class="post-art" href="devlog-{p['slug']}.html" tabindex="-1" aria-hidden="true"><img src="{art}" alt="" {size} loading="{'eager' if big else 'lazy'}"></a>
         <div>
           {post_meta(lang, p)}
-          <h2><a href="devlog-{p['slug']}.html">{htmlmod.escape(p['title'])}</a></h2>
+          <{h}><a href="devlog-{p['slug']}.html">{htmlmod.escape(p['title'])}</a></{h}>
           <p>{htmlmod.escape(p['summary'])}</p>
           <a class="more" href="devlog-{p['slug']}.html">{T['read']}</a>
         </div>
@@ -724,6 +724,29 @@ def devlog_page(lang, post, posts, template):
     return html
 
 
+# ---------------------------------------------------------------- studio
+SR = {"en": {"latest": "Latest", "items": "{n} additions", "item": "1 addition"}, "nl": {"latest": "Nieuwste", "items": "{n} toevoegingen", "item": "1 toevoeging"}}
+
+
+def studio_releases(lang, latest):
+    """Release-by-release history on the studio page, from roadmap.json. Grows by itself with every release."""
+    items = json.loads((HERE / "roadmap.json").read_text(encoding="utf-8"))["items"]
+    cur = vkey(latest)
+    vers = sorted({i["version"] for i in items if i["version"] and vkey(i["version"]) <= cur}, key=vkey, reverse=True)
+    rows = []
+    for n, v in enumerate(vers):
+        its = [i for i in items if i["version"] == v]
+        lis = "".join("<li>%s</li>" % htmlmod.escape(i[lang]) for i in its)
+        tag = ' <span class="latest">%s</span>' % SR[lang]["latest"] if n == 0 else ""
+        rows.append('      <li class="rel%s"><div class="rel-ver"><b>v%s</b>%s<small>%s</small></div><ul>%s</ul></li>'
+                    % (" now" if n == 0 else "", v, tag, (SR[lang]["item"] if len(its) == 1 else SR[lang]["items"].format(n=len(its))), lis))
+    return "<!--studio-releases-->\n    <ol class=\"releases-line\">\n" + "\n".join(rows) + "\n    </ol>\n<!--/studio-releases-->"
+
+
+def studio_devlog(lang, posts):
+    return "<!--studio-devlog-->\n    <div class=\"post-list post-trio\">\n" + post_cards(lang, posts[:3], h="h3") + "\n    </div>\n<!--/studio-devlog-->"
+
+
 # ---------------------------------------------------------------- Dutch
 ASSET = re.compile(r"(?<=[\s\"'(,])(img|js|press)/")
 
@@ -804,6 +827,9 @@ def main():
         if page == "maps":
             for name in MAPLIST:
                 en = put(en, "layout-" + name, layout_html("en", name), path)
+        if page == "studio":
+            en = put(en, "studio-releases", studio_releases("en", "v" + latest_version()), path)
+            en = put(en, "studio-devlog", studio_devlog("en", devlog_posts("en")), path)
         src = en
         en = put(en, "nav", nav("en", page), path)
         en = put(en, "footer", footer("en"), path)
@@ -822,6 +848,9 @@ def main():
         if page == "maps":
             for name in MAPLIST:
                 du = put(du, "layout-" + name, layout_html("nl", name), path)
+        if page == "studio":
+            du = put(du, "studio-releases", studio_releases("nl", "v" + latest_version()), path)
+            du = put(du, "studio-devlog", studio_devlog("nl", devlog_posts("nl")), path)
         du = to_dutch(page, du)
         du = put(du, "nav", nav("nl", page), path)
         du = put(du, "footer", footer("nl"), path)
