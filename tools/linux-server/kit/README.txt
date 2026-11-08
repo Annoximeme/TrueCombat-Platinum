@@ -23,3 +23,6 @@ Updating: download the new TrueCombat-Platinum-Linux-Server.tar.gz from
 each release and run its install.sh into the same folder; your server.cfg
 is kept. update-server.sh does this automatically, waiting until no players
 are on the server before it restarts (see the comments at its top).
+
+Match recordings: set sv_autoDemo 1 in server.cfg to record every match to
+home/tcetest/svdemos. prune-demos.sh deletes recordings older than 14 days.
