@@ -36,6 +36,16 @@
     <author><name>Team Terminus</name></author>
   </entry>
   <entry>
+    <title>Tien stukken werk, één update</title>
+    <link href="https://truecombat.eu/nl/devlog-one-update.html"/>
+    <id>https://truecombat.eu/nl/devlog-one-update.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Testen"/>
+    <summary>De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste testpoort eruitzag.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Wat de officiële servers draaiende houdt</title>
     <link href="https://truecombat.eu/nl/devlog-official-servers.html"/>
     <id>https://truecombat.eu/nl/devlog-official-servers.html</id>
