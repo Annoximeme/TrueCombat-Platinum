@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Devlog · TrueCombat: Platinum</title>
+<meta name="description" content="De devlog van TrueCombat: Platinum: hoe het spel gebouwd wordt, de problemen achter elke release en de keuzes die het vormen.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Devlog · TrueCombat: Platinum">
+<meta property="og:description" content="De devlog van TrueCombat: Platinum: hoe het spel gebouwd wordt, de problemen achter elke release en de keuzes die het vormen.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog.jpg">
+<!--alt-->
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog.html">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Wapens</a></li>
+      <li><a href="media.html">Media</a></li>
+      <li><a href="guide.html">Gids</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Ranglijsten</a></li>
+      <li><a href="competitive.html">Competitief</a></li>
+      <li><a href="news.html" aria-current="page">Nieuws</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Onderdelen">
+        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="media.html">Media</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="competitive.html">Competitief</a><a href="news.html">Nieuws</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../devlog.html" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="../devlog.html" hreflang="en" lang="en" title="English">EN</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<section class="page-head">
+  <div class="head-art" style="background-image: url(../img/map-stadtrand.webp)" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="eyebrow">Devlog</span>
+    <h1>Uit de werkplaats</h1>
+    <p class="lede">Hoe TrueCombat: Platinum gebouwd wordt: de problemen waar we tegenaan lopen, de keuzes achter elke release, en wat ervoor nodig is om een oud spel op de juiste manier terug te brengen.</p>
+    <div class="news-tools">
+      <a class="btn btn-ghost" href="news.html">Patchnotes</a>
+      <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Praat mee op Discord</a>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="post-list">
+<!--devlog-->
+      <article class="post-card">
+        <a class="post-art" href="devlog-match-mode.html" tabindex="-1" aria-hidden="true"><img src="../img/media-deployment.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Competitief</span><time datetime="2026-11-07">7 nov 2026</time></p>
+          <h2><a href="devlog-match-mode.html">Wedstrijdmodus, gebouwd voor clanavonden</a></h2>
+          <p>Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.</p>
+          <a class="more" href="devlog-match-mode.html">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card">
+        <a class="post-art" href="devlog-full-speed.html" tabindex="-1" aria-hidden="true"><img src="../img/map-railhouse.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Gameplay</span><time datetime="2026-11-07">7 nov 2026</time></p>
+          <h2><a href="devlog-full-speed.html">Terug op volle snelheid</a></h2>
+          <p>Maandenlang voelde Platinum een tikje trager dan het spel dat we kennen. De oorzaak bleek één schaalfactor, op de verkeerde plek toegepast.</p>
+          <a class="more" href="devlog-full-speed.html">Lees het artikel</a>
+        </div>
+      </article>
+<!--/devlog-->
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <img src="../img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
+      <div class="who">
+        <b>Team Terminus</b>
+        <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+      </div>
+      <nav aria-label="Voettekst">
+        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a>
+        <a href="maps.html">Maps</a>
+        <a href="weapons.html">Wapens</a>
+        <a href="media.html">Media</a>
+        <a href="guide.html">Gids</a>
+        <a href="servers.html">Servers</a>
+        <a href="leaderboards.html">Ranglijsten</a>
+        <a href="competitive.html">Competitief</a>
+        <a href="news.html">Nieuws</a>
+        <a href="devlog.html">Devlog</a>
+        <a href="studio.html">Studio</a>
+        <a href="press.html">Perskit</a>
+        <a href="./#download">Download</a>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js"></script>
+</body>
+</html>

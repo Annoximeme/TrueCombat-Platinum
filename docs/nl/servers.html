@@ -13,11 +13,11 @@
 <meta property="og:locale" content="nl_NL">
 <meta property="og:title" content="Servers · TrueCombat: Platinum">
 <meta property="og:description" content="Live lijst van publieke TrueCombat: Platinum-servers, met uitleg over meedoen en je eigen server laten zien.">
-<meta property="og:image" content="https://truecombat.eu/img/og.jpg">
+<meta property="og:image" content="https://truecombat.eu/img/og-servers.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://truecombat.eu/img/og.jpg">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-servers.jpg">
 <!--alt-->
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/servers.html">
 <link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/servers.html">
@@ -40,13 +40,13 @@
       <li><a href="guide.html">Gids</a></li>
       <li><a href="servers.html" aria-current="page">Servers</a></li>
       <li><a href="leaderboards.html">Ranglijsten</a></li>
+      <li><a href="competitive.html">Competitief</a></li>
       <li><a href="news.html">Nieuws</a></li>
-      <li><a href="studio.html">Studio</a></li>
     </ul>
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
       <nav aria-label="Onderdelen">
-        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="media.html">Media</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="news.html">Nieuws</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../servers.html" hreflang="en" lang="en">English</a>
+        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="media.html">Media</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="competitive.html">Competitief</a><a href="news.html">Nieuws</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../servers.html" hreflang="en" lang="en">English</a>
       </nav>
     </details>
     <a class="nav-lang" href="../servers.html" hreflang="en" lang="en" title="English">EN</a>
@@ -62,7 +62,7 @@
   <div class="wrap">
     <span class="eyebrow">Servers</span>
     <h1>Zoek een potje</h1>
-    <p class="lede">Publieke TrueCombat: Platinum-servers, live van de masterserver. De lijst ververst elke minuut.</p>
+    <p class="lede">Publieke TrueCombat: Platinum-servers, live van de masterserver, met scoreborden voor elk lopend potje en de laatste uitslagen.</p>
   </div>
 </section>
 
@@ -80,6 +80,33 @@
       <p class="srv-updated" hidden></p>
     </div>
     <p class="yt-note" style="margin-top:12px">Klik op een adres om het te kopiëren en plak het in de launcher. Het tabblad Servers in de launcher toont dezelfde lijst met je ping.</p>
+  </div>
+</section>
+
+<section class="band" data-boards hidden>
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Nu live</span>
+      <h2>Live scoreborden</h2>
+      <p class="lede">Wie er speelt, waar, en hoe het potje ervoor staat. Elke 30 seconden bijgewerkt.</p>
+    </div>
+    <div class="boards" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="head-row">
+      <div>
+        <span class="eyebrow">Uitslagen</span>
+        <h2>Laatste potjes</h2>
+      </div>
+      <a class="btn btn-ghost" href="leaderboards.html">Ranglijsten</a>
+    </div>
+    <div class="results" data-recent="8">
+      <ol></ol>
+      <p class="srv-empty">De laatste uitslagen worden geladen.</p>
+    </div>
   </div>
 </section>
 
@@ -147,7 +174,9 @@
         <a href="guide.html">Gids</a>
         <a href="servers.html">Servers</a>
         <a href="leaderboards.html">Ranglijsten</a>
+        <a href="competitive.html">Competitief</a>
         <a href="news.html">Nieuws</a>
+        <a href="devlog.html">Devlog</a>
         <a href="studio.html">Studio</a>
         <a href="press.html">Perskit</a>
         <a href="./#download">Download</a>

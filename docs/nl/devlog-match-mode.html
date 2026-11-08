@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wedstrijdmodus, gebouwd voor clanavonden · TrueCombat: Platinum</title>
+<meta name="description" content="Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-match-mode.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-match-mode.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Wedstrijdmodus, gebouwd voor clanavonden">
+<meta property="og:description" content="Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-match-mode.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-match-mode.jpg">
+<!--alt-->
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-match-mode.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-match-mode.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-match-mode.html">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Wapens</a></li>
+      <li><a href="media.html">Media</a></li>
+      <li><a href="guide.html">Gids</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Ranglijsten</a></li>
+      <li><a href="competitive.html">Competitief</a></li>
+      <li><a href="news.html" aria-current="page">Nieuws</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Onderdelen">
+        <a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="media.html">Media</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="competitive.html">Competitief</a><a href="news.html">Nieuws</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="./#faq">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="../devlog-match-mode.html" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="../devlog-match-mode.html" hreflang="en" lang="en" title="English">EN</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post">
+  <header class="page-head post-head">
+    <div class="head-art" style="background-image: url(../img/media-deployment.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog.html">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Competitief</span><time datetime="2026-11-07">7 nov 2026</time><span>Team Terminus</span></p>
+      <h1>Wedstrijdmodus, gebouwd voor clanavonden</h1>
+      <p class="lede">Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap prose">
+<p>Vraag iemand die TC:E serieus speelde wat er is bijgebleven, en het is zelden een publieke server. Het is een clanwedstrijd: twee tags, een geboekte server, en een ronde die beslist wordt door één goed verdedigde hoek. Platinum 0.32 brengt dat formaat terug als ingebouwde wedstrijdmodus, klaar op elke server met één commando.</p>
+<h2>Het verloop</h2>
+<p>Een wedstrijd begint met de <strong>warm-up</strong>: vrij spelen met respawns, en zonder automatische teamverdeling, zodat clans zich kunnen opstellen zoals ze willen, vier tegen vijf inbegrepen. Spelers typen <code>ready</code> als ze klaar zijn, en de wedstrijd begint zodra iedereen in beide teams klaar is. Bots houden niets op.</p>
+<p>Daarna volgt de <strong>messenronde</strong>. Eén ronde, alleen messen, geen respawns in welke modus dan ook, twee minuten op de klok. De bom en de vlaggen blijven buiten spel. De winnaars kiezen hun kant met <code>stay</code> of <code>swap</code>.</p>
+<p>Dan gaat de wedstrijd <strong>live</strong>: twaalf rondes in de rondemodi, of twee helften van 20 minuten in Team Deathmatch en Flag Capture. De teams liggen vast, en elke kill uit de warm-up en de messenronde verdwijnt van het scorebord en uit het rapport voor de ranglijsten. Bij <strong>rust</strong> wisselen de teams van kant, en scores, clannamen en resterende time-outs gaan mee. Een team dat niet meer in te halen is, wint meteen.</p>
+<h2>Een pauze die echt pauzeert</h2>
+<p>Het lastigste onderdeel was de time-out. Een tactische time-out is alleen eerlijk als er niets beweegt, dus in Platinum bevriest de hele wedstrijd. Spelers staan stil, granaten hangen in de lucht met hun lont vastgehouden, en de rondeklok, de bomtimer, gevallen rugzakken, herlaadacties en respawngolven houden allemaal precies de tijd die ze nog hadden. Na een aftelling van vijf seconden gaat het spel verder.</p>
+<p>Elk team krijgt standaard twee time-outs van 60 seconden. Admins kunnen zonder tijdslimiet pauzeren.</p>
+<h2>Gebouwd om getest te worden</h2>
+<p>De wedstrijdmodus doorliep dertien geautomatiseerde teststappen met twee echte spelclients, op zowel DirectX 12 als OpenGL. Daaronder: een messenronde die echt alleen messen toelaat, een kantkeuze die alleen de winnaars kunnen maken, een rondeklok die tien seconden pauze vasthield, een rookgranaat waarvan de lont alleen brandde terwijl het spel liep, en een rustwissel die scores en namen meenam.</p>
+<h2>Organiseer je eigen wedstrijd</h2>
+<p>Host een server in een teammodus, typ <code>match on</code> in de serverconsole, geef de teams een naam en laat beide kanten zich klaarmelden. De <a href="competitive.html">competitieve pagina</a> noemt elk commando en elke instelling. Wedstrijdavonden en scrims worden georganiseerd op onze Discord.</p>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card">
+        <a class="post-art" href="devlog-full-speed.html" tabindex="-1" aria-hidden="true"><img src="../img/map-railhouse.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Gameplay</span><time datetime="2026-11-07">7 nov 2026</time></p>
+          <h2><a href="devlog-full-speed.html">Terug op volle snelheid</a></h2>
+          <p>Maandenlang voelde Platinum een tikje trager dan het spel dat we kennen. De oorzaak bleek één schaalfactor, op de verkeerde plek toegepast.</p>
+          <a class="more" href="devlog-full-speed.html">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <img src="../img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
+      <div class="who">
+        <b>Team Terminus</b>
+        <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+      </div>
+      <nav aria-label="Voettekst">
+        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
+        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a>
+        <a href="maps.html">Maps</a>
+        <a href="weapons.html">Wapens</a>
+        <a href="media.html">Media</a>
+        <a href="guide.html">Gids</a>
+        <a href="servers.html">Servers</a>
+        <a href="leaderboards.html">Ranglijsten</a>
+        <a href="competitive.html">Competitief</a>
+        <a href="news.html">Nieuws</a>
+        <a href="devlog.html">Devlog</a>
+        <a href="studio.html">Studio</a>
+        <a href="press.html">Perskit</a>
+        <a href="./#download">Download</a>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js"></script>
+</body>
+</html>
