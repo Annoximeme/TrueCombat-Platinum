@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Every shot leaves a mark · TrueCombat: Platinum</title>
+<meta name="description" content="Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-every-shot.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-every-shot.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Every shot leaves a mark">
+<meta property="og:description" content="Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-every-shot.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-every-shot.jpg">
+<meta property="article:published_time" content="2026-11-08">
+<meta property="article:section" content="Gameplay">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Every shot leaves a mark","description":"Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.","datePublished":"2026-11-08","dateModified":"2026-11-08","inLanguage":"en","articleSection":"Gameplay","timeRequired":"PT2M","image":"https://truecombat.eu/img/og-devlog-every-shot.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-every-shot.html","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio.html"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="twitter:title" content="Every shot leaves a mark">
+<meta name="twitter:description" content="Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog.html"},{"@type":"ListItem","position":3,"name":"Every shot leaves a mark","item":"https://truecombat.eu/devlog-every-shot.html"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-every-shot.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-every-shot.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-every-shot.html">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=99099ae0a4">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Weapons</a></li>
+      <li><a href="media.html">Media</a></li>
+      <li><a href="guide.html">Guide</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Leaderboards</a></li>
+      <li><a href="competitive.html">Competitive</a></li>
+      <li><a href="news.html" aria-current="page">News</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Sections">
+        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a><a href="news.html">News</a><a href="studio.html">Studio</a><hr><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/devlog-every-shot.html" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="nl/devlog-every-shot.html" hreflang="nl" lang="nl" title="Nederlands">NL</a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(img/devlog/impacts-warehouse.webp); --art-s: url(img/devlog/impacts-warehouse-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog.html">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span>Team Terminus</span></p>
+      <h1>Every shot leaves a mark</h1>
+      <p class="lede">Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#gunfire-that-stays-in-the-world">Gunfire that stays in the world</a></li>
+          <li><a href="#the-view-model-rebuilt">The view model, rebuilt</a></li>
+          <li><a href="#ledges-not-just-ladders">Ledges, not just ladders</a></li>
+          <li><a href="#how-we-tested-it">How we tested it</a></li>
+          <li><a href="#still-to-come">Still to come</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Ask a TC:E veteran what a firefight felt like and you rarely hear about damage numbers. You hear about plaster bursting off a wall next to your head, the snap of a round that just missed, and the slide locking back on an empty pistol at the worst possible moment. Platinum already had the numbers right. The next update is about everything around them.</p>
+<h2 id="gunfire-that-stays-in-the-world">Gunfire that stays in the world</h2>
+<p>Every surface now takes the original bullet holes for its material, where the round goes in and where it comes out. Every hit throws up dust, splinters, sparks or blood depending on what it strikes, and plays the original impact sound for that surface.</p>
+<figure class="wide">
+  <img src="img/devlog/impacts-warehouse.webp" alt="A fresh bullet hole in a stack of crates in a warehouse, rendered in DirectX 12" width="1280" height="720" loading="lazy">
+  <figcaption>A single round through a crate stack. The hole, the dust and the sound all come from the original material set.</figcaption>
+</figure>
+<p>The near miss is back too. A round that passes close to your head makes the short, sharp crack TC:E players learned to react to long before they saw the shooter. It tells you that you have been found, and roughly from where.</p>
+<p>Impacts are visual and audio only. They do not change damage, penetration or what a round can pass through. That all stays exactly as it is in the current release.</p>
+<h2 id="the-view-model-rebuilt">The view model, rebuilt</h2>
+<p>We compared every player and weapon animation in Platinum with the original game, one by one, and listed every difference. The first-person set is now rebuilt from that list.</p>
+<ul>
+  <li>Pistols lock their slide back on the last shot.</li>
+  <li>Akimbo pistols fire from alternating hands.</li>
+  <li>Reloads distinguish between a partial and an empty magazine, as they did in TC:E.</li>
+  <li>Shotguns load shell by shell.</li>
+  <li>Switching weapons lowers the old one before the new one comes up.</li>
+</ul>
+<p>Every weapon also gets a new first-person muzzle flash, and scoped rifles show the sniper scope overlay when you aim.</p>
+<h2 id="ledges-not-just-ladders">Ledges, not just ladders</h2>
+<p>Ledge climbing returns. Jump at a ledge within reach and you pull yourself up onto it, the way the original did. It opens up the same shortcuts and climbing spots veterans know, and nothing more.</p>
+<figure class="wide">
+  <img src="img/devlog/ledge-railhouse.webp" alt="A soldier pulling himself up onto a crate in the Railhouse warehouse" width="1280" height="720" loading="lazy">
+  <figcaption>Climbing a crate stack on Railhouse. The automated check runs the same climb on DirectX 12 and OpenGL.</figcaption>
+</figure>
+<h2 id="how-we-tested-it">How we tested it</h2>
+<p>Each piece has its own automated check that runs on DirectX 12 and on OpenGL. The impact check fires at walls and at a bot, then confirms that the server and the game agree on every single hit and its surface, and that a round passing close to a player registers as a near miss. The climbing check finds real ledges in the map and climbs them. All of it runs again in the full regression before the update ships.</p>
+<h2 id="still-to-come">Still to come</h2>
+<p>Muzzle flashes and explosions do not cast shadows yet. That work is next, and it will arrive in a later update once it meets the same bar: faithful to the original, and fast enough that nobody has to turn it off.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-match-mode.html"><small>Older post</small>Match mode, built for clan nights</a>
+        <a class="next" href="devlog-installer.html"><small>Newer post</small>One small installer, every version</a>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Gameplay">
+        <a class="post-art" href="devlog-full-speed.html" tabindex="-1" aria-hidden="true"><img src="img/map-railhouse-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.32.0</span><time datetime="2026-11-07">7 Nov 2026</time><span>2 min read</span></p>
+          <h2><a href="devlog-full-speed.html">Back to full speed</a></h2>
+          <p>For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.</p>
+          <a class="more" href="devlog-full-speed.html">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-ultra-visuals.html" tabindex="-1" aria-hidden="true"><img src="img/devlog/ultra-railhouse-ultra-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>3 min read</span></p>
+          <h2><a href="devlog-ultra-visuals.html">New light for old maps</a></h2>
+          <p>The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.</p>
+          <a class="more" href="devlog-ultra-visuals.html">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="guide.html">Guide</a><a href="media.html">Media</a><a href="./#download">Download</a></div>
+        <div><p class="foot-h">Play</p><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news.html">News</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="press.html">Press kit</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=79b756f7fc"></script>
+</body>
+</html>
