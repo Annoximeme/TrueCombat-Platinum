@@ -7,6 +7,7 @@
      [data-player]                player profile page (player.html?id=<player id>)
      [data-gallery]               screenshot grid with filter tabs and a lightbox (media page)
      [data-yt]                    click-to-play YouTube embed (privacy-enhanced, nothing loads before a click)
+     [data-compare] [data-post-filter] [data-copy-link]   devlog sliders, topic filter and copy-link button
    Set TCP_API to the bridge's public https URL once it is hosted. Empty means "offline". */
 var TCP_API = 'https://api.truecombat.eu';
 
@@ -680,11 +681,38 @@ var TCP_API = 'https://api.truecombat.eu';
     });
   });
 
+  /* ---------- devlog: before/after sliders, topic filter, copy link ---------- */
+  $all('[data-compare]').forEach(function (cmp) {
+    var r = cmp.querySelector('input[type=range]');
+    if (r) r.addEventListener('input', function () { cmp.style.setProperty('--pos', r.value + '%'); });
+  });
+  $all('[data-post-filter]').forEach(function (bar) {
+    var list = document.querySelector('[data-post-list]');
+    if (!list) return;
+    bar.hidden = false;
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-tag]');
+      if (!b) return;
+      var tag = b.dataset.tag;
+      $all('button[data-tag]', bar).forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      $all('.post-card', list).forEach(function (c) { c.hidden = !!tag && c.dataset.tag !== tag; });
+      list.classList.toggle('filtered', !!tag);
+    });
+  });
+  $all('[data-copy-link]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var label = b.textContent, link = location.href.split('#')[0];
+      (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () {
+        b.textContent = b.dataset.done; setTimeout(function () { b.textContent = label; }, 1600);
+      }, function () {});
+    });
+  });
+
   /* ---------- scroll reveal (progressive: without IntersectionObserver everything is simply shown) ---------- */
   (function () {
     if (!('IntersectionObserver' in window)) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var els = $all('.band .section-head, .feature, .map-card, .trio figure, .clan, .member, .tip, .release, .weapon');
+    var els = $all('.band .section-head, .feature, .map-card, .trio figure, .clan, .member, .tip, .release, .weapon, .post-card');
     if (!els.length) return;
     var vh = window.innerHeight || 800;
     var io = new IntersectionObserver(function (entries) {
