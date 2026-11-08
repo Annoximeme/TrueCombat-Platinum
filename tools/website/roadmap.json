@@ -137,11 +137,6 @@
    "version": "0.31"
   },
   {
-   "en": "Easy Anti-Cheat",
-   "nl": "Easy Anti-Cheat",
-   "version": null
-  },
-  {
    "en": "Leaning and ladders",
    "nl": "Leunen en ladders",
    "version": "0.32"
@@ -162,8 +157,8 @@
    "version": "0.32"
   },
   {
-   "en": "Aiming down sights with the original muzzle flash",
-   "nl": "Richten over het vizier met de originele mondingsflits",
+   "en": "First-person muzzle flash and sniper scope overlay",
+   "nl": "Mondingsflits in eerste persoon en het sluipschuttersvizier",
    "version": null
   },
   {
@@ -222,8 +217,23 @@
    "version": null
   },
   {
-   "en": "Ledge climbing",
-   "nl": "Klimmen op randen",
+   "en": "Ledge climbing and original first-person animations",
+   "nl": "Klimmen op randen en originele animaties in eerste persoon",
+   "version": null
+  },
+  {
+   "en": "In-game pause menu on Esc",
+   "nl": "Pauzemenu in het spel onder Esc",
+   "version": null
+  },
+  {
+   "en": "Frame-time graph for performance tuning",
+   "nl": "Frametijdgrafiek om de prestaties af te stellen",
+   "version": null
+  },
+  {
+   "en": "Easy Anti-Cheat",
+   "nl": "Easy Anti-Cheat",
    "version": null
   }
  ]
