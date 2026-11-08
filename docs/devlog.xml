@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+  <title>TrueCombat: Platinum devlog</title>
+  <link href="https://truecombat.eu/devlog.html"/>
+  <link rel="self" href="https://truecombat.eu/devlog.xml"/>
+  <id>https://truecombat.eu/devlog.html</id>
+  <updated>2026-11-07T12:00:00Z</updated>
+  <entry>
+    <title>Match mode, built for clan nights</title>
+    <link href="https://truecombat.eu/devlog-match-mode.html"/>
+    <id>https://truecombat.eu/devlog-match-mode.html</id>
+    <updated>2026-11-07T12:00:00Z</updated>
+    <summary>Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Back to full speed</title>
+    <link href="https://truecombat.eu/devlog-full-speed.html"/>
+    <id>https://truecombat.eu/devlog-full-speed.html</id>
+    <updated>2026-11-07T12:00:00Z</updated>
+    <summary>For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+</feed>

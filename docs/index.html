@@ -21,11 +21,13 @@
 <meta name="twitter:title" content="TrueCombat: Platinum">
 <meta name="twitter:description" content="A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows. Free download.">
 <meta name="twitter:image" content="https://truecombat.eu/img/og.jpg">
-<link rel="preload" as="image" href="img/logo.webp" fetchpriority="high">
+<link rel="preload" as="image" href="img/logo.webp" imagesrcset="img/logo-640.webp 640w, img/logo.webp 900w" imagesizes="(max-width: 600px) 88vw, 520px" fetchpriority="high">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"VideoGame","name":"TrueCombat: Platinum","url":"https://truecombat.eu/","image":"https://truecombat.eu/img/og.jpg","description":"A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows.","genre":["Tactical shooter","First-person shooter"],"gamePlatform":"Windows","operatingSystem":"Windows 10, Windows 11 (64-bit)","applicationCategory":"Game","playMode":"MultiPlayer","author":{"@type":"Organization","name":"Team Terminus"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"downloadUrl":"https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest","sameAs":["https://github.com/Annoximeme/TrueCombat-Platinum","https://discord.gg/8kcHdg2Hch"]}
 </script>
 <!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/">
 <link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/">
 <link rel="alternate" hreflang="x-default" href="https://truecombat.eu/">
@@ -40,7 +42,7 @@
 <a class="skip" href="#top">Skip to content</a>
 <header class="nav">
   <div class="wrap">
-    <a class="nav-brand" href="./"><img src="img/team-terminus.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
     <ul class="nav-links">
       <li><a href="maps.html">Maps</a></li>
       <li><a href="weapons.html">Weapons</a></li>
@@ -76,7 +78,7 @@
     <img class="slide" data-name="Snow" data-src="img/map-snow.webp" data-srcset="img/map-snow-640.webp 640w, img/map-snow.webp 1280w" sizes="100vw" alt="">
   </div>
   <div class="wrap">
-    <img class="hero-logo" src="img/logo.webp" fetchpriority="high" decoding="async" alt="TrueCombat: Platinum" width="900" height="512">
+    <img class="hero-logo" src="img/logo.webp" srcset="img/logo-640.webp 640w, img/logo.webp 900w" sizes="(max-width: 600px) 88vw, 520px" fetchpriority="high" decoding="async" alt="TrueCombat: Platinum" width="900" height="512">
     <h1><span class="nw">TrueCombat: Elite,</span> rebuilt for <em>modern Windows</em>.</h1>
     <p class="lede">The classic tactical shooter, rebuilt as a native 64-bit game with a DirectX 12 renderer. The original maps, soldiers and HUD, and a launcher that hosts your servers and keeps the game current.</p>
     <div class="hero-cta">
@@ -293,6 +295,31 @@
   <div class="wrap top-players" data-top hidden>
     <header><h3>Top players</h3><span class="muted" data-top-period>Last 30 days</span><a href="leaderboards.html">Full leaderboards</a></header>
     <ol></ol>
+  </div>
+</section>
+
+<section class="band" id="more">
+  <div class="wrap promo">
+    <a class="promo-card" href="competitive.html">
+      <img src="img/media-map-vote-640.webp" alt="" width="640" height="360" loading="lazy">
+      <div>
+        <span class="eyebrow">Competitive</span>
+        <h3>Clan matches, built in</h3>
+        <p>Ready-up, a knife round for sides, half-time and tactical timeouts that freeze the whole match. One command on any server.</p>
+        <span class="more">Match mode</span>
+      </div>
+    </a>
+<!--devlog-latest-->
+    <a class="promo-card" href="devlog-match-mode.html">
+      <img src="img/media-deployment-640.webp" alt="" width="640" height="360" loading="lazy">
+      <div>
+        <span class="eyebrow">Devlog · <time datetime="2026-11-07">7 Nov 2026</time></span>
+        <h3>Match mode, built for clan nights</h3>
+        <p>Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.</p>
+        <span class="more">Read the post</span>
+      </div>
+    </a>
+<!--/devlog-latest-->
   </div>
 </section>
 
@@ -615,28 +642,23 @@
 <footer>
   <div class="wrap">
     <div class="foot">
-      <img src="img/team-terminus.webp" alt="Team Terminus" width="320" height="320" loading="lazy">
-      <div class="who">
-        <b>Team Terminus</b>
-        <span>TrueCombat: Platinum is developed by RaziC*.</span>
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
       </div>
-      <nav aria-label="Footer">
-        <a href="https://discord.gg/8kcHdg2Hch">Discord</a>
-        <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>
-        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a>
-        <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a>
-        <a href="maps.html">Maps</a>
-        <a href="weapons.html">Weapons</a>
-        <a href="media.html">Media</a>
-        <a href="guide.html">Guide</a>
-        <a href="servers.html">Servers</a>
-        <a href="leaderboards.html">Leaderboards</a>
-        <a href="competitive.html">Competitive</a>
-        <a href="news.html">News</a>
-        <a href="devlog.html">Devlog</a>
-        <a href="studio.html">Studio</a>
-        <a href="press.html">Press kit</a>
-        <a href="./#download">Download</a>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="guide.html">Guide</a><a href="media.html">Media</a><a href="./#download">Download</a></div>
+        <div><p class="foot-h">Play</p><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news.html">News</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="press.html">Press kit</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
       </nav>
     </div>
     <div class="legal">
