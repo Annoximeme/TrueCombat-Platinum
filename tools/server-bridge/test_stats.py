@@ -117,6 +117,14 @@ check("agent sends and sorts reports", res == (1, 1, 0) and (q / "sent/a.json").
 res = tcp_stats_agent.run_once(q, "http://127.0.0.1:9", sid, key, log=lambda m: None)
 check("agent with nothing queued", res == (0, 0, 0))
 
+rf = tmp / "ratings.txt"
+n = store.export_ratings(rf)
+lines = dict(l.split() for l in rf.read_text().splitlines())
+# The game hashes the player's GUID the same way when it reads ratings.txt.
+gid = __import__("hashlib").sha256(("tcp-lb:" + "A" * 32).encode()).hexdigest()[:16]
+check("ratings export for team balance", n == 4 and len(lines) == 4 and gid in lines
+      and int(lines[gid]) == [p for p in get("/leaderboard.json")["players"] if p["name"] == "Gianni"][0]["rating"], (n, lines))
+
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))
 sys.exit(1 if failed else 0)
