@@ -30,7 +30,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=99099ae0a4">
 </head>
 <body>
 <!--nav-->
@@ -62,12 +62,83 @@
 <!--/nav-->
 
 <main id="top">
-<section class="page-head studio-head">
+<section class="page-head studio-hero">
+  <div class="head-art" style="--art: url(img/devlog/ultra-railhouse-ultra.webp); --art-s: url(img/devlog/ultra-railhouse-ultra-640.webp)" aria-hidden="true"></div>
   <div class="wrap">
-    <img class="studio-emblem" src="img/team-terminus.webp" alt="" width="320" height="320">
-    <span class="eyebrow">Studio</span>
-    <h1>Team Terminus</h1>
-    <p class="lede">Built by players who never left. Two TrueCombat: Elite veterans with one goal: give the game the engine it always deserved.</p>
+    <div class="studio-hero-copy">
+      <span class="eyebrow">Studio</span>
+      <h1>Team Terminus</h1>
+      <p class="lede">Built by players who never left. Two TrueCombat: Elite veterans with one goal: give the game the engine it always deserved.</p>
+      <div class="hero-cta">
+        <a class="btn btn-play" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg><span class="stack"><span class="big">Join the Discord</span><span class="small">Community, playtests and support</span></span></a>
+        <a class="btn btn-ghost" href="devlog.html">Read the devlog</a>
+      </div>
+      <span class="live" data-live hidden></span>
+    </div>
+    <div class="studio-crest" aria-hidden="true">
+      <img src="img/team-terminus.webp" alt="" width="320" height="320">
+    </div>
+  </div>
+</section>
+
+<section class="studio-facts" aria-label="Team Terminus in numbers">
+  <div class="wrap">
+    <dl class="stats-row">
+      <div><dt>Founders</dt><dd>2</dd><span>TC:E veterans</span></div>
+      <div><dt>Original maps</dt><dd>6</dd><span>Rebuilt for DirectX 12</span></div>
+      <div><dt>Guns</dt><dd>27</dd><span>Plus the knife and grenades</span></div>
+      <div><dt>Official servers</dt><dd>2</dd><span>EU, online around the clock</span></div>
+      <div><dt>To play</dt><dd>Free</dd><span>No price tag, no forced accounts</span></div>
+    </dl>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">The team</span>
+      <h2>The people behind Platinum</h2>
+    </div>
+    <div class="team">
+      <article class="member" data-callsign="RaziC*">
+        <div class="member-photo-wrap"><img class="member-photo" src="img/team-razic.webp" alt="Portrait of Gianni, RaziC*" width="640" height="640" loading="lazy"></div>
+        <div class="member-body">
+          <span class="member-role">Founder · Lead Developer</span>
+          <h3>RaziC*</h3>
+          <span class="member-name">Gianni</span>
+          <p>Former |TexT| clan leader. Leads development across the engine, renderer and gameplay, from the DirectX 12 pipeline to the last pixel of the HUD.</p>
+        </div>
+      </article>
+      <article class="member" data-callsign="RavoC">
+        <div class="member-photo-wrap"><img class="member-photo" src="img/team-ravoc.webp" alt="Portrait of RavoC" width="368" height="368" loading="lazy"></div>
+        <div class="member-body">
+          <span class="member-role">Co-founder · Head of Community</span>
+          <h3>RavoC</h3>
+          <p>|TexT| and SeF veteran. Leads the community side of Platinum: the Discord, playtests, match nights and the player feedback that shapes every release.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="band band-alt">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div>
+        <span class="eyebrow">Right now</span>
+        <h2>What we are working on now</h2>
+      </div>
+      <a class="btn btn-ghost" href="./#roadmap">Full roadmap</a>
+    </div>
+<!--studio-workshop-->
+    <ul class="workshop">
+      <li class="ws-dev"><span class="ws-state">In development</span><b>First-person muzzle flash and sniper scope overlay</b></li>
+      <li class="ws-dev"><span class="ws-state">In development</span><b>Modern Ultra visuals: new tonemapping, TAA and ambient occlusion</b></li>
+      <li class="ws-dev"><span class="ws-state">In development</span><b>Ledge climbing and original first-person animations</b></li>
+      <li class="ws-dev"><span class="ws-state">In development</span><b>In-game pause menu on Esc</b></li>
+      <li class="ws-dev"><span class="ws-state">In development</span><b>Frame-time graph for performance tuning</b></li>
+    </ul>
+<!--/studio-workshop-->
   </div>
 </section>
 
@@ -85,81 +156,155 @@
   </div>
 </section>
 
+<section class="band band-alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">How we build</span>
+      <h2>Every change takes the same route</h2>
+      <p class="lede">Nothing reaches your launcher on a hunch. Each feature, fix and weapon value goes through four steps before it ships.</p>
+    </div>
+    <ol class="process">
+      <li><span class="step-n">01</span><h3>Reference</h3><p>Start from the original TC:E game data and the original game itself, never from memory.</p></li>
+      <li><span class="step-n">02</span><h3>Rebuild</h3><p>Write it natively for 64-bit Windows, on DirectX 12 with OpenGL as the safe fallback.</p></li>
+      <li><span class="step-n">03</span><h3>Verify</h3><p>Automated checks compare the result with the original on both renderers, then the full regression runs.</p></li>
+      <li><span class="step-n">04</span><h3>Ship</h3><p>Signed updates through the launcher, patch notes on day one, and a <a href="devlog.html">devlog</a> on how it was made.</p></li>
+    </ol>
+  </div>
+</section>
+
 <section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Shipped so far</span>
+      <h2>Release by release</h2>
+      <p class="lede">What each early-access update brought back. The list grows with every release.</p>
+    </div>
+<!--studio-releases-->
+    <ol class="releases-line">
+      <li class="rel now"><div class="rel-ver"><b>v0.32</b> <span class="latest">Latest</span><small>14 additions</small></div><ul><li>Leaning and ladders</li><li>Glass debris</li><li>Defusing the bomb with pliers</li><li>Spectator mode</li><li>Swimming</li><li>Launcher-only download with a full Windows installer</li><li>Stay on an older version for modded servers</li><li>Competitive match mode</li><li>Original TC:E movement speed</li><li>Bots that play the objective</li><li>New-player welcome and offline practice with bots</li><li>Original third-person animations</li><li>Suppressors in the Deployment Menu</li><li>Ultrawide and 4:3 screen support</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.31</b><small>14 additions</small></div><ul><li>The full TC:E weapon roster, knife and grenades</li><li>Recoil, spread and penetration</li><li>The original round rules and objectives</li><li>Team Deathmatch, Flag Capture and Bomb modes</li><li>Bots for practice and server fill</li><li>3D sound with muffling, room echo and original footsteps</li><li>The original Deployment Menu</li><li>End-of-match map vote and editable map rotation</li><li>Lag compensation and predicted recoil</li><li>Player ranks and stats</li><li>Server admin tools and cheat detection</li><li>Crash reports from the launcher</li><li>Live public server list</li><li>Official EU server and live leaderboards</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.30</b><small>6 additions</small></div><ul><li>Low / High / Ultra graphics presets</li><li>HD textures for the world, models, HUD and menus</li><li>The original chat, kill feed and scoreboard</li><li>M83 underhand throw</li><li>Much smaller updates</li><li>Public server list support</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.29</b><small>1 addition</small></div><ul><li>Launcher hosting and signed updates</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.28</b><small>1 addition</small></div><ul><li>Optional NVIDIA DLSS and DLAA</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.27</b><small>2 additions</small></div><ul><li>Sprint, crouch, prone and stamina</li><li>Head, body and leg hits</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.24</b><small>3 additions</small></div><ul><li>DirectX 12 renderer with OpenGL Safe start</li><li>Original soldier models and HUD</li><li>M83 smoke</li></ul></li>
+    </ol>
+<!--/studio-releases-->
+  </div>
+</section>
+
+<section class="band band-alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">What drives us</span>
+      <h2>Three rules we build by</h2>
+    </div>
+    <ol class="rules">
+      <li><h3>Faithful first</h3><p>Movement speeds, weapon values and HUD layout come from the original game data, not from memory.</p></li>
+      <li><h3>Built for today</h3><p>Native 64-bit, DirectX 12, signed updates and a launcher that hosts a server in one click.</p></li>
+      <li><h3>Free for everyone</h3><p>No price tag, no forced accounts and no tracking. The game belongs to its players.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band heritage-band">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Heritage</span>
       <h2>The tags we played under</h2>
       <p class="lede">Before Team Terminus, both of us spent years in competitive TC:E clans. That is where our standards come from.</p>
     </div>
-    <div class="clans">
-      <article class="clan">
+    <ol class="lineage">
+      <li class="clan">
         <span class="clan-tag">|TexT|</span>
         <h3>The Extreme Team</h3>
         <p>One of the recognised clans of the TC:E era. RaziC* led it alongside ThaFreaK, with RavoC in the lineup.</p>
-      </article>
-      <article class="clan">
+      </li>
+      <li class="clan">
         <span class="clan-tag">SeF</span>
         <h3>SeF</h3>
         <p>A second home for both founders, and another chapter of clan play on the original servers.</p>
-      </article>
-      <article class="clan now">
+      </li>
+      <li class="clan now">
         <span class="clan-tag">Terminus</span>
         <h3>Team Terminus</h3>
         <p>The studio behind TrueCombat: Platinum. Same players, new mission.</p>
-      </article>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="band built-band">
+  <div class="wrap built">
+    <div class="section-head">
+      <span class="eyebrow">Built on</span>
+      <h2>Standing on solid ground</h2>
+      <p class="lede">Platinum exists because of the people and technology that came before it. Credit where it is due.</p>
     </div>
+    <ul class="built-list">
+      <li><b>TrueCombat: Elite</b><span>The original game, by Team Terminator</span></li>
+      <li><b>Wolfenstein: Enemy Territory</b><span>The game TC:E was built on, by Splash Damage and id Software</span></li>
+      <li><b>ET: Legacy</b><span>The open-source engine Platinum grew from</span></li>
+      <li><b>DirectX 12</b><span>The modern renderer, with OpenGL as the fallback</span></li>
+      <li><b>NVIDIA DLSS</b><span>Optional upscaling and anti-aliasing on RTX cards</span></li>
+    </ul>
   </div>
 </section>
 
 <section class="band">
   <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">The team</span>
-      <h2>The people behind Platinum</h2>
+    <div class="section-head head-row">
+      <div>
+        <span class="eyebrow">From the workshop</span>
+        <h2>Latest from the devlog</h2>
+      </div>
+      <a class="btn btn-ghost" href="devlog.html">All posts</a>
     </div>
-    <div class="team">
-      <article class="member">
-        <img class="member-photo" src="img/team-razic.webp" alt="Portrait of Gianni, RaziC*" width="640" height="640" loading="lazy">
-        <div class="member-body">
-          <h3>RaziC*</h3>
-          <span class="member-name">Gianni</span>
-          <span class="member-role">Founder · Lead Developer</span>
-          <p>Former |TexT| clan leader. Leads development across the engine, renderer and gameplay, from the DirectX 12 pipeline to the last pixel of the HUD.</p>
+<!--studio-devlog-->
+    <div class="post-list post-trio">
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-ultra-visuals.html" tabindex="-1" aria-hidden="true"><img src="img/devlog/ultra-railhouse-ultra-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>3 min read</span></p>
+          <h3><a href="devlog-ultra-visuals.html">New light for old maps</a></h3>
+          <p>The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.</p>
+          <a class="more" href="devlog-ultra-visuals.html">Read the post</a>
         </div>
       </article>
-      <article class="member">
-        <img class="member-photo" src="img/team-ravoc.webp" alt="Portrait of RavoC" width="368" height="368" loading="lazy">
-        <div class="member-body">
-          <h3>RavoC</h3>
-          <span class="member-role">Co-founder · Head of Community</span>
-          <p>|TexT| and SeF veteran. Leads the community side of Platinum: the Discord, playtests, match nights and the player feedback that shapes every release.</p>
+      <article class="post-card" data-tag="Bots">
+        <a class="post-art" href="devlog-smarter-bots.html" tabindex="-1" aria-hidden="true"><img src="img/media-village-yard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Bots</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>3 min read</span></p>
+          <h3><a href="devlog-smarter-bots.html">Teaching bots to play like people</a></h3>
+          <p>Bots that never miss are no fun, and bots that ignore the objective are worse. This is how we test every change to Platinum&#x27;s bots before it reaches a server.</p>
+          <a class="more" href="devlog-smarter-bots.html">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Testing">
+        <a class="post-art" href="devlog-recoil-check.html" tabindex="-1" aria-hidden="true"><img src="img/media-soldier-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Testing</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span></p>
+          <h3><a href="devlog-recoil-check.html">When the test is wrong</a></h3>
+          <p>Our recoil checks flagged the Desert Eagle as broken. The game was right. Here is how we found out, and why we would rather chase a false alarm than miss a real one.</p>
+          <a class="more" href="devlog-recoil-check.html">Read the post</a>
         </div>
       </article>
     </div>
+<!--/studio-devlog-->
   </div>
 </section>
 
-<section class="band">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">What drives us</span>
-      <h2>Three rules we build by</h2>
-    </div>
-    <div class="features principles">
-      <article class="feature"><h3>Faithful first</h3><p>Movement speeds, weapon values and HUD layout come from the original game data, not from memory.</p></article>
-      <article class="feature"><h3>Built for today</h3><p>Native 64-bit, DirectX 12, signed updates and a launcher that hosts a server in one click.</p></article>
-      <article class="feature"><h3>Free for everyone</h3><p>No price tag, no forced accounts and no tracking. The game belongs to its players.</p></article>
-    </div>
-  </div>
-</section>
-
-<section class="band">
+<section class="band studio-join-band">
   <div class="wrap studio-join">
     <div class="section-head" style="margin:0">
       <span class="eyebrow">Join us</span>
       <h2>Play with the people who build it</h2>
       <p class="lede">Playtests, match nights and development news happen on our Discord. Mappers, testers and programmers who want to contribute are always welcome.</p>
+      <ul class="roles">
+        <li><b>Testers</b><span>Try new builds before they ship</span></li>
+        <li><b>Mappers</b><span>Help bring more TC:E maps back</span></li>
+        <li><b>Programmers</b><span>Engine, renderer and tools</span></li>
+      </ul>
     </div>
     <div class="hero-cta">
       <a class="btn btn-play" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg><span class="stack"><span class="big">Join the Discord</span><span class="small">Community, playtests and support</span></span></a>
@@ -199,6 +344,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js"></script>
+<script src="js/site.js?v=79b756f7fc"></script>
 </body>
 </html>

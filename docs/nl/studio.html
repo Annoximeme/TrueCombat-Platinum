@@ -30,7 +30,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../style.css?v=99099ae0a4">
 </head>
 <body>
 <!--nav-->
@@ -62,12 +62,83 @@
 <!--/nav-->
 
 <main id="top">
-<section class="page-head studio-head">
+<section class="page-head studio-hero">
+  <div class="head-art" style="--art: url(../img/devlog/ultra-railhouse-ultra.webp); --art-s: url(../img/devlog/ultra-railhouse-ultra-640.webp)" aria-hidden="true"></div>
   <div class="wrap">
-    <img class="studio-emblem" src="../img/team-terminus.webp" alt="" width="320" height="320">
-    <span class="eyebrow">Studio</span>
-    <h1>Team Terminus</h1>
-    <p class="lede">Gebouwd door spelers die nooit zijn weggegaan. Twee TrueCombat: Elite-veteranen met één doel: het spel de engine geven die het altijd verdiende.</p>
+    <div class="studio-hero-copy">
+      <span class="eyebrow">Studio</span>
+      <h1>Team Terminus</h1>
+      <p class="lede">Gebouwd door spelers die nooit zijn weggegaan. Twee TrueCombat: Elite-veteranen met één doel: het spel de engine geven die het altijd verdiende.</p>
+      <div class="hero-cta">
+        <a class="btn btn-play" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg><span class="stack"><span class="big">Word lid van de Discord</span><span class="small">Community, playtests en support</span></span></a>
+        <a class="btn btn-ghost" href="devlog.html">Lees de devlog</a>
+      </div>
+      <span class="live" data-live hidden></span>
+    </div>
+    <div class="studio-crest" aria-hidden="true">
+      <img src="../img/team-terminus.webp" alt="" width="320" height="320">
+    </div>
+  </div>
+</section>
+
+<section class="studio-facts" aria-label="Team Terminus in cijfers">
+  <div class="wrap">
+    <dl class="stats-row">
+      <div><dt>Oprichters</dt><dd>2</dd><span>TC:E-veteranen</span></div>
+      <div><dt>Originele maps</dt><dd>6</dd><span>Herbouwd voor DirectX 12</span></div>
+      <div><dt>Wapens</dt><dd>27</dd><span>Plus het mes en de granaten</span></div>
+      <div><dt>Officiële servers</dt><dd>2</dd><span>EU, dag en nacht online</span></div>
+      <div><dt>Om te spelen</dt><dd>Gratis</dd><span>Geen prijskaartje, geen verplicht account</span></div>
+    </dl>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Het team</span>
+      <h2>De mensen achter Platinum</h2>
+    </div>
+    <div class="team">
+      <article class="member" data-callsign="RaziC*">
+        <div class="member-photo-wrap"><img class="member-photo" src="../img/team-razic.webp" alt="Portret van Gianni, RaziC*" width="640" height="640" loading="lazy"></div>
+        <div class="member-body">
+          <span class="member-role">Founder · Lead Developer</span>
+          <h3>RaziC*</h3>
+          <span class="member-name">Gianni</span>
+          <p>Voormalig clanleider van |TexT|. Leidt de ontwikkeling van engine, renderer en gameplay, van de DirectX 12-pipeline tot de laatste pixel van de HUD.</p>
+        </div>
+      </article>
+      <article class="member" data-callsign="RavoC">
+        <div class="member-photo-wrap"><img class="member-photo" src="../img/team-ravoc.webp" alt="Portret van RavoC" width="368" height="368" loading="lazy"></div>
+        <div class="member-body">
+          <span class="member-role">Co-founder · Head of Community</span>
+          <h3>RavoC</h3>
+          <p>Veteraan van |TexT| en SeF. Leidt de community van Platinum: de Discord, playtests, matchavonden en de feedback van spelers die elke release vormgeeft.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="band band-alt">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div>
+        <span class="eyebrow">Op dit moment</span>
+        <h2>Waar we nu aan werken</h2>
+      </div>
+      <a class="btn btn-ghost" href="./#roadmap">Volledige roadmap</a>
+    </div>
+<!--studio-workshop-->
+    <ul class="workshop">
+      <li class="ws-dev"><span class="ws-state">In ontwikkeling</span><b>Mondingsflits in eerste persoon en het sluipschuttersvizier</b></li>
+      <li class="ws-dev"><span class="ws-state">In ontwikkeling</span><b>Moderne Ultra-graphics: nieuwe tonemapping, TAA en ambient occlusion</b></li>
+      <li class="ws-dev"><span class="ws-state">In ontwikkeling</span><b>Klimmen op randen en originele animaties in eerste persoon</b></li>
+      <li class="ws-dev"><span class="ws-state">In ontwikkeling</span><b>Pauzemenu in het spel onder Esc</b></li>
+      <li class="ws-dev"><span class="ws-state">In ontwikkeling</span><b>Frametijdgrafiek om de prestaties af te stellen</b></li>
+    </ul>
+<!--/studio-workshop-->
   </div>
 </section>
 
@@ -85,81 +156,155 @@
   </div>
 </section>
 
+<section class="band band-alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Zo bouwen we</span>
+      <h2>Elke wijziging volgt dezelfde route</h2>
+      <p class="lede">Niets komt op goed geluk in je launcher terecht. Elke functie, fix en wapenwaarde doorloopt vier stappen voordat ze verschijnt.</p>
+    </div>
+    <ol class="process">
+      <li><span class="step-n">01</span><h3>Referentie</h3><p>We vertrekken van de originele TC:E-speldata en het originele spel zelf, nooit van ons geheugen.</p></li>
+      <li><span class="step-n">02</span><h3>Herbouwen</h3><p>Native geschreven voor 64-bit Windows, op DirectX 12 met OpenGL als veilige terugval.</p></li>
+      <li><span class="step-n">03</span><h3>Controleren</h3><p>Automatische tests vergelijken het resultaat met het origineel op beide renderers, daarna draait de volledige regressietest.</p></li>
+      <li><span class="step-n">04</span><h3>Uitbrengen</h3><p>Ondertekende updates via de launcher, patchnotes vanaf dag één, en een <a href="devlog.html">devlog</a> over hoe het gemaakt is.</p></li>
+    </ol>
+  </div>
+</section>
+
 <section class="band">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Tot nu toe uitgebracht</span>
+      <h2>Release na release</h2>
+      <p class="lede">Wat elke early-access-update terugbracht. De lijst groeit met elke release.</p>
+    </div>
+<!--studio-releases-->
+    <ol class="releases-line">
+      <li class="rel now"><div class="rel-ver"><b>v0.32</b> <span class="latest">Nieuwste</span><small>14 toevoegingen</small></div><ul><li>Leunen en ladders</li><li>Glasscherven</li><li>De bom onschadelijk maken met een tang</li><li>Toeschouwersmodus</li><li>Zwemmen</li><li>Alleen de launcher downloaden, met een volwaardige Windows-installer</li><li>Op een oudere versie blijven voor servers met mods</li><li>Competitieve wedstrijdmodus</li><li>Originele TC:E-bewegingssnelheid</li><li>Bots die voor het doel spelen</li><li>Welkom voor nieuwe spelers en offline oefenen met bots</li><li>Originele animaties in derde persoon</li><li>Geluiddempers in het Deployment Menu</li><li>Ondersteuning voor ultrawide- en 4:3-schermen</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.31</b><small>14 toevoegingen</small></div><ul><li>Het volledige TC:E-arsenaal, mes en granaten</li><li>Terugslag, spreiding en doorboring</li><li>De originele rondes en doelen</li><li>Team Deathmatch, Flag Capture en Bomb</li><li>Bots om te oefenen en servers te vullen</li><li>3D-geluid met demping, galm en originele voetstappen</li><li>Het originele Deployment Menu</li><li>Stemmen op de volgende map en een aanpasbare maprotatie</li><li>Lagcompensatie en voorspelde terugslag</li><li>Spelersrangen en statistieken</li><li>Serverbeheer en valsspeeldetectie</li><li>Crashrapporten via de launcher</li><li>Live publieke serverlijst</li><li>Officiële EU-server en live ranglijsten</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.30</b><small>6 toevoegingen</small></div><ul><li>De grafische presets Low / High / Ultra</li><li>HD-textures voor de wereld, modellen, HUD en menu&#x27;s</li><li>De originele chat, killfeed en het scorebord</li><li>Onderhandse worp met de M83</li><li>Veel kleinere updates</li><li>Ondersteuning voor de publieke serverlijst</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.29</b><small>1 toevoeging</small></div><ul><li>Hosten vanuit de launcher en ondertekende updates</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.28</b><small>1 toevoeging</small></div><ul><li>Optioneel NVIDIA DLSS en DLAA</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.27</b><small>2 toevoegingen</small></div><ul><li>Sprinten, hurken, liggen en stamina</li><li>Treffers op hoofd, romp en benen</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.24</b><small>3 toevoegingen</small></div><ul><li>DirectX 12-renderer met OpenGL via Safe start</li><li>Originele soldaatmodellen en HUD</li><li>M83-rook</li></ul></li>
+    </ol>
+<!--/studio-releases-->
+  </div>
+</section>
+
+<section class="band band-alt">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Wat ons drijft</span>
+      <h2>Drie regels waar we op bouwen</h2>
+    </div>
+    <ol class="rules">
+      <li><h3>Trouw voorop</h3><p>Bewegingssnelheden, wapenwaarden en de HUD-indeling komen uit de originele speldata, niet uit het geheugen.</p></li>
+      <li><h3>Gebouwd voor nu</h3><p>Native 64-bit, DirectX 12, ondertekende updates en een launcher die met één klik een server host.</p></li>
+      <li><h3>Gratis voor iedereen</h3><p>Geen prijskaartje, geen verplichte accounts en geen tracking. Het spel is van de spelers.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section class="band heritage-band">
   <div class="wrap">
     <div class="section-head">
       <span class="eyebrow">Erfgoed</span>
       <h2>De tags waaronder we speelden</h2>
       <p class="lede">Voor Team Terminus speelden we allebei jarenlang in competitieve TC:E-clans. Daar komen onze normen vandaan.</p>
     </div>
-    <div class="clans">
-      <article class="clan">
+    <ol class="lineage">
+      <li class="clan">
         <span class="clan-tag">|TexT|</span>
         <h3>The Extreme Team</h3>
         <p>Een van de bekende clans uit het TC:E-tijdperk. RaziC* leidde de clan samen met ThaFreaK, met RavoC in de line-up.</p>
-      </article>
-      <article class="clan">
+      </li>
+      <li class="clan">
         <span class="clan-tag">SeF</span>
         <h3>SeF</h3>
         <p>Een tweede thuis voor beide oprichters, en een volgend hoofdstuk clanspel op de originele servers.</p>
-      </article>
-      <article class="clan now">
+      </li>
+      <li class="clan now">
         <span class="clan-tag">Terminus</span>
         <h3>Team Terminus</h3>
         <p>De studio achter TrueCombat: Platinum. Dezelfde spelers, een nieuwe missie.</p>
-      </article>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="band built-band">
+  <div class="wrap built">
+    <div class="section-head">
+      <span class="eyebrow">Gebouwd op</span>
+      <h2>Op stevige grond</h2>
+      <p class="lede">Platinum bestaat dankzij de mensen en de technologie die ervoor kwamen. Eer wie eer toekomt.</p>
     </div>
+    <ul class="built-list">
+      <li><b>TrueCombat: Elite</b><span>Het originele spel, door Team Terminator</span></li>
+      <li><b>Wolfenstein: Enemy Territory</b><span>Het spel waarop TC:E werd gebouwd, door Splash Damage en id Software</span></li>
+      <li><b>ET: Legacy</b><span>De opensource-engine waaruit Platinum is gegroeid</span></li>
+      <li><b>DirectX 12</b><span>De moderne renderer, met OpenGL als terugval</span></li>
+      <li><b>NVIDIA DLSS</b><span>Optionele upscaling en anti-aliasing op RTX-kaarten</span></li>
+    </ul>
   </div>
 </section>
 
 <section class="band">
   <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Het team</span>
-      <h2>De mensen achter Platinum</h2>
+    <div class="section-head head-row">
+      <div>
+        <span class="eyebrow">Uit de werkplaats</span>
+        <h2>Nieuw in de devlog</h2>
+      </div>
+      <a class="btn btn-ghost" href="devlog.html">Alle artikelen</a>
     </div>
-    <div class="team">
-      <article class="member">
-        <img class="member-photo" src="../img/team-razic.webp" alt="Portret van Gianni, RaziC*" width="640" height="640" loading="lazy">
-        <div class="member-body">
-          <h3>RaziC*</h3>
-          <span class="member-name">Gianni</span>
-          <span class="member-role">Founder · Lead Developer</span>
-          <p>Voormalig clanleider van |TexT|. Leidt de ontwikkeling van engine, renderer en gameplay, van de DirectX 12-pipeline tot de laatste pixel van de HUD.</p>
+<!--studio-devlog-->
+    <div class="post-list post-trio">
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-ultra-visuals.html" tabindex="-1" aria-hidden="true"><img src="../img/devlog/ultra-railhouse-ultra-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state shipped">Uitgebracht in v0.33.0</span><time datetime="2026-11-08">8 nov 2026</time><span>3 min lezen</span></p>
+          <h3><a href="devlog-ultra-visuals.html">Nieuw licht voor oude maps</a></h3>
+          <p>De Ultra-preset brengt moderne belichting, echte oppervlaktematerialen en zonneschaduwen naar elke map op DirectX 12. Zo hebben we dat gebouwd zonder te veranderen hoe TC:E speelt.</p>
+          <a class="more" href="devlog-ultra-visuals.html">Lees het artikel</a>
         </div>
       </article>
-      <article class="member">
-        <img class="member-photo" src="../img/team-ravoc.webp" alt="Portret van RavoC" width="368" height="368" loading="lazy">
-        <div class="member-body">
-          <h3>RavoC</h3>
-          <span class="member-role">Co-founder · Head of Community</span>
-          <p>Veteraan van |TexT| en SeF. Leidt de community van Platinum: de Discord, playtests, matchavonden en de feedback van spelers die elke release vormgeeft.</p>
+      <article class="post-card" data-tag="Bots">
+        <a class="post-art" href="devlog-smarter-bots.html" tabindex="-1" aria-hidden="true"><img src="../img/media-village-yard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Bots</span><span class="state shipped">Uitgebracht in v0.33.0</span><time datetime="2026-11-08">8 nov 2026</time><span>3 min lezen</span></p>
+          <h3><a href="devlog-smarter-bots.html">Bots leren spelen als mensen</a></h3>
+          <p>Bots die nooit missen zijn niet leuk, en bots die het doel negeren zijn nog erger. Zo testen we elke wijziging aan de bots van Platinum voordat die op een server komt.</p>
+          <a class="more" href="devlog-smarter-bots.html">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Testen">
+        <a class="post-art" href="devlog-recoil-check.html" tabindex="-1" aria-hidden="true"><img src="../img/media-soldier-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Testen</span><time datetime="2026-11-08">8 nov 2026</time><span>2 min lezen</span></p>
+          <h3><a href="devlog-recoil-check.html">Als de test het mis heeft</a></h3>
+          <p>Onze terugslagcontroles keurden de Desert Eagle af. Het spel had gelijk. Zo kwamen we erachter, en daarom jagen we liever op een vals alarm dan dat we een echt probleem missen.</p>
+          <a class="more" href="devlog-recoil-check.html">Lees het artikel</a>
         </div>
       </article>
     </div>
+<!--/studio-devlog-->
   </div>
 </section>
 
-<section class="band">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="eyebrow">Wat ons drijft</span>
-      <h2>Drie regels waar we op bouwen</h2>
-    </div>
-    <div class="features principles">
-      <article class="feature"><h3>Trouw voorop</h3><p>Bewegingssnelheden, wapenwaarden en de HUD-indeling komen uit de originele speldata, niet uit het geheugen.</p></article>
-      <article class="feature"><h3>Gebouwd voor nu</h3><p>Native 64-bit, DirectX 12, ondertekende updates en een launcher die met één klik een server host.</p></article>
-      <article class="feature"><h3>Gratis voor iedereen</h3><p>Geen prijskaartje, geen verplichte accounts en geen tracking. Het spel is van de spelers.</p></article>
-    </div>
-  </div>
-</section>
-
-<section class="band">
+<section class="band studio-join-band">
   <div class="wrap studio-join">
     <div class="section-head" style="margin:0">
       <span class="eyebrow">Doe mee</span>
       <h2>Speel met de mensen die het bouwen</h2>
       <p class="lede">Playtests, matchavonden en ontwikkelingsnieuws vind je op onze Discord. Mappers, testers en programmeurs die willen bijdragen zijn altijd welkom.</p>
+      <ul class="roles">
+        <li><b>Testers</b><span>Probeer nieuwe builds voordat ze uitkomen</span></li>
+        <li><b>Mappers</b><span>Help meer TC:E-maps terug te brengen</span></li>
+        <li><b>Programmeurs</b><span>Engine, renderer en tools</span></li>
+      </ul>
     </div>
     <div class="hero-cta">
       <a class="btn btn-play" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg><span class="stack"><span class="big">Word lid van de Discord</span><span class="small">Community, playtests en support</span></span></a>
@@ -199,6 +344,6 @@
 </footer>
 <!--/footer-->
 
-<script src="../js/site.js"></script>
+<script src="../js/site.js?v=79b756f7fc"></script>
 </body>
 </html>

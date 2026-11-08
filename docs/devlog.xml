@@ -56,6 +56,16 @@
     <author><name>Team Terminus</name></author>
   </entry>
   <entry>
+    <title>Every shot leaves a mark</title>
+    <link href="https://truecombat.eu/devlog-every-shot.html"/>
+    <id>https://truecombat.eu/devlog-every-shot.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Gameplay"/>
+    <summary>Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Match mode, built for clan nights</title>
     <link href="https://truecombat.eu/devlog-match-mode.html"/>
     <id>https://truecombat.eu/devlog-match-mode.html</id>
