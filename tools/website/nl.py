@@ -205,12 +205,11 @@ _MAPS = [
      "Farming village", "Boerendorp", "Daylight", "Daglicht", "Courtyard", "Binnenplaats"),
 ]
 PAGES["maps"] = [
-    ('<title>Maps · TrueCombat: Platinum</title>', '<title>Maps · TrueCombat: Platinum</title>'),
     ('The six TrueCombat: Elite maps in TrueCombat: Platinum: Delta, Northport, Railhouse, Snow, Stadtrand and Village, captured in DirectX 12.',
      'De zes TrueCombat: Elite-maps in TrueCombat: Platinum: Delta, Northport, Railhouse, Snow, Stadtrand en Village, vastgelegd in DirectX 12.'),
     ('<h1>Six maps from TrueCombat: Elite</h1>', '<h1>Zes maps uit TrueCombat: Elite</h1>'),
-    ('<p class="lede">Every stock TC:E map runs in Platinum, rendered with DirectX 12. All images are straight in-game captures, HUD included.</p>',
-     '<p class="lede">Elke standaard TC:E-map draait in Platinum, weergegeven met DirectX 12. Alle afbeeldingen komen rechtstreeks uit het spel, HUD inbegrepen.</p>'),
+    ('<p class="lede">Every stock TC:E map runs in Platinum, rendered with DirectX 12. Screenshots are straight in-game captures, and each map has an overhead layout with spawns, objectives and callouts.</p>',
+     '<p class="lede">Elke originele TC:E-map draait in Platinum, gerenderd met DirectX 12. De screenshots zijn rechtstreeks uit het spel, en elke map heeft een plattegrond met spawns, doelen en locatienamen.</p>'),
     ('<dt>File</dt>', '<dt>Bestand</dt>'),
     ('<dt>Setting</dt>', '<dt>Omgeving</dt>'),
     ('<dt>Light</dt>', '<dt>Licht</dt>'),
@@ -241,8 +240,6 @@ for i, (key, en, nl_, s_en, s_nl, l_en, l_nl, spot_en, spot_nl) in enumerate(_MA
 
 # ---------------------------------------------------------------- press
 PAGES["press"] = [
-    ('<title>Press kit · TrueCombat: Platinum</title>', '<title>Perskit · TrueCombat: Platinum</title>'),
-    ('content="Press kit · TrueCombat: Platinum"', 'content="Perskit · TrueCombat: Platinum"'),
     ('Logos, screenshots and a fact sheet for TrueCombat: Platinum, free to use when writing about the game.', "Logo's, screenshots en een factsheet voor TrueCombat: Platinum, vrij te gebruiken als je over het spel schrijft."),
     ('<span class="eyebrow">Press kit</span>', '<span class="eyebrow">Perskit</span>'),
     ('<h1>Writing about TrueCombat: Platinum?</h1>', '<h1>Schrijf je over TrueCombat: Platinum?</h1>'),
@@ -279,8 +276,6 @@ PAGES["press"] = [
 
 # ---------------------------------------------------------------- guide
 PAGES["guide"] = [
-    ("<title>Beginner's guide · TrueCombat: Platinum</title>", '<title>Beginnersgids · TrueCombat: Platinum</title>'),
-    ("content=\"Beginner's guide · TrueCombat: Platinum\"", 'content="Beginnersgids · TrueCombat: Platinum"'),
     ('Get started with TrueCombat: Platinum: install, default controls, movement and stamina, game modes and tips for staying alive.',
      'Begin met TrueCombat: Platinum: installeren, standaardbesturing, bewegen en stamina, spelmodi en tips om te overleven.'),
     ("<span class=\"eyebrow\">Beginner's guide</span>", '<span class="eyebrow">Beginnersgids</span>'),
@@ -373,8 +368,6 @@ PAGES["guide"] = [
 
 # ---------------------------------------------------------------- weapons
 PAGES["weapons"] = [
-    ('<title>Weapons · TrueCombat: Platinum</title>', '<title>Wapens · TrueCombat: Platinum</title>'),
-    ('content="Weapons · TrueCombat: Platinum"', 'content="Wapens · TrueCombat: Platinum"'),
     ('Every TrueCombat: Elite weapon in TrueCombat: Platinum: pistols, SMGs, rifles, shotguns and sniper rifles with damage, fire rate, magazine, reload and fire modes.',
      'Elk TrueCombat: Elite-wapen in TrueCombat: Platinum: pistolen, machinepistolen, geweren, shotguns en sluipschuttersgeweren met schade, vuursnelheid, magazijn, herlaadtijd en vuurmodi.'),
     ('<span class="eyebrow">Weapons</span>', '<span class="eyebrow">Wapens</span>'),
@@ -392,8 +385,6 @@ PAGES["weapons"] = [
 
 # ---------------------------------------------------------------- news
 PAGES["news"] = [
-    ('<title>News · TrueCombat: Platinum</title>', '<title>Nieuws · TrueCombat: Platinum</title>'),
-    ('content="News · TrueCombat: Platinum"', 'content="Nieuws · TrueCombat: Platinum"'),
     ('TrueCombat: Platinum patch notes and news, updated automatically from GitHub Releases, with an RSS feed.',
      'Patchnotes en nieuws over TrueCombat: Platinum, automatisch bijgewerkt vanuit GitHub Releases, met een RSS-feed.'),
     ('<span class="eyebrow">News</span>', '<span class="eyebrow">Nieuws</span>'),
@@ -437,8 +428,6 @@ PAGES["servers"] = [
 
 # ---------------------------------------------------------------- leaderboards
 PAGES["leaderboards"] = [
-    ('<title>Leaderboards · TrueCombat: Platinum</title>', '<title>Ranglijsten · TrueCombat: Platinum</title>'),
-    ('content="Leaderboards · TrueCombat: Platinum"', 'content="Ranglijsten · TrueCombat: Platinum"'),
     ('TrueCombat: Platinum leaderboards: ranks, skill ratings, kills, K/D, headshots and wins from ranked servers.',
      'Ranglijsten van TrueCombat: Platinum: rangen, skill-ratings, kills, K/D, headshots en overwinningen op gerankte servers.'),
     ('<span class="eyebrow">Leaderboards</span>', '<span class="eyebrow">Ranglijsten</span>'),
@@ -471,7 +460,6 @@ PAGES["leaderboards"] = [
 
 # ---------------------------------------------------------------- media
 PAGES["media"] = [
-    ('<title>Screenshots · TrueCombat: Platinum</title>', '<title>Screenshots · TrueCombat: Platinum</title>'),
     ('In-game screenshots of TrueCombat: Platinum on DirectX 12: every map, combat, the HUD and the graphics presets.',
      'In-game screenshots van TrueCombat: Platinum op DirectX 12: elke map, gevechten, de HUD en de grafische presets.'),
     ('<p class="lede">Every image on this page is captured in-game on the DirectX 12 renderer. No paintovers and no retouching.</p>',
@@ -682,8 +670,6 @@ PAGES['index'] = [
 
 # ---------------------------------------------------------------- competitive
 PAGES["competitive"] = [
-    ('Competitive · TrueCombat: Platinum',
-     'Competitief · TrueCombat: Platinum'),
     ('content="Match mode in TrueCombat: Platinum: ready-up, knife round, side pick, half-time, tactical timeouts and clan names, with every command and setting."',
      'content="Wedstrijdmodus in TrueCombat: Platinum: klaarmelden, messenronde, kantkeuze, rust, tactische time-outs en clannamen, met elk commando en elke instelling."'),
     ('<span class="eyebrow">Competitive</span>',
@@ -788,8 +774,6 @@ PAGES["competitive"] = [
 
 # ---------------------------------------------------------------- devlog
 PAGES["devlog"] = [
-    ('Devlog · TrueCombat: Platinum',
-     'Devlog · TrueCombat: Platinum'),
     ('content="The TrueCombat: Platinum devlog: how the game gets built, the problems behind each release, and the decisions that shape it."',
      'content="De devlog van TrueCombat: Platinum: hoe het spel gebouwd wordt, de problemen achter elke release en de keuzes die het vormen."'),
     ('<h1>From the workshop</h1>',
@@ -820,3 +804,23 @@ PAGES['servers'] = [
     ('<p class="srv-empty">Loading the latest results.</p>',
      '<p class="srv-empty">De laatste uitslagen worden geladen.</p>'),
 ] + PAGES['servers']
+PAGES['index'] = [
+    ('<h3>Clan matches, built in</h3>',
+     '<h3>Clanwedstrijden, ingebouwd</h3>'),
+    ('<p>Ready-up, a knife round for sides, half-time and tactical timeouts that freeze the whole match. One command on any server.</p>',
+     '<p>Klaarmelden, een messenronde om kanten, rust en tactische time-outs die de hele wedstrijd bevriezen. Eén commando op elke server.</p>'),
+    ('<span class="more">Match mode</span>',
+     '<span class="more">Wedstrijdmodus</span>'),
+] + PAGES['index']
+PAGES['maps'] = [('TC:E maps: Delta, Northport, Snow and more · TrueCombat: Platinum', 'TC:E-maps: Delta, Northport, Snow en meer · TrueCombat: Platinum')] + PAGES['maps']
+PAGES['weapons'] = [('Weapons and stats · TrueCombat: Platinum', 'Wapens en statistieken · TrueCombat: Platinum')] + PAGES['weapons']
+PAGES['guide'] = [("Beginner's guide: controls and game modes · TrueCombat: Platinum", 'Beginnersgids: besturing en spelmodi · TrueCombat: Platinum')] + PAGES['guide']
+PAGES['servers'] = [('Live servers and match results · TrueCombat: Platinum', 'Live servers en uitslagen · TrueCombat: Platinum')] + PAGES['servers']
+PAGES['leaderboards'] = [('Leaderboards and player rankings · TrueCombat: Platinum', 'Ranglijsten en spelersrangen · TrueCombat: Platinum')] + PAGES['leaderboards']
+PAGES['competitive'] = [('Competitive match mode · TrueCombat: Platinum', 'Competitieve wedstrijdmodus · TrueCombat: Platinum')] + PAGES['competitive']
+PAGES['news'] = [('Patch notes and news · TrueCombat: Platinum', 'Patchnotes en nieuws · TrueCombat: Platinum')] + PAGES['news']
+PAGES['devlog'] = [('Devlog: how the game is built · TrueCombat: Platinum', 'Devlog: zo wordt het spel gebouwd · TrueCombat: Platinum')] + PAGES['devlog']
+PAGES['media'] = [('Screenshots and media · TrueCombat: Platinum', 'Screenshots en media · TrueCombat: Platinum')] + PAGES['media']
+PAGES['press'] = [('Press kit and fact sheet · TrueCombat: Platinum', 'Perskit en factsheet · TrueCombat: Platinum')] + PAGES['press']
+PAGES['studio'] = [('Team Terminus, the studio · TrueCombat: Platinum', 'Team Terminus, de studio · TrueCombat: Platinum')] + PAGES['studio']
+PAGES['devlog'] = [('> Devlog feed</a>', '> Devlogfeed</a>')] + PAGES['devlog']

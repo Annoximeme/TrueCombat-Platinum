@@ -664,6 +664,22 @@ var TCP_API = 'https://api.truecombat.eu';
     });
   });
 
+  /* ---------- map layouts: bomb or flag objectives, location names on or off ---------- */
+  $all('[data-layout]').forEach(function (lo) {
+    lo.addEventListener('click', function (e) {
+      var m = e.target.closest('[data-lo-mode]'), c = e.target.closest('[data-lo-call]');
+      if (m) {
+        lo.dataset.mode = m.dataset.loMode;
+        $all('[data-lo-mode]', lo).forEach(function (b) { b.setAttribute('aria-pressed', String(b === m)); });
+      }
+      if (c) {
+        var on = c.getAttribute('aria-pressed') !== 'true';
+        c.setAttribute('aria-pressed', String(on));
+        lo.classList.toggle('no-call', !on);
+      }
+    });
+  });
+
   /* ---------- scroll reveal (progressive: without IntersectionObserver everything is simply shown) ---------- */
   (function () {
     if (!('IntersectionObserver' in window)) return;
