@@ -83,8 +83,66 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.32.0" data-ver="v0.32.0" open>
-        <summary><span class="ver">v0.32.0<span class="latest">Latest</span></span><span class="sum">A major update. Movement now runs at the original TC:E pace, and leaning, ladders, swimming and spectating are back. This release also brings a competitive match mode, smarter bots on every objective, a new-player welcome, a one-click installer, and a fix for the most common crash to desktop.</span><span class="meta">#53 · 0.32.0-sandbox23 · 7 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.33.0" data-ver="v0.33.0" open>
+        <summary><span class="ver">v0.33.0<span class="latest">Latest</span></span><span class="sum">Our biggest visual update yet. The new Ultra preset brings modern lighting, real surface materials and real-time sun shadows to every map on DirectX 12, with NVIDIA Frame Generation for RTX 40-series cards. Gunfire now leaves its mark on the world, first-person combat has been rebuilt around the original animations, ledge climbing returns, and bots fight smarter and work as a team.</span><span class="meta">#54 · 0.33.0-sandbox24 · 8 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Ultra visuals (directx 12)</h3><ul>
+            <li>New Ultra graphics preset in the launcher.</li>
+            <li>Real-time sun shadows from players, props, weapons and the world, with contact shadows for grounded detail.</li>
+            <li>Modern lighting: filmic tone mapping, automatic exposure and a restrained colour grade that keeps players easy to read.</li>
+            <li>Surface materials on every map. Brick, metal, wood and concrete now respond to light with depth and sheen.</li>
+            <li>Ambient occlusion and reflections tuned per map.</li>
+            <li>Anti-aliasing picks itself: NVIDIA DLAA on RTX cards with 12 GB of video memory or more, TAA everywhere else.</li>
+            <li>Materials are compressed and cached on first load, so later map loads stay quick.</li>
+            <li>Low, High and OpenGL keep the classic look, unchanged.</li>
+            <li>Server hosts can require the classic look for every player with sv_forceClassicVisuals 1.</li>
+          </ul></section>
+          <section><h3>Frame generation and reflex</h3><ul>
+            <li>NVIDIA DLSS Frame Generation is now available as an opt-in setting under Advanced graphics in the launcher, for GeForce RTX 40-series and newer cards on the Ultra preset.</li>
+            <li>NVIDIA Reflex is on in Ultra for lower input latency.</li>
+          </ul></section>
+          <section><h3>Combat</h3><ul>
+            <li>Bullet impacts are back. Every surface takes the original per-material bullet holes, on entry and exit, with dust, splinters, sparks and blood.</li>
+            <li>Original impact sounds, plus the crack of a near miss as rounds fly past.</li>
+            <li>New first-person muzzle flash for every weapon.</li>
+            <li>Sniper scope overlay when aiming down a scoped rifle.</li>
+            <li>First-person animations rebuilt from the original TC:E set: last-shot slide lock, alternating akimbo hands, separate partial and empty reloads, and shell-by-shell shotgun reloads.</li>
+            <li>Switching weapons now lowers the old weapon before raising the new one.</li>
+          </ul></section>
+          <section><h3>Movement</h3><ul>
+            <li>Ledge climbing returns. Jump at a ledge to pull yourself up, just like the original.</li>
+          </ul></section>
+          <section><h3>Bots</h3><ul>
+            <li>Sharper, more human aim: situational reactions, flicks that settle on target, and realistic tracking. Bots never fire through a teammate.</li>
+            <li>Smarter movement: bots slow down near danger, stop to shoot, strafe at close range, reload behind cover and spread out across routes.</li>
+            <li>Real teamwork: shared callouts, support pushes, trading kills, and buddy pairs in Team Deathmatch and Elimination.</li>
+            <li>Bomb and Capture the Flag objective play stays as sharp as before.</li>
+            <li>Fixed bots standing idle on Delta.</li>
+          </ul></section>
+          <section><h3>Interface and launcher</h3><ul>
+            <li>New Esc pause menu, centred and dimmed on every screen shape.</li>
+            <li>The launcher now has its own version number (Launcher 1.0.0), shown in the title bar, the update bar and the Versions dialog, and it can update itself separately from the game.</li>
+          </ul></section>
+          <section><h3>Performance</h3><ul>
+            <li>New frame-time graph: cl_drawFrameGraph 1 shows frame times, average fps, 1% lows and spikes, on DirectX 12 and OpenGL.</li>
+            <li>Detailed frame statistics for troubleshooting with cl_frameStats and cl_frameSpikeMs.</li>
+            <li>The console log is now written in the background, removing hitches on slow disks.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Fixed the black void below the water on Northport. Looking up from underwater now shows the water's colour, on DirectX 12 and OpenGL.</li>
+            <li>Fixed the console log being cut short when the game closed after an error.</li>
+            <li>The cheat detection recognises the new materials pack and the updated interface files.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is prepared but not switched on yet.</li>
+            <li>Coming next: shadows from muzzle flashes and explosions, a full launcher redesign, and voice commands.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.33.0-sandbox24">GitHub ↗</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.32.0" data-ver="v0.32.0">
+        <summary><span class="ver">v0.32.0</span><span class="sum">A major update. Movement now runs at the original TC:E pace, and leaning, ladders, swimming and spectating are back. This release also brings a competitive match mode, smarter bots on every objective, a new-player welcome, a one-click installer, and a fix for the most common crash to desktop.</span><span class="meta">#53 · 0.32.0-sandbox23 · 7 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Movement and gunplay</h3><ul>
             <li>Movement speed matches the original TC:E. Running, sprinting, crouching and going prone all move at the original speeds.</li>
