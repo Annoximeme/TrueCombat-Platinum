@@ -26,7 +26,7 @@ PAGES["index"] = [
      'content="TrueCombat: Platinum is een native 64-bit DirectX 12-versie van TrueCombat: Elite voor Windows, met de originele maps, soldaten en HUD. Gratis te downloaden."'),
     ('content="A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows. Free download."',
      'content="Een native 64-bit DirectX 12-versie van TrueCombat: Elite voor Windows. Gratis te downloaden."'),
-    ('<h1>TrueCombat: Elite, rebuilt for <em>modern Windows</em>.</h1>', '<h1>TrueCombat: Elite, opnieuw gebouwd voor <em>modern Windows</em>.</h1>'),
+    ('<h1><span class="nw">TrueCombat: Elite,</span> rebuilt for <em>modern Windows</em>.</h1>', '<h1><span class="nw">TrueCombat: Elite,</span> opnieuw gebouwd voor <em>modern Windows</em>.</h1>'),
     ('The classic tactical shooter, rebuilt as a native 64-bit game with a DirectX 12 renderer. The original maps, soldiers and HUD, and a launcher that hosts your servers and keeps the game current.',
      'De klassieke tactische shooter, opnieuw gebouwd als native 64-bit game met een DirectX 12-renderer. De originele maps, soldaten en HUD, en een launcher die je servers host en het spel up-to-date houdt.'),
     ('href="#patch-notes">What\'s new</a>', 'href="#patch-notes">Wat is er nieuw</a>'),
@@ -663,3 +663,15 @@ PAGES['studio'] = [
     ('<p>Team Terminus was formed to change that. TrueCombat: Platinum rebuilds the game as a native 64-bit Windows title with a DirectX 12 renderer, and every map, weapon value and HUD element is checked against the original before it ships.</p>',
      '<p>Team Terminus is opgericht om daar verandering in te brengen. TrueCombat: Platinum bouwt het spel opnieuw als native 64-bit Windows-titel met een DirectX 12-renderer, en elke map, elke wapenwaarde en elk HUD-element wordt met het origineel vergeleken voordat het uitkomt.</p>'),
 ] + PAGES['studio']
+
+# ---------------------------------------------------------------- 2026-11 visual pass
+PAGES['servers'] = [
+    ('<span class="eyebrow">Official servers</span>', '<span class="eyebrow">Officiële servers</span>'),
+    ('<h2>Run by Team Terminus</h2>', '<h2>Beheerd door Team Terminus</h2>'),
+    ('<p class="lede">Two dedicated servers in the EU, online around the clock and always on the latest version. Click an address to copy it.</p>',
+     '<p class="lede">Twee dedicated servers in de EU, dag en nacht online en altijd op de nieuwste versie. Klik op een adres om het te kopiëren.</p>'),
+    ('<p>Competitive play. Every completed match counts towards your rank, rating and the <a href="leaderboards.html">leaderboards</a>.</p>',
+     '<p>Competitief spelen. Elke voltooide wedstrijd telt mee voor je rang, je rating en de <a href="leaderboards.html">ranglijsten</a>.</p>'),
+    ('<p>Casual play with ten bots filling the slots, so there is always a match to drop into. Ideal for warming up.</p>',
+     '<p>Ontspannen spelen met tien bots die de plekken vullen, dus er is altijd een potje om in te stappen. Ideaal om op te warmen.</p>'),
+] + PAGES['servers']
