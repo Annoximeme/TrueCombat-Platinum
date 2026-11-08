@@ -753,6 +753,24 @@ def to_dutch(page, html):
     return html
 
 
+# ---------------------------------------------------------------- cache busting
+# style.css and site.js get ?v=<content hash>, so a deploy never pairs new HTML with a cached old
+# stylesheet or script. Sources are read back without the suffix, so the rest of the build is unchanged.
+VERSIONED = re.compile(r'((?:href|src)="(?:\.\./)?(?:style\.css|js/site\.js))\?v=[0-9a-f]+"')
+
+
+def unbust(html):
+    return VERSIONED.sub(r'\1"', html)
+
+
+def bust(html):
+    import hashlib
+    for name, attr in (("style.css", "href"), ("js/site.js", "src")):
+        v = hashlib.sha1((DOCS / name).read_bytes()).hexdigest()[:10]
+        html = re.sub(r'(%s="(?:\.\./)?%s)"' % (attr, re.escape(name)), r'\1?v=%s"' % v, html)
+    return html
+
+
 def lastmod(path):
     """The date a page last changed: today when it differs from the last commit, else that commit's date."""
     import datetime
@@ -772,7 +790,7 @@ def main():
     (DOCS / "nl").mkdir(exist_ok=True)
     for page in PAGES:
         path = DOCS / (page + ".html")
-        en = path.read_text(encoding="utf-8")
+        en = unbust(path.read_text(encoding="utf-8"))
         if page == "weapons":
             en = put(en, "weapons", weapons_html("en"), path)
         if page == "index":
@@ -790,7 +808,7 @@ def main():
         en = put(en, "nav", nav("en", page), path)
         en = put(en, "footer", footer("en"), path)
         en = put(en, "alt", alt("en", page, en), path)
-        path.write_text(en, encoding="utf-8")
+        path.write_text(bust(en), encoding="utf-8")
 
         du = src
         if page == "index":
@@ -808,16 +826,16 @@ def main():
         du = put(du, "nav", nav("nl", page), path)
         du = put(du, "footer", footer("nl"), path)
         du = put(du, "alt", alt("nl", page, du), path)
-        (DOCS / "nl" / (page + ".html")).write_text(du, encoding="utf-8")
+        (DOCS / "nl" / (page + ".html")).write_text(bust(du), encoding="utf-8")
 
-    template = (DOCS / "devlog.html").read_text(encoding="utf-8")
+    template = unbust((DOCS / "devlog.html").read_text(encoding="utf-8"))
     posts = {lang: devlog_posts(lang) for lang in ("en", "nl")}
     if [p["slug"] for p in posts["en"]] != [p["slug"] for p in posts["nl"]]:
         sys.exit("devlog: every post needs both an .en.md and an .nl.md file")
     for lang in ("en", "nl"):
         for post in posts[lang]:
             out = DOCS / ("nl" if lang == "nl" else "") / ("devlog-%s.html" % post["slug"])
-            out.write_text(devlog_page(lang, post, posts[lang], template), encoding="utf-8")
+            out.write_text(bust(devlog_page(lang, post, posts[lang], template)), encoding="utf-8")
 
     for lang in ("en", "nl"):
         (DOCS / ("nl" if lang == "nl" else "") / "devlog.xml").write_text(devlog_feed(lang, posts[lang]), encoding="utf-8")
