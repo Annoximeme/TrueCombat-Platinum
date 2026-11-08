@@ -1002,3 +1002,36 @@ html { scrollbar-color: #2e3747 var(--bg); }
 .feature:hover svg { transform: translateY(-2px); }
 .page-head::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, var(--red) 0, rgba(214,59,59,0) 40%); }
 .btn:active { transform: translateY(1px); }
+
+/* ------------------------------------------------ map layouts */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr); gap: clamp(24px, 4vw, 48px); align-items: start; margin-top: clamp(32px, 5vw, 56px); padding-top: clamp(28px, 4vw, 44px); border-top: 1px solid var(--line); }
+.layout-copy { display: grid; gap: 14px; position: sticky; top: 84px; }
+.layout-copy p { margin: 0; color: var(--muted); font-size: .95rem; }
+.lo-controls { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button, .lo-toggle { font: 600 .82rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .1em; background: var(--panel); color: var(--muted); border: 0; padding: 10px 14px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--red); color: #fff; }
+.lo-toggle { border: 1px solid var(--line); border-radius: 6px; }
+.lo-toggle[aria-pressed="true"] { color: var(--fg); border-color: var(--muted); }
+.lo-toggle::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; border: 1px solid currentColor; margin-right: 8px; vertical-align: 1px; }
+.lo-toggle[aria-pressed="true"]::before { background: var(--amber); border-color: var(--amber); }
+.lo-legend { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: var(--step--1); color: var(--muted); }
+.lo-legend .k { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 8px; vertical-align: -1px; }
+.lo-legend .t { background: #ef5050; } .lo-legend .s { background: #5b9bff; }
+.layout-fig { margin: 0; position: relative; aspect-ratio: var(--ar); width: min(100%, calc(82vh * var(--ar))); justify-self: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.layout-fig img, .layout-fig svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.layout-fig svg text { font-family: var(--f-display); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; paint-order: stroke; stroke: rgba(9,11,15,.92); stroke-width: .32em; stroke-linejoin: round; fill: #fff; }
+.lo-spawn circle { stroke: rgba(9,11,15,.8); stroke-width: 1.5; }
+.lo-spawn.terrorists circle, .lo-spawn.terrorists text { fill: #ff6b6b; }
+.lo-spawn.specops circle, .lo-spawn.specops text { fill: #6fa8ff; }
+.lo-bomb rect { fill: rgba(231,167,60,.18); stroke: var(--amber); stroke-width: 3; }
+.lo-bomb .badge { fill: var(--amber); stroke: rgba(9,11,15,.9); stroke-width: 3; }
+.lo-bomb text.letter { fill: #11141a; stroke: none; font-weight: 800; }
+.lo-bomb text { fill: var(--amber); }
+.lo-flag circle { stroke: rgba(9,11,15,.9); stroke-width: 3; }
+.lo-flag path { fill: #fff; stroke: none; }
+.lo-flag .terrorists circle { fill: #e04848; } .lo-flag .specops circle { fill: #3f7fe0; }
+.lo-call text { fill: #e8eaef; font-weight: 600; }
+.layout[data-mode="bomb"] .lo-flag, .layout[data-mode="flag"] .lo-bomb, .layout.no-call .lo-call { display: none; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .layout-copy { position: static; } .layout-fig { width: 100%; } }
