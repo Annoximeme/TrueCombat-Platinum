@@ -833,7 +833,6 @@ PAGES['studio'] = [
     ('<div><dt>Guns</dt><dd>27</dd><span>Plus the knife and grenades</span></div>', '<div><dt>Wapens</dt><dd>27</dd><span>Plus het mes en de granaten</span></div>'),
     ('<div><dt>Official servers</dt><dd>2</dd><span>EU, online around the clock</span></div>', '<div><dt>Officiële servers</dt><dd>2</dd><span>EU, dag en nacht online</span></div>'),
     ('<div><dt>To play</dt><dd>Free</dd><span>No price tag, no forced accounts</span></div>', '<div><dt>Om te spelen</dt><dd>Gratis</dd><span>Geen prijskaartje, geen verplicht account</span></div>'),
-    ('<ul class="member-tags" aria-label="Clans">', '<ul class="member-tags" aria-label="Clans">'),
     ('<span class="eyebrow">How we build</span>', '<span class="eyebrow">Zo bouwen we</span>'),
     ('<h2>Every change takes the same route</h2>', '<h2>Elke wijziging volgt dezelfde route</h2>'),
     ('<p class="lede">Nothing reaches your launcher on a hunch. Each feature, fix and weapon value goes through four steps before it ships.</p>',
