@@ -52,7 +52,7 @@ def devlog_pages():
     out = {}
     for md in sorted((DOCS.parent / "tools" / "website" / "devlog").glob("*.en.md")):
         meta = dict(l.split(": ", 1) for l in md.read_text(encoding="utf-8").split("---")[1].strip().splitlines())
-        out["devlog-" + md.name.split(".")[0]] = (meta["image"].split("/")[-1], "Devlog", meta["title"])
+        out["devlog-" + md.name.split(".")[0]] = (meta["image"].split("img/", 1)[-1], "Devlog", meta["title"])
     return out
 
 

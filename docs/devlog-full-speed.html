@@ -19,7 +19,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-full-speed.jpg">
 <meta property="article:published_time" content="2026-11-07">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Back to full speed","description":"For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.","datePublished":"2026-11-07","dateModified":"2026-11-07","inLanguage":"en","image":"https://truecombat.eu/img/og-devlog-full-speed.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-full-speed.html","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio.html"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<meta property="article:section" content="Gameplay">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Back to full speed","description":"For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.","datePublished":"2026-11-07","dateModified":"2026-11-07","inLanguage":"en","articleSection":"Gameplay","timeRequired":"PT2M","image":"https://truecombat.eu/img/og-devlog-full-speed.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-full-speed.html","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio.html"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
 <!--alt-->
 <link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -70,19 +71,29 @@
     <div class="head-art" style="--art: url(img/map-railhouse.webp); --art-s: url(img/map-railhouse-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog.html">All devlog posts</a>
-      <p class="post-meta"><span class="tag">Gameplay</span><time datetime="2026-11-07">7 Nov 2026</time><span>Team Terminus</span></p>
+      <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.32.0</span><time datetime="2026-11-07">7 Nov 2026</time><span>2 min read</span><span>Team Terminus</span></p>
       <h1>Back to full speed</h1>
       <p class="lede">For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.</p>
     </div>
   </header>
   <div class="band">
-    <div class="wrap prose">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#one-factor-two-meanings">One factor, two meanings</a></li>
+          <li><a href="#the-numbers">The numbers</a></li>
+          <li><a href="#what-full-speed-broke">What full speed broke</a></li>
+          <li><a href="#why-it-matters">Why it matters</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
 <p>From the first public builds, veterans told us the same thing: Platinum looked right, sounded right, and felt a step too slow. Our own movement tests disagreed. Every speed we measured matched the values in the TC:E source data. Both sides were right, and finding out why took us back into the original game.</p>
-<h2>One factor, two meanings</h2>
+<h2 id="one-factor-two-meanings">One factor, two meanings</h2>
 <p>TrueCombat: Elite 0.49b scales player movement by <code>g_movespeed / 127</code>. The default server value is 76, so that factor slows players to roughly 60% of their base speed. What we had missed is where the original applies it: only in game types 0 and 1, the practice and free-for-all modes. The modes TC:E was really played in, such as Flag Capture and Bomb, run under other game type numbers and never touch the factor. They run at full speed.</p>
 <p>Platinum runs all of its modes through game type 0 internally, so the practice slowdown applied everywhere. Our tests were measuring the slowed speed and finding it correct.</p>
 <p>We confirmed it two ways: against the speed table in the original 0.49b changelog, and against the 1/127 constant in the original game code. Both pointed to the same answer.</p>
-<h2>The numbers</h2>
+<h2 id="the-numbers">The numbers</h2>
 <p>With a rifle on default server settings, Platinum 0.32 moves at:</p>
 <ul>
   <li><strong>238</strong> units per second sprinting</li>
@@ -91,12 +102,24 @@
   <li><strong>38</strong> prone</li>
 </ul>
 <p>Those are the original TC:E speeds. The <a href="guide.html">guide</a> has the full breakdown.</p>
-<h2>What full speed broke</h2>
+<h2 id="what-full-speed-broke">What full speed broke</h2>
 <p>Faster movement exposed things the slower speed had hidden. Other players switched between their walk and run animations at the wrong moment, so the threshold now sits at 150 units per second, as in the original.</p>
 <p>The stamina system had a subtler problem. A recovery bonus was applied on every frame, even while running. At the old running speed that never showed, because running slowly enough counted as recovering anyway. At 163 units per second, players would have regained stamina while running flat out. Recovery now only happens when it should: standing still, walking, crouched or prone.</p>
 <p>While we were in there, Elimination rounds went back to their original five minutes.</p>
-<h2>Why it matters</h2>
+<h2 id="why-it-matters">Why it matters</h2>
 <p>TC:E is a game of timing. How long it takes to cross a street, reach a corner, or get back into cover is what every map is built around. Getting that wrong by 40% changes every fight on every map, and no screenshot shows it. That is why every speed in Platinum is now checked against the original data before a release ships.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <span></span>
+        <a class="next" href="devlog-match-mode.html"><small>Newer post</small>Match mode, built for clan nights</a>
+      </nav>
     </div>
   </div>
 </article>
@@ -105,13 +128,22 @@
   <div class="wrap">
     <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
     <div class="post-list">
-      <article class="post-card">
-        <a class="post-art" href="devlog-match-mode.html" tabindex="-1" aria-hidden="true"><img src="img/media-deployment-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-ultra-visuals.html" tabindex="-1" aria-hidden="true"><img src="img/devlog/ultra-railhouse-ultra-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Competitive</span><time datetime="2026-11-07">7 Nov 2026</time></p>
-          <h2><a href="devlog-match-mode.html">Match mode, built for clan nights</a></h2>
-          <p>Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.</p>
-          <a class="more" href="devlog-match-mode.html">Read the post</a>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-08">8 Nov 2026</time><span>3 min read</span></p>
+          <h2><a href="devlog-ultra-visuals.html">New light for old maps</a></h2>
+          <p>The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.</p>
+          <a class="more" href="devlog-ultra-visuals.html">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Bots">
+        <a class="post-art" href="devlog-smarter-bots.html" tabindex="-1" aria-hidden="true"><img src="img/media-village-yard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Bots</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-08">8 Nov 2026</time><span>3 min read</span></p>
+          <h2><a href="devlog-smarter-bots.html">Teaching bots to play like people</a></h2>
+          <p>Bots that never miss are no fun, and bots that ignore the objective are worse. This is how we test every change to Platinum&#x27;s bots before it reaches a server.</p>
+          <a class="more" href="devlog-smarter-bots.html">Read the post</a>
         </div>
       </article>
     </div>

@@ -4,12 +4,64 @@
   <link href="https://truecombat.eu/nl/devlog.html"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog.html</id>
-  <updated>2026-11-07T12:00:00Z</updated>
+  <updated>2026-11-08T12:00:00Z</updated>
+  <entry>
+    <title>Nieuw licht voor oude maps</title>
+    <link href="https://truecombat.eu/nl/devlog-ultra-visuals.html"/>
+    <id>https://truecombat.eu/nl/devlog-ultra-visuals.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Graphics"/>
+    <summary>De Ultra-preset brengt moderne belichting, echte oppervlaktematerialen en zonneschaduwen naar elke map op DirectX 12. Zo hebben we dat gebouwd zonder te veranderen hoe TC:E speelt.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Bots leren spelen als mensen</title>
+    <link href="https://truecombat.eu/nl/devlog-smarter-bots.html"/>
+    <id>https://truecombat.eu/nl/devlog-smarter-bots.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Bots"/>
+    <summary>Bots die nooit missen zijn niet leuk, en bots die het doel negeren zijn nog erger. Zo testen we elke wijziging aan de bots van Platinum voordat die op een server komt.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Als de test het mis heeft</title>
+    <link href="https://truecombat.eu/nl/devlog-recoil-check.html"/>
+    <id>https://truecombat.eu/nl/devlog-recoil-check.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Testen"/>
+    <summary>Onze terugslagcontroles keurden de Desert Eagle af. Het spel had gelijk. Zo kwamen we erachter, en daarom jagen we liever op een vals alarm dan dat we een echt probleem missen.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Wat de officiële servers draaiende houdt</title>
+    <link href="https://truecombat.eu/nl/devlog-official-servers.html"/>
+    <id>https://truecombat.eu/nl/devlog-official-servers.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Servers"/>
+    <summary>Twee officiële servers, een masterlijst, live ranglijsten en deze website draaien dag en nacht. Dit gebeurt er achter de schermen als niemand kijkt.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Eén klein installatieprogramma, elke versie</title>
+    <link href="https://truecombat.eu/nl/devlog-installer.html"/>
+    <id>https://truecombat.eu/nl/devlog-installer.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Launcher"/>
+    <summary>Platinum was ooit een zip van bijna 800 MB. Nu is het een installatieprogramma van 7 MB, een launcher die alleen downloadt wat veranderd is, en een knop die je terugbrengt naar elke eerdere release.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Wedstrijdmodus, gebouwd voor clanavonden</title>
     <link href="https://truecombat.eu/nl/devlog-match-mode.html"/>
     <id>https://truecombat.eu/nl/devlog-match-mode.html</id>
+    <published>2026-11-07T12:00:00Z</published>
     <updated>2026-11-07T12:00:00Z</updated>
+    <category term="Competitief"/>
     <summary>Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.</summary>
     <author><name>Team Terminus</name></author>
   </entry>
@@ -17,7 +69,9 @@
     <title>Terug op volle snelheid</title>
     <link href="https://truecombat.eu/nl/devlog-full-speed.html"/>
     <id>https://truecombat.eu/nl/devlog-full-speed.html</id>
+    <published>2026-11-07T12:00:00Z</published>
     <updated>2026-11-07T12:00:00Z</updated>
+    <category term="Gameplay"/>
     <summary>Maandenlang voelde Platinum een tikje trager dan het spel dat we kennen. De oorzaak bleek één schaalfactor, op de verkeerde plek toegepast.</summary>
     <author><name>Team Terminus</name></author>
   </entry>

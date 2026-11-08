@@ -4,6 +4,7 @@ date: 2026-11-07
 summary: Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.
 image: img/media-deployment.webp
 tag: Competitive
+version: 0.32.0
 ---
 Ask anyone who played TC:E seriously what they remember, and it is rarely a public server. It is a clan match: two tags, a booked server, and a round decided by one well-held corner. Platinum 0.32 brings that format back as a built-in match mode, ready on every server with a single command.
 
