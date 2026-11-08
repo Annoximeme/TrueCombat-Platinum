@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="nl">
+  <title>TrueCombat: Platinum devlog</title>
+  <link href="https://truecombat.eu/nl/devlog.html"/>
+  <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
+  <id>https://truecombat.eu/nl/devlog.html</id>
+  <updated>2026-11-07T12:00:00Z</updated>
+  <entry>
+    <title>Wedstrijdmodus, gebouwd voor clanavonden</title>
+    <link href="https://truecombat.eu/nl/devlog-match-mode.html"/>
+    <id>https://truecombat.eu/nl/devlog-match-mode.html</id>
+    <updated>2026-11-07T12:00:00Z</updated>
+    <summary>Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Terug op volle snelheid</title>
+    <link href="https://truecombat.eu/nl/devlog-full-speed.html"/>
+    <id>https://truecombat.eu/nl/devlog-full-speed.html</id>
+    <updated>2026-11-07T12:00:00Z</updated>
+    <summary>Maandenlang voelde Platinum een tikje trager dan het spel dat we kennen. De oorzaak bleek één schaalfactor, op de verkeerde plek toegepast.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+</feed>
