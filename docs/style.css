@@ -1086,3 +1086,23 @@ html { scrollbar-color: #2e3747 var(--bg); }
 .lo-call text { fill: #e8eaef; font-weight: 600; }
 .layout[data-mode="bomb"] .lo-flag, .layout[data-mode="flag"] .lo-bomb, .layout.no-call .lo-call { display: none; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .layout-copy { position: static; } .layout-fig { width: 100%; } }
+
+/* ---------- pass 5: captions, headings, touch targets ---------- */
+.trio figcaption, .shot figcaption { flex-wrap: wrap; row-gap: 4px; }
+.trio figcaption span, .shot figcaption span { margin-left: auto; }
+.server-card header h2 { font-size: 1.05rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.post-card { position: relative; }
+.post-card h2 a::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+.post-card h2 a:focus-visible { outline: none; }
+.post-card:has(h2 a:focus-visible) { outline: 2px solid var(--red-hi); outline-offset: 2px; }
+.post-card .more { justify-self: start; padding: 6px 0; margin: -2px 0 -6px; }
+.post-card:hover .more { color: var(--fg); }
+.post-art { overflow: hidden; }
+.post-art img { transition: transform .5s cubic-bezier(.2,.7,.2,1); }
+.post-card:hover .post-art img { transform: scale(1.035); }
+@media (prefers-reduced-motion: reduce) { .post-card:hover .post-art img { transform: none; } }
+.wc-add { padding: 8px 10px; top: -6px; }
+.pf-back { padding: 6px 0; }
+.post-head .back { display: inline-block; padding: 8px 0; margin: -8px 0; }
+.trio figcaption, .shot figcaption { text-shadow: 0 1px 3px rgba(0,0,0,.9); }
+.shot.wide figcaption { padding-top: 40px; background: linear-gradient(0deg, rgba(8,10,14,.97) 35%, rgba(8,10,14,0)); }
