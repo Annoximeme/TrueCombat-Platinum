@@ -16,7 +16,8 @@ var TCP_API = 'https://api.truecombat.eu';
     en: {
       months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
       latest: 'Latest', kindSetupLong: 'Windows installer', kindSetup: 'Installer', kindZip: 'Full game, zip', offline: 'Master server offline', online: 'Online', loading: 'Checking…',
-      noServersOffline: 'No public servers yet. This list fills in automatically when the master server is running.',
+      noServersOffline: 'The live server list is unreachable right now. The Servers tab in the launcher shows the same list.',
+      moreNotes: 'Show the full notes', lessNotes: 'Show less', liveNow: '{p} playing on {s} servers right now', liveIdle: '{s} servers online right now',
       noServers: 'Nobody is hosting a public server right now. Host one from the launcher with List publicly switched on.',
       players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied',
       updated: 'Updated', join: 'In the launcher: Servers → Join by address',
@@ -34,7 +35,8 @@ var TCP_API = 'https://api.truecombat.eu';
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
       latest: 'Nieuwste', kindSetupLong: 'Windows-installatieprogramma', kindSetup: 'Installatieprogramma', kindZip: 'Volledig spel, zip', offline: 'Masterserver offline', online: 'Online', loading: 'Bezig…',
-      noServersOffline: 'Nog geen publieke servers. Deze lijst vult zich vanzelf zodra de masterserver draait.',
+      noServersOffline: 'De live serverlijst is nu niet bereikbaar. Het tabblad Servers in de launcher toont dezelfde lijst.',
+      moreNotes: 'Toon alle notities', lessNotes: 'Minder tonen', liveNow: '{p} spelers op {s} servers op dit moment', liveIdle: '{s} servers nu online',
       noServers: 'Er host nu niemand een publieke server. Host er zelf een vanuit de launcher met Openbaar tonen aan.',
       players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd',
       updated: 'Bijgewerkt', join: 'In de launcher: Servers → Verbinden met adres',
@@ -122,6 +124,21 @@ var TCP_API = 'https://api.truecombat.eu';
       (first ? '<span class="latest">' + L.latest + '</span>' : '') + '</span><span class="sum">' + inline(n.summary) +
       '</span><span class="meta">' + meta + CHEV + '</span></summary><div class="body">' + secs + link + '</div></details>';
   }
+  /* the home page shows the latest notes folded to a preview, with a toggle for the rest */
+  function clampNotes(box) {
+    if (box.dataset.releases === 'all') return;
+    var rel = box.querySelector('.release[open]'), body = rel && rel.querySelector('.body');
+    if (!body || body.dataset.clamped || body.scrollHeight < 760) return;
+    body.dataset.clamped = '1'; body.classList.add('clamp');
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'btn btn-ghost notes-more'; b.setAttribute('aria-expanded', 'false'); b.textContent = L.moreNotes;
+    b.addEventListener('click', function () {
+      var open = body.classList.toggle('clamp') === false;
+      b.setAttribute('aria-expanded', String(open)); b.textContent = open ? L.lessNotes : L.moreNotes;
+      if (!open) rel.scrollIntoView({ block: 'start' });
+    });
+    rel.appendChild(b);
+  }
   function renderNotes(box, rels) {
     var limit = box.dataset.releases === 'all' ? 999 : parseInt(box.dataset.releases, 10) || 5;
     var seen = {};
@@ -132,6 +149,7 @@ var TCP_API = 'https://api.truecombat.eu';
     older.forEach(function (d) { d.open = false; var b = d.querySelector('.latest'); if (b) b.remove(); });
     box.innerHTML = html;
     older.slice(0, Math.max(0, limit - Object.keys(seen).length)).forEach(function (d) { box.appendChild(d); });
+    clampNotes(box);
     if (location.hash) { var t = document.getElementById(location.hash.slice(1)); if (t && t.tagName === 'DETAILS') { t.open = true; t.scrollIntoView(); } }
   }
   function applyDownload(rels) {
@@ -160,6 +178,7 @@ var TCP_API = 'https://api.truecombat.eu';
     }
   }
   var noteBoxes = $all('[data-releases]');
+  noteBoxes.forEach(clampNotes);
   if (noteBoxes.length || document.querySelector('[data-download]')) {
     getReleases(function (rels) {
       if (!rels || !rels.length) {
@@ -196,7 +215,7 @@ var TCP_API = 'https://api.truecombat.eu';
     if (!list.length) { if (empty) empty.textContent = L.noServers; return; }
     if (empty) empty.hidden = true;
     tbody.innerHTML = list.slice(0, limit).map(function (s) {
-      return '<tr><td><b>' + esc(s.name) + '</b>' + (s.password ? ' <span class="lock" title="' + L.password + '">🔒</span>' : '') +
+      return '<tr><td><b>' + esc(String(s.name || '').replace(/^TrueCombat:\s*Platinum\s*\|\s*/i, '')) + '</b>' + (s.password ? ' <span class="lock" title="' + L.password + '">🔒</span>' : '') +
         (s.ranked === true ? ' <span class="srv-tag ranked" title="' + L.rankedTip + '">' + L.ranked + '</span>' :
          s.ranked === false ? ' <span class="srv-tag" title="' + L.unrankedTip + '">' + L.unranked + '</span>' : '') +
         '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button></td>' +
@@ -221,6 +240,23 @@ var TCP_API = 'https://api.truecombat.eu';
     }
     load();
     if (TCP_API) setInterval(function () { if (!document.hidden) load(); }, 60000);
+  });
+
+  $all('.official .addr').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var a = b.dataset.addr;
+      (navigator.clipboard ? navigator.clipboard.writeText(a) : Promise.reject()).then(function () {
+        b.textContent = L.copied; setTimeout(function () { b.textContent = a; }, 1400);
+      }, function () {});
+    });
+  });
+  $all('[data-live]').forEach(function (el) {
+    api('/servers.json').then(function (d) {
+      var list = d.servers || [], p = list.reduce(function (n, x) { return n + (x.players || 0); }, 0);
+      if (!list.length) return;
+      el.textContent = (p ? L.liveNow : L.liveIdle).replace('{p}', p).replace('{s}', list.length);
+      el.hidden = false;
+    }, function () {});
   });
 
   /* ---------- leaderboards and player profiles (stats service JSON, tools/server-bridge/tcp_stats.py) ---------- */
