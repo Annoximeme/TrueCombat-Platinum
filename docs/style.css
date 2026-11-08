@@ -1216,3 +1216,10 @@ html { scrollbar-color: #2e3747 var(--bg); }
 .roles b { font: 700 1rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .08em; }
 .roles span { font-size: .85rem; color: var(--dim); }
 @media (max-width: 640px) { .roles { grid-template-columns: 1fr; } }
+.heritage-band { padding-block: clamp(40px, 6vw, 72px); background: var(--panel); }
+.heritage-band .section-head h2 { font-size: var(--step-2); }
+.heritage-band .section-head .lede { font-size: 1rem; }
+.heritage-band .clan { padding: 18px 20px; }
+.heritage-band .clan-tag { font-size: 1.2rem; }
+.heritage-band .clan h3 { font-size: 1rem; }
+.heritage-band .clan p { font-size: .9rem; }
