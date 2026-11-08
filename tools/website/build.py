@@ -30,6 +30,7 @@ DISCORD = "https://discord.gg/8kcHdg2Hch"
 GITHUB = "https://github.com/Annoximeme/TrueCombat-Platinum"
 FEED = GITHUB + "/releases.atom"
 
+MAPLIST = ["delta", "northport", "railhouse", "snow", "stadtrand", "village"]
 PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio"]
 
 LABELS = {
@@ -312,6 +313,96 @@ def roadmap_html(lang, latest):
 
 
 
+
+# ---------------------------------------------------------------- map layouts
+LO = {
+    "en": {"title": "Layout", "intro": "Top-down plan built from the original map file, with the spawns, bomb sites and flags the game uses and its own location names.",
+           "bomb": "Bomb", "flag": "Flag Capture", "callouts": "Location names", "show": "Show",
+           "terrorists": "Terrorist spawn", "specops": "SpecOps spawn", "flag_terrorists": "Terrorist flag", "flag_specops": "SpecOps flag",
+           "site": "Bomb site", "alt": "Overhead layout of {m}", "nocallouts": "This map has no in-game location names."},
+    "nl": {"title": "Plattegrond", "intro": "Bovenaanzicht op basis van het originele mapbestand, met de spawns, bomplekken en vlaggen die het spel gebruikt en de eigen locatienamen.",
+           "bomb": "Bomb", "flag": "Flag Capture", "callouts": "Locatienamen", "show": "Tonen",
+           "terrorists": "Spawn Terroristen", "specops": "Spawn SpecOps", "flag_terrorists": "Vlag Terroristen", "flag_specops": "Vlag SpecOps",
+           "site": "Bomplek", "alt": "Bovenaanzicht van {m}", "nocallouts": "Deze map heeft geen locatienamen in het spel."},
+}
+
+
+def clusters(points, gap):
+    """Groups points closer than gap (single link); returns the groups, largest first."""
+    left, groups = list(points), []
+    while left:
+        g = [left.pop()]
+        i = 0
+        while i < len(g):
+            near = [p for p in left if (p[0] - g[i][0]) ** 2 + (p[1] - g[i][1]) ** 2 < gap * gap]
+            for p in near:
+                left.remove(p)
+            g += near
+            i += 1
+        groups.append(g)
+    return sorted(groups, key=len, reverse=True)
+
+
+def layout_html(lang, name):
+    T = LO[lang]
+    d = json.loads((HERE / "maplayouts.json").read_text(encoding="utf-8"))[name]
+    w, h = d["w"], d["h"]
+    u = max(w, h) / 100
+    e = lambda s: htmlmod.escape(s)
+    svg = []
+    for team in ("terrorists", "specops"):
+        pts = d["spawns"][team]
+        svg.append('<g class="lo-spawn %s">%s' % (team, "".join('<circle cx="%s" cy="%s" r="%.1f"/>' % (x, y, u * .42) for x, y in pts)))
+        if pts:
+            g = clusters(pts, u * 9)[0]
+            cx, cy = sum(p[0] for p in g) / len(g), sum(p[1] for p in g) / len(g)
+            cy = cy - u * 2.4 if cy > h * .12 else cy + u * 3.2
+            svg.append('<text x="%.1f" y="%.1f" font-size="%.1f" text-anchor="middle">%s</text>' % (cx, cy, u * 1.7, T[team]))
+        svg.append("</g>")
+    svg.append('<g class="lo-mode lo-bomb">')
+    for s in d["sites"]:
+        (x1, y1), (x2, y2) = s["a"], s["b"]
+        cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+        svg.append('<rect x="%.1f" y="%.1f" width="%.1f" height="%.1f" rx="%.1f"/>' % (x1, y1, x2 - x1, y2 - y1, u * .4))
+        svg.append('<circle class="badge" cx="%.1f" cy="%.1f" r="%.1f"/><text class="letter" x="%.1f" y="%.1f" font-size="%.1f" text-anchor="middle">%s</text>'
+                   % (cx, cy, u * 2.1, cx, cy + u * .95, u * 2.7, e(s["site"])))
+        label = s["name"] or T["site"]
+        svg.append('<text x="%.1f" y="%.1f" font-size="%.1f" text-anchor="middle">%s</text>' % (cx, cy + u * 4.4, u * 1.6, e(label)))
+    svg.append('</g><g class="lo-mode lo-flag">')
+    for f in d["flags"]:
+        x, y = f["p"]
+        svg.append('<g class="%s"><circle cx="%s" cy="%s" r="%.1f"/><path d="M%.1f %.1fv-%.1fl%.1f %.1fl-%.1f %.1f"/><text x="%.1f" y="%.1f" font-size="%.1f" text-anchor="middle">%s</text></g>'
+                   % (f["team"], x, y, u * 1.5, x - u * .45, y + u * .8, u * 1.7, u * 1.3, u * .55, u * 1.3, u * .55, x, y + u * 3.6, u * 1.6, T["flag_" + f["team"]]))
+    svg.append('</g><g class="lo-call">')
+    for c in d["callouts"]:
+        x, y = c["p"]
+        svg.append('<text x="%s" y="%s" font-size="%.1f" text-anchor="middle">%s</text>' % (x, y, u * 1.45, e(c["name"])))
+    svg.append("</g>")
+    label = name.capitalize()
+    call_btn = ('<button type="button" class="lo-toggle" data-lo-call aria-pressed="true">%s</button>' % T["callouts"]) if d["callouts"] else ""
+    note = "" if d["callouts"] else '<p class="note">%s</p>' % T["nocallouts"]
+    return f"""<!--layout-{name}-->
+    <div class="layout" data-layout data-mode="bomb">
+      <div class="layout-copy">
+        <h3>{T['title']}</h3>
+        <p>{T['intro']}</p>
+        <div class="lo-controls" role="group" aria-label="{T['show']}">
+          <div class="seg"><button type="button" data-lo-mode="bomb" aria-pressed="true">{T['bomb']}</button><button type="button" data-lo-mode="flag" aria-pressed="false">{T['flag']}</button></div>
+          {call_btn}
+        </div>
+        <ul class="lo-legend">
+          <li><span class="k t"></span>{T['terrorists']}</li>
+          <li><span class="k s"></span>{T['specops']}</li>
+        </ul>
+        {note}
+      </div>
+      <figure class="layout-fig" style="--ar: {w} / {h}">
+        <img src="img/maps/layout-{name}.webp" alt="{T['alt'].replace('{m}', label)}" width="{w}" height="{h}" loading="lazy">
+        <svg viewBox="0 0 {w} {h}" aria-hidden="true">{''.join(svg)}</svg>
+      </figure>
+    </div>
+<!--/layout-{name}-->"""
+
 # ---------------------------------------------------------------- devlog
 DL = {
     "en": {"read": "Read the post", "feed": "TrueCombat: Platinum devlog", "back": "All devlog posts", "by": "Team Terminus", "more": "More from the devlog",
@@ -548,6 +639,9 @@ def main():
             en = put(en, "devlog-latest", devlog_latest("en", devlog_posts("en")), path)
         if page == "devlog":
             en = put(en, "devlog", devlog_list("en", devlog_posts("en")), path)
+        if page == "maps":
+            for name in MAPLIST:
+                en = put(en, "layout-" + name, layout_html("en", name), path)
         src = en
         en = put(en, "nav", nav("en", page), path)
         en = put(en, "footer", footer("en"), path)
@@ -562,6 +656,9 @@ def main():
             du = put(du, "weapons", weapons_html("nl"), path)
         if page == "devlog":
             du = put(du, "devlog", devlog_list("nl", devlog_posts("nl")), path)
+        if page == "maps":
+            for name in MAPLIST:
+                du = put(du, "layout-" + name, layout_html("nl", name), path)
         du = to_dutch(page, du)
         du = put(du, "nav", nav("nl", page), path)
         du = put(du, "footer", footer("nl"), path)
