@@ -1223,3 +1223,25 @@ html { scrollbar-color: #2e3747 var(--bg); }
 .heritage-band .clan-tag { font-size: 1.2rem; }
 .heritage-band .clan h3 { font-size: 1rem; }
 .heritage-band .clan p { font-size: .9rem; }
+.workshop { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.workshop li { display: grid; gap: 10px; align-content: start; padding: 18px 18px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; position: relative; overflow: hidden; }
+.workshop li::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--dim); }
+.workshop .ws-testing::before { background: var(--ok); }
+.workshop .ws-dev::before { background: var(--amber); }
+.workshop b { font-weight: 600; line-height: 1.35; }
+.ws-state { display: inline-flex; align-items: center; gap: 7px; font: 700 .7rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .16em; color: var(--amber); }
+.ws-state::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.ws-testing .ws-state { color: var(--ok); }
+.ws-testing .ws-state::before { animation: live-pulse 2s infinite; }
+@media (prefers-reduced-motion: reduce) { .ws-testing .ws-state::before { animation: none; } }
+.built-band { padding-block: clamp(40px, 6vw, 72px); }
+.heritage-band + .built-band { border-top: 1px solid var(--line); }
+.built { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.4fr); gap: clamp(28px, 5vw, 64px); align-items: start; }
+.built .section-head { margin: 0; }
+.built .section-head h2 { font-size: var(--step-2); }
+.built .section-head .lede { font-size: 1rem; }
+.built-list { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line); }
+.built-list li { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.built-list b { font: 700 1.05rem/1.2 var(--f-display); text-transform: uppercase; letter-spacing: .06em; }
+.built-list span { color: var(--muted); font-size: .92rem; }
+@media (max-width: 860px) { .built { grid-template-columns: 1fr; } .built-list li { grid-template-columns: 1fr; gap: 2px; } }
