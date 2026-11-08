@@ -28,6 +28,7 @@ import hashlib
 import hmac
 import json
 import math
+import os
 import pathlib
 import re
 import secrets
@@ -470,6 +471,19 @@ class StatsStore:
         out["topWeapon"] = weapons[0]["weapon"] if weapons and weapons[0]["kills"] else ""
         return out
 
+    def export_ratings(self, path):
+        """Writes '<pid> <rating>' lines for the game servers' skill-based team
+        balance (g_balanceSkill reads ratings.txt from the server's home folder).
+        Atomic, so a server never reads a half-written file. Returns the count."""
+        with self.lock:
+            rows = self.db.execute("SELECT pid, rating FROM players WHERE rated > 0 ORDER BY pid").fetchall()
+        tmp = str(path) + ".tmp"
+        with open(tmp, "w", encoding="ascii") as fh:
+            for r in rows:
+                fh.write("%s %d\n" % (r["pid"], int(round(r["rating"]))))
+        os.replace(tmp, path)
+        return len(rows)
+
     def search(self, q, limit=20):
         q = clean(q, 36)
         if len(q) < 2:
@@ -599,6 +613,8 @@ def main(argv=None):
     s.add_argument("--listen", default="127.0.0.1:8091")
     s.add_argument("--cors", default="https://truecombat.eu,https://www.truecombat.eu")
     s.add_argument("--import-dir", default="", help="also import this folder every minute (trusted)")
+    s.add_argument("--ratings-file", action="append", default=[],
+                   help="keep this ratings.txt current for skill-based team balance (repeatable)")
     a = sub.add_parser("add-server")
     a.add_argument("name")
     sub.add_parser("list-servers")
@@ -608,6 +624,7 @@ def main(argv=None):
     i.add_argument("--server", default="local")
     i.add_argument("folder")
     sub.add_parser("recompute")
+    sub.add_parser("export-ratings").add_argument("file")
     args = ap.parse_args(argv)
     store = StatsStore(args.db, allow_cheats=args.allow_cheats, min_matches=args.min_matches)
     if args.cmd == "add-server":
@@ -622,12 +639,17 @@ def main(argv=None):
         print("stored", store.import_dir(args.folder, args.server))
     elif args.cmd == "recompute":
         print("recomputed", store.recompute(), "matches")
+    elif args.cmd == "export-ratings":
+        print("exported", store.export_ratings(args.file), "ratings")
     elif args.cmd == "serve":
-        if args.import_dir:
+        if args.import_dir or args.ratings_file:
             def loop():
                 while True:
                     try:
-                        store.import_dir(args.import_dir)
+                        if args.import_dir:
+                            store.import_dir(args.import_dir)
+                        for f in args.ratings_file:
+                            store.export_ratings(f)
                     except Exception as exc:
                         print("import failed:", exc, flush=True)
                     time.sleep(60)
