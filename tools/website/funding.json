@@ -62,5 +62,11 @@
       ]
     }
   ],
-  "months": []
+  "months": [
+    {
+      "month": "2026-11",
+      "received": 0,
+      "spent": 150
+    }
+  ]
 }

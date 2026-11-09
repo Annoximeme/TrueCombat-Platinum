@@ -226,7 +226,7 @@ var TCP_API = 'https://api.truecombat.eu';
           months: 'January February March April May June July August September October November December'.split(' ') };
     var spent = {};
     try { spent = JSON.parse(rep.getAttribute('data-fund') || '{}'); } catch (e) { spent = {}; }
-    function eur(n) { return '€' + (Math.round(n * 100) / 100).toLocaleString(nl ? 'nl-BE' : 'en-GB', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); }
+    function eur(n) { var a = Math.abs(n); return (n < 0 ? '−' : '') + '€' + (Math.round(a * 100) / 100).toLocaleString(nl ? 'nl-BE' : 'en-GB', { minimumFractionDigits: a % 1 ? 2 : 0, maximumFractionDigits: 2 }); }
     function label(key) { var p = key.split('-'); var m = T.months[+p[1] - 1]; return (nl ? m : m) + ' ' + p[0]; }
     api('/funding.json').then(function (d) {
       if (!d || d.schema !== 'tcp-funding/1') return;
