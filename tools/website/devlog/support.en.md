@@ -1,6 +1,7 @@
 ---
 title: Free means free: how support works
 date: 2026-11-09
+updated: 2026-11-09
 summary: TrueCombat: Platinum now has a support page and a Ko-fi. Why we added it, where the money goes, and the rules we set for ourselves so that supporting never changes how the game plays.
 image: img/map-snow.webp
 tag: Community
@@ -11,7 +12,9 @@ For anyone who wants to help with those costs, there is now a way. As of today, 
 
 ## Where the money goes
 
-Every contribution goes into the infrastructure that keeps the game online: the official servers, the master server, the website and the leaderboards. That is the whole list. Anything beyond the monthly costs is set aside for what comes next, such as more servers in more regions as the community grows.
+Running Platinum costs about €150 a month, which is also our goal on Ko-fi. That covers the official servers and the master server, the infrastructure behind the website, leaderboards and updates, the truecombat.eu domain, development time, and the tools the work needs next, such as a code-signing certificate for the installer.
+
+The money is spent in a fixed order. Running costs come first. Then we build a reserve of three months, so the servers stay up through a quiet month. Only after that does it go to development time and tools. After every month we publish what came in, what went out and what is left in reserve. You can find the full breakdown and the monthly report under [Where the money goes](support.html#where).
 
 ## The rules we set for ourselves
 
