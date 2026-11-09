@@ -34,7 +34,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=e6533fe664">
+<link rel="stylesheet" href="style.css?v=59a0958f8d">
 </head>
 <body>
 <!--nav-->
@@ -67,12 +67,12 @@
 <!--/nav-->
 
 <main id="top">
-<article class="post">
+<article class="post" data-post="installer">
   <header class="page-head post-head">
     <div class="head-art" style="--art: url(img/launcher.webp); --art-s: url(img/launcher-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog.html">All devlog posts</a>
-      <p class="post-meta"><span class="tag">Launcher</span><span class="state shipped">Shipped in v0.32.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span>Team Terminus</span></p>
+      <p class="post-meta"><span class="tag">Launcher</span><span class="state shipped">Shipped in v0.32.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="installer" hidden></span></p>
       <h1>One small installer, every version</h1>
       <p class="lede">Platinum used to be a zip of almost 800 MB. Now it is a 7 MB installer, a launcher that only downloads what changed, and a button that takes you back to any earlier release.</p>
     </div>
@@ -103,6 +103,17 @@
 <p>Before release we ran the full cycle on a real Windows PC, eight checks in total: a silent install, listing the releases, a fresh install of the game, switching to an older release and back, and uninstalling. Each run starts from empty folders and downloads the whole game, about three gigabytes, so nothing from a previous run can hide a problem.</p>
 <aside class="callout"><p>One honest note: the installer is not code-signed yet, so Windows SmartScreen can show a warning the first time you run it. Choose <strong>More info</strong>, then <strong>Run anyway</strong>. Always download the installer from this website or from our GitHub releases page.</p></aside>
       </div>
+      <div class="post-rate" data-rate="installer" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
       <div class="post-end">
         <p>Questions about this post? Ask the team on Discord.</p>
         <div class="news-tools">
@@ -125,7 +136,7 @@
       <article class="post-card" data-tag="Roadmap">
         <a class="post-art" href="devlog-whats-next.html" tabindex="-1" aria-hidden="true"><img src="img/media-map-vote-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>4 min read</span></p>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>4 min read</span><span class="post-stat" data-post-stat="whats-next" hidden></span></p>
           <h2><a href="devlog-whats-next.html">What we are working on next</a></h2>
           <p>With 0.34.0 out, here is an open look at the work lined up behind it: better online play, Discord pickups, one-click joining, and a set of new features built on a shared match record. Plans, not promises.</p>
           <a class="more" href="devlog-whats-next.html">Read the post</a>
@@ -134,7 +145,7 @@
       <article class="post-card" data-tag="Community">
         <a class="post-art" href="devlog-support.html" tabindex="-1" aria-hidden="true"><img src="img/map-snow-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-09">9 Nov 2026</time><span>3 min read</span></p>
+          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-09">9 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="support" hidden></span></p>
           <h2><a href="devlog-support.html">Free means free: how support works</a></h2>
           <p>TrueCombat: Platinum now has a support page and a Ko-fi. Why we added it, where the money goes, and the rules we set for ourselves so that supporting never changes how the game plays.</p>
           <a class="more" href="devlog-support.html">Read the post</a>
@@ -176,6 +187,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=8273971363"></script>
+<script src="js/site.js?v=ba6fcb9a73"></script>
 </body>
 </html>
