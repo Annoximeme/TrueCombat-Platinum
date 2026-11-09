@@ -26,6 +26,16 @@
     <author><name>Team Terminus</name></author>
   </entry>
   <entry>
+    <title>What the playtests told us</title>
+    <link href="https://truecombat.eu/devlog-playtest-fixes.html"/>
+    <id>https://truecombat.eu/devlog-playtest-fixes.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Roadmap"/>
+    <summary>Our latest community playtests turned up a clear list of problems, led by gunplay. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>The official servers now run on Linux</title>
     <link href="https://truecombat.eu/devlog-linux-servers.html"/>
     <id>https://truecombat.eu/devlog-linux-servers.html</id>
