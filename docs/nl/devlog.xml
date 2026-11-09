@@ -4,7 +4,37 @@
   <link href="https://truecombat.eu/nl/devlog.html"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog.html</id>
-  <updated>2026-11-08T12:00:00Z</updated>
+  <updated>2026-11-09T12:00:00Z</updated>
+  <entry>
+    <title>Waar we hierna aan werken</title>
+    <link href="https://truecombat.eu/nl/devlog-whats-next.html"/>
+    <id>https://truecombat.eu/nl/devlog-whats-next.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Roadmap"/>
+    <summary>Nu 0.34.0 uit is, een open blik op het werk dat erachter klaarstaat: beter online spelen, pick-ups via Discord, met één klik meedoen en een reeks nieuwe functies op basis van een gedeeld matchverslag. Plannen, geen beloftes.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Gratis is gratis: zo werkt steunen</title>
+    <link href="https://truecombat.eu/nl/devlog-support.html"/>
+    <id>https://truecombat.eu/nl/devlog-support.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Community"/>
+    <summary>TrueCombat: Platinum heeft nu een steunpagina en een Ko-fi. Waarom we die toevoegden, waar het geld naartoe gaat en de regels die we onszelf oplegden, zodat steunen nooit verandert hoe het spel speelt.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>De officiële servers draaien nu op Linux</title>
+    <link href="https://truecombat.eu/nl/devlog-linux-servers.html"/>
+    <id>https://truecombat.eu/nl/devlog-linux-servers.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Servers"/>
+    <summary>Beide officiële servers zijn overgestapt op een native Linux-versie van de 0.34.0-server. Wat dat betekent voor je matches, waarom we het deden en hoe we ervoor zorgden dat we het binnen enkele seconden konden terugdraaien.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Nieuw licht voor oude maps</title>
     <link href="https://truecombat.eu/nl/devlog-ultra-visuals.html"/>
@@ -40,7 +70,7 @@
     <link href="https://truecombat.eu/nl/devlog-one-update.html"/>
     <id>https://truecombat.eu/nl/devlog-one-update.html</id>
     <published>2026-11-08T12:00:00Z</published>
-    <updated>2026-11-08T12:00:00Z</updated>
+    <updated>2026-11-09T12:00:00Z</updated>
     <category term="Testen"/>
     <summary>De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste testpoort eruitzag.</summary>
     <author><name>Team Terminus</name></author>
