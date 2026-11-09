@@ -770,6 +770,67 @@ def studio_devlog(lang, posts):
     return "<!--studio-devlog-->\n    <div class=\"post-list post-trio\">\n" + post_cards(lang, posts[:3], h="h3") + "\n    </div>\n<!--/studio-devlog-->"
 
 
+
+# ---------------------------------------------------------------- support / transparency
+MONTHS = {"en": "January February March April May June July August September October November December".split(),
+          "nl": "januari februari maart april mei juni juli augustus september oktober november december".split()}
+FUND_T = {
+    "en": {"eyebrow": "Where the money goes", "h2": "Every euro, accounted for",
+           "lede": "Running TrueCombat: Platinum costs about <b>&euro;%d a month</b>. That is also our monthly goal on Ko-fi. This is exactly what it covers.",
+           "order_h": "In this order", "order": ["Running costs come first: servers, infrastructure and the domain.", "Then a reserve of three months of running costs, so the servers stay up through a quiet month.", "Only then development time and tools."],
+           "report_h": "Monthly report", "report_lede": "After every month we publish what came in, what went out and what is left in reserve.",
+           "first": "The first report is published in %s.", "month": "Month", "in": "Received", "out": "Spent", "reserve": "Reserve",
+           "goal": "Monthly goal"},
+    "nl": {"eyebrow": "Waar het geld naartoe gaat", "h2": "Elke euro verantwoord",
+           "lede": "TrueCombat: Platinum draaiende houden kost ongeveer <b>&euro;%d per maand</b>. Dat is ook ons maanddoel op Ko-fi. Dit is precies wat het dekt.",
+           "order_h": "In deze volgorde", "order": ["Eerst de vaste kosten: servers, infrastructuur en het domein.", "Dan een reserve van drie maanden vaste kosten, zodat de servers ook in een rustige maand online blijven.", "Pas daarna ontwikkeltijd en tools."],
+           "report_h": "Maandverslag", "report_lede": "Na elke maand publiceren we wat er binnenkwam, wat er uitging en wat er in reserve blijft.",
+           "first": "Het eerste verslag verschijnt %s.", "month": "Maand", "in": "Ontvangen", "out": "Uitgegeven", "reserve": "Reserve",
+           "goal": "Maanddoel"},
+}
+
+
+def eur(n):
+    return "&euro;{:,}".format(int(round(n))).replace(",", ".")
+
+
+def support_funding(lang):
+    import html as H
+    d = json.loads((HERE / "funding.json").read_text(encoding="utf-8"))
+    T = FUND_T[lang]
+    covers = "\n".join('      <li><h3>%s</h3><p>%s</p></li>' % (H.escape(c[lang][0]), H.escape(c[lang][1])) for c in d["covers"])
+    order = "".join("<li>%s</li>" % o for o in T["order"])
+    if d["months"]:
+        rows, reserve = [], 0
+        for m in d["months"]:
+            y, mo = m["month"].split("-")
+            reserve += m["received"] - m["spent"]
+            rows.append("<tr><td>%s %s</td><td>%s</td><td>%s</td><td>%s</td></tr>" % (MONTHS[lang][int(mo) - 1].capitalize(), y, eur(m["received"]), eur(m["spent"]), eur(reserve)))
+        report = ('<div class="table-scroll"><table class="fund-table"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr></thead><tbody>%s</tbody></table></div>'
+                  % (T["month"], T["in"], T["out"], T["reserve"], "".join(reversed(rows))))
+    else:
+        report = '<p class="fund-empty">%s</p>' % (T["first"] % d["first_report"][lang])
+    return f"""<!--support-funding-->
+<section class="band band-alt" id="where">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">{T['eyebrow']}</span>
+      <h2>{T['h2']}</h2>
+      <p class="lede">{T['lede'] % d['goal']}</p>
+    </div>
+    <div class="fund-goal"><span>{T['goal']}</span><b>{eur(d['goal'])}</b></div>
+    <ul class="fund-covers">
+{covers}
+    </ul>
+    <div class="fund-split">
+      <div><h3>{T['order_h']}</h3><ol class="fund-order">{order}</ol></div>
+      <div><h3>{T['report_h']}</h3><p>{T['report_lede']}</p>{report}</div>
+    </div>
+  </div>
+</section>
+<!--/support-funding-->"""
+
+
 # ---------------------------------------------------------------- Dutch
 ASSET = re.compile(r"(?<=[\s\"'(,])(img|js|press)/")
 
@@ -854,6 +915,8 @@ def main():
             en = put(en, "studio-releases", studio_releases("en", "v" + latest_version()), path)
             en = put(en, "studio-devlog", studio_devlog("en", devlog_posts("en")), path)
             en = put(en, "studio-workshop", studio_workshop("en", "v" + latest_version()), path)
+        if page == "support":
+            en = put(en, "support-funding", support_funding("en"), path)
         src = en
         en = put(en, "nav", nav("en", page), path)
         en = put(en, "footer", footer("en"), path)
@@ -876,6 +939,8 @@ def main():
             du = put(du, "studio-releases", studio_releases("nl", "v" + latest_version()), path)
             du = put(du, "studio-devlog", studio_devlog("nl", devlog_posts("nl")), path)
             du = put(du, "studio-workshop", studio_workshop("nl", "v" + latest_version()), path)
+        if page == "support":
+            du = put(du, "support-funding", support_funding("nl"), path)
         du = to_dutch(page, du)
         du = put(du, "nav", nav("nl", page), path)
         du = put(du, "footer", footer("nl"), path)

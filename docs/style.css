@@ -1255,3 +1255,23 @@ html { scrollbar-color: #2e3747 var(--bg); }
 @media (min-width: 901px) and (max-width: 1440px) { .nav-support { padding: 0 10px; gap: 6px; font-size: .8rem; letter-spacing: .06em; } .nav-links { gap: 12px; } .nav-brand { flex: none; } }
 @media (max-width: 440px) { .nav-lang { display: none; } }
 @media (max-width: 380px) { .nav-brand b { display: none; } }
+/* support: transparency */
+.fund-goal { display: inline-flex; align-items: baseline; gap: 14px; margin: 0 0 22px; padding: 14px 20px; border: 1px solid rgba(231,167,60,.45); border-radius: 8px; background: rgba(231,167,60,.07); }
+.fund-goal span { font: 600 .8rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.fund-goal b { font: 700 2rem/1 var(--f-display); color: var(--amber); }
+.fund-covers { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.fund-covers li { padding: 20px 18px; background: var(--panel); border: 1px solid var(--line); border-top: 2px solid var(--amber); border-radius: 8px; }
+.fund-covers h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.fund-covers p { margin: 0; color: var(--muted); font-size: .92rem; }
+.fund-split { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 32px; }
+.fund-split h3 { margin: 0 0 10px; }
+.fund-split p { color: var(--muted); margin: 0 0 12px; }
+.fund-order { margin: 0; padding-left: 1.3em; color: var(--muted); display: grid; gap: 8px; }
+.fund-order li::marker { color: var(--amber); font-weight: 700; }
+.fund-empty { padding: 14px 18px; border: 1px dashed var(--line); border-radius: 8px; }
+.fund-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.fund-table th, .fund-table td { text-align: right; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.fund-table th:first-child, .fund-table td:first-child { text-align: left; }
+.fund-table th { font: 600 .78rem/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 1000px) { .fund-covers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fund-split { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .fund-covers { grid-template-columns: 1fr; } }
