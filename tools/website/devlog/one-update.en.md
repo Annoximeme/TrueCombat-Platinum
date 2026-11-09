@@ -5,6 +5,7 @@ summary: The next update was built by ten separate efforts at the same time. How
 image: img/media-village-yard.webp
 tag: Testing
 version: 0.34.0
+updated: 2026-11-09
 ---
 The update now in testing is the broadest one Platinum has had. A redesigned launcher, a Custom graphics preset, a new in-game Graphics page, weapon and view motion, voice commands, camouflage, climbing sounds, ultrawide support, Discord Rich Presence, a quality-of-life pass with votes, radio, demos and loadout presets, and server-side work for team balance, AFK handling and reports. Each of those came from its own line of work, developed and tested on its own copy of the game.
 
@@ -33,5 +34,7 @@ Easy Anti-Cheat was planned for this update. The code builds and most of the che
 Once everything is merged, the real candidate build is tested as a whole: seventeen automated match scenarios on DirectX 12 and OpenGL, with bots, on the official maps, covering combat, objectives, team play, settings changes and restarts, plus the launcher's own install and update tests and the graphics preset checks. A release only goes out when that run is green. If a single scenario fails, it is investigated, not re-run until it passes.
 
 One scenario kept us busy today. A movement-speed check compares two speed settings and expects a ratio of at least 1.2. Three separate test runs measured 1.19. None of the changes in those runs touched movement, and the same check has flickered before, so the threshold is being reviewed rather than the game. It is a reminder that the test harness needs maintenance too.
+
+**Update, 9 November.** The cause turned out to be in the test, not the game. The check started its stopwatch when it sent the command to move, not when the player actually started moving. On a slow start, it counted up to a second of standing still as part of the run, which dragged the average down. The server's own measurements showed the full speed difference all along. The check now times from the first moment the player moves. Recalculated with that fix, every earlier run lands between 1.48 and 1.54, the threshold stayed where it was, and the full seventeen-scenario run passed before 0.34.0 was released.
 
 If you play the update and something feels wrong, tell us on Discord with the map and the moment. Every piece of this update started as exactly that kind of note.
