@@ -791,7 +791,8 @@ FUND_T = {
 
 
 def eur(n):
-    return "&euro;{:,}".format(int(round(n))).replace(",", ".")
+    s = "&euro;{:,}".format(abs(int(round(n)))).replace(",", ".")
+    return ("&minus;" + s) if n < 0 else s
 
 
 def support_funding(lang):
