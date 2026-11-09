@@ -330,6 +330,56 @@
    "en": "Matchmaking through a Discord pickup queue",
    "nl": "Matchmaking via een Discord-pickupwachtrij",
    "version": null
+  },
+  {
+   "en": "Gunplay pass: hits at range, aim point, spread and damage",
+   "nl": "Gunplaycontrole: treffers op afstand, richtpunt, spreiding en schade",
+   "version": null
+  },
+  {
+   "en": "Movement and sound pass: jump distance, crouch-walking, footsteps and weapon sounds",
+   "nl": "Beweging en geluid rechtgezet: springafstand, gehurkt lopen, voetstappen en wapengeluiden",
+   "version": null
+  },
+  {
+   "en": "Map audit: invisible walls and textures on every map",
+   "nl": "Controle van alle maps: onzichtbare muren en textures",
+   "version": null
+  },
+  {
+   "en": "Settings in the in-game pause menu and a reworked warm-up",
+   "nl": "Instellingen in het pauzemenu en een vernieuwde opwarmfase",
+   "version": null
+  },
+  {
+   "en": "Bots that aim down sights, lean and vary their routes",
+   "nl": "Bots die via het vizier richten, leunen en andere routes nemen",
+   "version": null
+  },
+  {
+   "en": "In-game bug reports",
+   "nl": "Bugmeldingen in het spel",
+   "version": null
+  },
+  {
+   "en": "Connection quality on the scoreboard and one-click join",
+   "nl": "Verbindingskwaliteit op het scorebord en met één klik meedoen",
+   "version": null
+  },
+  {
+   "en": "Location-aware pings",
+   "nl": "Pings met locatie",
+   "version": null
+  },
+  {
+   "en": "2D match replays, heatmaps and a post-match coach",
+   "nl": "2D-replays van matches, heatmaps en een coach na de match",
+   "version": null
+  },
+  {
+   "en": "Friends, parties, weekly contracts and seasons",
+   "nl": "Vrienden, party's, wekelijkse contracten en seizoenen",
+   "version": null
   }
  ]
 }
