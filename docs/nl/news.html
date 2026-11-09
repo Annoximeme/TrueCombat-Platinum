@@ -83,8 +83,59 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.33.0" data-ver="v0.33.0" open>
-        <summary><span class="ver">v0.33.0<span class="latest">Nieuwste</span></span><span class="sum">Our biggest visual update yet. The new Ultra preset brings modern lighting, real surface materials and real-time sun shadows to every map on DirectX 12, with NVIDIA Frame Generation for RTX 40-series cards. Gunfire now leaves its mark on the world, first-person combat has been rebuilt around the original animations, ledge climbing returns, and bots fight smarter and work as a team.</span><span class="meta">#54 · 0.33.0-sandbox24 · 8 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.34.0" data-ver="v0.34.0" open>
+        <summary><span class="ver">v0.34.0<span class="latest">Nieuwste</span></span><span class="sum">A redesigned launcher, a Custom graphics preset, weapons that feel alive, the original voice commands, ultrawide support, Discord Rich Presence and a long list of quality-of-life features. Update through the launcher; the new launcher installs itself first.</span><span class="meta">#55 · 0.34.0-sandbox25 · 9 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Launcher 1.4.0</h3><ul>
+            <li>A complete visual redesign in the TrueCombat.eu style, with a Launcher update button.</li>
+            <li>Quick Play finds the best server for you, and the server browser gets filters.</li>
+            <li>Profile &amp; demos page with identity backup.</li>
+            <li>The Hosting dialog now fits smaller screens.</li>
+          </ul></section>
+          <section><h3>Graphics</h3><ul>
+            <li>New Custom graphics preset: pick Low, High, Ultra or Custom and turn every graphics option on or off, in the launcher and on the new in-game Graphics page.</li>
+            <li>Ultrawide support: 21:9 and 32:9 screens now get a wider field of view instead of a zoomed-in picture, and the HUD stays in a comfortable centred area (cg_hudAspect).</li>
+            <li>Fixed taking a screenshot on very high resolution screens, such as 5120x1440, disconnecting you from the game.</li>
+          </ul></section>
+          <section><h3>Weapons and movement</h3><ul>
+            <li>Weapons and movement feel alive: view and weapon bob, sway and recoil kick, sprint, crawl and ladder weapon poses, smooth stance changes, ejected shell casings, gear worn on the back, heartbeat and scope breathing.</li>
+            <li>The original fall damage is back (server option g_fallDamage).</li>
+            <li>The original ledge climbing sounds.</li>
+            <li>Original camouflage on soldier models and first-person sleeves.</li>
+            <li>Bullet impact effects can be switched off (cg_impactEffects).</li>
+          </ul></section>
+          <section><h3>Voice commands</h3><ul>
+            <li>The original TC:E voice commands return: vsay, vsay_team and vsay_buddy, with the original voices and text. Server hosts can limit them with g_voiceChatsAllowed.</li>
+          </ul></section>
+          <section><h3>Quality of life</h3><ul>
+            <li>Killed-by card and damage direction indicator.</li>
+            <li>Player votes, quick radio, mute and chat history.</li>
+            <li>Automatic demos, loadout presets and a separate scope sensitivity.</li>
+            <li>Optional hit feedback (always off on Ranked).</li>
+            <li>Accessibility options and practice tools (g_practice 1).</li>
+            <li>A modern new in-game font.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Discord Rich Presence: your Discord profile now shows the server, mode, map and live score, and friends can join your match straight from Discord. Turn it off with cl_discord 0, or hide match details with cl_discordPrivate 1.</li>
+            <li>Skill-based team balance from player ratings (g_balanceSkill), and spectators are no longer pulled into teams.</li>
+            <li>Away-from-keyboard players are moved to spectators after two minutes (g_afkTime), never in competitive matches.</li>
+            <li>/report a player from the console; reports reach the staff.</li>
+            <li>Server-side demo recording (sv_autoDemo) and a faster bot start on every map.</li>
+            <li>Bomb servers now report the correct mode name.</li>
+          </ul></section>
+          <section><h3>Servers</h3><ul>
+            <li>Server hosts: a native Linux dedicated server kit is now built for every release and attached to it on GitHub shortly after publication.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is built and nearly through testing. It ships in the next update.</li>
+            <li>Coming next: shadows from muzzle flashes and explosions, and a Discord pickup queue.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.34.0-sandbox25">GitHub ↗</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.33.0" data-ver="v0.33.0">
+        <summary><span class="ver">v0.33.0</span><span class="sum">Our biggest visual update yet. The new Ultra preset brings modern lighting, real surface materials and real-time sun shadows to every map on DirectX 12, with NVIDIA Frame Generation for RTX 40-series cards. Gunfire now leaves its mark on the world, first-person combat has been rebuilt around the original animations, ledge climbing returns, and bots fight smarter and work as a team.</span><span class="meta">#54 · 0.33.0-sandbox24 · 8 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Ultra visuals (directx 12)</h3><ul>
             <li>New Ultra graphics preset in the launcher.</li>

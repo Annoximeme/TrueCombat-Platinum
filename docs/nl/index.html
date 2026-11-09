@@ -82,9 +82,9 @@
     <h1><span class="nw">TrueCombat: Elite,</span> opnieuw gebouwd voor <em>modern Windows</em>.</h1>
     <p class="lede">De klassieke tactische shooter, opnieuw gebouwd als native 64-bit game met een DirectX 12-renderer. De originele maps, soldaten en HUD, en een launcher die je servers host en het spel up-to-date houdt.</p>
     <div class="hero-cta">
-      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.33.0-sandbox24/TrueCombat-Platinum-Setup.exe">
+      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.34.0-sandbox25/TrueCombat-Platinum-Setup.exe">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
-        <span class="stack"><span class="big">Download <span data-version>v0.33.0</span></span><span class="small"><span data-kind="long">Windows-installatieprogramma</span> · <span data-size>7 MB</span> · gratis</span></span>
+        <span class="stack"><span class="big">Download <span data-version>v0.34.0</span></span><span class="small"><span data-kind="long">Windows-installatieprogramma</span> · <span data-size>8 MB</span> · gratis</span></span>
       </a>
       <a class="btn btn-ghost" href="#patch-notes">Wat is er nieuw</a>
     </div>
@@ -331,8 +331,58 @@
     </div>
     <div class="notes" data-releases="5">
 <!--releases-->
-      <details class="release" id="v0.33.0" data-ver="v0.33.0" open>
-        <summary><span class="ver">v0.33.0<span class="latest">Nieuwste</span></span><span class="sum">Our biggest visual update yet. The new Ultra preset brings modern lighting, real surface materials and real-time sun shadows to every map on DirectX 12, with NVIDIA Frame Generation for RTX 40-series cards. Gunfire now leaves its mark on the world, first-person combat has been rebuilt around the original animations, ledge climbing returns, and bots fight smarter and work as a team.</span><span class="meta">#54 · 0.33.0-sandbox24 · 8 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.34.0" data-ver="v0.34.0" open>
+        <summary><span class="ver">v0.34.0<span class="latest">Nieuwste</span></span><span class="sum">A redesigned launcher, a Custom graphics preset, weapons that feel alive, the original voice commands, ultrawide support, Discord Rich Presence and a long list of quality-of-life features. Update through the launcher; the new launcher installs itself first.</span><span class="meta">#55 · 0.34.0-sandbox25 · 9 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Launcher 1.4.0</h3><ul>
+            <li>A complete visual redesign in the TrueCombat.eu style, with a Launcher update button.</li>
+            <li>Quick Play finds the best server for you, and the server browser gets filters.</li>
+            <li>Profile &amp; demos page with identity backup.</li>
+            <li>The Hosting dialog now fits smaller screens.</li>
+          </ul></section>
+          <section><h3>Graphics</h3><ul>
+            <li>New Custom graphics preset: pick Low, High, Ultra or Custom and turn every graphics option on or off, in the launcher and on the new in-game Graphics page.</li>
+            <li>Ultrawide support: 21:9 and 32:9 screens now get a wider field of view instead of a zoomed-in picture, and the HUD stays in a comfortable centred area (cg_hudAspect).</li>
+            <li>Fixed taking a screenshot on very high resolution screens, such as 5120x1440, disconnecting you from the game.</li>
+          </ul></section>
+          <section><h3>Weapons and movement</h3><ul>
+            <li>Weapons and movement feel alive: view and weapon bob, sway and recoil kick, sprint, crawl and ladder weapon poses, smooth stance changes, ejected shell casings, gear worn on the back, heartbeat and scope breathing.</li>
+            <li>The original fall damage is back (server option g_fallDamage).</li>
+            <li>The original ledge climbing sounds.</li>
+            <li>Original camouflage on soldier models and first-person sleeves.</li>
+            <li>Bullet impact effects can be switched off (cg_impactEffects).</li>
+          </ul></section>
+          <section><h3>Voice commands</h3><ul>
+            <li>The original TC:E voice commands return: vsay, vsay_team and vsay_buddy, with the original voices and text. Server hosts can limit them with g_voiceChatsAllowed.</li>
+          </ul></section>
+          <section><h3>Quality of life</h3><ul>
+            <li>Killed-by card and damage direction indicator.</li>
+            <li>Player votes, quick radio, mute and chat history.</li>
+            <li>Automatic demos, loadout presets and a separate scope sensitivity.</li>
+            <li>Optional hit feedback (always off on Ranked).</li>
+            <li>Accessibility options and practice tools (g_practice 1).</li>
+            <li>A modern new in-game font.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Discord Rich Presence: your Discord profile now shows the server, mode, map and live score, and friends can join your match straight from Discord. Turn it off with cl_discord 0, or hide match details with cl_discordPrivate 1.</li>
+            <li>Skill-based team balance from player ratings (g_balanceSkill), and spectators are no longer pulled into teams.</li>
+            <li>Away-from-keyboard players are moved to spectators after two minutes (g_afkTime), never in competitive matches.</li>
+            <li>/report a player from the console; reports reach the staff.</li>
+            <li>Server-side demo recording (sv_autoDemo) and a faster bot start on every map.</li>
+            <li>Bomb servers now report the correct mode name.</li>
+          </ul></section>
+          <section><h3>Servers</h3><ul>
+            <li>Server hosts: a native Linux dedicated server kit is now built for every release and attached to it on GitHub shortly after publication.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is built and nearly through testing. It ships in the next update.</li>
+            <li>Coming next: shadows from muzzle flashes and explosions, and a Discord pickup queue.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" id="v0.33.0" data-ver="v0.33.0">
+        <summary><span class="ver">v0.33.0</span><span class="sum">Our biggest visual update yet. The new Ultra preset brings modern lighting, real surface materials and real-time sun shadows to every map on DirectX 12, with NVIDIA Frame Generation for RTX 40-series cards. Gunfire now leaves its mark on the world, first-person combat has been rebuilt around the original animations, ledge climbing returns, and bots fight smarter and work as a team.</span><span class="meta">#54 · 0.33.0-sandbox24 · 8 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Ultra visuals (directx 12)</h3><ul>
             <li>New Ultra graphics preset in the launcher.</li>
@@ -550,33 +600,6 @@
           </ul></section>
         </div>
       </details>
-
-      <details class="release" id="v0.28.0" data-ver="v0.28.0">
-        <summary><span class="ver">v0.28.0</span><span class="sum">It brings the restyled launcher with a built-in update bar, optional DLSS/DLAA, steadier startup and a new connection version.</span><span class="meta">#49 · 0.28.0-sandbox19 · 5 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
-        <div class="body">
-          <section><h3>Launcher</h3><ul>
-            <li>New title bar that blends into the artwork, with the game emblem, your version and window buttons that match the rest of the launcher.</li>
-            <li>New update bar above the PLAY button. It shows your version, checks for new versions, downloads and verifies them, and installs them on restart. Your settings, profile and server data are kept. It checks the official TrueCombat: Platinum releases on GitHub each time the launcher opens.</li>
-            <li>Servers &amp; hosting, Advanced graphics and the graphics report now have proper headers and grouped panels.</li>
-            <li>Smoother corners, soft shadows, icons on the section headings and clearer drop-down lists.</li>
-            <li>Text stays sharp when the launcher window is resized.</li>
-            <li>The Advanced graphics window no longer cuts off its notes and buttons.</li>
-          </ul></section>
-          <section><h3>Graphics</h3><ul>
-            <li>Added optional NVIDIA DLSS and DLAA for RTX graphics cards. It is off by default. Enter r_dx12Dlss 1 in the console for DLAA, or 2 to 5 for the DLSS quality levels, then vid_restart.</li>
-            <li>The game now recovers more gracefully when a graphics renderer fails to start.</li>
-          </ul></section>
-          <section><h3>Multiplayer</h3><ul>
-            <li>New connection version. Version 0.28.0 cannot join 0.27.0 or older servers, and older versions cannot join 0.28.0 servers.</li>
-            <li>A clear message now explains when your game and the server do not match.</li>
-          </ul></section>
-          <section><h3>Known issues</h3><ul>
-            <li>Still unfinished: recoil, spread, penetration, leaning, ladders, swimming, aiming down sights and the original round rules.</li>
-            <li>Tested on one PC over local connections. Separate PCs and the internet are not verified yet.</li>
-            <li>Use the separate RC8 download for complete TC:E matches.</li>
-          </ul></section>
-        </div>
-      </details>
 <!--/releases-->
     </div>
     <p class="all-notes">Elke update staat op de <a href="news.html">nieuwspagina</a>, met een <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">RSS-feed</a>. Downloads staan op <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">GitHub Releases</a>. De patchnotes zelf zijn in het Engels.</p>
@@ -592,25 +615,8 @@
     <!--roadmap-->
     <div class="road">
       <div class="road-col done">
-        <h3>Nu speelbaar <small data-version>v0.33.0</small></h3>
+        <h3>Nu speelbaar <small data-version>v0.34.0</small></h3>
         <ul>
-          <li>Klimmen op randen en originele animaties in eerste persoon</li>
-          <li>Pauzemenu in het spel onder Esc</li>
-          <li>Frametijdgrafiek om de prestaties af te stellen</li>
-          <li>Realtime zonneschaduwen en oppervlaktematerialen op Ultra</li>
-          <li>NVIDIA DLSS Frame Generation en Reflex</li>
-          <li>Originele kogelinslagen en het geluid van rakelingse kogels</li>
-          <li>Scherper richten, bewegen en samenwerken voor bots</li>
-          <li>Launcher met een eigen versie en eigen updates</li>
-        </ul>
-      </div>
-      <div class="road-col next">
-        <h3>Hierna <small>v0.34</small></h3>
-        <ul>
-          <li>Een aangepaste grafische preset waarin elke optie aan of uit kan</li>
-          <li>Wapen- en kijkbeweging, hulzen en uitrusting op de rug</li>
-          <li>De originele valschade</li>
-          <li>Originele camouflage en klimgeluiden</li>
           <li>Killed-by-kaart, schaderichting, spelersstemmingen en snelle radio</li>
           <li>Loadout-presets, automatische demo&#x27;s en toegankelijkheidsopties</li>
           <li>Hor+ gezichtsveld en een gecentreerde HUD op 21:9 en 32:9</li>
@@ -645,9 +651,9 @@
         <li><span><b>De launcher doet de rest.</b> Hij downloadt de game, controleert elk bestand en houdt alles actueel. Updates halen alleen de gewijzigde bestanden op.</span></li>
       </ol>
       <div class="hero-cta">
-        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.33.0-sandbox24/TrueCombat-Platinum-Setup.exe">
+        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.34.0-sandbox25/TrueCombat-Platinum-Setup.exe">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="stack"><span class="big">Download <span data-version>v0.33.0</span></span><span class="small"><span data-kind="short">Installatieprogramma</span> · <span data-size>7 MB</span> · <span data-date>8 nov 2026</span></span></span>
+          <span class="stack"><span class="big">Download <span data-version>v0.34.0</span></span><span class="small"><span data-kind="short">Installatieprogramma</span> · <span data-size>8 MB</span> · <span data-date>9 nov 2026</span></span></span>
         </a>
         <a class="btn btn-ghost" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Alle releases</a>
       </div>
