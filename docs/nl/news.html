@@ -84,8 +84,27 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.34.0" data-ver="v0.34.0" open>
-        <summary><span class="ver">v0.34.0<span class="latest">Nieuwste</span></span><span class="sum">A redesigned launcher, a Custom graphics preset, weapons that feel alive, the original voice commands, ultrawide support, Discord Rich Presence and a long list of quality-of-life features. Update through the launcher; the new launcher installs itself first.</span><span class="meta">#55 · 0.34.0-sandbox25 · 9 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.34.1" data-ver="v0.34.1" open>
+        <summary><span class="ver">v0.34.1<span class="latest">Nieuwste</span></span><span class="sum">Instant replay clips, a per-life damage report, fairer teams in long matches and a fix for offline bot matches. Update through the launcher.</span><span class="meta">#56 · 0.34.1-sandbox26 · 9 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>New</h3><ul>
+            <li>Instant replay: press F8 (or type /clip) to save the last 30 seconds of play as a clip in demos/clips. Watch it with /demo clips/&lt;name&gt;. Clip length is set with cl_replaySeconds; cl_replay 0 turns the feature off.</li>
+            <li>Damage report: when you die, a DAMAGE THIS LIFE panel under the killed-by card shows the damage you dealt to and took from each opponent. Survive a round and you get the ROUND DAMAGE summary instead. Turn it off with cg_damageReport 0; server hosts can disable it with g_damageReport 0.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Team balance during the match: in Team Deathmatch and Flag Capture, when one team is two or more players larger for 15 seconds, one player on the bigger team is moved while waiting to respawn. Each player is moved at most once every five minutes, and never during competitive matches. Server hosts: g_autoBalance and g_autoBalanceDelay.</li>
+            <li>Fill-in players: when someone leaves a match that is under way, the server now reports the open place to server lists. Players who join the short team are thanked and cannot lose rating in that match. Server hosts: g_backfill and g_backfillTime.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Fixed offline bot matches appearing to freeze after two minutes: the away-from-keyboard check moved you to spectator. It now only runs on dedicated servers.</li>
+            <li>DLSS Frame Generation: added safeguards that switch it off for the rest of the session if it starts toggling on and off or a frame takes longer than one second to appear. If the game still freezes with Frame Generation on, turn it off in Options and report it.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.34.1-sandbox26">GitHub ↗</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.34.0" data-ver="v0.34.0">
+        <summary><span class="ver">v0.34.0</span><span class="sum">A redesigned launcher, a Custom graphics preset, weapons that feel alive, the original voice commands, ultrawide support, Discord Rich Presence and a long list of quality-of-life features. Update through the launcher; the new launcher installs itself first.</span><span class="meta">#55 · 0.34.0-sandbox25 · 9 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Launcher 1.4.0</h3><ul>
             <li>A complete visual redesign in the TrueCombat.eu style, with a Launcher update button.</li>
