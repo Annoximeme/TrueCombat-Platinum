@@ -25,6 +25,7 @@ version: 0.33.0
   (the Website workflow runs on every release) turns it into "Shipped in vX.Y.Z" by itself, so a post
   about upcoming work never claims a release that has not happened.
 - `updated: YYYY-MM-DD` is optional, for a post that was revised later.
+- `time: HH:MM` is optional. Posts from the same day are listed newest time first (no time counts as 00:00).
 
 ## Body
 
