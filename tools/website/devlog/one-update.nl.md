@@ -5,6 +5,7 @@ summary: De volgende update is tegelijk door tien losse inspanningen gebouwd. Ho
 image: img/media-village-yard.webp
 tag: Testen
 version: 0.34.0
+updated: 2026-11-09
 ---
 De update die nu in test is, is de breedste die Platinum tot nu toe heeft gehad. Een vernieuwde launcher, een aangepaste grafische preset, een nieuwe Graphics-pagina in het spel, wapen- en kijkbeweging, spraakcommando's, camouflage, klimgeluiden, ondersteuning voor ultrawide, Discord Rich Presence, een reeks verbeteringen met stemmingen, radio, demo's en loadout-presets, en serverwerk voor teambalans, AFK-afhandeling en meldingen. Elk daarvan komt uit een eigen lijn van werk, ontwikkeld en getest op een eigen kopie van het spel.
 
@@ -33,5 +34,7 @@ Easy Anti-Cheat stond gepland voor deze update. De code bouwt en de meeste contr
 Zodra alles is samengevoegd, wordt de echte kandidaatbuild als geheel getest: zeventien geautomatiseerde wedstrijdscenario's op DirectX 12 en OpenGL, met bots, op de officiële maps, met gevechten, doelen, teamspel, instellingswijzigingen en herstarts, plus de eigen installatie- en updatetests van de launcher en de controles van de grafische presets. Een release gaat pas uit als die run groen is. Faalt één scenario, dan wordt dat onderzocht, niet opnieuw gedraaid tot het slaagt.
 
 Eén scenario hield ons vandaag bezig. Een controle op bewegingssnelheid vergelijkt twee snelheidsinstellingen en verwacht een verhouding van minstens 1,2. Drie afzonderlijke testruns maten 1,19. Geen van de wijzigingen in die runs raakte de beweging, en dezelfde controle heeft eerder geflikkerd, dus wordt de drempel herzien en niet het spel. Het is een herinnering dat ook de testomgeving onderhoud nodig heeft.
+
+**Update, 9 november.** De oorzaak bleek in de test te zitten, niet in het spel. De controle startte de stopwatch zodra het commando om te bewegen werd gestuurd, niet op het moment dat de speler echt in beweging kwam. Bij een trage start telde ze tot een seconde stilstaan mee, en dat trok het gemiddelde omlaag. De metingen van de server zelf lieten het volledige snelheidsverschil steeds zien. De controle meet nu vanaf het eerste moment dat de speler beweegt. Opnieuw berekend met die correctie komen alle eerdere runs uit tussen 1,48 en 1,54, de drempel bleef staan, en de volledige run van zeventien scenario's slaagde voordat 0.34.0 werd uitgebracht.
 
 Speel je de update en voelt er iets verkeerd, zeg het ons dan op Discord met de map en het moment. Elk stuk van deze update begon als precies zo'n bericht.

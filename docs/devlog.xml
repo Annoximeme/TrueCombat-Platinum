@@ -4,7 +4,37 @@
   <link href="https://truecombat.eu/devlog.html"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog.html</id>
-  <updated>2026-11-08T12:00:00Z</updated>
+  <updated>2026-11-09T12:00:00Z</updated>
+  <entry>
+    <title>What we are working on next</title>
+    <link href="https://truecombat.eu/devlog-whats-next.html"/>
+    <id>https://truecombat.eu/devlog-whats-next.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Roadmap"/>
+    <summary>With 0.34.0 out, here is an open look at the work lined up behind it: better online play, Discord pickups, one-click joining, and a set of new features built on a shared match record. Plans, not promises.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>Free means free: how support works</title>
+    <link href="https://truecombat.eu/devlog-support.html"/>
+    <id>https://truecombat.eu/devlog-support.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Community"/>
+    <summary>TrueCombat: Platinum now has a support page and a Ko-fi. Why we added it, where the money goes, and the rules we set for ourselves so that supporting never changes how the game plays.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
+    <title>The official servers now run on Linux</title>
+    <link href="https://truecombat.eu/devlog-linux-servers.html"/>
+    <id>https://truecombat.eu/devlog-linux-servers.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Servers"/>
+    <summary>Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>New light for old maps</title>
     <link href="https://truecombat.eu/devlog-ultra-visuals.html"/>
@@ -40,7 +70,7 @@
     <link href="https://truecombat.eu/devlog-one-update.html"/>
     <id>https://truecombat.eu/devlog-one-update.html</id>
     <published>2026-11-08T12:00:00Z</published>
-    <updated>2026-11-08T12:00:00Z</updated>
+    <updated>2026-11-09T12:00:00Z</updated>
     <category term="Testing"/>
     <summary>The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.</summary>
     <author><name>Team Terminus</name></author>
