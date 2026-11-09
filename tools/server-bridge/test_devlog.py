@@ -53,6 +53,24 @@ class DevlogTest(unittest.TestCase):
         p = self.get("/devlog/stats.json", KEY)["posts"]["every-shot"]
         self.assertEqual((p["reads"], p["readers"], p["last30"][-1]), (3, 2, 2))
 
+    def test_finished_counts_once(self):
+        self.post("/devlog/read", {"slug": "every-shot"})
+        self.post("/devlog/done", {"slug": "every-shot"})
+        self.post("/devlog/done", {"slug": "every-shot"})
+        p = self.get("/devlog/stats.json", KEY)["posts"]["every-shot"]
+        self.assertEqual((p["readers"], p["finished"]), (1, 1))
+
+    def test_old_database_gets_the_finished_column(self):
+        import sqlite3
+        path = pathlib.Path(self.tmp.name) / "old.db"
+        db = sqlite3.connect(path)
+        db.execute("CREATE TABLE daily (day TEXT NOT NULL, slug TEXT NOT NULL, reads INTEGER NOT NULL DEFAULT 0, readers INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, slug))")
+        db.execute("INSERT INTO daily VALUES ('2026-11-09', 'installer', 3, 2)")
+        db.commit(); db.close()
+        st = tcp_devlog.Store(str(path))
+        self.assertEqual(st.stats()["posts"]["installer"]["finished"], 0)
+        st.db.close()
+
     def test_nothing_identifying_is_stored(self):
         self.post("/devlog/read", {"slug": "every-shot"})
         self.post("/devlog/rate", {"slug": "every-shot", "stars": 4})

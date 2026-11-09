@@ -7,6 +7,7 @@ readers can give a post one to five stars.
 
   POST /devlog/read      {"slug": "..."}                 count a read
   POST /devlog/rate      {"slug": "...", "stars": 1..5}  rate a post
+  POST /devlog/done      {"slug": "..."}                 the reader reached the end
   GET  /devlog/public.json   public figures (schema tcp-devlog/1): rating
                          averages once a post has --min-ratings ratings, and
                          read counts only when --public-reads is on
@@ -77,6 +78,9 @@ class Store:
             CREATE TABLE IF NOT EXISTS seen (h TEXT PRIMARY KEY);
             CREATE TABLE IF NOT EXISTS voted (h TEXT PRIMARY KEY, stars INTEGER NOT NULL);
         """)
+        cols = [r[1] for r in self.db.execute("PRAGMA table_info(daily)")]
+        if "finished" not in cols:  # added after the first release of this service
+            self.db.execute("ALTER TABLE daily ADD COLUMN finished INTEGER NOT NULL DEFAULT 0")
         self.db.commit()
         self.day, self.key = None, None
         self.roll()
@@ -111,6 +115,17 @@ class Store:
             new = self.db.execute("INSERT OR IGNORE INTO seen VALUES (?)", (self.tag(ip, slug, "r"),)).rowcount == 1
             self.db.execute("INSERT OR IGNORE INTO daily (day, slug) VALUES (?,?)", (self.day, slug))
             self.db.execute("UPDATE daily SET reads=reads+1, readers=readers+? WHERE day=? AND slug=?", (int(new), self.day, slug))
+            self.db.commit()
+            return new
+
+    def done(self, ip, slug):
+        """A reader reached the end of the post; counted once per reader per post per day."""
+        with self.lock:
+            self.roll()
+            new = self.db.execute("INSERT OR IGNORE INTO seen VALUES (?)", (self.tag(ip, slug, "d"),)).rowcount == 1
+            if new:
+                self.db.execute("INSERT OR IGNORE INTO daily (day, slug) VALUES (?,?)", (self.day, slug))
+                self.db.execute("UPDATE daily SET finished=finished+1 WHERE day=? AND slug=?", (self.day, slug))
             self.db.commit()
             return new
 
@@ -162,18 +177,18 @@ class Store:
         start = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days - 1)).strftime("%Y-%m-%d")
         with self.lock:
             ratings = self._ratings()
-            totals = self.db.execute("SELECT slug, SUM(reads), SUM(readers) FROM daily GROUP BY slug").fetchall()
+            totals = self.db.execute("SELECT slug, SUM(reads), SUM(readers), SUM(finished) FROM daily GROUP BY slug").fetchall()
             recent = self.db.execute("SELECT day, slug, readers FROM daily WHERE day>=? ORDER BY day", (start,)).fetchall()
         dates = [(dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days - 1 - i)).strftime("%Y-%m-%d") for i in range(days)]
         idx = {d: i for i, d in enumerate(dates)}
         posts = {}
-        for slug, reads, readers in totals:
-            posts[slug] = {"reads": reads or 0, "readers": readers or 0, "last30": [0] * days, "rating": None}
+        for slug, reads, readers, finished in totals:
+            posts[slug] = {"reads": reads or 0, "readers": readers or 0, "finished": finished or 0, "last30": [0] * days, "rating": None}
         for day, slug, readers in recent:
             if slug in posts and day in idx:
                 posts[slug]["last30"][idx[day]] = readers
         for slug, r in ratings.items():
-            posts.setdefault(slug, {"reads": 0, "readers": 0, "last30": [0] * days})["rating"] = r
+            posts.setdefault(slug, {"reads": 0, "readers": 0, "finished": 0, "last30": [0] * days})["rating"] = r
         return {"schema": SCHEMA, "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "days": dates, "posts": posts}
 
 
@@ -260,7 +275,7 @@ def make_handler(store, key, cors, site_root, min_ratings, show_reads, limiter):
 
         def do_POST(self):
             p = urlparse(self.path).path
-            if p not in ("/devlog/read", "/devlog/rate"):
+            if p not in ("/devlog/read", "/devlog/rate", "/devlog/done"):
                 return self.send_json({"error": "not found"}, 404)
             ip = self.client_ip()
             if not limiter.ok(ip):
@@ -286,6 +301,8 @@ def make_handler(store, key, cors, site_root, min_ratings, show_reads, limiter):
                 return self.send_json({"ok": True, "counted": False})
             if p == "/devlog/read":
                 return self.send_json({"ok": True, "counted": store.read(ip, slug)})
+            if p == "/devlog/done":
+                return self.send_json({"ok": True, "counted": store.done(ip, slug)})
             stars = data.get("stars")
             if not isinstance(stars, int) or isinstance(stars, bool) or not 1 <= stars <= 5:
                 return self.send_json({"error": "stars must be 1 to 5"}, 400)

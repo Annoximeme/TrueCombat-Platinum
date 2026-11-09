@@ -36,7 +36,7 @@ var TCP_API = 'https://api.truecombat.eu';
       specops: 'SpecOps', terrorists: 'Terrorists', draw: 'Draw', wins_: '{t} win', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Player',
       emptyBoard: 'Only bots on the server right now. Join in and take their place.', justNow: 'just now', minAgo: '{n} min ago', hAgo: '{n} h ago', dAgo: '{n} d ago',
       rounds: 'rounds', noResults: 'No completed matches yet. Results appear here the moment a ranked match ends.', resultsOffline: 'Match results are unavailable right now.',
-      reads: '{n} reads', read1: '1 read', ratingOf: '{avg} from {n} ratings'
+      reads: '{n} reads', read1: '1 read', ratingOf: '{avg} from {n} ratings', topRated: 'Top rated'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -59,7 +59,7 @@ var TCP_API = 'https://api.truecombat.eu';
       specops: 'SpecOps', terrorists: 'Terroristen', draw: 'Gelijkspel', wins_: '{t} winnen', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Speler',
       emptyBoard: 'Alleen bots op de server. Doe mee en neem hun plek in.', justNow: 'zojuist', minAgo: '{n} min geleden', hAgo: '{n} u geleden', dAgo: '{n} d geleden',
       rounds: 'rondes', noResults: 'Nog geen voltooide potjes. Uitslagen verschijnen hier zodra een gerankt potje eindigt.', resultsOffline: 'Uitslagen zijn nu niet beschikbaar.',
-      reads: '{n} keer gelezen', read1: '1 keer gelezen', ratingOf: '{avg} uit {n} beoordelingen'
+      reads: '{n} keer gelezen', read1: '1 keer gelezen', ratingOf: '{avg} uit {n} beoordelingen', topRated: 'Best beoordeeld'
     }
   };
   var L = DICT[lang] || DICT.en;
@@ -767,14 +767,21 @@ var TCP_API = 'https://api.truecombat.eu';
 
     var post = document.querySelector('[data-post]');
     if (post) {
-      // count a read once the post has been on screen for 10 seconds
-      var slug = post.dataset.post, shown = 0, last = document.hidden ? 0 : Date.now(), done = false;
+      // a read counts once the post has been on screen for 10 seconds; "read to the end" once the
+      // reader reaches the end of the post after spending at least 40% of its read time on it
+      var slug = post.dataset.post, shown = 0, last = document.hidden ? 0 : Date.now(), read = false, finished = false, atEnd = false;
+      var need = Math.max(20000, (+post.dataset.min || 1) * 60000 * 0.4);
+      var end = document.querySelector('.post-end');
+      if (end && 'IntersectionObserver' in window) {
+        new IntersectionObserver(function (es, io) { if (es.some(function (e) { return e.isIntersecting; })) { atEnd = true; io.disconnect(); } }).observe(end);
+      }
       var tick = setInterval(function () {
-        if (done) return;
         var now = Date.now();
         if (!document.hidden && last) shown += now - last;
         last = document.hidden ? 0 : now;
-        if (shown >= 10000) { done = true; clearInterval(tick); send('read', { slug: slug }).catch(function () {}); }
+        if (!read && shown >= 10000) { read = true; send('read', { slug: slug }).catch(function () {}); }
+        if (read && !finished && atEnd && shown >= need) { finished = true; send('done', { slug: slug }).catch(function () {}); }
+        if (finished || (read && !end)) clearInterval(tick);
       }, 1000);
     }
 
@@ -806,14 +813,17 @@ var TCP_API = 'https://api.truecombat.eu';
     if (!slots.length && !boxes.length) return;
     fetch(base + 'public.json', { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
       boxes.forEach(function (box) { box.hidden = false; });  // only offer ratings when the service is up
-      var posts = d.posts || {}, fmt = function (n) { return Number(n).toLocaleString(lang === 'nl' ? 'nl-BE' : 'en-GB'); };
+      var posts = d.posts || {}, best = null;
+      // the best-rated post (5+ ratings, 4.0 or higher) gets a "Top rated" mark
+      Object.keys(posts).forEach(function (k) { var p = posts[k]; if (p.rating >= 4 && (!best || p.rating > posts[best].rating || (p.rating === posts[best].rating && p.ratings > posts[best].ratings))) best = k; });
+      var fmt = function (n) { return Number(n).toLocaleString(lang === 'nl' ? 'nl-BE' : 'en-GB'); };
       slots.forEach(function (el) {
         var p = posts[el.dataset.postStat]; if (!p) return;
         var bits = [];
         if (p.rating) bits.push('<b>★ ' + esc(p.rating.toFixed(1)) + '</b>');
         if (p.reads) bits.push(esc(p.reads === 1 ? L.read1 : L.reads.replace('{n}', fmt(p.reads))));
         if (!bits.length) return;
-        el.innerHTML = bits.join(' · ');
+        el.innerHTML = (el.dataset.postStat === best ? '<span class="top">' + esc(L.topRated) + '</span>' : '') + bits.join(' · ');
         if (p.rating) el.title = L.ratingOf.replace('{avg}', p.rating.toFixed(1)).replace('{n}', fmt(p.ratings));
         el.hidden = false;
       });
