@@ -1245,3 +1245,7 @@ html { scrollbar-color: #2e3747 var(--bg); }
 .built-list b { font: 700 1.05rem/1.2 var(--f-display); text-transform: uppercase; letter-spacing: .06em; }
 .built-list span { color: var(--muted); font-size: .92rem; }
 @media (max-width: 860px) { .built { grid-template-columns: 1fr; } .built-list li { grid-template-columns: 1fr; gap: 2px; } }
+
+/* support page */
+.process.plain li::after { display: none; }
+.support-note { margin: 22px 0 0; max-width: 72ch; }

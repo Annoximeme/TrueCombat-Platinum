@@ -31,12 +31,12 @@ GITHUB = "https://github.com/Annoximeme/TrueCombat-Platinum"
 FEED = GITHUB + "/releases.atom"
 
 MAPLIST = ["delta", "northport", "railhouse", "snow", "stadtrand", "village"]
-PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio"]
+PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio", "support"]
 
 LABELS = {
     "en": {
         "maps": "Maps", "weapons": "Weapons", "guide": "Guide", "servers": "Servers",
-        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio",
+        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support",
         "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About",
         "download": "Download", "menu": "Menu", "sections": "Sections", "discord": "Join the Discord",
         "other": "Nederlands", "other_short": "NL", "skip": "Skip to content", "footer": "Footer", "releases": "Releases",
@@ -46,7 +46,7 @@ LABELS = {
     },
     "nl": {
         "maps": "Maps", "weapons": "Wapens", "guide": "Gids", "servers": "Servers",
-        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio",
+        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons",
         "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over",
         "download": "Download", "menu": "Menu", "sections": "Onderdelen", "discord": "Word lid van de Discord",
         "other": "English", "other_short": "EN", "skip": "Naar de inhoud", "footer": "Voettekst", "releases": "Releases",
@@ -84,7 +84,7 @@ def nav(lang, current):
         '      <li><a href="%s"%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "", L[p])
         for p in main)
     menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
-    menu += '<a href="%s">%s</a>' % (href("studio"), L["studio"])
+    menu += '<a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"])
     menu += '<hr><a href="%s">%s</a><a href="%s#graphics">%s</a><a href="%s#faq">%s</a><a href="%s">%s</a><a href="%s">Discord</a><a href="%s" hreflang="%s" lang="%s">%s</a>' % (
         home + "#gallery", L["gallery"], home, L["graphics"], home, L["faq"], href("press"), L["press"], DISCORD, other_href, other, other, L["other"])
     return f"""<!--nav-->
@@ -119,7 +119,7 @@ def footer(lang):
     cols = [
         (L["col_game"], [(href(p), L[p]) for p in ("maps", "weapons", "guide", "media")] + [("./#download", L["download"])]),
         (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "competitive")]),
-        (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press")]),
+        (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press", "support")]),
         (L["col_community"], [(DISCORD, "Discord"), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]),
     ]
     nav_html = "\n".join(
