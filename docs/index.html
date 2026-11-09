@@ -83,9 +83,9 @@
     <h1><span class="nw">TrueCombat: Elite,</span> rebuilt for <em>modern Windows</em>.</h1>
     <p class="lede">The classic tactical shooter, rebuilt as a native 64-bit game with a DirectX 12 renderer. The original maps, soldiers and HUD, and a launcher that hosts your servers and keeps the game current.</p>
     <div class="hero-cta">
-      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.34.0-sandbox25/TrueCombat-Platinum-Setup.exe">
+      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.34.1-sandbox26/TrueCombat-Platinum-Setup.exe">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
-        <span class="stack"><span class="big">Download <span data-version>v0.34.0</span></span><span class="small"><span data-kind="long">Windows installer</span> · <span data-size>8 MB</span> · free</span></span>
+        <span class="stack"><span class="big">Download <span data-version>v0.34.1</span></span><span class="small"><span data-kind="long">Windows installer</span> · <span data-size>8 MB</span> · free</span></span>
       </a>
       <a class="btn btn-ghost" href="#patch-notes">What's new</a>
     </div>
@@ -332,8 +332,26 @@
     </div>
     <div class="notes" data-releases="5">
 <!--releases-->
-      <details class="release" id="v0.34.0" data-ver="v0.34.0" open>
-        <summary><span class="ver">v0.34.0<span class="latest">Latest</span></span><span class="sum">A redesigned launcher, a Custom graphics preset, weapons that feel alive, the original voice commands, ultrawide support, Discord Rich Presence and a long list of quality-of-life features. Update through the launcher; the new launcher installs itself first.</span><span class="meta">#55 · 0.34.0-sandbox25 · 9 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.34.1" data-ver="v0.34.1" open>
+        <summary><span class="ver">v0.34.1<span class="latest">Latest</span></span><span class="sum">Instant replay clips, a per-life damage report, fairer teams in long matches and a fix for offline bot matches. Update through the launcher.</span><span class="meta">#56 · 0.34.1-sandbox26 · 9 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>New</h3><ul>
+            <li>Instant replay: press F8 (or type /clip) to save the last 30 seconds of play as a clip in demos/clips. Watch it with /demo clips/&lt;name&gt;. Clip length is set with cl_replaySeconds; cl_replay 0 turns the feature off.</li>
+            <li>Damage report: when you die, a DAMAGE THIS LIFE panel under the killed-by card shows the damage you dealt to and took from each opponent. Survive a round and you get the ROUND DAMAGE summary instead. Turn it off with cg_damageReport 0; server hosts can disable it with g_damageReport 0.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Team balance during the match: in Team Deathmatch and Flag Capture, when one team is two or more players larger for 15 seconds, one player on the bigger team is moved while waiting to respawn. Each player is moved at most once every five minutes, and never during competitive matches. Server hosts: g_autoBalance and g_autoBalanceDelay.</li>
+            <li>Fill-in players: when someone leaves a match that is under way, the server now reports the open place to server lists. Players who join the short team are thanked and cannot lose rating in that match. Server hosts: g_backfill and g_backfillTime.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Fixed offline bot matches appearing to freeze after two minutes: the away-from-keyboard check moved you to spectator. It now only runs on dedicated servers.</li>
+            <li>DLSS Frame Generation: added safeguards that switch it off for the rest of the session if it starts toggling on and off or a frame takes longer than one second to appear. If the game still freezes with Frame Generation on, turn it off in Options and report it.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" id="v0.34.0" data-ver="v0.34.0">
+        <summary><span class="ver">v0.34.0</span><span class="sum">A redesigned launcher, a Custom graphics preset, weapons that feel alive, the original voice commands, ultrawide support, Discord Rich Presence and a long list of quality-of-life features. Update through the launcher; the new launcher installs itself first.</span><span class="meta">#55 · 0.34.0-sandbox25 · 9 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Launcher 1.4.0</h3><ul>
             <li>A complete visual redesign in the TrueCombat.eu style, with a Launcher update button.</li>
@@ -571,36 +589,6 @@
           </ul></section>
         </div>
       </details>
-
-      <details class="release" id="v0.29.0" data-ver="v0.29.0">
-        <summary><span class="ver">v0.29.0</span><span class="sum">The launcher becomes a full hub with a living map header, a server list and in-launcher news, and movement looks smoother online.</span><span class="meta">#50 · 0.29.0-sandbox20 · 5 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
-        <div class="body">
-          <section><h3>Launcher</h3><ul>
-            <li>The header now moves slowly through real in-game shots of all six maps and cross-fades between them.</li>
-            <li>New Play, Servers and News tabs.</li>
-            <li>Servers shows your favorite and recent servers and your own server as cards with a map picture, player count and ping. Click a card to pick it, double-click or press JOIN to play, and use the star to save a favorite.</li>
-            <li>News shows the latest patch notes inside the launcher.</li>
-            <li>Hosting &amp; favorites (formerly Servers &amp; hosting) now lets you pick the starting map from picture cards.</li>
-            <li>Smoother hover effects, rounded window corners on Windows 11, a larger window on high-resolution screens and dark drop-down lists.</li>
-          </ul></section>
-          <section><h3>Updates</h3><ul>
-            <li>Updates are now signed by Team Terminus. The launcher only installs updates that carry a valid signature.</li>
-            <li>While an update downloads you can see its speed and time left, cancel it, or open What's new.</li>
-          </ul></section>
-          <section><h3>Multiplayer</h3><ul>
-            <li>Fewer camera jolts from small movement corrections when packets arrive late or go missing.</li>
-            <li>Respawns and practice resets stay instant, without a camera slide.</li>
-            <li>Respawning players no longer slide between their old and new positions.</li>
-            <li>Movement-correction smoothing can be adjusted or turned off through the console.</li>
-          </ul></section>
-          <section><h3>Known issues</h3><ul>
-            <li>Still unfinished: recoil, spread, penetration, leaning, ladders, swimming, aiming down sights and the original round rules.</li>
-            <li>There is no public server list yet. The Servers tab shows servers you have saved or joined before.</li>
-            <li>Tested on one PC over local connections. Separate PCs and the internet are not verified yet.</li>
-            <li>Use the separate RC8 download for complete TC:E matches.</li>
-          </ul></section>
-        </div>
-      </details>
 <!--/releases-->
     </div>
     <p class="all-notes">Every update since the first public build is on the <a href="news.html">news page</a>, with an <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">RSS feed</a>. Downloads are on <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">GitHub Releases</a>.</p>
@@ -616,7 +604,7 @@
     <!--roadmap-->
     <div class="road">
       <div class="road-col done">
-        <h3>Playable now <small data-version>v0.34.0</small></h3>
+        <h3>Playable now <small data-version>v0.34.1</small></h3>
         <ul>
           <li>Killed-by card, damage direction, player votes and quick radio</li>
           <li>Loadout presets, automatic demos and accessibility options</li>
@@ -652,9 +640,9 @@
         <li><span><b>Let the launcher do the rest.</b> It downloads the game, verifies every file and keeps it current. Updates only fetch the files that changed.</span></li>
       </ol>
       <div class="hero-cta">
-        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.34.0-sandbox25/TrueCombat-Platinum-Setup.exe">
+        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.34.1-sandbox26/TrueCombat-Platinum-Setup.exe">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span class="stack"><span class="big">Download <span data-version>v0.34.0</span></span><span class="small"><span data-kind="short">Installer</span> · <span data-size>8 MB</span> · <span data-date>9 Nov 2026</span></span></span>
+          <span class="stack"><span class="big">Download <span data-version>v0.34.1</span></span><span class="small"><span data-kind="short">Installer</span> · <span data-size>8 MB</span> · <span data-date>9 Nov 2026</span></span></span>
         </a>
         <a class="btn btn-ghost" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">All releases</a>
       </div>
