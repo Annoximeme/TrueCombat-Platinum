@@ -1,13 +1,13 @@
 ---
 title: Wat de playtests ons leerden
 date: 2026-11-09
-summary: Onze laatste communityplaytests leverden een duidelijke lijst problemen op, met de gunplay voorop. Hier staat alles wat we vonden, in welke volgorde we het oplossen en hoe het past bij de rest van het werk dat eraan komt.
+summary: Onze laatste communityplaytests leverden een duidelijke lijst problemen op, met de gunplay voorop. Een grote reeks fixes staat klaar voor de volgende patch. Hier staat alles wat we vonden, in welke volgorde we het oplossen en hoe het past bij de rest van het werk dat eraan komt.
 image: img/media-grenade.webp
 tag: Roadmap
 ---
 De beste test voor een shooter is een volle server met mensen die weten hoe het hoort te voelen. Onze recentste communityplaytests gaven ons precies dat, en het oordeel was eerlijk: de basis staat, maar te veel kleine dingen voelen nog anders dan in het origineel. In deze post staat elk probleem dat uit die sessies kwam, de volgorde waarin we ze aanpakken en waar ze staan naast het werk uit [Waar we hierna aan werken](devlog-whats-next.html).
 
-Geen van deze fixes is al begonnen, en geen ervan heeft een datum. Elke fix komt uit als hij door de volledige testronde komt. We werken deze lijst bij naarmate er punten klaar zijn.
+Het resultaat is een lange lijst fixes, en die staan klaar voor de volgende patch. Een datum krijgt die pas als hij klaar is: elke fix komt uit zodra hij door de volledige testronde komt, en we werken deze post bij naarmate er punten klaar zijn. Elke update brengt Platinum een stap dichter bij het vernieuwde, betere spel dat we voor ogen hebben.
 
 > Gunplay komt eerst. Zolang niet elk schot landt waar je richt en doet wat het moet doen, is niets anders op deze lijst even belangrijk.
 
@@ -61,4 +61,4 @@ Daarna volgen de grotere functies: 2D-replays van matches met automatische hoogt
 
 ## Bedankt
 
-Elk punt hierboven komt van spelers die de tijd namen om te spelen, op te letten en het ons te vertellen. Dat soort testen kunnen we niet alleen. Zie je nog iets, of is een van deze problemen voor jou belangrijker dan de rest, laat het ons weten op [Discord](https://discord.gg/8kcHdg2Hch). De [roadmap](index.html#roadmap) toont wat er klaar is naarmate we vorderen.
+Elk punt hierboven komt van spelers die de tijd namen om te spelen, op te letten en het ons te vertellen. Dat soort testen kunnen we niet alleen, en daarom bevat de volgende patch zoveel fixes. Zie je nog iets, of is een van deze problemen voor jou belangrijker dan de rest, laat het ons weten op [Discord](https://discord.gg/8kcHdg2Hch). De [roadmap](index.html#roadmap) toont wat er klaar is naarmate we vorderen.
