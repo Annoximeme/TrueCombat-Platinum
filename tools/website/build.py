@@ -31,12 +31,12 @@ GITHUB = "https://github.com/Annoximeme/TrueCombat-Platinum"
 FEED = GITHUB + "/releases.atom"
 
 MAPLIST = ["delta", "northport", "railhouse", "snow", "stadtrand", "village"]
-PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio"]
+PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio", "support"]
 
 LABELS = {
     "en": {
         "maps": "Maps", "weapons": "Weapons", "guide": "Guide", "servers": "Servers",
-        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio",
+        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support",
         "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About",
         "download": "Download", "menu": "Menu", "sections": "Sections", "discord": "Join the Discord",
         "other": "Nederlands", "other_short": "NL", "skip": "Skip to content", "footer": "Footer", "releases": "Releases",
@@ -46,7 +46,7 @@ LABELS = {
     },
     "nl": {
         "maps": "Maps", "weapons": "Wapens", "guide": "Gids", "servers": "Servers",
-        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio",
+        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons",
         "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over",
         "download": "Download", "menu": "Menu", "sections": "Onderdelen", "discord": "Word lid van de Discord",
         "other": "English", "other_short": "EN", "skip": "Naar de inhoud", "footer": "Voettekst", "releases": "Releases",
@@ -57,6 +57,7 @@ LABELS = {
 }
 
 DISCORD_SVG = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg>')
+HEART_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg>'
 MENU_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'
 
 
@@ -84,7 +85,7 @@ def nav(lang, current):
         '      <li><a href="%s"%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "", L[p])
         for p in main)
     menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
-    menu += '<a href="%s">%s</a>' % (href("studio"), L["studio"])
+    menu += '<a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"])
     menu += '<hr><a href="%s">%s</a><a href="%s#graphics">%s</a><a href="%s#faq">%s</a><a href="%s">%s</a><a href="%s">Discord</a><a href="%s" hreflang="%s" lang="%s">%s</a>' % (
         home + "#gallery", L["gallery"], home, L["graphics"], home, L["faq"], href("press"), L["press"], DISCORD, other_href, other, other, L["other"])
     return f"""<!--nav-->
@@ -102,6 +103,7 @@ def nav(lang, current):
       </nav>
     </details>
     <a class="nav-lang" href="{other_href}" hreflang="{other}" lang="{other}" title="{L['other']}">{L['other_short']}</a>
+    <a class="nav-support" href="{href('support')}"{' aria-current="page"' if current == 'support' else ''} title="{L['support']}">{HEART_SVG}<span>{L['support']}</span></a>
     <a class="nav-icon" href="{DISCORD}" aria-label="{L['discord']}" title="{L['discord']}">{DISCORD_SVG}</a>
     <a class="btn" href="{home}#download">{L['download']}</a>
   </div>
@@ -119,7 +121,7 @@ def footer(lang):
     cols = [
         (L["col_game"], [(href(p), L[p]) for p in ("maps", "weapons", "guide", "media")] + [("./#download", L["download"])]),
         (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "competitive")]),
-        (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press")]),
+        (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press", "support")]),
         (L["col_community"], [(DISCORD, "Discord"), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]),
     ]
     nav_html = "\n".join(
