@@ -39,7 +39,8 @@ from urllib.parse import parse_qs, urlparse
 
 SCHEMA = "tcp-funding/1"
 MAX_BODY = 64 * 1024
-COUNTED = {"Donation", "Subscription"}  # shop orders and commissions are not donations
+COUNTED = {"Donation", "Subscription"}
+TEST_ID = "00000000-1111-2222-3333-"  # transaction id of Ko-fi test webhooks  # shop orders and commissions are not donations
 
 
 class Ledger:
@@ -95,6 +96,8 @@ def parse_kofi(body, token):
         return 403, None
     if data.get("type") not in COUNTED:
         return 200, None  # acknowledged, not counted
+    if str(data.get("kofi_transaction_id", "")).startswith(TEST_ID):
+        return 200, None  # Ko-fi's "Send test" button
     try:
         cents = int(round(float(str(data.get("amount", "0")).replace(",", ".")) * 100))
         ts = dt.datetime.strptime(str(data.get("timestamp", ""))[:19], "%Y-%m-%dT%H:%M:%S")
