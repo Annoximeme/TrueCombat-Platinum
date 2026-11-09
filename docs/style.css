@@ -990,6 +990,7 @@ body.has-compare footer { padding-bottom: 320px; }
 .rate-stars[aria-busy="true"] { opacity: .6; pointer-events: none; }
 .post-meta .post-stat { color: var(--muted); }
 .post-meta .post-stat b { color: var(--amber); font-weight: 600; }
+.post-meta .post-stat .top { font: 600 .72rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .12em; color: var(--amber); background: rgba(231,167,60,.12); border: 1px solid rgba(231,167,60,.4); border-radius: 3px; padding: 4px 7px; margin-right: 8px; }
 .post-end { max-width: 720px; border-top: 1px solid var(--line); padding-top: 26px; display: grid; gap: 14px; }
 .post-end p { margin: 0; color: var(--muted); }
 .post-end button.btn { color: var(--fg); }

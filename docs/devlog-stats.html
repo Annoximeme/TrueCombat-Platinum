@@ -26,7 +26,7 @@
   .ds-tile b { font: 700 2rem/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
   .ds-tile span { color: var(--muted); font-size: var(--step--1); }
   .ds-table { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
-  .ds table { width: 100%; border-collapse: collapse; min-width: 720px; font-variant-numeric: tabular-nums; }
+  .ds table { width: 100%; border-collapse: collapse; min-width: 820px; font-variant-numeric: tabular-nums; }
   .ds th, .ds td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
   .ds tr:last-child td { border-bottom: 0; }
   .ds th { font: 600 .74rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .12em; color: var(--dim); cursor: pointer; user-select: none; white-space: nowrap; }
@@ -40,6 +40,13 @@
   .ds .split i { width: 9px; background: var(--amber); opacity: .85; border-radius: 1px 1px 0 0; min-height: 1px; }
   .ds .stars { color: var(--amber); font-weight: 600; }
   .ds .muted { color: var(--dim); }
+  .ds tbody tr.post { cursor: pointer; }
+  .ds tbody tr.post:hover td { background: var(--panel-2); }
+  .ds tr.detail td { background: var(--bg); padding: 16px 18px 18px; }
+  .ds .bars { display: grid; grid-template-columns: repeat(30, 1fr); align-items: end; gap: 3px; height: 110px; }
+  .ds .bars i { background: var(--red); border-radius: 2px 2px 0 0; min-height: 1px; position: relative; }
+  .ds .bars i:hover { background: var(--red-hi); }
+  .ds .axis { display: flex; justify-content: space-between; color: var(--dim); font-size: .76rem; margin-top: 6px; }
   .ds-foot { color: var(--dim); font-size: var(--step--1); margin: 0; max-width: 80ch; }
 </style>
 </head>
@@ -53,6 +60,7 @@
   <form class="ds-key" id="keyform" autocomplete="off">
     <input id="key" type="password" placeholder="Studio key" aria-label="Studio key" spellcheck="false">
     <button class="btn" type="submit">Show stats</button>
+    <button class="btn" type="button" id="csv" hidden>Export CSV</button>
     <button class="btn" type="button" id="forget" hidden>Forget key</button>
   </form>
   <p class="ds-msg" id="msg" aria-live="polite"></p>
@@ -66,6 +74,7 @@
           <th class="n" data-k="readers" aria-sort="descending">Readers</th>
           <th class="n" data-k="week">Last 7 days</th>
           <th data-k="trend">Last 30 days</th>
+          <th class="n" data-k="done" title="Readers who reached the end of the post">Read to end</th>
           <th class="n" data-k="reads">Page reads</th>
           <th class="n" data-k="avg">Rating</th>
           <th data-k="split">1 to 5 stars</th>
@@ -73,7 +82,7 @@
         <tbody id="rows"></tbody>
       </table>
     </div>
-    <p class="ds-foot" style="margin-top:16px">Readers counts each person once per post per day. Page reads counts every read that lasted 10 seconds or more, including repeat visits. Ratings are public on the site once a post has 5 of them. Read counts stay private until the service runs with <code>--public-reads</code>.</p>
+    <p class="ds-foot" style="margin-top:16px">Readers counts each person once per post per day. Read to end is the share of readers who reached the end of the post after spending at least 40% of its read time on it. Page reads counts every read that lasted 10 seconds or more, including repeat visits. Click a post for its daily chart. Ratings are public on the site once a post has 5 of them. Read counts stay private until the service runs with <code>--public-reads</code>.</p>
   </div>
 </main>
 <script>
@@ -107,20 +116,40 @@
     return Object.keys(data.posts).map(function (slug) {
       var p = data.posts[slug], r = p.rating || { n: 0, avg: 0, split: [0, 0, 0, 0, 0] };
       return { slug: slug, title: (titles[slug] || {}).title || slug, date: (titles[slug] || {}).date || '', readers: p.readers, reads: p.reads,
-               week: sum(p.last30.slice(-7)), trend: sum(p.last30), last30: p.last30, avg: r.n ? r.avg : 0, n: r.n, split: r.split };
+               week: sum(p.last30.slice(-7)), trend: sum(p.last30), last30: p.last30, avg: r.n ? r.avg : 0, n: r.n, split: r.split,
+               finished: p.finished || 0, done: p.readers ? (p.finished || 0) / p.readers : 0 };
     });
   }
 
+  var openSlug = null;
+  function detail(r) {
+    var max = Math.max.apply(null, r.last30.concat([1])), days = data.days || [];
+    var bars = r.last30.map(function (v, i) { return '<i style="height:' + Math.round(v / max * 100) + '%" title="' + esc(days[i] || '') + ': ' + v + (v === 1 ? ' reader' : ' readers') + '"></i>'; }).join('');
+    return '<tr class="detail"><td colspan="8"><div class="bars" role="img" aria-label="Readers per day, last 30 days">' + bars + '</div>' +
+      '<div class="axis"><span>' + esc((days[0] || '').slice(5)) + '</span><span>Readers per day · peak ' + max + '</span><span>' + esc((days[days.length - 1] || '').slice(5)) + '</span></div></td></tr>';
+  }
+  function csv() {
+    var head = ['slug', 'title', 'readers', 'read_to_end', 'page_reads', 'last_7_days', 'last_30_days', 'ratings', 'average', 's1', 's2', 's3', 's4', 's5'];
+    var lines = [head.join(',')].concat(rows().map(function (r) {
+      return [r.slug, '"' + String(r.title).replace(/"/g, '""') + '"', r.readers, r.finished, r.reads, r.week, r.trend, r.n, r.n ? r.avg : ''].concat(r.split).join(',');
+    }));
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([lines.join('\n') + '\n'], { type: 'text/csv' }));
+    a.download = 'devlog-stats-' + (data.updated || '').slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+  }
   function render() {
     var list = rows();
     var all = list.reduce(function (s, r) { return s + r.readers; }, 0);
     var month = list.reduce(function (s, r) { return s + r.trend; }, 0);
     var week = list.reduce(function (s, r) { return s + r.week; }, 0);
+    var fin = list.reduce(function (s, r) { return s + r.finished; }, 0);
     var votes = list.reduce(function (s, r) { return s + r.n; }, 0);
     var avg = votes ? list.reduce(function (s, r) { return s + r.avg * r.n; }, 0) / votes : 0;
     $('tiles').innerHTML = [
       ['Readers, all time', fmt(all), 'across ' + list.length + (list.length === 1 ? ' post' : ' posts')],
       ['Last 30 days', fmt(month), fmt(week) + ' in the last 7 days'],
+      ['Read to the end', all ? Math.round(fin / all * 100) + '%' : '-', fmt(fin) + (fin === 1 ? ' reader' : ' readers') + ' finished a post'],
       ['Ratings', fmt(votes), votes ? 'average ★ ' + avg.toFixed(2) : 'none yet'],
       ['Updated', (data.updated || '').slice(11, 16) + ' UTC', (data.updated || '').slice(0, 10)]
     ].map(function (t) { return '<div class="ds-tile"><small>' + t[0] + '</small><b>' + t[1] + '</b><span>' + t[2] + '</span></div>'; }).join('');
@@ -135,14 +164,22 @@
     });
     $('rows').innerHTML = list.map(function (r) {
       var max = Math.max.apply(null, r.split.concat([1]));
-      return '<tr><td><a href="devlog-' + esc(r.slug) + '.html">' + esc(r.title) + '</a><small>' + esc(r.date.slice(0, 10)) + '</small></td>' +
+      var open = r.slug === openSlug;
+      return '<tr class="post" data-slug="' + esc(r.slug) + '" aria-expanded="' + open + '"><td><a href="devlog-' + esc(r.slug) + '.html">' + esc(r.title) + '</a><small>' + esc(r.date.slice(0, 10)) + '</small></td>' +
         '<td class="n">' + fmt(r.readers) + '</td><td class="n">' + fmt(r.week) + '</td><td>' + spark(r.last30) + '</td>' +
+        '<td class="n">' + (r.readers ? Math.round(r.done * 100) + '%<small>' + fmt(r.finished) + ' of ' + fmt(r.readers) + '</small>' : '<span class="muted">-</span>') + '</td>' +
         '<td class="n">' + fmt(r.reads) + '</td>' +
         '<td class="n">' + (r.n ? '<span class="stars">★ ' + r.avg.toFixed(2) + '</span><small>' + r.n + (r.n === 1 ? ' rating' : ' ratings') + (r.n < 5 ? ', private' : '') + '</small>' : '<span class="muted">none</span>') + '</td>' +
-        '<td>' + (r.n ? '<div class="split" title="' + r.split.join(' / ') + '">' + r.split.map(function (v) { return '<i style="height:' + Math.round(v / max * 100) + '%"></i>'; }).join('') + '</div>' : '') + '</td></tr>';
-    }).join('') || '<tr><td colspan="7" class="muted">No reads yet. Numbers appear once someone has read a post for 10 seconds.</td></tr>';
+        '<td>' + (r.n ? '<div class="split" title="' + r.split.join(' / ') + '">' + r.split.map(function (v) { return '<i style="height:' + Math.round(v / max * 100) + '%"></i>'; }).join('') + '</div>' : '') + '</td></tr>' + (open ? detail(r) : '');
+    }).join('') || '<tr><td colspan="8" class="muted">No reads yet. Numbers appear once someone has read a post for 10 seconds.</td></tr>';
   }
 
+  $('rows').addEventListener('click', function (e) {
+    if (e.target.closest('a')) return;
+    var tr = e.target.closest('tr.post'); if (!tr) return;
+    openSlug = openSlug === tr.dataset.slug ? null : tr.dataset.slug; render();
+  });
+  $('csv').addEventListener('click', function () { if (data) csv(); });
   Array.prototype.forEach.call(document.querySelectorAll('.ds th'), function (th) {
     th.addEventListener('click', function () {
       if (sortKey === th.dataset.k) sortDir = -sortDir; else { sortKey = th.dataset.k; sortDir = th.dataset.k === 'title' ? 1 : -1; }
@@ -157,7 +194,7 @@
       if (!r.ok) throw new Error('The stats service answered ' + r.status + '. Try again in a minute.');
       return r.json();
     }).then(function (d) {
-      data = d; setKey(key); $('msg').textContent = ''; $('out').hidden = false; $('forget').hidden = false; $('key').value = '';
+      data = d; setKey(key); $('msg').textContent = ''; $('out').hidden = false; $('forget').hidden = false; $('csv').hidden = false; $('key').value = '';
       render();
     }).catch(function (e) {
       $('msg').className = 'ds-msg err';
@@ -165,7 +202,7 @@
     });
   }
   $('keyform').addEventListener('submit', function (e) { e.preventDefault(); var k = $('key').value.trim() || getKey(); if (k) load(k); });
-  $('forget').addEventListener('click', function () { setKey(''); data = null; $('out').hidden = true; $('forget').hidden = true; $('msg').textContent = 'Key removed from this browser.'; });
+  $('forget').addEventListener('click', function () { setKey(''); data = null; $('out').hidden = true; $('forget').hidden = true; $('csv').hidden = true; $('msg').textContent = 'Key removed from this browser.'; });
   if (getKey()) load(getKey());
 })();
 </script>

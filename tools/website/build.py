@@ -525,7 +525,8 @@ def devlog_posts(lang):
             if not (DOCS / img).exists():
                 sys.exit(f"{p}: image {img} not found in docs/")
         posts.append(meta)
-    return sorted(posts, key=lambda x: (x["date"], x["slug"]), reverse=True)
+    # "time: HH:MM" (optional) orders posts published on the same day
+    return sorted(posts, key=lambda x: (x["date"], x.get("time", "00:00"), x["slug"]), reverse=True)
 
 
 def nice_date(lang, iso):
@@ -691,7 +692,7 @@ def devlog_page(lang, post, posts, template):
 <!--/nav-->
 
 <main id="top">
-<article class="post" data-post="{post['slug']}">
+<article class="post" data-post="{post['slug']}" data-min="{post['minutes']}">
   <header class="page-head post-head">
     <div class="head-art" style="--art: url({post['image']}); --art-s: url({post['image'].replace('.webp', '-640.webp')})" aria-hidden="true"></div>
     <div class="wrap">
