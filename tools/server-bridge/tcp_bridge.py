@@ -144,6 +144,12 @@ def server_entry(addr, status, modes):
         maxp = int(c.get("sv_maxclients", "0")) - int(c.get("sv_privateclients", "0") or 0)
     except ValueError:
         maxp = 0
+    try:
+        need = max(0, min(int(c.get("tcp_need", "0") or 0), 8))
+    except ValueError:
+        need = 0
+    if c.get("g_needpass", "0") not in ("", "0"):
+        need = 0  # never advertise a private server
     return {
         "address": "%s:%d" % addr,
         "name": clean(c.get("sv_hostname", "TrueCombat: Platinum server")),
@@ -155,6 +161,7 @@ def server_entry(addr, status, modes):
         "maxPlayers": maxp,
         "password": c.get("g_needpass", "0") not in ("", "0"),
         "version": clean(c.get("tcp_version") or c.get("version", ""), 48),
+        "need": need,  # open places on the short team after someone left mid-match
         "playerList": sorted(humans, key=lambda p: -p["score"]),
     }
 

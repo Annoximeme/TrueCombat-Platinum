@@ -149,7 +149,7 @@ def sanitize(report, trusted=False, allow_cheats=False):
              "teamKills": _int(p.get("teamKills"), 0, cap), "suicides": _int(p.get("suicides"), 0, cap),
              "headshots": _int(p.get("headshots"), 0, cap * 4), "damage": _int(p.get("damage"), 0, cap * 2000),
              "roundsWon": _int(p.get("roundsWon"), 0, 1000), "objectives": _int(p.get("objectives"), 0, 1000),
-             "won": bool(p.get("won")),
+             "won": bool(p.get("won")), "filler": p.get("filler") is True,
              "timePlayed": _int(p.get("timePlayed", duration), 0, cap + 120), "weapons": {}}
         q["headshots"] = min(q["headshots"], q["kills"])
         for w, ws in list((p.get("weapons") or {}).items())[:32]:
@@ -197,7 +197,10 @@ def rate(match, ratings, counts):
         for team, ps, e, s in ((ta, pa, ea, sa), (tb, pb, 1 - ea, 1 - sa)):
             for p in ps:
                 share = min(1.0, p["timePlayed"] / dur)
-                deltas[p["id"]] = k(p["id"]) * share * (s - e)
+                d = k(p["id"]) * share * (s - e)
+                if p.get("filler") and d < 0:
+                    d = 0.0  # joined a short team to replace a leaver: no rating loss
+                deltas[p["id"]] = d
         return deltas
     if len(ranked) < 2:
         return deltas
