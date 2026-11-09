@@ -60,6 +60,7 @@ class KofiTest(unittest.TestCase):
         self.assertEqual(self.post(body(verification_token="nope")), 403)
         self.assertEqual(self.post(body(type="Shop Order", kofi_transaction_id="t3")), 200)
         self.assertEqual(self.post(b"garbage"), 400)
+        self.assertEqual(self.post(body(kofi_transaction_id="00000000-1111-2222-3333-444444444444", from_name="Jo Example")), 200)
         self.assertEqual(self.report()["months"], [])
 
     def test_months_newest_first(self):
