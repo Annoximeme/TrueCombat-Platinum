@@ -8,6 +8,7 @@
      [data-gallery]               screenshot grid with filter tabs and a lightbox (media page)
      [data-yt]                    click-to-play YouTube embed (privacy-enhanced, nothing loads before a click)
      [data-compare] [data-post-filter] [data-copy-link]   devlog sliders, topic filter and copy-link button
+     [data-post] [data-rate] [data-post-stat]             devlog reads and star ratings (tools/server-bridge/tcp_devlog.py, no cookies)
    Set TCP_API to the bridge's public https URL once it is hosted. Empty means "offline". */
 var TCP_API = 'https://api.truecombat.eu';
 
@@ -34,7 +35,8 @@ var TCP_API = 'https://api.truecombat.eu';
       apiOffline: 'Player stats are offline right now. Please try again in a few minutes.', screenshots: 'screenshots',
       specops: 'SpecOps', terrorists: 'Terrorists', draw: 'Draw', wins_: '{t} win', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Player',
       emptyBoard: 'Only bots on the server right now. Join in and take their place.', justNow: 'just now', minAgo: '{n} min ago', hAgo: '{n} h ago', dAgo: '{n} d ago',
-      rounds: 'rounds', noResults: 'No completed matches yet. Results appear here the moment a ranked match ends.', resultsOffline: 'Match results are unavailable right now.'
+      rounds: 'rounds', noResults: 'No completed matches yet. Results appear here the moment a ranked match ends.', resultsOffline: 'Match results are unavailable right now.',
+      reads: '{n} reads', read1: '1 read', ratingOf: '{avg} from {n} ratings'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -56,7 +58,8 @@ var TCP_API = 'https://api.truecombat.eu';
       apiOffline: 'De spelersstatistieken zijn nu offline. Probeer het over een paar minuten opnieuw.', screenshots: 'screenshots',
       specops: 'SpecOps', terrorists: 'Terroristen', draw: 'Gelijkspel', wins_: '{t} winnen', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Speler',
       emptyBoard: 'Alleen bots op de server. Doe mee en neem hun plek in.', justNow: 'zojuist', minAgo: '{n} min geleden', hAgo: '{n} u geleden', dAgo: '{n} d geleden',
-      rounds: 'rondes', noResults: 'Nog geen voltooide potjes. Uitslagen verschijnen hier zodra een gerankt potje eindigt.', resultsOffline: 'Uitslagen zijn nu niet beschikbaar.'
+      rounds: 'rondes', noResults: 'Nog geen voltooide potjes. Uitslagen verschijnen hier zodra een gerankt potje eindigt.', resultsOffline: 'Uitslagen zijn nu niet beschikbaar.',
+      reads: '{n} keer gelezen', read1: '1 keer gelezen', ratingOf: '{avg} uit {n} beoordelingen'
     }
   };
   var L = DICT[lang] || DICT.en;
@@ -750,6 +753,72 @@ var TCP_API = 'https://api.truecombat.eu';
       }, function () {});
     });
   });
+
+  /* ---------- devlog reads and ratings: anonymous, no cookies (see tcp_devlog.py) ---------- */
+  (function () {
+    if (!TCP_API) return;
+    var base = TCP_API.replace(/\/$/, '') + '/devlog/';
+    function send(path, obj) {
+      // text/plain keeps this a simple request (no CORS preflight); the service reads it as JSON
+      return fetch(base + path, { method: 'POST', body: JSON.stringify(obj), headers: { 'Content-Type': 'text/plain' }, keepalive: true, credentials: 'omit' })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+    }
+    function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+    var post = document.querySelector('[data-post]');
+    if (post) {
+      // count a read once the post has been on screen for 10 seconds
+      var slug = post.dataset.post, shown = 0, last = document.hidden ? 0 : Date.now(), done = false;
+      var tick = setInterval(function () {
+        if (done) return;
+        var now = Date.now();
+        if (!document.hidden && last) shown += now - last;
+        last = document.hidden ? 0 : now;
+        if (shown >= 10000) { done = true; clearInterval(tick); send('read', { slug: slug }).catch(function () {}); }
+      }, 1000);
+    }
+
+    $all('[data-rate]').forEach(function (box) {
+      var slug = box.dataset.rate, group = box.querySelector('.rate-stars'), note = box.querySelector('.rate-note');
+      var btns = $all('button', group), key = 'tcp-rate-' + slug;
+      function paint(n) { btns.forEach(function (b, i) { b.classList.toggle('on', i < n); b.setAttribute('aria-checked', String(i + 1 === n)); b.tabIndex = (n ? i + 1 === n : i === 0) ? 0 : -1; }); }
+      var mine = store(key) || '';
+      var m = /^(\d{4}-\d\d-\d\d):([1-5])$/.exec(mine);
+      paint(m ? +m[2] : 0);
+      box.hidden = false;
+      function vote(n) {
+        group.setAttribute('aria-busy', 'true');
+        send('rate', { slug: slug, stars: n }).then(function () {
+          paint(n);
+          store(key, new Date().toISOString().slice(0, 10) + ':' + n);
+          note.textContent = box.dataset.thanks;
+        }, function () { note.textContent = box.dataset.fail; }).then(function () { group.removeAttribute('aria-busy'); });
+      }
+      group.addEventListener('click', function (e) { var b = e.target.closest('button[data-stars]'); if (b) vote(+b.dataset.stars); });
+      group.addEventListener('keydown', function (e) {
+        var i = btns.indexOf(document.activeElement); if (i < 0) return;
+        var j = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? Math.min(4, i + 1) : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? Math.max(0, i - 1) : -1;
+        if (j < 0) return;
+        e.preventDefault(); btns[j].focus();
+      });
+    });
+
+    var slots = $all('[data-post-stat]');
+    if (!slots.length) return;
+    fetch(base + 'public.json', { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+      var posts = d.posts || {}, fmt = function (n) { return Number(n).toLocaleString(lang === 'nl' ? 'nl-BE' : 'en-GB'); };
+      slots.forEach(function (el) {
+        var p = posts[el.dataset.postStat]; if (!p) return;
+        var bits = [];
+        if (p.rating) bits.push('<b>★ ' + esc(p.rating.toFixed(1)) + '</b>');
+        if (p.reads) bits.push(esc(p.reads === 1 ? L.read1 : L.reads.replace('{n}', fmt(p.reads))));
+        if (!bits.length) return;
+        el.innerHTML = bits.join(' · ');
+        if (p.rating) el.title = L.ratingOf.replace('{avg}', p.rating.toFixed(1)).replace('{n}', fmt(p.ratings));
+        el.hidden = false;
+      });
+    }).catch(function () {});
+  })();
 
   /* ---------- scroll reveal (progressive: without IntersectionObserver everything is simply shown) ---------- */
   (function () {

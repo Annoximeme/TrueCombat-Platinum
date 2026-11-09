@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Devlog stats · TrueCombat: Platinum</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0d1016">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Studio-only page: read counts and ratings per devlog post (tools/server-bridge/tcp_devlog.py). Not linked from the site. */
+  body { background: var(--bg); }
+  .ds { padding-block: 40px 72px; display: grid; gap: 24px; align-content: start; }
+  .ds h1 { font: 700 var(--step-3)/1 var(--f-display); text-transform: uppercase; margin: 0; }
+  .ds .lede { color: var(--muted); margin: 0; max-width: 64ch; }
+  .ds-key { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .ds-key input { flex: 1 1 260px; min-width: 0; background: var(--panel); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 11px 14px; font: 500 .95rem var(--f-mono); }
+  .ds-key .btn { color: var(--fg); background: var(--panel-2); }
+  .ds-msg { color: var(--muted); margin: 0; min-height: 1.4em; }
+  .ds-msg.err { color: var(--red-hi); }
+  .ds-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+  .ds-tile { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: grid; gap: 4px; }
+  .ds-tile small { font: 600 .74rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .12em; color: var(--dim); }
+  .ds-tile b { font: 700 2rem/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
+  .ds-tile span { color: var(--muted); font-size: var(--step--1); }
+  .ds-table { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .ds table { width: 100%; border-collapse: collapse; min-width: 720px; font-variant-numeric: tabular-nums; }
+  .ds th, .ds td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  .ds tr:last-child td { border-bottom: 0; }
+  .ds th { font: 600 .74rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .12em; color: var(--dim); cursor: pointer; user-select: none; white-space: nowrap; }
+  .ds th[aria-sort] { color: var(--fg); }
+  .ds td.n, .ds th.n { text-align: right; }
+  .ds td a { color: var(--fg); text-decoration: none; font-weight: 600; }
+  .ds td a:hover { color: var(--red-hi); }
+  .ds td small { display: block; color: var(--dim); font-size: .78rem; margin-top: 2px; }
+  .ds .spark { display: block; width: 120px; height: 28px; }
+  .ds .split { display: flex; align-items: flex-end; gap: 2px; height: 28px; }
+  .ds .split i { width: 9px; background: var(--amber); opacity: .85; border-radius: 1px 1px 0 0; min-height: 1px; }
+  .ds .stars { color: var(--amber); font-weight: 600; }
+  .ds .muted { color: var(--dim); }
+  .ds-foot { color: var(--dim); font-size: var(--step--1); margin: 0; max-width: 80ch; }
+</style>
+</head>
+<body>
+<main class="wrap ds">
+  <div>
+    <h1>Devlog stats</h1>
+  </div>
+  <p class="lede">Readers per post, counted once per person per day, and the star ratings readers left. Only you can see this page with the studio key. Nothing here identifies a reader.</p>
+
+  <form class="ds-key" id="keyform" autocomplete="off">
+    <input id="key" type="password" placeholder="Studio key" aria-label="Studio key" spellcheck="false">
+    <button class="btn" type="submit">Show stats</button>
+    <button class="btn" type="button" id="forget" hidden>Forget key</button>
+  </form>
+  <p class="ds-msg" id="msg" aria-live="polite"></p>
+
+  <div id="out" hidden>
+    <div class="ds-tiles" id="tiles"></div>
+    <div class="ds-table" style="margin-top:20px">
+      <table>
+        <thead><tr>
+          <th data-k="title">Post</th>
+          <th class="n" data-k="readers" aria-sort="descending">Readers</th>
+          <th class="n" data-k="week">Last 7 days</th>
+          <th data-k="trend">Last 30 days</th>
+          <th class="n" data-k="reads">Page reads</th>
+          <th class="n" data-k="avg">Rating</th>
+          <th data-k="split">1 to 5 stars</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="ds-foot" style="margin-top:16px">Readers counts each person once per post per day. Page reads counts every read that lasted 10 seconds or more, including repeat visits. Ratings are public on the site once a post has 5 of them. Read counts stay private until the service runs with <code>--public-reads</code>.</p>
+  </div>
+</main>
+<script>
+(function () {
+  var API = 'https://api.truecombat.eu/devlog/';
+  var $ = function (id) { return document.getElementById(id); };
+  var data = null, titles = {}, sortKey = 'readers', sortDir = -1;
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function getKey() { try { return localStorage.getItem('tcp-devlog-key') || ''; } catch (e) { return ''; } }
+  function setKey(k) { try { if (k) localStorage.setItem('tcp-devlog-key', k); else localStorage.removeItem('tcp-devlog-key'); } catch (e) {} }
+  function fmt(n) { return Number(n || 0).toLocaleString('en-GB'); }
+  function sum(a) { return a.reduce(function (s, x) { return s + x; }, 0); }
+
+  function spark(vals) {
+    var w = 120, h = 28, max = Math.max.apply(null, vals.concat([1]));
+    var pts = vals.map(function (v, i) { return (i * w / (vals.length - 1)).toFixed(1) + ',' + (h - 2 - v / max * (h - 4)).toFixed(1); });
+    return '<svg class="spark" viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true"><polyline fill="none" stroke="var(--red-hi)" stroke-width="1.6" stroke-linejoin="round" points="' + pts.join(' ') + '"/></svg>';
+  }
+
+  // post titles come from the public devlog feed
+  fetch('devlog.xml').then(function (r) { return r.text(); }).then(function (x) {
+    var doc = new DOMParser().parseFromString(x, 'application/xml');
+    Array.prototype.forEach.call(doc.getElementsByTagName('entry'), function (e) {
+      var link = e.getElementsByTagName('link')[0], m = /devlog-([a-z0-9-]+)\.html/.exec(link ? link.getAttribute('href') : '');
+      if (m) titles[m[1]] = { title: e.getElementsByTagName('title')[0].textContent, date: (e.getElementsByTagName('published')[0] || {}).textContent || '' };
+    });
+    if (data) render();
+  }).catch(function () {});
+
+  function rows() {
+    return Object.keys(data.posts).map(function (slug) {
+      var p = data.posts[slug], r = p.rating || { n: 0, avg: 0, split: [0, 0, 0, 0, 0] };
+      return { slug: slug, title: (titles[slug] || {}).title || slug, date: (titles[slug] || {}).date || '', readers: p.readers, reads: p.reads,
+               week: sum(p.last30.slice(-7)), trend: sum(p.last30), last30: p.last30, avg: r.n ? r.avg : 0, n: r.n, split: r.split };
+    });
+  }
+
+  function render() {
+    var list = rows();
+    var all = list.reduce(function (s, r) { return s + r.readers; }, 0);
+    var month = list.reduce(function (s, r) { return s + r.trend; }, 0);
+    var week = list.reduce(function (s, r) { return s + r.week; }, 0);
+    var votes = list.reduce(function (s, r) { return s + r.n; }, 0);
+    var avg = votes ? list.reduce(function (s, r) { return s + r.avg * r.n; }, 0) / votes : 0;
+    $('tiles').innerHTML = [
+      ['Readers, all time', fmt(all), 'across ' + list.length + (list.length === 1 ? ' post' : ' posts')],
+      ['Last 30 days', fmt(month), fmt(week) + ' in the last 7 days'],
+      ['Ratings', fmt(votes), votes ? 'average ★ ' + avg.toFixed(2) : 'none yet'],
+      ['Updated', (data.updated || '').slice(11, 16) + ' UTC', (data.updated || '').slice(0, 10)]
+    ].map(function (t) { return '<div class="ds-tile"><small>' + t[0] + '</small><b>' + t[1] + '</b><span>' + t[2] + '</span></div>'; }).join('');
+
+    list.sort(function (a, b) {
+      var x = a[sortKey], y = b[sortKey];
+      if (sortKey === 'title') return sortDir * String(x).localeCompare(String(y));
+      return sortDir * ((x || 0) - (y || 0)) || String(b.date).localeCompare(String(a.date));
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.ds th'), function (th) {
+      if (th.dataset.k === sortKey) th.setAttribute('aria-sort', sortDir < 0 ? 'descending' : 'ascending'); else th.removeAttribute('aria-sort');
+    });
+    $('rows').innerHTML = list.map(function (r) {
+      var max = Math.max.apply(null, r.split.concat([1]));
+      return '<tr><td><a href="devlog-' + esc(r.slug) + '.html">' + esc(r.title) + '</a><small>' + esc(r.date.slice(0, 10)) + '</small></td>' +
+        '<td class="n">' + fmt(r.readers) + '</td><td class="n">' + fmt(r.week) + '</td><td>' + spark(r.last30) + '</td>' +
+        '<td class="n">' + fmt(r.reads) + '</td>' +
+        '<td class="n">' + (r.n ? '<span class="stars">★ ' + r.avg.toFixed(2) + '</span><small>' + r.n + (r.n === 1 ? ' rating' : ' ratings') + (r.n < 5 ? ', private' : '') + '</small>' : '<span class="muted">none</span>') + '</td>' +
+        '<td>' + (r.n ? '<div class="split" title="' + r.split.join(' / ') + '">' + r.split.map(function (v) { return '<i style="height:' + Math.round(v / max * 100) + '%"></i>'; }).join('') + '</div>' : '') + '</td></tr>';
+    }).join('') || '<tr><td colspan="7" class="muted">No reads yet. Numbers appear once someone has read a post for 10 seconds.</td></tr>';
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.ds th'), function (th) {
+    th.addEventListener('click', function () {
+      if (sortKey === th.dataset.k) sortDir = -sortDir; else { sortKey = th.dataset.k; sortDir = th.dataset.k === 'title' ? 1 : -1; }
+      if (data) render();
+    });
+  });
+
+  function load(key) {
+    $('msg').className = 'ds-msg'; $('msg').textContent = 'Loading…';
+    fetch(API + 'stats.json', { headers: { Authorization: 'Bearer ' + key }, cache: 'no-store', credentials: 'omit' }).then(function (r) {
+      if (r.status === 401) throw new Error('That key was not accepted.');
+      if (!r.ok) throw new Error('The stats service answered ' + r.status + '. Try again in a minute.');
+      return r.json();
+    }).then(function (d) {
+      data = d; setKey(key); $('msg').textContent = ''; $('out').hidden = false; $('forget').hidden = false; $('key').value = '';
+      render();
+    }).catch(function (e) {
+      $('msg').className = 'ds-msg err';
+      $('msg').textContent = e.message && !/fetch|network/i.test(e.message) ? e.message : 'The stats service could not be reached.';
+    });
+  }
+  $('keyform').addEventListener('submit', function (e) { e.preventDefault(); var k = $('key').value.trim() || getKey(); if (k) load(k); });
+  $('forget').addEventListener('click', function () { setKey(''); data = null; $('out').hidden = true; $('forget').hidden = true; $('msg').textContent = 'Key removed from this browser.'; });
+  if (getKey()) load(getKey());
+})();
+</script>
+</body>
+</html>

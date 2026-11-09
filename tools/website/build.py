@@ -416,12 +416,18 @@ DL = {
            "months": "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(), "min": "{n} min read", "toc": "In this post",
            "shipped": "Shipped in v{v}", "testing": "Next update · in testing", "all": "All posts", "filter": "Filter posts by topic",
            "older": "Older post", "newer": "Newer post", "ask": "Questions about this post? Ask the team on Discord.",
-           "discord": "Discuss on Discord", "copy": "Copy link", "copied": "Link copied", "drag": "comparison divider position", "latest": "Latest"},
+           "discord": "Discuss on Discord", "copy": "Copy link", "copied": "Link copied", "drag": "comparison divider position", "latest": "Latest",
+           "rateQ": "Was this worth the read?", "rateGroup": "Rate this post", "star": "1 star", "stars": "{n} stars",
+           "rateThanks": "Thanks for rating. You can change your rating until the end of the day.", "rateFail": "Your rating could not be sent. Please try again later.",
+           "ratePriv": "Anonymous. No account, no cookies."},
     "nl": {"read": "Lees het artikel", "feed": "TrueCombat: Platinum devlog", "back": "Alle devlogartikelen", "by": "Team Terminus", "more": "Meer uit de devlog",
            "months": "jan feb mrt apr mei jun jul aug sep okt nov dec".split(), "min": "{n} min lezen", "toc": "In dit artikel",
            "shipped": "Uitgebracht in v{v}", "testing": "Volgende update · in test", "all": "Alle artikelen", "filter": "Filter artikelen op onderwerp",
            "older": "Vorig artikel", "newer": "Volgend artikel", "ask": "Vragen over dit artikel? Stel ze aan het team op Discord.",
-           "discord": "Bespreek op Discord", "copy": "Link kopiëren", "copied": "Link gekopieerd", "drag": "positie van de vergelijkingslijn", "latest": "Nieuwste"},
+           "discord": "Bespreek op Discord", "copy": "Link kopiëren", "copied": "Link gekopieerd", "drag": "positie van de vergelijkingslijn", "latest": "Nieuwste",
+           "rateQ": "Was dit artikel de moeite waard?", "rateGroup": "Beoordeel dit artikel", "star": "1 ster", "stars": "{n} sterren",
+           "rateThanks": "Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen.", "rateFail": "Je beoordeling kon niet worden verzonden. Probeer het later opnieuw.",
+           "ratePriv": "Anoniem. Geen account, geen cookies."},
 }
 DISCORD = "https://discord.gg/8kcHdg2Hch"
 LATEST = None  # newest released version on the site, read from index.html
@@ -540,7 +546,8 @@ def post_meta(lang, p, by=False):
     T = DL[lang]
     extra = f"<span>{T['by']}</span>" if by else ""
     return (f'<p class="post-meta"><span class="tag">{htmlmod.escape(p["tag"])}</span>{status_chip(lang, p)}'
-            f'<time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time><span>{T["min"].format(n=p["minutes"])}</span>{extra}</p>')
+            f'<time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time><span>{T["min"].format(n=p["minutes"])}</span>{extra}'
+            f'<span class="post-stat" data-post-stat="{p["slug"]}" hidden></span></p>')
 
 
 def post_cards(lang, posts, feature=False, h="h2"):
@@ -679,11 +686,12 @@ def devlog_page(lang, post, posts, template):
   </div>
 </section>
 """
+    RATE_STARS = "\n          ".join(f'<button type="button" role="radio" aria-checked="false" data-stars="{n}" aria-label="{T["star"] if n == 1 else T["stars"].format(n=n)}"></button>' for n in range(1, 6))
     body = f"""<!--nav-->
 <!--/nav-->
 
 <main id="top">
-<article class="post">
+<article class="post" data-post="{post['slug']}">
   <header class="page-head post-head">
     <div class="head-art" style="--art: url({post['image']}); --art-s: url({post['image'].replace('.webp', '-640.webp')})" aria-hidden="true"></div>
     <div class="wrap">
@@ -697,6 +705,13 @@ def devlog_page(lang, post, posts, template):
     <div class="wrap post-body">{toc_html}
       <div class="prose">
 {body_html}
+      </div>
+      <div class="post-rate" data-rate="{post['slug']}" data-thanks="{T['rateThanks']}" data-fail="{T['rateFail']}" hidden>
+        <p class="rate-q" id="rate-q">{T['rateQ']}</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          {RATE_STARS}
+        </div>
+        <p class="rate-note" aria-live="polite">{T['ratePriv']}</p>
       </div>
       <div class="post-end">
         <p>{T['ask']}</p>
