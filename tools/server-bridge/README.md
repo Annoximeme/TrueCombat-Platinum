@@ -170,3 +170,27 @@ entries to `tools/website/funding.json` (with `received` for the static
 fallback) and rebuild the site.
 
 Tests: `python -m unittest test_kofi`.
+
+## Devlog reads and ratings (tcp_devlog.py)
+
+Counts how many people read each devlog post and collects 1 to 5 star
+ratings, without visitor tracking: no cookies, no IP addresses, no user
+agents are stored. A reader is counted once per post per day through a keyed
+hash whose secret only lives for the current UTC day; at midnight the secret
+and all hashes are wiped. Post pages only send a read after the post has been
+open for about ten seconds, so bounces and crawlers don't count.
+
+- `POST /devlog/read`, `POST /devlog/rate`: called by `docs/js/site.js` on post pages.
+- `GET /devlog/public.json` (schema `tcp-devlog/1`): rating averages once a post
+  has 5 ratings; read counts only when the service runs with `--public-reads`.
+- `GET /devlog/stats.json`: everything, for `truecombat.eu/devlog-stats.html`
+  (header `Authorization: Bearer <studio key>`).
+
+Install on the VPS: `deploy/install-devlog.sh` (systemd unit `tcp-devlog`, port
+127.0.0.1:8092, studio key in `/etc/tcp-devlog/key`, printed once on the first
+run), then add the `/devlog/*` Caddy route it prints. To make read counts
+public later, add `--public-reads` to `ExecStart` in
+`/etc/systemd/system/tcp-devlog.service` and restart the service; the site
+picks them up by itself.
+
+Tests: `python -m unittest test_devlog`.
