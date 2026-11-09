@@ -212,6 +212,48 @@ var TCP_API = 'https://api.truecombat.eu';
     var pill = root.querySelector('.pill');
     if (pill) { pill.textContent = text; pill.classList.toggle('ok', ok); }
   }
+  /* ---------- support: live donation report (tools/server-bridge/tcp_kofi.py) ---------- */
+  (function () {
+    var rep = document.querySelector('[data-fund]');
+    if (!rep) return;
+    var nl = document.documentElement.lang === 'nl';
+    var T = nl
+      ? { month: 'Maand', in: 'Ontvangen', out: 'Uitgegeven', reserve: 'Reserve', open: 'loopt nog', anon: 'Anoniem', monthly: 'maandelijks',
+          now: 'Deze maand', of: 'van', sup: 'Supporters deze maand', none: 'Nog geen bijdragen deze maand. Jij kunt de eerste zijn.',
+          months: 'januari februari maart april mei juni juli augustus september oktober november december'.split(' ') }
+      : { month: 'Month', in: 'Received', out: 'Spent', reserve: 'Reserve', open: 'in progress', anon: 'Anonymous', monthly: 'monthly',
+          now: 'This month', of: 'of', sup: 'Supporters this month', none: 'No contributions yet this month. You could be the first.',
+          months: 'January February March April May June July August September October November December'.split(' ') };
+    var spent = {};
+    try { spent = JSON.parse(rep.getAttribute('data-fund') || '{}'); } catch (e) { spent = {}; }
+    function eur(n) { return '€' + (Math.round(n * 100) / 100).toLocaleString(nl ? 'nl-BE' : 'en-GB', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); }
+    function label(key) { var p = key.split('-'); var m = T.months[+p[1] - 1]; return (nl ? m : m) + ' ' + p[0]; }
+    api('/funding.json').then(function (d) {
+      if (!d || d.schema !== 'tcp-funding/1') return;
+      var goal = d.goal || +rep.getAttribute('data-goal') || 150;
+      var byMonth = {};
+      (d.months || []).forEach(function (m) { byMonth[m.month] = m; });
+      var now = new Date(), cur = now.getUTCFullYear() + '-' + ('0' + (now.getUTCMonth() + 1)).slice(-2);
+      var keys = Object.keys(byMonth).concat(Object.keys(spent)).filter(function (k, i, a) { return a.indexOf(k) === i; }).sort();
+      if (keys.indexOf(cur) < 0) keys.push(cur);
+      var reserve = 0, rows = [];
+      keys.forEach(function (k) {
+        var got = byMonth[k] ? (byMonth[k].received.EUR || 0) : 0;
+        var out = spent[k];
+        if (out != null) reserve += got - out;
+        rows.push('<tr><td>' + esc(label(k)) + '</td><td>' + eur(got) + '</td><td>' + (out != null ? eur(out) : '<span class="dim">' + T.open + '</span>') + '</td><td>' + (out != null ? eur(reserve) : '') + '</td></tr>');
+      });
+      var m = byMonth[cur], got = m ? (m.received.EUR || 0) : 0, pct = Math.min(100, Math.round(got / goal * 100));
+      var sup = m && m.supporters.length
+        ? '<ul class="fund-sup">' + m.supporters.map(function (s) { return '<li><b>' + esc(s.name || T.anon) + '</b><span>' + eur(s.amount) + (s.monthly ? ' · ' + T.monthly : '') + '</span></li>'; }).join('') + '</ul>'
+        : '<p class="fund-empty">' + T.none + '</p>';
+      rep.innerHTML =
+        '<div class="fund-now"><div class="fund-now-h"><span>' + T.now + '</span><b>' + eur(got) + '</b> <small>' + T.of + ' ' + eur(goal) + '</small></div>' +
+        '<div class="fund-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + goal + '" aria-valuenow="' + got + '"><i style="width:' + pct + '%"></i></div></div>' +
+        '<div class="table-scroll"><table class="fund-table"><thead><tr><th>' + T.month + '</th><th>' + T.in + '</th><th>' + T.out + '</th><th>' + T.reserve + '</th></tr></thead><tbody>' + rows.reverse().join('') + '</tbody></table></div>' +
+        '<h4 class="fund-sup-h">' + T.sup + '</h4>' + sup;
+    }).catch(function () { /* keep the static report */ });
+  })();
   function renderServers(root, data) {
     var limit = root.dataset.servers === 'all' ? 999 : parseInt(root.dataset.servers, 10) || 5;
     var list = (data.servers || []).slice().sort(function (a, b) { return (b.players || 0) - (a.players || 0); });

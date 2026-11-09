@@ -778,13 +778,13 @@ FUND_T = {
     "en": {"eyebrow": "Where the money goes", "h2": "Every euro, accounted for",
            "lede": "Running TrueCombat: Platinum costs about <b>&euro;%d a month</b>. That is also our monthly goal on Ko-fi. This is exactly what it covers.",
            "order_h": "In this order", "order": ["Running costs come first: servers, infrastructure and the domain.", "Then a reserve of three months of running costs, so the servers stay up through a quiet month.", "Only then development time and tools."],
-           "report_h": "Monthly report", "report_lede": "After every month we publish what came in, what went out and what is left in reserve.",
+           "report_h": "Monthly report", "report_lede": "Every contribution is counted live as it comes in. After every month we add what went out and what is left in reserve.",
            "first": "The first report is published in %s.", "month": "Month", "in": "Received", "out": "Spent", "reserve": "Reserve",
            "goal": "Monthly goal"},
     "nl": {"eyebrow": "Waar het geld naartoe gaat", "h2": "Elke euro verantwoord",
            "lede": "TrueCombat: Platinum draaiende houden kost ongeveer <b>&euro;%d per maand</b>. Dat is ook ons maanddoel op Ko-fi. Dit is precies wat het dekt.",
            "order_h": "In deze volgorde", "order": ["Eerst de vaste kosten: servers, infrastructuur en het domein.", "Dan een reserve van drie maanden vaste kosten, zodat de servers ook in een rustige maand online blijven.", "Pas daarna ontwikkeltijd en tools."],
-           "report_h": "Maandverslag", "report_lede": "Na elke maand publiceren we wat er binnenkwam, wat er uitging en wat er in reserve blijft.",
+           "report_h": "Maandverslag", "report_lede": "Elke bijdrage wordt live geteld zodra ze binnenkomt. Na elke maand vullen we aan wat er uitging en wat er in reserve blijft.",
            "first": "Het eerste verslag verschijnt %s.", "month": "Maand", "in": "Ontvangen", "out": "Uitgegeven", "reserve": "Reserve",
            "goal": "Maanddoel"},
 }
@@ -810,6 +810,8 @@ def support_funding(lang):
                   % (T["month"], T["in"], T["out"], T["reserve"], "".join(reversed(rows))))
     else:
         report = '<p class="fund-empty">%s</p>' % (T["first"] % d["first_report"][lang])
+    report = '<div class="fund-report" data-fund=\'%s\' data-goal="%d">%s</div>' % (
+        json.dumps({m["month"]: m["spent"] for m in d["months"]}), d["goal"], report)
     return f"""<!--support-funding-->
 <section class="band band-alt" id="where">
   <div class="wrap">
