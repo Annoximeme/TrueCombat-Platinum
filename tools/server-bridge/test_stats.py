@@ -125,6 +125,20 @@ gid = __import__("hashlib").sha256(("tcp-lb:" + "A" * 32).encode()).hexdigest()[
 check("ratings export for team balance", n == 4 and len(lines) == 4 and gid in lines
       and int(lines[gid]) == [p for p in get("/leaderboard.json")["players"] if p["name"] == "Gianni"][0]["rating"], (n, lines))
 
+# Leaver backfill: a filler on the losing side keeps their rating, a regular player still loses.
+fm = tcp_stats.sanitize(report(30, winner="specops"), trusted=True)
+for p in fm["players"]:
+    if p["name"] == "Dax":
+        p["filler"] = True
+fd = tcp_stats.rate(fm, {}, {})
+ids = {p["name"]: p["id"] for p in fm["players"]}; dax, cleo = ids["Dax"], ids["Cleo"]
+check("filler on the losing team loses no rating", fd[dax] == 0.0, fd)
+check("regular player on the losing team still loses", fd[cleo] < 0, fd)
+fr = report(31); fr["players"][3]["filler"] = True
+check("filler flag survives sanitize", [p for p in tcp_stats.sanitize(fr, trusted=True)["players"] if p["name"] == "Dax"][0]["filler"] is True)
+fr["players"][3]["filler"] = "yes"
+check("filler must be a real boolean", [p for p in tcp_stats.sanitize(fr, trusted=True)["players"] if p["name"] == "Dax"][0]["filler"] is False)
+
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))
 sys.exit(1 if failed else 0)
