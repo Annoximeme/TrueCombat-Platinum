@@ -1275,3 +1275,15 @@ html { scrollbar-color: #2e3747 var(--bg); }
 .fund-table th { font: 600 .78rem/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 @media (max-width: 1000px) { .fund-covers { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fund-split { grid-template-columns: 1fr; } }
 @media (max-width: 520px) { .fund-covers { grid-template-columns: 1fr; } }
+.fund-now { margin: 0 0 18px; }
+.fund-now-h { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.fund-now-h span { font: 600 .78rem/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.fund-now-h b { font: 700 1.6rem/1 var(--f-display); color: var(--amber); }
+.fund-now-h small { color: var(--muted); }
+.fund-bar { height: 10px; border-radius: 5px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; }
+.fund-bar i { display: block; height: 100%; background: var(--amber); }
+.fund-table .dim { color: var(--muted); font-style: italic; }
+.fund-sup-h { margin: 22px 0 10px; font: 600 .82rem/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.fund-sup { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.fund-sup li { display: inline-flex; gap: 8px; align-items: baseline; padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); }
+.fund-sup span { color: var(--muted); font-size: .88rem; }
