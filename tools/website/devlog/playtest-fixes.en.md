@@ -1,13 +1,13 @@
 ---
 title: What the playtests told us
 date: 2026-11-09
-summary: Our latest community playtests turned up a clear list of problems, led by gunplay. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.
+summary: Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.
 image: img/media-grenade.webp
 tag: Roadmap
 ---
 The best test of a shooter is a full server of people who know how it is supposed to feel. Our most recent community playtests gave us exactly that, and the verdict was honest: the foundations are there, but too many small things still feel wrong next to the original. This post lists every issue that came out of those sessions, the order we will tackle them in, and where they sit next to the work we described in [What we are working on next](devlog-whats-next.html).
 
-None of these fixes has started yet, and none of them has a date. Each one ships when it passes the full test gate. We will update this list as items land.
+The result is a long list of fixes, and they are lined up for the next patch. It will not have a date until it is ready: each fix ships once it passes the full test gate, and we will update this post as items land. Every update brings Platinum a step closer to the enhanced, better game we set out to make.
 
 > Gunplay comes first. Until every shot lands where you aim and does what it should, nothing else on this list matters as much.
 
@@ -61,4 +61,4 @@ After that come the larger features: 2D match replays with automatic highlights,
 
 ## Thank you
 
-Every item above came from players who took the time to play, notice and tell us. That is exactly the kind of testing we cannot do on our own. If you spot something else, or if one of these issues matters more to you than the rest, tell us on [Discord](https://discord.gg/8kcHdg2Hch). The [roadmap](index.html#roadmap) shows what has landed as we go.
+Every item above came from players who took the time to play, notice and tell us. That is exactly the kind of testing we cannot do on our own, and it is why the next patch carries as many fixes as it does. If you spot something else, or if one of these issues matters more to you than the rest, tell us on [Discord](https://discord.gg/8kcHdg2Hch). The [roadmap](index.html#roadmap) shows what has landed as we go.
