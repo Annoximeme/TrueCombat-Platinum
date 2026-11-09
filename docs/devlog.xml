@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/devlog.html</id>
   <updated>2026-11-09T12:00:00Z</updated>
   <entry>
+    <title>Counting readers without tracking anyone</title>
+    <link href="https://truecombat.eu/devlog-reads-and-ratings.html"/>
+    <id>https://truecombat.eu/devlog-reads-and-ratings.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Community"/>
+    <summary>Every devlog post now ends with a star rating, and we can finally see which posts people read. Here is how we built that without cookies, without analytics and without storing anything that points back to you.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>What we are working on next</title>
     <link href="https://truecombat.eu/devlog-whats-next.html"/>
     <id>https://truecombat.eu/devlog-whats-next.html</id>

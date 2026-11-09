@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/nl/devlog.html</id>
   <updated>2026-11-09T12:00:00Z</updated>
   <entry>
+    <title>Lezers tellen zonder iemand te volgen</title>
+    <link href="https://truecombat.eu/nl/devlog-reads-and-ratings.html"/>
+    <id>https://truecombat.eu/nl/devlog-reads-and-ratings.html</id>
+    <published>2026-11-09T12:00:00Z</published>
+    <updated>2026-11-09T12:00:00Z</updated>
+    <category term="Community"/>
+    <summary>Elk devlogartikel eindigt nu met een sterrenbeoordeling, en we zien eindelijk welke artikelen gelezen worden. Zo hebben we dat gebouwd, zonder cookies, zonder analytics en zonder iets op te slaan dat naar jou terugwijst.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Waar we hierna aan werken</title>
     <link href="https://truecombat.eu/nl/devlog-whats-next.html"/>
     <id>https://truecombat.eu/nl/devlog-whats-next.html</id>
