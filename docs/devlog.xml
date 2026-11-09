@@ -36,6 +36,16 @@
     <author><name>Team Terminus</name></author>
   </entry>
   <entry>
+    <title>Ten pieces of work, one update</title>
+    <link href="https://truecombat.eu/devlog-one-update.html"/>
+    <id>https://truecombat.eu/devlog-one-update.html</id>
+    <published>2026-11-08T12:00:00Z</published>
+    <updated>2026-11-08T12:00:00Z</updated>
+    <category term="Testing"/>
+    <summary>The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>What keeps the official servers running</title>
     <link href="https://truecombat.eu/devlog-official-servers.html"/>
     <id>https://truecombat.eu/devlog-official-servers.html</id>

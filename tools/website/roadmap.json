@@ -257,6 +257,56 @@
    "version": "0.33"
   },
   {
+   "en": "Custom graphics preset with every option switchable",
+   "nl": "Een aangepaste grafische preset waarin elke optie aan of uit kan",
+   "version": "0.34"
+  },
+  {
+   "en": "Weapon and view motion, shell casings and gear worn on the back",
+   "nl": "Wapen- en kijkbeweging, hulzen en uitrusting op de rug",
+   "version": "0.34"
+  },
+  {
+   "en": "The original fall damage",
+   "nl": "De originele valschade",
+   "version": "0.34"
+  },
+  {
+   "en": "Original camouflage and climbing sounds",
+   "nl": "Originele camouflage en klimgeluiden",
+   "version": "0.34"
+  },
+  {
+   "en": "Killed-by card, damage direction, player votes and quick radio",
+   "nl": "Killed-by-kaart, schaderichting, spelersstemmingen en snelle radio",
+   "version": "0.34"
+  },
+  {
+   "en": "Loadout presets, automatic demos and accessibility options",
+   "nl": "Loadout-presets, automatische demo's en toegankelijkheidsopties",
+   "version": "0.34"
+  },
+  {
+   "en": "Hor+ field of view and a centred HUD on 21:9 and 32:9",
+   "nl": "Hor+ gezichtsveld en een gecentreerde HUD op 21:9 en 32:9",
+   "version": "0.34"
+  },
+  {
+   "en": "Discord Rich Presence with join from Discord",
+   "nl": "Discord Rich Presence met meedoen vanuit Discord",
+   "version": "0.34"
+  },
+  {
+   "en": "Skill-based team balance, AFK handling and in-game reports",
+   "nl": "Teambalans op vaardigheid, AFK-afhandeling en meldingen in het spel",
+   "version": "0.34"
+  },
+  {
+   "en": "Native Linux dedicated server",
+   "nl": "Native dedicated server voor Linux",
+   "version": "0.34"
+  },
+  {
    "en": "Easy Anti-Cheat",
    "nl": "Easy Anti-Cheat",
    "version": null
@@ -267,13 +317,18 @@
    "version": null
   },
   {
-   "en": "Redesigned launcher",
-   "nl": "Vernieuwde launcher",
-   "version": null
+   "en": "Redesigned launcher with Quick Play and server filters",
+   "nl": "Vernieuwde launcher met Quick Play en serverfilters",
+   "version": "0.34"
   },
   {
    "en": "Voice commands",
    "nl": "Spraakcommando's",
+   "version": "0.34"
+  },
+  {
+   "en": "Matchmaking through a Discord pickup queue",
+   "nl": "Matchmaking via een Discord-pickupwachtrij",
    "version": null
   }
  ]
