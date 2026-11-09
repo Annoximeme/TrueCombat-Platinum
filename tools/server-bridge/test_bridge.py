@@ -24,7 +24,7 @@ def game(name, players, mode, extra=""):
             yield OOB + ("statusResponse\n" + info + "\n" + lines).encode()
     return udp(h)
 
-g1 = game("^1Red ^7Server", [("^2Gianni", 12, 30), ("Bob", 3, 55), ("Bot Hawk", 4, 0)], "Team elimination", "\\tcp_ranked\\1")
+g1 = game("^1Red ^7Server", [("^2Gianni", 12, 30), ("Bob", 3, 55), ("Bot Hawk", 4, 0)], "Team elimination", "\\tcp_ranked\\1\\tcp_need\\1")
 g2 = game("Quiet", [], "Practice")
 dead = ("127.0.0.1", 9)  # listed but never answers
 
@@ -58,7 +58,8 @@ red = [s for s in srv["servers"] if s["name"] == "Red Server"][0]
 assert red["players"] == 2 and red["maxPlayers"] == 16 and red["mode"] == "Team elimination" and red["playerList"][0]["name"] == "Gianni"
 assert red["bots"] == 1 and red["ranked"] is True and len(red["playerList"]) == 2
 quiet = [s for s in srv["servers"] if s["name"] == "Quiet"][0]
-assert quiet["bots"] == 0 and quiet["ranked"] is None
+assert red["need"] == 1
+assert quiet["bots"] == 0 and quiet["ranked"] is None and quiet["need"] == 0
 assert lb["matches"] == 3 and [p["name"] for p in lb["players"]] == ["Gianni", "Bob"]
 assert lb["players"][0]["kills"] == 30 and lb["players"][0]["topWeapon"] == "M4" and "guid" not in lb["players"][0]
 print("bridge test passed")
