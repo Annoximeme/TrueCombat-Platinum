@@ -785,7 +785,6 @@ var TCP_API = 'https://api.truecombat.eu';
       var mine = store(key) || '';
       var m = /^(\d{4}-\d\d-\d\d):([1-5])$/.exec(mine);
       paint(m ? +m[2] : 0);
-      box.hidden = false;
       function vote(n) {
         group.setAttribute('aria-busy', 'true');
         send('rate', { slug: slug, stars: n }).then(function () {
@@ -803,9 +802,10 @@ var TCP_API = 'https://api.truecombat.eu';
       });
     });
 
-    var slots = $all('[data-post-stat]');
-    if (!slots.length) return;
+    var slots = $all('[data-post-stat]'), boxes = $all('[data-rate]');
+    if (!slots.length && !boxes.length) return;
     fetch(base + 'public.json', { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+      boxes.forEach(function (box) { box.hidden = false; });  // only offer ratings when the service is up
       var posts = d.posts || {}, fmt = function (n) { return Number(n).toLocaleString(lang === 'nl' ? 'nl-BE' : 'en-GB'); };
       slots.forEach(function (el) {
         var p = posts[el.dataset.postStat]; if (!p) return;
