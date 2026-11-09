@@ -1,6 +1,7 @@
 ---
 title: Gratis is gratis: zo werkt steunen
 date: 2026-11-09
+updated: 2026-11-09
 summary: TrueCombat: Platinum heeft nu een steunpagina en een Ko-fi. Waarom we die toevoegden, waar het geld naartoe gaat en de regels die we onszelf oplegden, zodat steunen nooit verandert hoe het spel speelt.
 image: img/map-snow.webp
 tag: Community
@@ -11,7 +12,9 @@ Wie wil bijdragen aan die kosten, kan dat nu. Vanaf vandaag is er een [steunpagi
 
 ## Waar het geld naartoe gaat
 
-Elke bijdrage gaat naar de infrastructuur die het spel online houdt: de officiële servers, de masterserver, de website en de ranglijsten. Dat is de hele lijst. Wat er boven de maandelijkse kosten uitkomt, wordt opzijgezet voor wat hierna komt, zoals meer servers in meer regio's als de community groeit.
+Platinum draaiende houden kost ongeveer €150 per maand, en dat is ook ons doel op Ko-fi. Daarmee betalen we de officiële servers en de masterserver, de infrastructuur achter de website, de ranglijsten en de updates, het domein truecombat.eu, ontwikkeltijd, en de tools die het werk hierna nodig heeft, zoals een code-signing-certificaat voor de installer.
+
+Het geld gaat in een vaste volgorde op. Eerst de vaste kosten. Dan bouwen we een reserve van drie maanden op, zodat de servers ook in een rustige maand online blijven. Pas daarna gaat het naar ontwikkeltijd en tools. Na elke maand publiceren we wat er binnenkwam, wat er uitging en wat er in reserve blijft. De volledige verdeling en het maandverslag vind je onder [Waar het geld naartoe gaat](support.html#where).
 
 ## De regels die we onszelf oplegden
 

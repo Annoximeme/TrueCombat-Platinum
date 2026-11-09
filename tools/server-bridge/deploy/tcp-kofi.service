@@ -1,0 +1,23 @@
+[Unit]
+Description=TrueCombat: Platinum donation ledger (Ko-fi webhook)
+After=network-online.target
+
+[Service]
+User=tcpsvc
+Group=tcpsvc
+ExecStart=/usr/bin/python3 /opt/tcp/server-bridge/tcp_kofi.py --db /var/lib/tcp-kofi/kofi.db --token-file ${CREDENTIALS_DIRECTORY}/token --listen 127.0.0.1:8091 --goal 150
+LoadCredential=token:/etc/tcp-kofi/token
+Restart=on-failure
+RestartSec=5
+StateDirectory=tcp-kofi
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/var/lib/tcp-kofi
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=128M
+
+[Install]
+WantedBy=multi-user.target

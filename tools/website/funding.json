@@ -1,0 +1,66 @@
+{
+  "_help": "Transparency report on support.html (#where). 'goal' is the monthly target in euros (keep it equal to the Ko-fi goal and tcp_kofi.py --goal). Money received is counted live by tools/server-bridge/tcp_kofi.py and shown by site.js. After each month closes, add {\"month\": \"2026-11\", \"received\": <Ko-fi total>, \"spent\": <paid out>} here (whole euros; received is the fallback when the API is offline), then run python tools/website/build.py. The reserve is calculated.",
+  "goal": 150,
+  "first_report": {
+    "en": "early December 2026, covering November",
+    "nl": "begin december 2026, over november"
+  },
+  "covers": [
+    {
+      "key": "servers",
+      "en": [
+        "Servers",
+        "The official game servers and the master server behind the in-game browser, online around the clock."
+      ],
+      "nl": [
+        "Servers",
+        "De officiële gameservers en de masterserver achter de serverlijst in het spel, dag en nacht online."
+      ]
+    },
+    {
+      "key": "infra",
+      "en": [
+        "Infrastructure",
+        "This website, the live leaderboards and stats, update delivery and nightly off-site backups."
+      ],
+      "nl": [
+        "Infrastructuur",
+        "Deze website, de live ranglijsten en statistieken, de updates en de nachtelijke externe back-ups."
+      ]
+    },
+    {
+      "key": "domain",
+      "en": [
+        "Domain",
+        "truecombat.eu and the subdomains for the stats API and master server."
+      ],
+      "nl": [
+        "Domein",
+        "truecombat.eu en de subdomeinen voor de statistieken-API en de masterserver."
+      ]
+    },
+    {
+      "key": "dev",
+      "en": [
+        "Development time",
+        "The hours that go into every release: the engine, the renderer, the maps, testing and patch day."
+      ],
+      "nl": [
+        "Ontwikkeltijd",
+        "De uren achter elke release: de engine, de renderer, de maps, het testen en de patchdag."
+      ]
+    },
+    {
+      "key": "tools",
+      "en": [
+        "Tools",
+        "What the work needs next, such as a code-signing certificate for the installer and test hardware."
+      ],
+      "nl": [
+        "Tools",
+        "Wat het werk hierna nodig heeft, zoals een code-signing-certificaat voor de installer en testhardware."
+      ]
+    }
+  ],
+  "months": []
+}

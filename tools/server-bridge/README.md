@@ -145,3 +145,28 @@ player also has `rating`, `kd`, `objectives`, `position` and `rank` (`level`, `t
                 "headshots": 52, "wins": 48, "timePlayed": 15600, "topWeapon": "M4" }]
 }
 ```
+
+## Donation ledger (tcp_kofi.py)
+
+Feeds the live monthly report on `support.html#where`. Ko-fi calls
+`POST /kofi/webhook` for every donation and membership payment; the service
+checks Ko-fi's verification token, stores the payment in SQLite and serves
+`GET /funding.json` (schema `tcp-funding/1`: goal, and per month the amount
+received per currency, the count and the supporters list). E-mail addresses,
+Ko-fi URLs and messages are never stored, and a name is only shown when the
+supporter made their contribution public. Shop orders and commissions are
+ignored. Ko-fi retries are de-duplicated on the transaction id.
+
+Install on the VPS: `deploy/install-kofi.sh` (systemd unit `tcp-kofi`, port
+127.0.0.1:8091, token in `/etc/tcp-kofi/token`), add the two Caddy routes it
+prints, then set the webhook URL in Ko-fi to
+`https://api.truecombat.eu/kofi/webhook`.
+
+Payments from before the webhook existed: `tcp_kofi.py --db /var/lib/tcp-kofi/kofi.db add 2026-11-09 5.00 "Name"`
+(leave the name out for Anonymous, add `--monthly` for a membership).
+
+Money going out stays manual: add `{"month": "2026-11", "spent": 150}` style
+entries to `tools/website/funding.json` (with `received` for the static
+fallback) and rebuild the site.
+
+Tests: `python -m unittest test_kofi`.
