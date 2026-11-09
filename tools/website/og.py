@@ -27,6 +27,7 @@ PAGES = {
     "devlog": ("map-stadtrand.webp", "Devlog", "How TrueCombat: Platinum gets built"),
     "press": ("map-snow.webp", "Press kit", "Logos, unedited screenshots and a fact sheet"),
     "studio": ("map-village.webp", "Team Terminus", "The studio behind TrueCombat: Platinum"),
+    "support": ("map-snow.webp", "Support", "Free to play, no store, no pay-to-win"),
 }
 
 
