@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import logging
 from pathlib import Path
@@ -12,11 +13,18 @@ from discord import app_commands
 from discord.ext import commands
 
 from . import __version__, embeds
+from . import emoji as E
 from .config import Config
 from .sources import Releases, StatsAPI, StatsUnavailable
 from .store import Store
 
 log = logging.getLogger("tcpbot")
+
+# Shown under "About me" on the bot's profile
+ABOUT = ("The official bot of TrueCombat: Platinum, the modern return of TrueCombat: Elite.\n\n"
+         "Live server status, player profiles and leaderboards, pickup games, match reports and "
+         "devlog news. Try /profile, /top and /servers.\n\n"
+         "truecombat.eu")
 
 EXTENSIONS = (
     "tcpbot.cogs.status",
@@ -82,6 +90,42 @@ class TCPBot(commands.Bot):
     async def on_ready(self):
         log.info("connected as %s (%s), version %s", self.user, self.user.id, __version__)
         await self.sync_avatar()
+        if not getattr(self, "_dressed", False):
+            self._dressed = True
+            await self.sync_profile()
+            await E.sync(self)
+
+    async def sync_profile(self):
+        """Banner and About me, uploaded once per design change (both are rate-limited by Discord)."""
+        from . import cards
+        try:
+            banner = await asyncio.to_thread(cards.banner, self.cfg["devlog"]["site_root"])
+        except OSError as e:
+            log.warning("could not draw the banner: %s", e)
+            return
+        digest = hashlib.sha256(banner + ABOUT.encode()).hexdigest()
+        if self.store.get("profile_sha256") == digest:
+            return
+        try:
+            await self.user.edit(banner=banner)
+            info = await self.application_info()
+            await info.edit(description=ABOUT)
+        except discord.HTTPException as e:
+            log.warning("could not update the bot profile yet (%s); will retry on the next start", e)
+            return
+        self.store.set("profile_sha256", digest)
+        log.info("profile banner and About me updated")
+
+    async def set_presence(self, text: str):
+        """The line under the bot's name. Only sent when it changes."""
+        text = (text or self.cfg["presence"])[:120]
+        if text == getattr(self, "_presence", None):
+            return
+        self._presence = text
+        try:
+            await self.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=text))
+        except (discord.HTTPException, ConnectionError) as e:
+            log.debug("presence not updated: %s", e)
 
     async def sync_avatar(self):
         """Uploads assets/avatar.png as the bot's profile picture when it changed.
@@ -104,6 +148,18 @@ class TCPBot(commands.Bot):
         log.info("profile picture updated from %s", path)
 
     # ------------------------------------------------------------ helpers
+    async def draw(self, name: str, fn, *args) -> discord.File | None:
+        """Renders an image card off the event loop. None (and a plain text card) when drawing fails."""
+        if not self.cfg["cards"]["enabled"]:
+            return None
+        try:
+            data = await asyncio.to_thread(fn, *args)
+        except Exception:  # noqa: BLE001 - a broken card must never cost the member their answer
+            log.exception("could not draw %s", name)
+            return None
+        import io
+        return discord.File(io.BytesIO(data), filename=name)
+
     @property
     def guild(self) -> discord.Guild | None:
         return self.get_guild(int(self.cfg["guild_id"]))

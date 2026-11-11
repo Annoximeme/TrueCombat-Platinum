@@ -89,6 +89,8 @@ DEFAULTS: dict = {
         "mode": "draft",
         "ping_role_id": 0,   # 0 = the "Patch notes" opt-in role from /setup roles
     },
+    # Image cards for /profile, /top and match reports (drawn with Pillow, map art from the site copy)
+    "cards": {"enabled": True},
     "devlog": {
         "enabled": True,
         "feed": "/var/www/truecombat/devlog.xml",

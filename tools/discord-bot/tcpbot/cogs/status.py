@@ -15,6 +15,7 @@ import discord
 from discord.ext import commands, tasks
 
 from .. import embeds
+from .. import text as T
 from ..sources import StatsUnavailable, is_bot, query_game
 
 log = logging.getLogger("tcpbot.status")
@@ -22,7 +23,7 @@ log = logging.getLogger("tcpbot.status")
 
 class JoinButton(discord.ui.DynamicItem[discord.ui.Button], template=r"tcp:join:(?P<key>[a-z0-9_-]+)"):
     def __init__(self, key: str):
-        super().__init__(discord.ui.Button(label="How to join", style=discord.ButtonStyle.danger,
+        super().__init__(discord.ui.Button(label="How to join", style=discord.ButtonStyle.secondary,
                                            custom_id="tcp:join:%s" % key))
         self.key = key
 
@@ -42,10 +43,31 @@ class JoinButton(discord.ui.DynamicItem[discord.ui.Button], template=r"tcp:join:
 
 def card_view(cfg, key: str) -> discord.ui.View:
     v = discord.ui.View(timeout=None)
+    server = cfg.server(key)
+    if server and server.get("public_address"):
+        v.add_item(discord.ui.Button(label="Join server", url=embeds.join_link(cfg, server["public_address"]),
+                                     emoji="\N{BLACK RIGHT-POINTING TRIANGLE}"))
     v.add_item(JoinButton(key))
     v.add_item(discord.ui.Button(label="Server list", url=cfg.site + "/servers.html"))
     v.add_item(discord.ui.Button(label="Leaderboards", url=cfg.site + "/leaderboards.html"))
     return v
+
+
+def presence_line(seen: list[tuple[str, int, str]], tick: int, idle: str) -> str:
+    """What the bot is "watching": the busiest server, or the map rotation when everyone is away."""
+    if not seen:
+        return idle
+    busy = sorted(seen, key=lambda s: -s[1])
+    name, humans, mapname = busy[0]
+    if humans:
+        total = sum(s[1] for s in seen)
+        if tick % 3 == 2 and total > humans:
+            return "%d players across our servers" % total
+        return "%d player%s on %s · %s" % (humans, "" if humans == 1 else "s", name, T.map_label(mapname))
+    if tick % 3 == 2:
+        return idle
+    name, _h, mapname = seen[(tick // 3) % len(seen)]
+    return "%s on %s · join now" % (T.map_label(mapname), name)
 
 
 def signature(embed: discord.Embed) -> str:
@@ -89,14 +111,20 @@ class Status(commands.Cog):
         except StatsUnavailable:
             servers = None
 
+        seen = []
         for server in self.cfg["servers"]:
             status = await query_game(server["host"], server["port"])
             shown, offline_since = self.track(server, status)
+            if status:
+                humans = len([p for p in status["players"] if not is_bot(p, self.cfg["bot_name_pattern"])])
+                seen.append((server["name"], humans, status["cvars"].get("mapname", "")))
             await self.update_card(server, shown, board, servers, offline_since)
             if status and server.get("match_alerts", True):
                 await self.check_match(server, status)
         if board:
             await self.check_leader(board)
+        self.passes = getattr(self, "passes", 0) + 1
+        await self.bot.set_presence(presence_line(seen, self.passes, self.cfg["presence"]))
 
     # ------------------------------------------------------------ server state
     def track(self, server: dict, status: dict | None):

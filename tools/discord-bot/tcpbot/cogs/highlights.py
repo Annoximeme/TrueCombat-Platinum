@@ -18,7 +18,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 
 from .. import achievements as A
-from .. import embeds
+from .. import cards, embeds
 from ..bot import UserFacingError
 from ..sources import StatsUnavailable
 
@@ -118,7 +118,10 @@ class Highlights(commands.Cog):
             link = self.bot.store.linked_member(p["id"])
             if link:
                 mentions[p["id"]] = link["discord_id"]
-        await ch.send(embed=embeds.match_report(self.cfg, row, detail, unlocked, mentions))
+        f = await self.bot.draw("match.png", cards.match_card, row, detail, self.cfg["devlog"]["site_root"]) \
+            if detail else None
+        await ch.send(embed=embeds.match_report(self.cfg, row, detail, unlocked, mentions,
+                                                card=f.filename if f else None), **({"file": f} if f else {}))
 
     async def award(self, detail: dict) -> list[tuple[str, str]]:
         """Unlocks what this match earned. Returns [(name, key)] worth announcing."""

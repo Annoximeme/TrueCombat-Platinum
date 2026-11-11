@@ -70,6 +70,58 @@ class OptInButton(discord.ui.DynamicItem[discord.ui.Button], template=r"tcp:role
         await interaction.response.send_message(embed=embeds.notice("Notifications", text), ephemeral=True)
 
 
+def _link_row(cfg) -> discord.ui.ActionRow:
+    return discord.ui.ActionRow(
+        discord.ui.Button(label="Download", url=cfg.site + "/download", emoji="\N{DOWNWARDS BLACK ARROW}"),
+        discord.ui.Button(label="Player guide", url=cfg.site + "/guide"),
+        discord.ui.Button(label="Servers", url=cfg.site + "/servers"),
+        discord.ui.Button(label="Leaderboards", url=cfg.site + "/leaderboards"))
+
+
+def _opt_in_lines() -> str:
+    return "\n".join("**%s** · %s" % (name, about) for name, _c, about in OPT_IN.values())
+
+
+def panel_layout(cfg) -> discord.ui.LayoutView:
+    """The get-started panel in Discord's newer layout: banner, choices and buttons in one framed card."""
+    v = discord.ui.LayoutView(timeout=None)
+    v.add_item(discord.ui.Container(
+        discord.ui.MediaGallery(discord.MediaGalleryItem(cfg.site + "/img/og.jpg")),
+        discord.ui.TextDisplay("## Get set up\nPick what you want to hear about. Press a button again to turn "
+                               "it off, any time."),
+        discord.ui.Separator(),
+        discord.ui.TextDisplay(_opt_in_lines()),
+        discord.ui.ActionRow(*(OptInButton(k) for k in OPT_IN)),
+        discord.ui.Separator(),
+        discord.ui.TextDisplay("-# Link your game profile with `/link` for your rank role and `/profile`."),
+        _link_row(cfg),
+        accent_colour=0xD63B3B))
+    return v
+
+
+def welcome_layout(cfg, member: discord.Member) -> discord.ui.LayoutView:
+    v = discord.ui.LayoutView(timeout=None)
+    v.add_item(discord.ui.Container(
+        discord.ui.Section(
+            discord.ui.TextDisplay("## Welcome to the front, %s" % member.mention),
+            discord.ui.TextDisplay("TrueCombat: Platinum is the modern return of TrueCombat: Elite, the tactical "
+                                   "shooter built on Wolfenstein: Enemy Territory. Here is how to get into a match."),
+            accessory=discord.ui.Thumbnail(member.display_avatar.url)),
+        discord.ui.Separator(),
+        discord.ui.TextDisplay(
+            "**1 · Install** · [Download the installer](%s/download). The launcher keeps the game up to date.\n"
+            "**2 · Learn the basics** · Start with the [player guide](%s/guide), then warm up against bots with "
+            "**Practice** in the launcher.\n"
+            "**3 · Find a match** · `/servers` shows who is playing right now.\n"
+            "**4 · Make it yours** · `/link` connects your game profile for your rank role and `/profile`."
+            % (cfg.site, cfg.site)),
+        discord.ui.MediaGallery(discord.MediaGalleryItem(cfg.site + "/img/og.jpg")),
+        discord.ui.TextDisplay("-# Choose your alerts:"),
+        discord.ui.ActionRow(*(OptInButton(k) for k in OPT_IN)),
+        accent_colour=0xD63B3B))
+    return v
+
+
 def opt_in_view(cfg) -> discord.ui.View:
     v = discord.ui.View(timeout=None)
     for key in OPT_IN:
@@ -132,7 +184,7 @@ class Community(commands.Cog):
         channel = self.bot.text_channel(self.cfg.channel("welcome"))
         if channel:
             try:
-                await channel.send(content=member.mention, embed=e, view=opt_in_view(self.cfg),
+                await channel.send(view=welcome_layout(self.cfg, member),
                                    allowed_mentions=discord.AllowedMentions(users=[member]))
             except discord.HTTPException as ex:
                 log.warning("welcome post failed: %s", ex)
@@ -200,7 +252,7 @@ class Community(commands.Cog):
     @setup.command(name="panel", description="Post the get-started panel with alert buttons in this channel")
     @staff_only()
     async def setup_panel(self, interaction: discord.Interaction):
-        await interaction.channel.send(embed=embeds.onboarding_panel(self.cfg), view=opt_in_view(self.cfg))
+        await interaction.channel.send(view=panel_layout(self.cfg))
         await interaction.response.send_message(embed=embeds.notice("Panel posted", "Members can pick their "
                                                 "alerts here at any time."), ephemeral=True)
 

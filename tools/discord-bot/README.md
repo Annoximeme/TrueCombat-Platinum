@@ -192,3 +192,18 @@ is a copy of `tools/server-bridge/tcp_stats.py`) against Discord's embed limits,
 (status cards, outage debounce, leader and match alerts, release drafts and publishing, linking, event
 waitlists, match reports, seasons, alerts, map votes, the chat bridge, appeals) against fake channels.
 The pickup queue and a full scrim run against a fake game server on real UDP.
+
+## Look and feel (1.2.0)
+
+- **Image cards.** `/profile`, `/top` and match reports post a drawn card in the game's HUD style
+  (tcpbot/cards.py, Pillow, the website's own fonts in assets/fonts under the SIL Open Font License).
+  Map art is read from the local site copy (`devlog.site_root`). If drawing ever fails, the bot posts the
+  text version instead. Turn the cards off with `"cards": {"enabled": false}`.
+- **Bot emoji.** The game's own rank insignia and team emblems (assets/game-icons, from the game's HUD
+  pk3) plus medals and status lights are uploaded as application emoji on start (tcpbot/emoji.py). They
+  belong to the bot, so they use none of the server's emoji slots. Changed art is re-uploaded by itself.
+- **Colours with a meaning.** Green: match live. Amber: filling up. Grey: waiting for players. Red: offline.
+  Spec Ops orange and Terrorist red on match cards, rank colours on profiles.
+- **Server cards** show a player bar (players, bots, open slots), the round count and a Join server button.
+- **Profile.** Banner and About me are set once per design change; the status line follows the busiest server.
+- **Welcome and get-started** use Discord's newer layout (framed card with banner, choices and buttons).

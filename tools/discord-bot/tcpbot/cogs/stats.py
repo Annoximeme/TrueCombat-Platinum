@@ -8,7 +8,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from .. import embeds
+from .. import cards, embeds
 from ..bot import UserFacingError
 from ..text import SORT_LABELS, clean
 
@@ -84,7 +84,10 @@ class Stats(commands.Cog):
         who = None
         if link and interaction.guild:
             who = interaction.guild.get_member(link["discord_id"])
-        await interaction.followup.send(embed=embeds.profile(self.cfg, p, who, self.bot.store.achievements(p["id"])), view=profile_buttons(self.cfg, p["id"]))
+        f = await self.bot.draw("profile.png", cards.profile_card, p, self.cfg["devlog"]["site_root"])
+        e = embeds.profile(self.cfg, p, who, self.bot.store.achievements(p["id"]), card=f.filename if f else None)
+        await interaction.followup.send(embed=e, view=profile_buttons(self.cfg, p["id"]),
+                                        **({"file": f} if f else {}))
 
     @app_commands.command(name="top", description="The leaderboard")
     @app_commands.describe(sort="What to rank by", period="All time or the last 30 days", count="How many players (5-20)")
@@ -96,7 +99,12 @@ class Stats(commands.Cog):
                   count: app_commands.Range[int, 5, 20] = 10):
         await interaction.response.defer(thinking=True)
         board = await self.bot.stats.leaderboard(sort, period, count)
-        await interaction.followup.send(embed=embeds.leaderboard(self.cfg, board or {}, sort, period))
+        board = board or {}
+        f = await self.bot.draw("leaderboard.png", cards.leaderboard_card, board, sort, period) \
+            if board.get("players") else None
+        await interaction.followup.send(embed=embeds.leaderboard(self.cfg, board, sort, period,
+                                                                 card=f.filename if f else None),
+                                        **({"file": f} if f else {}))
 
     @app_commands.command(name="servers", description="Servers online right now")
     @app_commands.checks.cooldown(3, 15.0)
