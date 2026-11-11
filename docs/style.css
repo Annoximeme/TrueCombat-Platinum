@@ -805,8 +805,9 @@ body > main { flex: 1 0 auto; }
 .notes-more { display: flex; margin: -6px auto 22px; }
 /* live player count in the hero */
 .hero-meta .live { color: var(--fg); font-weight: 500; }
-.hero-meta .live::before { background: var(--ok); box-shadow: 0 0 0 0 rgba(80, 200, 120, .6); animation: live-pulse 2s infinite; }
-@keyframes live-pulse { 70% { box-shadow: 0 0 0 7px rgba(80, 200, 120, 0); } 100% { box-shadow: 0 0 0 0 rgba(80, 200, 120, 0); } }
+.hero-meta .live::before { background: var(--ok); animation: live-pulse 2s infinite; }
+/* a fading dot instead of a growing shadow: opacity runs on the compositor and repaints nothing */
+@keyframes live-pulse { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { .hero-meta .live::before { animation: none; } }
 /* official servers */
 .official { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-bottom: 18px; }
@@ -1441,7 +1442,8 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
     radial-gradient(34% 50% at 86% 55%, rgba(190,205,225,.12), transparent 70%);
   filter: blur(18px); animation: fog 48s linear infinite alternate; transform: translate3d(calc(var(--px) * -28px), 0, 0); }
 .fog-b { bottom: auto; top: -22%; height: 60%; opacity: .6; animation-duration: 70s; animation-direction: alternate-reverse; }
-@keyframes fog { from { margin-left: -8%; } to { margin-left: 8%; } }
+/* moved with translate, not margin, so the drifting fog never triggers layout or repaints its blur */
+@keyframes fog { from { translate: -5% 0; } to { translate: 5% 0; } }
 .grain { position: absolute; inset: -60px; background-image: var(--grain); opacity: .11; mix-blend-mode: overlay; animation: grain 1.1s steps(5) infinite; }
 @keyframes grain { 0% { transform: translate(0, 0); } 20% { transform: translate(-22px, 14px); } 40% { transform: translate(16px, -26px); } 60% { transform: translate(-30px, -10px); } 80% { transform: translate(24px, 22px); } 100% { transform: translate(0, 0); } }
 .hud { position: absolute; width: 26px; height: 26px; border: 2px solid rgba(232,234,239,.38); opacity: 0; animation: hud-in .7s .5s cubic-bezier(.2,.8,.2,1) forwards; }
@@ -1683,3 +1685,12 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
 .nav-langs a { padding: 9px 12px; border-radius: 5px; color: var(--fg); text-decoration: none; font-size: .92rem; }
 .nav-langs a:hover { background: rgba(232, 234, 239, .07); }
 @media (max-width: 700px) { .nav-langs { display: none; } }
+
+/* ---------- performance pass ---------- */
+/* the logo sheen is masked with the same logo file the page already loaded for that screen */
+@media (max-resolution: 1.2dppx) { .logo-sheen { -webkit-mask-image: url(img/logo-640.webp); mask-image: url(img/logo-640.webp); } }
+/* long sections far below the fold are laid out and painted only when the visitor gets near them */
+#patch-notes, #roadmap, #faq { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+.wgroup > .wnote { margin: 14px 0 0; color: var(--dim); font-size: .82rem; }
+/* the hero's looping effects stop while it is scrolled out of view */
+.hero.offscreen .fog, .hero.offscreen .grain, .hero.offscreen .logo-sheen, .hero.offscreen h1 em, .hero.offscreen .btn-play, .hero.offscreen .slide { animation-play-state: paused; }
