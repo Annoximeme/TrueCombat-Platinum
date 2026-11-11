@@ -102,6 +102,10 @@ Totals, rank with XP progress, rating and peak rating, leaderboard position, per
 accuracy, and the last 20 matches with their rating change. Also `GET /search.json?q=<name>`,
 `GET /recent.json` and `GET /ranks.json`.
 
+### `GET /match.json?id=<match id>` (`tcp-match-page/1`)
+
+One finished match for its page on the website (`match.html?id=`): map, mode, length, rounds, winner, the score per team, the MVP and every player's line (kills, deaths, headshots, damage, objectives, top weapon, XP, rating change). The id is the `id` field of an entry in `/recent.json` or in a profile's `recent` list. It is a hash, so it gives away neither the server id nor the server's own match id.
+
 ### `POST /api/v1/match`
 
 Headers `X-TCP-Server`, `X-TCP-Time` (unix seconds) and `X-TCP-Signature`; body is the report. Answers
@@ -131,12 +135,6 @@ The native qagame writes this format itself (fields below plus `id`, `cheats`, `
 ```
 
 `kills` counts enemy kills only, and team kills go in `teamKills`. `timePlayed` is in seconds.
-
-## `GET /match.json?server=<server id>&id=<match id>` (`tcp-match-result/1`)
-
-One finished match with its scoreboard: map, mode, duration, rounds, winner and, per player, team, kills,
-deaths, headshots, damage, objectives, `won`, XP and rating change. `/recent.json` lists the `serverId` and
-`id` of the latest matches.
 
 ## `GET /recap.json?days=7` (`tcp-recap/1`)
 

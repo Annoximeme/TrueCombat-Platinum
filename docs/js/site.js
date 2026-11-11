@@ -37,6 +37,7 @@ var TCP_API = 'https://api.truecombat.eu';
       specops: 'SpecOps', terrorists: 'Terrorists', draw: 'Draw', wins_: '{t} win', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Player',
       emptyBoard: 'Only bots on the server right now. Join in and take their place.', justNow: 'just now', minAgo: '{n} min ago', hAgo: '{n} h ago', dAgo: '{n} d ago',
       rounds: 'rounds', noResults: 'No completed matches yet. Results appear here the moment a ranked match ends.', resultsOffline: 'Match results are unavailable right now.',
+      matchReport: 'Match report', matchOn: '{mode} on {map}', matchCopy: 'Copy match link', topWeapon: 'Top weapon', map: 'Map', mode: 'Mode', length: 'Length', server: 'Server', unknownMatch: 'This match could not be found.', viewMatch: 'Match report', noTeam: 'Players', version: 'Version',
       reads: '{n} reads', read1: '1 read', ratingOf: '{avg} from {n} ratings', topRated: 'Top rated'
     },
     nl: {
@@ -60,6 +61,7 @@ var TCP_API = 'https://api.truecombat.eu';
       specops: 'SpecOps', terrorists: 'Terroristen', draw: 'Gelijkspel', wins_: '{t} winnen', mvp: 'MVP', score: 'Score', ping: 'Ping', player: 'Speler',
       emptyBoard: 'Alleen bots op de server. Doe mee en neem hun plek in.', justNow: 'zojuist', minAgo: '{n} min geleden', hAgo: '{n} u geleden', dAgo: '{n} d geleden',
       rounds: 'rondes', noResults: 'Nog geen voltooide potjes. Uitslagen verschijnen hier zodra een gerankt potje eindigt.', resultsOffline: 'Uitslagen zijn nu niet beschikbaar.',
+      matchReport: 'Wedstrijdverslag', matchOn: '{mode} op {map}', matchCopy: 'Link naar dit potje kopiëren', topWeapon: 'Beste wapen', map: 'Map', mode: 'Modus', length: 'Duur', server: 'Server', unknownMatch: 'Dit potje is niet gevonden.', viewMatch: 'Wedstrijdverslag', noTeam: 'Spelers', version: 'Versie',
       reads: '{n} keer gelezen', read1: '1 keer gelezen', ratingOf: '{avg} uit {n} beoordelingen', topRated: 'Best beoordeeld'
     }
   };
@@ -328,6 +330,9 @@ var TCP_API = 'https://api.truecombat.eu';
     if (TCP_API) setInterval(function () { if (!document.hidden) load(); }, boards ? 30000 : 60000);
   });
 
+  var MID = /^[0-9a-f]{16}$/;
+  function matchHref(id) { return 'match.html?id=' + encodeURIComponent(id); }
+
   /* latest match results (servers page) */
   function ago(iso) {
     var s = (Date.now() - new Date(iso).getTime()) / 1000;
@@ -352,7 +357,7 @@ var TCP_API = 'https://api.truecombat.eu';
           var mins = Math.max(1, Math.round((m.duration || 0) / 60));
           var bits = [esc(m.mode || ''), (m.rounds > 1 ? m.rounds + ' ' + L.rounds : ''), mins + ' ' + L.minutes, (m.players || 0) + ' ' + L.players].filter(Boolean).join(' · ');
           var mvp = m.mvp ? '<span class="mvp"><b>' + L.mvp + '</b> <a href="' + esc(profileHref(m.mvp.id)) + '">' + esc(m.mvp.name) + '</a> · ' + m.mvp.kills + ' ' + L.kills.toLowerCase() + '</span>' : '';
-          return '<li><img src="' + art + '" alt="" width="120" height="68" loading="lazy"><div class="r-main"><p class="r-top"><b>' + mapLabel(m.map) + '</b>' + res + '</p><p class="r-sub">' + bits + '</p></div>' +
+          return '<li><img src="' + art + '" alt="" width="120" height="68" loading="lazy"><div class="r-main"><p class="r-top">' + (MID.test(m.id || '') ? '<a href="' + matchHref(m.id) + '"><b>' + mapLabel(m.map) + '</b></a>' : '<b>' + mapLabel(m.map) + '</b>') + res + '</p><p class="r-sub">' + bits + '</p></div>' +
             '<div class="r-side">' + mvp + '<span class="r-when"><time datetime="' + esc(m.ended) + '">' + ago(m.ended) + '</time>' + (m.server ? ' · ' + esc(shortName(m.server)) : '') + '</span></div></li>';
         }).join('');
       }, function () { empty.textContent = L.resultsOffline; empty.hidden = false; });
@@ -622,7 +627,7 @@ var TCP_API = 'https://api.truecombat.eu';
 
       q('[data-pf-matches]').innerHTML = (p.recent || []).map(function (m) {
         var c = m.ratingChange || 0;
-        return '<tr><td>' + fmtDate(m.ended) + '</td><td>' + mapLabel(m.map) + '</td><td>' + esc(m.mode || '') + '</td><td class="' + (m.won ? 'up' : 'down') + '">' +
+        return '<tr><td>' + (MID.test(m.id || '') ? '<a href="' + matchHref(m.id) + '">' + fmtDate(m.ended) + '</a>' : fmtDate(m.ended)) + '</td><td>' + mapLabel(m.map) + '</td><td>' + esc(m.mode || '') + '</td><td class="' + (m.won ? 'up' : 'down') + '">' +
           (m.won ? L.won : L.lost) + '</td><td>' + num(m.kills) + ' / ' + num(m.deaths) + '</td><td>' + num(m.headshots) + '</td><td>+' + num(m.xp) +
           '</td><td class="' + (c > 0 ? 'up' : c < 0 ? 'down' : '') + '">' + (c > 0 ? '+' : '') + c + '</td></tr>';
       }).join('') || '<tr><td colspan="8">–</td></tr>';
@@ -640,6 +645,79 @@ var TCP_API = 'https://api.truecombat.eu';
       });
       q('[data-pf-body]').hidden = false;
     }, function () { missing(L.unknownPlayer); });
+  });
+
+  /* ---------- devlog: a dot on the nav link while the newest post is recent and unread ---------- */
+  $all('a[data-devlog-new]').forEach(function (a) {
+    var newest = a.dataset.devlogNew, seen = '';
+    try {
+      if (/(^|\/)devlog(-[^/]*)?\.html$|\/devlog(-[^/]*)?$/.test(location.pathname)) localStorage.setItem('tcp-devlog-seen', newest);
+      seen = localStorage.getItem('tcp-devlog-seen') || '';
+    } catch (e) {}
+    var age = (Date.now() - new Date(newest + 'T00:00:00Z').getTime()) / 86400000;
+    if (age < 14 && seen < newest) a.classList.add('fresh');
+  });
+
+  /* ---------- match report (match.html?id=<match id>) ---------- */
+  $all('[data-match]').forEach(function (root) {
+    function q(sel) { return root.querySelector(sel); }
+    var id = (new URLSearchParams(location.search).get('id') || '').toLowerCase();
+    function missing(text) { q('[data-m-missing-text]').textContent = text; q('[data-m-missing]').hidden = false; q('[data-m-lede]').hidden = true; }
+    if (!id) return;
+    $all('a[hreflang]').forEach(function (a) { a.href = a.getAttribute('href').split('?')[0] + '?id=' + id; });
+    if (!MID.test(id)) { missing(L.unknownMatch); return; }
+    if (!TCP_API) { missing(L.apiOffline); return; }
+    api('/match.json?id=' + id).then(function (m) {
+      var name = MAPS[String(m.map || '').toLowerCase()] || m.map || '';
+      var w = String(m.winner || '').toLowerCase();
+      var title = L.matchOn.replace('{mode}', m.mode || L.matchReport).replace('{map}', name);
+      document.title = title + ' · ' + fmtDate(m.ended) + ' · TrueCombat: Platinum';
+      q('[data-m-title]').textContent = title;
+      var art = MAPS[String(m.map || '').toLowerCase()];
+      if (art) { var a = q('[data-m-art]'); a.style.setProperty('--art', 'url(' + IMG + 'map-' + art.toLowerCase() + '.webp)'); a.style.setProperty('--art-s', 'url(' + IMG + 'map-' + art.toLowerCase() + '-640.webp)'); }
+      var mins = Math.max(1, Math.round((m.duration || 0) / 60));
+      q('[data-m-lede]').innerHTML = '<time datetime="' + esc(m.ended) + '">' + fmtDate(m.ended) + '</time>' + (m.server ? ' · ' + esc(shortName(m.server)) : '');
+
+      var teams = ['specops', 'terrorists'].filter(function (t) { return (m.players || []).some(function (p) { return p.team === t; }); });
+      var sc = m.score || {};
+      var score = '';
+      if (teams.length === 2) {
+        score = '<div class="m-side specops' + (w === 'specops' ? ' won' : '') + '"><span>' + L.specops + '</span><b>' + num(sc.specops) + '</b></div>' +
+          '<div class="m-mid">' + (w ? '<span class="res ' + esc(w) + '">' + L.wins_.replace('{t}', L[w] || esc(w)) + '</span>' : '<span class="res">' + L.draw + '</span>') + '</div>' +
+          '<div class="m-side terrorists' + (w === 'terrorists' ? ' won' : '') + '"><b>' + num(sc.terrorists) + '</b><span>' + L.terrorists + '</span></div>';
+      }
+      var mvp = m.mvp ? '<p class="m-mvp"><b>' + L.mvp + '</b> <a href="' + esc(profileHref(m.mvp.id)) + '">' + esc(m.mvp.name) + '</a> · ' + num(m.mvp.kills) + ' ' + L.kills.toLowerCase() + '</p>' : '';
+      q('[data-m-score]').innerHTML = (score ? '<div class="m-line">' + score + '</div>' : '') + mvp;
+
+      var tiles = [[L.map, esc(name)], [L.mode, esc(m.mode || '–')], [L.length, mins + ' ' + L.minutes], [L.rounds, num(m.rounds)], [L.players, num((m.players || []).length)]];
+      q('[data-m-facts]').innerHTML = tiles.map(function (t) { return '<div><span>' + t[0].charAt(0).toUpperCase() + t[0].slice(1) + '</span><b>' + t[1] + '</b></div>'; }).join('');
+
+      function table(label, cls, list) {
+        var rows = list.map(function (p) {
+          var c = p.ratingChange || 0;
+          return '<tr><td><a href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a>' + (m.mvp && m.mvp.id === p.id ? ' <span class="res">' + L.mvp + '</span>' : '') + '</td><td>' + num(p.kills) + '</td><td>' + num(p.deaths) +
+            '</td><td>' + num(p.headshots) + '</td><td>' + num(p.damage) + '</td><td>' + num(p.objectives) + '</td><td>' + esc(p.topWeapon || '–') + '</td><td>+' + num(p.xp) +
+            '</td><td class="' + (c > 0 ? 'up' : c < 0 ? 'down' : '') + '">' + (c > 0 ? '+' : '') + c + '</td></tr>';
+        }).join('');
+        return '<div class="server-card full m-team ' + cls + '"><header><h2>' + label + '</h2><span class="pill">' + list.length + ' ' + L.players + '</span></header><div class="table-scroll"><table class="srv-table">' +
+          '<thead><tr><th>' + L.player + '</th><th>' + L.kills + '</th><th>' + L.deaths + '</th><th>HS</th><th>' + L.damage + '</th><th>' + L.objectives + '</th><th>' + L.topWeapon + '</th><th>XP</th><th>' + L.rating + '</th></tr></thead><tbody>' +
+          rows + '</tbody></table></div></div>';
+      }
+      var html = teams.map(function (t) { return table(L[t], t, m.players.filter(function (p) { return p.team === t; })); }).join('');
+      var rest = (m.players || []).filter(function (p) { return teams.indexOf(p.team) < 0; });
+      if (rest.length) html += table(L.noTeam, '', rest);
+      q('[data-m-teams]').innerHTML = html;
+
+      var foot = q('[data-m-foot]');
+      foot.innerHTML = (m.version ? L.version + ' ' + esc(m.version) + ' · ' : '') + '<button type="button" class="pf-copy">' + L.matchCopy + '</button>';
+      foot.querySelector('.pf-copy').addEventListener('click', function (e) {
+        var b = e.currentTarget;
+        (navigator.clipboard ? navigator.clipboard.writeText(location.href) : Promise.reject()).then(function () {
+          b.textContent = L.linkCopied; setTimeout(function () { b.textContent = L.matchCopy; }, 1600);
+        }, function () {});
+      });
+      q('[data-m-body]').hidden = false;
+    }, function () { missing(L.unknownMatch); });
   });
 
   /* ---------- media page: filter tabs and lightbox ---------- */

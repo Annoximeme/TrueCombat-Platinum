@@ -26,6 +26,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import landing  # noqa: E402
+import detail  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
@@ -85,12 +86,17 @@ def nav(lang, current):
     if other_href == "":
         other_href = "./"
     home = "./"
-    main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news"]
-    active = {"player": "leaderboards", "devlog": "news"}.get(current, current)
+    main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news", "devlog"]
+    active = {"player": "leaderboards", "match": "servers"}.get(current, current)
     if current.startswith("devlog-"):
-        active = "news"
+        active = "devlog"
+    if current.startswith("map-"):
+        active = "maps"
+    if current.startswith("weapon-"):
+        active = "weapons"
     links = "\n".join(
-        '      <li><a href="%s"%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "", L[p])
+        '      <li><a href="%s"%s%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "",
+                                               ' data-devlog-new="%s"' % devlog_posts(lang)[0]["date"] if p == "devlog" else "", L[p])
         for p in main)
     menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
     menu += '<a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"])
@@ -126,7 +132,7 @@ GITHUB_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
 RSS_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg>'
 
 
-def footer(lang):
+def footer(lang, page=""):
     L = LABELS[lang]
     up = "../" if lang == "nl" else ""
     cols = [
@@ -138,8 +144,9 @@ def footer(lang):
     nav_html = "\n".join(
         '        <div><p class="foot-h">%s</p>%s</div>' % (h, "".join('<a href="%s">%s</a>' % (u, x) for u, x in items))
         for h, items in cols)
+    strip = "" if page == "index" or page.startswith("devlog") else devlog_strip(lang)
     return f"""<!--footer-->
-<footer>
+{strip}<footer>
   <div class="wrap">
     <div class="foot">
       <div class="foot-brand">
@@ -185,12 +192,17 @@ def social(html):
 
 def crumbs(lang, page, html):
     """BreadcrumbList structured data: Home > page, or Home > Devlog > post."""
-    if page in ("index", "player"):
+    if page in ("index", "player", "match"):
         return ""
     items = [("TrueCombat: Platinum", url(lang, "index"))]
     if page.startswith("devlog-"):
         items.append(("Devlog", url(lang, "devlog")))
         m = re.search(r'<meta property="og:title" content="([^"]*)"', re.sub(r"<!--alt-->.*?<!--/alt-->", "", html, flags=re.S))
+        items.append((htmlmod.unescape(m.group(1)) if m else page, url(lang, page)))
+    elif page.startswith(("map-", "weapon-")):
+        parent = "maps" if page.startswith("map-") else "weapons"
+        items.append((LABELS[lang][parent], url(lang, parent)))
+        m = re.search(r"<h1>(.*?)</h1>", html, re.S)
         items.append((htmlmod.unescape(m.group(1)) if m else page, url(lang, page)))
     else:
         items.append((LABELS[lang].get(page, page), url(lang, page)))
@@ -336,7 +348,7 @@ def weapons_html(lang):
                 cls = "wcard equip"
                 cmp = ""
             cards.append(
-                f'<article class="{cls}" id="{wid}" data-team="{w["team"]}"' + (f" data-w=\"{cmp}\"" if cmp else "") + f'><header><h3>{htmlmod.escape(w.get("name_" + lang, w["name"]))}</h3><span class="full">{htmlmod.escape(w.get("full_" + lang, w["full"]))}</span></header>'
+                f'<article class="{cls}" id="{wid}" data-team="{w["team"]}"' + (f" data-w=\"{cmp}\"" if cmp else "") + f'><header><h3><a href="weapon-{wid}.html">{htmlmod.escape(w.get("name_" + lang, w["name"]))}</a></h3><span class="full">{htmlmod.escape(w.get("full_" + lang, w["full"]))}</span></header>'
                 f'<div class="wtags">{"".join(tags)}</div>{stats}{note}<div class="wmodes">{modes}</div></article>')
         out.append(
             f'<section class="wgroup" id="{group["id"]}"><header><h2>{group["title_" + lang]}</h2><p>{group["sub_" + lang]}</p></header>'
@@ -664,6 +676,57 @@ def devlog_latest(lang, posts):
 <!--/devlog-latest-->"""
 
 
+DEVREACH = {
+    "en": {"new": "New devlog", "eyebrow": "In development", "h2": "Follow the build", "all": "All devlog posts",
+           "lede": "TrueCombat: Platinum is built in the open. Every significant piece of work gets an article: what changed, why, and what comes next.",
+           "strip": "From the devlog"},
+    "nl": {"new": "Nieuwe devlog", "eyebrow": "In ontwikkeling", "h2": "Volg de bouw", "all": "Alle devlogartikelen",
+           "lede": "TrueCombat: Platinum wordt in het openbaar gebouwd. Elk belangrijk stuk werk krijgt een artikel: wat er veranderde, waarom, en wat er volgt.",
+           "strip": "Uit de devlog"},
+}
+
+
+def devlog_hero(lang, posts):
+    """Home page hero: one line that leads to the newest devlog post."""
+    p = posts[0]
+    return (f'<!--devlog-hero-->\n    <a class="hero-log" href="devlog-{p["slug"]}.html"><b>{DEVREACH[lang]["new"]}</b>'
+            f'<span>{htmlmod.escape(p["title"])}</span><time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time></a>\n<!--/devlog-hero-->')
+
+
+def devlog_home(lang, posts):
+    """Home page: the three newest devlog posts, high on the page."""
+    T = DEVREACH[lang]
+    cards = "\n".join(
+        f"""      <a class="log-card{' lead' if i == 0 else ''}" href="devlog-{p['slug']}.html">
+        <img src="{p['image'].replace('.webp', '-640.webp')}" alt="" width="640" height="360" loading="lazy">
+        <div><span class="eyebrow">{htmlmod.escape(p['tag'])} · <time datetime="{p['date']}">{nice_date(lang, p['date'])}</time></span>
+        <h3>{htmlmod.escape(p['title'])}</h3>
+        <p>{htmlmod.escape(p['summary'])}</p></div>
+      </a>""" for i, p in enumerate(posts[:3]))
+    return f"""<!--devlog-home-->
+<section class="band band-alt" id="devlog">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div><span class="eyebrow">{T['eyebrow']}</span><h2>{T['h2']}</h2><p class="lede">{T['lede']}</p></div>
+      <div class="hero-cta"><a class="btn btn-ghost" href="devlog.html">{T['all']} ({len(posts)})</a></div>
+    </div>
+    <div class="log-cards">
+{cards}
+    </div>
+  </div>
+</section>
+<!--/devlog-home-->"""
+
+
+def devlog_strip(lang):
+    """Above the footer of every page outside the devlog: the two newest posts."""
+    T = DEVREACH[lang]
+    posts = devlog_posts(lang)[:2]
+    links = "".join(f'<a href="devlog-{p["slug"]}.html"><time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time><span>{htmlmod.escape(p["title"])}</span></a>' for p in posts)
+    return (f'<aside class="log-strip" aria-label="{T["strip"]}"><div class="wrap"><a class="log-strip-h" href="devlog.html">{T["strip"]}</a>'
+            f'<div class="log-strip-posts">{links}</div><a class="log-strip-all" href="devlog.html">{T["all"]}</a></div></aside>\n')
+
+
 def devlog_feed(lang, posts):
     base = SITE + ("nl/" if lang == "nl" else "")
     esc = lambda s: htmlmod.escape(s, quote=False)
@@ -799,7 +862,7 @@ def devlog_page(lang, post, posts, template):
     if lang == "nl":
         html = ASSET.sub(r"../\1/", html).replace('href="style.css"', 'href="../style.css"')
     html = put(html, "nav", nav(lang, page), page)
-    html = put(html, "footer", footer(lang), page)
+    html = put(html, "footer", footer(lang, page), page)
     html = put(html, "alt", alt(lang, page, html), page)
     return html
 
@@ -1000,9 +1063,136 @@ def landing_page(lang, page):
 </html>
 """
     html = put(html, "nav", nav(lang, page), page)
-    html = put(html, "footer", footer(lang), page)
+    html = put(html, "footer", footer(lang, page), page)
     html = put(html, "alt", alt(lang, page, html), page)
     return html
+
+
+# ---------------------------------------------------------------- map and weapon pages
+MAP_MORE = {"en": "Full {m} guide", "nl": "Volledige gids voor {m}"}
+
+
+def map_links(lang, html):
+    """On the maps page, a link from each map to its own page."""
+    html = re.sub(r'\n        <p class="map-more">.*?</p>', "", html)
+    for name in MAPLIST:
+        at = html.index("</dl>", html.index('<section class="band map-sec" id="%s">' % name)) + 5
+        html = html[:at] + '\n        <p class="map-more"><a class="text-link" href="map-%s.html">%s</a></p>' % (name, MAP_MORE[lang].format(m=name.capitalize())) + html[at:]
+    return html
+
+
+def shell(lang, page, title, desc, og, image, body, extra=""):
+    """A whole generated page: head, nav, the given body and the footer."""
+    up = "../" if lang == "nl" else ""
+    e = lambda t: htmlmod.escape(t, quote=True)
+    html = f"""<!doctype html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="{url(lang, page)}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{url(lang, page)}">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="{OGLOCALE[lang]}">
+<meta property="og:title" content="{e(title.split(' · TrueCombat: Platinum')[0])}">
+<meta property="og:description" content="{e(og)}">
+<meta property="og:image" content="{SITE}img/{image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{SITE}img/{image}">
+{extra}<!--alt-->
+<!--/alt-->
+<link rel="icon" type="image/png" href="{up}img/favicon.png">
+<link rel="stylesheet" href="{up}style.css">
+</head>
+<body>
+<!--nav-->
+<!--/nav-->
+
+<main id="top">
+{body}</main>
+
+<!--footer-->
+<!--/footer-->
+
+<script src="{up}js/site.js"></script>
+</body>
+</html>
+"""
+    html = put(html, "nav", nav(lang, page), page)
+    html = put(html, "footer", footer(lang, page), page)
+    html = put(html, "alt", alt(lang, page, html), page)
+    return html
+
+
+MATCH = {
+    "en": {"title": "Match report · TrueCombat: Platinum", "desc": "A finished TrueCombat: Platinum match: the result, the MVP and the full scoreboard for both teams.",
+           "back": "Latest results", "eyebrow": "Match report", "h1": "Match report",
+           "lede": "Every finished match on a ranked server gets a page. Open one from the latest results or from a player profile.",
+           "missing": "This match could not be found."},
+    "nl": {"title": "Wedstrijdverslag · TrueCombat: Platinum", "desc": "Een afgelopen potje TrueCombat: Platinum: de uitslag, de MVP en het volledige scorebord van beide teams.",
+           "back": "Laatste uitslagen", "eyebrow": "Wedstrijdverslag", "h1": "Wedstrijdverslag",
+           "lede": "Elk afgelopen potje op een ranked server krijgt een eigen pagina. Open er een vanuit de laatste uitslagen of vanuit een spelersprofiel.",
+           "missing": "Dit potje is niet gevonden."},
+}
+
+
+def match_page(lang):
+    """match.html: an empty frame that js/site.js fills from the stats service (match.json?id=)."""
+    T = MATCH[lang]
+    up = "../" if lang == "nl" else ""
+    body = f"""<div data-match>
+<section class="page-head pf-head">
+  <div class="head-art" data-m-art style="--art: url({up}img/media-map-vote.webp); --art-s: url({up}img/media-map-vote-640.webp)" aria-hidden="true"></div>
+  <div class="wrap">
+    <a class="pf-back" href="servers.html">\u2190 {T['back']}</a>
+    <span class="eyebrow">{T['eyebrow']}</span>
+    <h1 data-m-title>{T['h1']}</h1>
+    <p class="lede" data-m-lede>{T['lede']}</p>
+  </div>
+</section>
+
+<section class="band pf-body" data-m-body hidden>
+  <div class="wrap pf-grid">
+    <div class="m-score" data-m-score></div>
+    <div class="pf-stats" data-m-facts></div>
+    <div class="m-teams" data-m-teams></div>
+    <p class="yt-note pf-foot" data-m-foot></p>
+  </div>
+</section>
+
+<section class="band" data-m-missing hidden>
+  <div class="wrap">
+    <p class="lede" data-m-missing-text>{T['missing']}</p>
+  </div>
+</section>
+</div>
+"""
+    return shell(lang, "match", T["title"], T["desc"], T["desc"], "og-leaderboards.jpg", body, '<meta name="robots" content="noindex, follow">\n')
+
+
+def detail_pages(lang):
+    """(page name, html) for every map page and weapon page in one language."""
+    pages = []
+    for name in MAPLIST:
+        title, desc, og = detail.map_meta(lang, name)
+        pages.append(("map-" + name, title, desc, og, "og-map-%s.jpg" % name, detail.map_body(lang, name, MAPLIST, layout_html), ""))
+    allw = detail.weapons(lang)
+    for w in allw:
+        title, desc = detail.weapon_meta(lang, w)
+        pages.append(("weapon-" + w["id"], title, desc, desc, "og-weapons.jpg", detail.weapon_body(lang, w, allw, WL[lang]["modes"]), ""))
+    out = []
+    for page, title, desc, og, image, body, extra in pages:
+        if lang == "nl":
+            body = ASSET.sub(r"../\1/", body)
+        html = shell(lang, page, title, desc, og, image, body, extra)
+        out.append((page, html))
+    return out
 
 
 # ---------------------------------------------------------------- site search
@@ -1037,11 +1227,15 @@ def search_index(lang, posts):
             h = re.search(r"<h([23])[^>]*>(.*?)</h\1>", main[m.end():m.end() + 1800], re.S)
             if not h:
                 continue
-            kind = K["map"] if page == "maps" and m.group(1) in MAPLIST else K["section"]
+            if page == "maps" and m.group(1) in MAPLIST:
+                continue
+            kind = K["section"]
             rows.append({"t": text(h.group(2)), "u": href(page) + "#" + m.group(1), "k": kind, "d": LABELS[lang].get(page, title) if page != "index" else ""})
     weapons = (base / "weapons.html").read_text(encoding="utf-8")
     for m in re.finditer(r'<article class="[^"]*" id="([^"]+)"[^>]*>.*?<h3[^>]*>(.*?)</h3><span class="full">(.*?)</span>', weapons, re.S):
-        rows.append({"t": text(m.group(2)), "u": "weapons.html#" + m.group(1), "k": K["weapon"], "d": text(m.group(3))})
+        rows.append({"t": text(m.group(2)), "u": "weapon-%s.html" % m.group(1), "k": K["weapon"], "d": text(m.group(3))})
+    for name in MAPLIST:
+        rows.append({"t": name.capitalize(), "u": "map-%s.html" % name, "k": K["map"], "d": detail.map_text(lang, name)[0]})
     for p in posts:
         rows.append({"t": p["title"], "u": "devlog-%s.html" % p["slug"], "k": K["post"], "d": p["summary"][:150]})
     return json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
@@ -1070,6 +1264,11 @@ def llms_txt(posts):
            line("weapons", "all 27 guns with their damage, recoil and handling values"),
            line("media", "in-game screenshots from the DirectX 12 renderer"),
            line("competitive", "match mode for clan matches: ready-up, knife round, half-time, timeouts"), "",
+           "## Maps", ""]
+    out += ["- [%s](%s): %s" % (n.capitalize(), url("en", "map-" + n), detail.map_text("en", n)[0]) for n in MAPLIST]
+    out += ["", "## Weapons", ""]
+    out += ["- [%s](%s): %s" % (w["label"], url("en", "weapon-" + w["id"]), detail.weapon_lede("en", w)) for w in detail.weapons("en")]
+    out += ["",
            "## Play", "",
            line("servers", "public and official servers, live scoreboards and latest results"),
            line("leaderboards", "ranks and ratings from every ranked match"), "",
@@ -1180,6 +1379,8 @@ def main():
             latest = m.group(1) if m else "v0.0.0"
             en = put(en, "roadmap", roadmap_html("en", latest), path)
             en = put(en, "devlog-latest", devlog_latest("en", devlog_posts("en")), path)
+            en = put(en, "devlog-hero", devlog_hero("en", devlog_posts("en")), path)
+            en = put(en, "devlog-home", devlog_home("en", devlog_posts("en")), path)
         if page == "devlog":
             en = put(en, "devlog", devlog_list("en", devlog_posts("en")), path)
             en = put(en, "devlog-tags", devlog_tags("en", devlog_posts("en")), path)
@@ -1193,8 +1394,10 @@ def main():
         if page == "support":
             en = put(en, "support-funding", support_funding("en"), path)
         src = en
+        if page == "maps":
+            en = map_links("en", en)
         en = put(en, "nav", nav("en", page), path)
-        en = put(en, "footer", footer("en"), path)
+        en = put(en, "footer", footer("en", page), path)
         en = put(en, "alt", alt("en", page, en), path)
         path.write_text(bust(en), encoding="utf-8")
 
@@ -1202,6 +1405,8 @@ def main():
         if page == "index":
             du = put(du, "roadmap", roadmap_html("nl", latest), path)
             du = put(du, "devlog-latest", devlog_latest("nl", devlog_posts("nl")), path)
+            du = put(du, "devlog-hero", devlog_hero("nl", devlog_posts("nl")), path)
+            du = put(du, "devlog-home", devlog_home("nl", devlog_posts("nl")), path)
         if page == "weapons":
             du = put(du, "weapons", weapons_html("nl"), path)
         if page == "devlog":
@@ -1217,14 +1422,26 @@ def main():
         if page == "support":
             du = put(du, "support-funding", support_funding("nl"), path)
         du = to_dutch(page, du)
+        if page == "maps":
+            du = map_links("nl", du)
         du = put(du, "nav", nav("nl", page), path)
-        du = put(du, "footer", footer("nl"), path)
+        du = put(du, "footer", footer("nl", page), path)
         du = put(du, "alt", alt("nl", page, du), path)
         (DOCS / "nl" / (page + ".html")).write_text(bust(du), encoding="utf-8")
 
     for page in LANDING:
         for lang in ("en", "nl"):
             (DOCS / ("nl" if lang == "nl" else "") / (page + ".html")).write_text(bust(landing_page(lang, page)), encoding="utf-8")
+
+    details = []
+    for lang in ("en", "nl"):
+        for page, html in detail_pages(lang):
+            (DOCS / ("nl" if lang == "nl" else "") / (page + ".html")).write_text(bust(html), encoding="utf-8")
+            if lang == "en":
+                details.append(page)
+
+    for lang in ("en", "nl"):
+        (DOCS / ("nl" if lang == "nl" else "") / "match.html").write_text(bust(match_page(lang)), encoding="utf-8")
 
     template = unbust((DOCS / "devlog.html").read_text(encoding="utf-8"))
     posts = {lang: devlog_posts(lang) for lang in ("en", "nl")}
@@ -1247,7 +1464,7 @@ def main():
         OLD_LASTMOD.update(re.findall(r"<url><loc>([^<]+)</loc><lastmod>([^<]+)</lastmod>", old.read_text(encoding="utf-8")))
     rows = []
     # player.html without an id is an empty profile, so only real pages go in the sitemap
-    for page in [p for p in PAGES if p != "player"] + LANDING + ["devlog-" + p["slug"] for p in posts["en"]]:
+    for page in [p for p in PAGES if p != "player"] + LANDING + details + ["devlog-" + p["slug"] for p in posts["en"]]:
         for lang in ("en", "nl"):
             alts = "".join('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, url(l, page)) for l in ("en", "nl"))
             path = DOCS / ("nl" if lang == "nl" else "") / (page + ".html")
@@ -1257,7 +1474,7 @@ def main():
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
         + "\n".join(rows) + "\n</urlset>\n", encoding="utf-8")
-    print("built %d pages in English and Dutch" % (len(PAGES) + len(LANDING)))
+    print("built %d pages in English and Dutch" % (len(PAGES) + len(LANDING) + len(details)))
 
 
 if __name__ == "__main__":

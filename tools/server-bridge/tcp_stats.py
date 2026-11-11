@@ -85,6 +85,11 @@ def rank_for(xp):
             "xpThis": RANK_XP[level], "xpNext": nxt}
 
 
+def match_pub(server, mid):
+    """The public id of a match: stable, and it gives away neither the server id nor the server's own match id."""
+    return hashlib.sha256(("%s\n%s" % (server, mid)).encode("utf-8")).hexdigest()[:16]
+
+
 def match_xp(p, duration):
     minutes = min(p["timePlayed"], duration) / 60.0
     xp = (p["kills"] * 10 + p["headshots"] * 5 + p["roundsWon"] * 20 + p["objectives"] * 30
@@ -253,6 +258,12 @@ class StatsStore:
             self.db.execute("PRAGMA journal_mode=WAL")
             self.db.executescript(DDL)
             self.db.execute("INSERT OR IGNORE INTO meta VALUES('schema', ?)", (str(SCHEMA_VERSION),))
+            # the public id of a match (match pages on the website); older databases get the column here
+            if "pub" not in [c[1] for c in self.db.execute("PRAGMA table_info(matches)")]:
+                self.db.execute("ALTER TABLE matches ADD COLUMN pub TEXT")
+            for r in self.db.execute("SELECT server, id FROM matches WHERE pub IS NULL").fetchall():
+                self.db.execute("UPDATE matches SET pub=? WHERE server=? AND id=?", (match_pub(r[0], r[1]), r[0], r[1]))
+            self.db.execute("CREATE INDEX IF NOT EXISTS matches_pub ON matches(pub)")
 
     # ------------------------------------------------------------ servers
     def add_server(self, name):
@@ -325,9 +336,10 @@ class StatsStore:
         ratings = {pid: r["rating"] for pid, r in rows.items()}
         counts = {pid: r["rated"] for pid, r in rows.items()}
         deltas = rate(m, ratings, counts)
-        db.execute("INSERT INTO matches VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+        db.execute("INSERT INTO matches(server, id, ended, map, mode, duration, rounds, winner, players, received, report, pub) "
+                   "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                    (server, m["id"], m["ended"], m["map"], m["mode"], m["duration"], m["rounds"], m["winner"],
-                    len(m["players"]), received or now_iso(), json.dumps(m, separators=(",", ":"))))
+                    len(m["players"]), received or now_iso(), json.dumps(m, separators=(",", ":")), match_pub(server, m["id"])))
         for p in m["players"]:
             pid = p["id"]
             xp = match_xp(p, m["duration"])
@@ -474,7 +486,7 @@ class StatsStore:
                 "SELECT weapon, kills, headshots, shots, hits FROM player_weapons WHERE pid=? ORDER BY kills DESC, shots DESC",
                 (pid,))]
             recent = [dict(x) for x in self.db.execute(
-                """SELECT m.ended, m.map, m.mode, m.duration, mp.team, mp.won, mp.kills, mp.deaths, mp.headshots,
+                """SELECT m.pub, m.ended, m.map, m.mode, m.duration, mp.team, mp.won, mp.kills, mp.deaths, mp.headshots,
                    mp.xp, mp.rating_before, mp.rating_after FROM match_players mp JOIN matches m
                    ON m.server=mp.server AND m.id=mp.match WHERE mp.pid=? ORDER BY mp.ended DESC LIMIT 20""", (pid,))]
             better = self.db.execute("SELECT COUNT(*) FROM players WHERE matches>=? AND rating>?",
@@ -487,7 +499,7 @@ class StatsStore:
                     "weapons": [{"name": w["weapon"], "kills": w["kills"], "headshots": w["headshots"],
                                  "shots": w["shots"], "hits": w["hits"],
                                  "accuracy": round(w["hits"] / w["shots"], 3) if w["shots"] else None} for w in weapons],
-                    "recent": [{"ended": x["ended"], "map": x["map"], "mode": x["mode"], "duration": x["duration"],
+                    "recent": [{"id": x["pub"], "ended": x["ended"], "map": x["map"], "mode": x["mode"], "duration": x["duration"],
                                 "team": x["team"], "won": bool(x["won"]), "kills": x["kills"], "deaths": x["deaths"],
                                 "headshots": x["headshots"], "xp": x["xp"],
                                 "ratingChange": int(round(x["rating_after"] - x["rating_before"]))} for x in recent]})
@@ -519,13 +531,12 @@ class StatsStore:
 
     def recent(self, limit=20):
         with self.lock:
-            rows = self.db.execute("SELECT m.server sid, m.id mid, m.ended, m.map, m.mode, m.duration, m.rounds, m.winner, "
+            rows = self.db.execute("SELECT m.server sid, m.id mid, m.pub id, m.ended, m.map, m.mode, m.duration, m.rounds, m.winner, "
                                    "m.players, s.name server FROM matches m LEFT JOIN servers s ON s.id=m.server "
                                    "ORDER BY m.ended DESC LIMIT ?", (max(1, min(100, limit)),)).fetchall()
             matches = []
             for r in rows:
-                m = {k: r[k] for k in ("ended", "map", "mode", "duration", "rounds", "winner", "players", "server")}
-                m["id"], m["serverId"] = r["mid"], r["sid"]
+                m = {k: r[k] for k in ("id", "ended", "map", "mode", "duration", "rounds", "winner", "players", "server")}
                 # the match MVP: most kills, then most XP
                 top = self.db.execute("SELECT pid, name, kills FROM match_players WHERE server=? AND match=? "
                                       "ORDER BY kills DESC, xp DESC LIMIT 1", (r["sid"], r["mid"])).fetchone()
@@ -533,27 +544,37 @@ class StatsStore:
                 matches.append(m)
         return {"schema": "tcp-recent/1", "updated": now_iso(), "matches": matches}
 
-    def match(self, server, mid):
-        """One finished match with its scoreboard (tcp-match-result/1)."""
+    def match(self, pub):
+        """One finished match for its page on the website: the result and both teams' scoreboards."""
+        pub = str(pub or "").lower()
+        if not re.fullmatch(r"[0-9a-f]{16}", pub):
+            return None
         with self.lock:
-            m = self.db.execute("SELECT m.*, s.name sname FROM matches m LEFT JOIN servers s ON s.id=m.server "
-                                "WHERE m.server=? AND m.id=?", (str(server or ""), str(mid or ""))).fetchone()
-            if not m:
+            r = self.db.execute("SELECT m.*, s.name server_name FROM matches m LEFT JOIN servers s ON s.id=m.server "
+                                "WHERE m.pub=?", (pub,)).fetchone()
+            if not r:
                 return None
-            rows = self.db.execute("SELECT * FROM match_players WHERE server=? AND match=? "
-                                   "ORDER BY kills DESC, xp DESC", (m["server"], m["id"])).fetchall()
+            rows = self.db.execute("SELECT * FROM match_players WHERE server=? AND match=? ORDER BY kills DESC, xp DESC",
+                                   (r["server"], r["id"])).fetchall()
         try:
-            rounds = json.loads(m["report"] or "{}").get("teamRounds")
+            version = clean(json.loads(r["report"] or "{}").get("version"), 48)
         except ValueError:
-            rounds = None
-        return {"schema": "tcp-match-result/1", "id": m["id"], "serverId": m["server"], "server": m["sname"],
-                "ended": m["ended"], "map": m["map"], "mode": m["mode"], "duration": m["duration"],
-                "rounds": m["rounds"], "winner": m["winner"], "teamRounds": rounds if isinstance(rounds, dict) else None,
-                "players": [{"id": r["pid"], "name": r["name"], "team": r["team"], "kills": r["kills"],
-                             "deaths": r["deaths"], "headshots": r["headshots"], "damage": r["damage"],
-                             "objectives": r["objectives"], "roundsWon": r["rounds_won"], "won": bool(r["won"]),
-                             "xp": r["xp"], "topWeapon": r["top_weapon"] or "",
-                             "ratingChange": int(round(r["rating_after"] - r["rating_before"]))} for r in rows]}
+            version = ""
+        players = [{"id": p["pid"], "name": p["name"], "team": p["team"], "won": bool(p["won"]), "kills": p["kills"],
+                    "deaths": p["deaths"], "headshots": p["headshots"], "damage": p["damage"], "teamKills": p["team_kills"],
+                    "objectives": p["objectives"], "roundsWon": p["rounds_won"], "timePlayed": p["time_played"], "xp": p["xp"],
+                    "ratingChange": int(round(p["rating_after"] - p["rating_before"])), "topWeapon": p["top_weapon"] or ""}
+                   for p in rows]
+        # a team's score is the most rounds any of its players was present to win
+        score = {}
+        for p in players:
+            if p["team"]:
+                score[p["team"]] = max(score.get(p["team"], 0), p["roundsWon"])
+        top = players[0] if players and players[0]["kills"] else None
+        return {"schema": "tcp-match-page/1", "updated": now_iso(), "id": pub, "ended": r["ended"], "map": r["map"],
+                "mode": r["mode"], "duration": r["duration"], "rounds": r["rounds"], "winner": r["winner"],
+                "server": r["server_name"], "version": version, "score": score,
+                "mvp": {"id": top["id"], "name": top["name"], "kills": top["kills"]} if top else None, "players": players}
 
     def recap(self, days=7):
         """What happened in the last N days (tcp-recap/1): totals, the busiest map and the standout players."""
@@ -609,7 +630,7 @@ def handle_get(store, path, query):
     if path == "/recent.json":
         return 200, store.recent()
     if path == "/match.json":
-        m = store.match(q.get("server"), q.get("id"))
+        m = store.match(q.get("id"))
         return (200, m) if m else (404, {"error": "unknown match"})
     if path == "/recap.json":
         return 200, store.recap(q.get("days", 7))
