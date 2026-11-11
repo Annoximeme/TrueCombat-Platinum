@@ -11,6 +11,11 @@ No player accounts: a player is identified by the game's cl_guid, which the
 client derives from its own locally generated etkey file. Only a one-way hash
 of it (the 16-character player id) is stored or published.
 
+Only real players count (tcp-match/2, game 0.35.0 and later): kills, deaths, hits, damage and
+assists between two humans, from verified servers with Easy Anti-Cheat on for the whole match.
+Ranked and unranked servers both feed the stats; only ranked matches move the skill rating.
+See the integrity rules in README.md ("Detailed stats").
+
 Servers are trusted per key. An operator registers each ranked server once:
 
   python tcp_stats.py --db stats.db add-server "Red Server"     -> server id + secret key
@@ -42,6 +47,31 @@ MAX_BODY = 256 * 1024
 CLOCK_SKEW = 300            # seconds a signed upload may be off
 RATING_START = 1000.0
 UPLOADS_PER_HOUR = 120      # per server
+UNIT_M = 0.0254             # one map unit in metres
+PAIR_KILL_CAP = 10          # counted kills on the same opponent per match
+MIN_PRESENT = 120           # seconds a real player must be active for the match to count
+TRADE_MS = 3000             # a kill this soon after the victim killed a teammate is a trade
+MULTI_MS = 3000             # kills this close together form a multi-kill
+
+# Every stat a match adds per player (stored in match_stats). "max" stats keep the best value,
+# all others are summed. Ratios (K/D, accuracy, headshot rate...) are worked out from these.
+STATS = {
+    "kills": "sum", "deaths": "sum", "assists": "sum", "headshots": "sum", "damage": "sum", "damageTaken": "sum",
+    "teamKills": "sum", "suicides": "sum", "hitsHead": "sum", "hitsBody": "sum", "hitsLegs": "sum",
+    "shots": "sum", "hits": "sum",                       # bot-free matches only (accuracy)
+    "objectives": "sum", "captures": "sum", "plants": "sum", "defuses": "sum", "returns": "sum",
+    "roundsWon": "sum", "roundsPlayed": "sum", "roundMvps": "sum", "wins": "sum", "matches": "sum", "timePlayed": "sum",
+    "longestKill": "max", "killDistance": "sum", "bestStreak": "max", "doubleKills": "sum", "tripleKills": "sum",
+    "quadKills": "sum", "openingKills": "sum", "openingDeaths": "sum", "clutches": "sum", "bestClutch": "max",
+    "trades": "sum", "revenges": "sum", "knifeKills": "sum", "grenadeKills": "sum", "aimedKills": "sum",
+    "hipKills": "sum", "standKills": "sum", "crouchKills": "sum", "proneKills": "sum", "leanKills": "sum", "airKills": "sum",
+    "xp": "sum",
+}
+# Ratios: name -> (numerator stat, denominator stat, scale)
+DERIVED = {"kd": ("kills", "deaths", 1), "headshotRate": ("headshots", "kills", 100), "accuracy": ("hits", "shots", 100),
+           "headHitRate": ("hitsHead", "hitsAll", 100), "adr": ("damage", "roundsPlayed", 1), "winRate": ("wins", "matches", 100),
+           "kpm": ("kills", "minutes", 1), "avgKillDistance": ("killDistance", "kills", 1)}
+KILL_FLAGS = {"head": 1, "aimed": 2, "crouch": 4, "prone": 8, "lean": 16, "air": 32}
 
 # XP ranks. Thresholds grow so the top ranks take real time to reach.
 RANKS = [
@@ -112,8 +142,9 @@ class Rejected(Exception):
 def sanitize(report, trusted=False, allow_cheats=False):
     """Validates a tcp-match/1 report. Returns a normalized copy with player ids
     in place of guids, or raises Rejected."""
-    if not isinstance(report, dict) or report.get("schema") != "tcp-match/1":
-        raise Rejected("not a tcp-match/1 report")
+    if not isinstance(report, dict) or report.get("schema") not in ("tcp-match/1", "tcp-match/2"):
+        raise Rejected("not a tcp-match report")
+    v2 = report.get("schema") == "tcp-match/2"
     if report.get("practice"):
         raise Rejected("practice match")
     if report.get("cheats") and not allow_cheats:
@@ -135,7 +166,7 @@ def sanitize(report, trusted=False, allow_cheats=False):
     if not isinstance(players, list) or not 1 <= len(players) <= 64:
         raise Rejected("bad player list")
     cap = max(duration, 60)
-    out, seen = [], set()
+    out, seen, index = [], {}, []
     for p in players:
         if not isinstance(p, dict):
             raise Rejected("bad player")
@@ -146,8 +177,10 @@ def sanitize(report, trusted=False, allow_cheats=False):
             guid = "name:" + clean(p.get("name"))
         pid = player_id(guid.upper() if re.fullmatch(r"[0-9A-Fa-f]{32}", guid) else guid)
         if pid in seen:
+            index.append(seen[pid])
             continue
-        seen.add(pid)
+        seen[pid] = len(out)
+        index.append(len(out))
         q = {"id": pid, "name": clean(p.get("name")) or "Player",
              "team": clean(p.get("team"), 16).lower(),
              "kills": _int(p.get("kills"), 0, cap * 4), "deaths": _int(p.get("deaths"), 0, cap * 4),
@@ -176,10 +209,24 @@ def sanitize(report, trusted=False, allow_cheats=False):
             name = clean(w, 24)
             if not name:
                 continue
-            q["weapons"][name] = {k: _int(ws.get(k), 0, 1 << 24) for k in ("kills", "headshots", "shots", "hits")}
+            q["weapons"][name] = {k: _int(ws.get(k), 0, 1 << 24) for k in ("kills", "headshots", "shots", "hits", "time", "longest")}
+        if v2:
+            hits = p.get("hits") if isinstance(p.get("hits"), dict) else {}
+            q.update({"assists": 0, "idle": _int(p.get("idle"), 0, cap + 120),
+                      "ip": str(p.get("ip") or "")[:16] if re.fullmatch(r"[0-9a-f]{1,16}", str(p.get("ip") or "")) else "",
+                      "hitsHead": _int(hits.get("head"), 0, 1 << 24), "hitsBody": _int(hits.get("body"), 0, 1 << 24),
+                      "hitsLegs": _int(hits.get("legs"), 0, 1 << 24), "damageTaken": _int(p.get("damageTaken"), 0, cap * 2000)})
         out.append(q)
     winner = report.get("winner")
-    return {"schema": "tcp-match/1", "id": clean(report.get("id") or "", 40),
+    extra = {"ranked": True, "verified": False, "eac": None, "bots": 0, "kills": [], "events": []}
+    if v2:
+        eac = report.get("eac") if isinstance(report.get("eac"), dict) else {}
+        extra.update({"ranked": report.get("ranked") is True,
+                      "eac": {k: _int(eac.get(k), 0, 9) for k in ("start", "end", "min")},
+                      "password": report.get("password") is True, "bots": _int(report.get("botSeconds"), 0, cap + 120),
+                      "kills": _kill_events(report.get("kills"), index, cap), "events": _round_events(report.get("events"), index, cap)})
+        extra["verified"] = min(extra["eac"].values()) >= 1 and not extra["password"]
+    return dict(extra, **{"schema": "tcp-match/2" if v2 else "tcp-match/1", "id": clean(report.get("id") or "", 40),
             "server": clean(report.get("server"), 64), "map": clean(report.get("map"), 40),
             "mode": clean(report.get("mode"), 32), "version": clean(report.get("version"), 48),
             "started": started.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
@@ -187,7 +234,216 @@ def sanitize(report, trusted=False, allow_cheats=False):
             "duration": duration, "rounds": _int(report.get("rounds"), 0, 1000),
             "winner": clean(winner, 16).lower() if winner else None,
             "team": bool(winner) or any(p["team"] for p in out),
-            "players": out}
+            "players": out})
+
+
+def _kill_events(raw, index, cap):
+    """[t, round, killer, victim, weapon, flags, distance, [assists]] with indices into "players"."""
+    out = []
+    n = len(index)
+    for e in (raw if isinstance(raw, list) else [])[:4096]:
+        if not isinstance(e, list) or len(e) < 7:
+            continue
+        k, v = _int(e[2], -1, n - 1), _int(e[3], -1, n - 1)
+        if k < 0 or v < 0 or index[k] == index[v]:
+            continue
+        assists = [index[a] for a in (e[7] if len(e) > 7 and isinstance(e[7], list) else [])[:3]
+                   if isinstance(a, int) and 0 <= a < n and index[a] not in (index[k], index[v])]
+        out.append({"t": _int(e[0], 0, (cap + 120) * 1000), "round": _int(e[1], 0, 1000), "killer": index[k], "victim": index[v],
+                    "weapon": clean(e[4], 24) or "Unknown", "flags": _int(e[5], 0, 255), "dist": _int(e[6], 0, 65536),
+                    "assists": sorted(set(assists))})
+    out.sort(key=lambda x: x["t"])
+    return out
+
+
+def _round_events(raw, index, cap):
+    """["o", t, round, player, capture|plant|defuse|return] and ["r", t, round, winner, clutch, enemies, humans]."""
+    out = []
+    n = len(index)
+    for e in (raw if isinstance(raw, list) else [])[:1024]:
+        if not isinstance(e, list) or len(e) < 5:
+            continue
+        t, rnd = _int(e[1], 0, (cap + 120) * 1000), _int(e[2], 0, 1000)
+        if e[0] == "o" and e[4] in ("capture", "plant", "defuse", "return"):
+            who = _int(e[3], -1, n - 1)
+            if who >= 0:
+                out.append({"kind": "o", "t": t, "round": rnd, "player": index[who], "what": e[4]})
+        elif e[0] == "r" and len(e) >= 7:
+            c = _int(e[4], -1, n - 1)
+            out.append({"kind": "r", "t": t, "round": rnd, "winner": clean(e[3], 16).lower() if isinstance(e[3], str) else None,
+                        "clutch": index[c] if c >= 0 else None, "enemies": _int(e[5], 0, 64), "humans": _int(e[6], 0, 64)})
+    out.sort(key=lambda x: x["t"])
+    return out
+
+
+def integrity(m, min_present=MIN_PRESENT):
+    """The rules a tcp-match/2 report must pass to count. Returns None or the reason it doesn't."""
+    if not m["verified"]:
+        if m["eac"] is None:
+            return "no anti-cheat record"
+        return "join password set" if m.get("password") else "anti-cheat was off during the match"
+    present = [p for p in m["players"] if p["timePlayed"] >= min(min_present, max(60, m["duration"] * 0.5))]
+    def people(ps):
+        # two clients behind one address count as one person
+        return len({p["ip"] or p["id"] for p in ps})
+    if m["team"]:
+        sides = {}
+        for p in present:
+            if p["team"]:
+                sides.setdefault(p["team"], []).append(p)
+        if len(sides) < 2 or any(people(ps) < 1 for ps in sides.values()) or people(present) < 2:
+            return "needs real players on both teams"
+    elif people(present) < 2:
+        return "needs two real players"
+    return None
+
+
+def derive(m):
+    """Per-player stats for one match (dict of STATS keys), per-weapon lines and kills per opponent.
+    Same-address opponents never count against each other, and at most PAIR_KILL_CAP kills on one opponent count."""
+    players = m["players"]
+    team = [p["team"] for p in players]
+    ip = [p.get("ip") or "" for p in players]
+    st = [{k: 0 for k in STATS} for _ in players]
+    vs = [dict() for _ in players]
+    weapons = [dict() for _ in players]
+    dur = max(m["duration"], 1)
+    botfree = m["schema"] == "tcp-match/1" or not m["bots"]
+    for i, p in enumerate(players):
+        s = st[i]
+        share = min(1.0, p["timePlayed"] / dur)
+        s.update({"teamKills": p["teamKills"], "suicides": p["suicides"], "damage": p["damage"], "roundsWon": p["roundsWon"],
+                  "objectives": p["objectives"], "wins": int(p["won"]), "matches": 1, "timePlayed": p["timePlayed"],
+                  "roundsPlayed": max(1, int(round(m["rounds"] * share))) if m["rounds"] else 0,
+                  "damageTaken": p.get("damageTaken", 0), "hitsHead": p.get("hitsHead", 0), "hitsBody": p.get("hitsBody", 0),
+                  "hitsLegs": p.get("hitsLegs", 0)})
+        for w, ws in p["weapons"].items():
+            weapons[i][w] = {"kills": 0 if m["kills"] else ws["kills"], "headshots": 0 if m["kills"] else ws["headshots"],
+                             "shots": ws["shots"] if botfree else 0, "hits": ws["hits"] if botfree else 0,
+                             "time": ws.get("time", 0), "longest": 0}
+            if botfree:
+                s["shots"] += ws["shots"]
+                s["hits"] += ws["hits"]
+    if m["schema"] == "tcp-match/1":
+        for i, p in enumerate(players):
+            st[i].update({"kills": p["kills"], "deaths": p["deaths"], "headshots": p["headshots"]})
+        return st, weapons, vs
+    # --- kills, from the event log
+    pair = {}
+    streak = [0] * len(players)
+    last_kill = [None] * len(players)      # (t, chain length)
+    killed_by = [None] * len(players)      # who killed this player last (for revenge)
+    recent_deaths = []                     # (t, victim, killer) for trades
+    opened = set()
+    round_kills = {}
+    for e in m["kills"]:
+        k, v = e["killer"], e["victim"]
+        if ip[k] and ip[k] == ip[v]:
+            continue
+        if m["team"] and team[k] and team[k] == team[v]:
+            continue
+        pair[(k, v)] = pair.get((k, v), 0) + 1
+        if pair[(k, v)] > PAIR_KILL_CAP:
+            continue
+        sk, sv, f = st[k], st[v], e["flags"]
+        sk["kills"] += 1
+        sv["deaths"] += 1
+        vs[k][v] = vs[k].get(v, 0) + 1
+        head = bool(f & KILL_FLAGS["head"])
+        sk["headshots"] += head
+        dist = e["dist"]
+        sk["killDistance"] += int(round(dist * UNIT_M))
+        sk["longestKill"] = max(sk["longestKill"], int(round(dist * UNIT_M)))
+        w = weapons[k].setdefault(e["weapon"], {"kills": 0, "headshots": 0, "shots": 0, "hits": 0, "time": 0, "longest": 0})
+        w["kills"] += 1
+        w["headshots"] += head
+        w["longest"] = max(w["longest"], int(round(dist * UNIT_M)))
+        lw = e["weapon"].lower()
+        sk["knifeKills"] += lw == "knife"
+        sk["grenadeKills"] += "grenade" in lw
+        sk["aimedKills" if f & KILL_FLAGS["aimed"] else "hipKills"] += 1
+        sk["proneKills" if f & KILL_FLAGS["prone"] else "crouchKills" if f & KILL_FLAGS["crouch"] else "standKills"] += 1
+        sk["leanKills"] += bool(f & KILL_FLAGS["lean"])
+        sk["airKills"] += bool(f & KILL_FLAGS["air"])
+        for a in e["assists"]:
+            if not (ip[a] and ip[a] == ip[v]) and not (m["team"] and team[a] and team[a] == team[v]):
+                st[a]["assists"] += 1
+        # streaks and multi-kills
+        streak[k] += 1
+        streak[v] = 0
+        sk["bestStreak"] = max(sk["bestStreak"], streak[k])
+        lk = last_kill[k]
+        chain = lk[1] + 1 if lk and e["t"] - lk[0] <= MULTI_MS else 1
+        last_kill[k] = (e["t"], chain)
+        if chain == 2:
+            sk["doubleKills"] += 1
+        elif chain == 3:
+            sk["doubleKills"] -= 1
+            sk["tripleKills"] += 1
+        elif chain == 4:
+            sk["tripleKills"] -= 1
+            sk["quadKills"] += 1
+        # opening kill of the round
+        if e["round"] and e["round"] not in opened:
+            opened.add(e["round"])
+            sk["openingKills"] += 1
+            sv["openingDeaths"] += 1
+        # trade: the victim had just killed one of the killer's teammates
+        if m["team"] and any(t0 >= e["t"] - TRADE_MS and kk == v and team[vv] == team[k] and vv != k
+                             for t0, vv, kk in recent_deaths):
+            sk["trades"] += 1
+        recent_deaths = [x for x in recent_deaths if x[0] >= e["t"] - TRADE_MS] + [(e["t"], v, k)]
+        if killed_by[k] == v:
+            sk["revenges"] += 1
+            killed_by[k] = None
+        killed_by[v] = k
+        rk = round_kills.setdefault(e["round"], {})
+        rk[k] = rk.get(k, 0) + 1
+    for rk in round_kills.values():
+        top = max(rk.values())
+        if top >= 2:
+            for k, n in rk.items():
+                if n == top:
+                    st[k]["roundMvps"] += 1
+                    break
+    for e in m["events"]:
+        if e["kind"] == "o":
+            key = {"capture": "captures", "plant": "plants", "defuse": "defuses", "return": "returns"}[e["what"]]
+            st[e["player"]][key] += 1
+        elif e["kind"] == "r" and e["clutch"] is not None and e["humans"] >= 1:
+            st[e["clutch"]]["clutches"] += 1
+            st[e["clutch"]]["bestClutch"] = max(st[e["clutch"]]["bestClutch"], e["humans"])
+    return st, weapons, vs
+
+
+def suspicious(d, m):
+    """Numbers no fair player reaches. They are kept, but listed for staff (tcp_stats.py review)."""
+    out = []
+    minutes = max(1.0, d["timePlayed"] / 60.0)
+    if d["shots"] >= 50 and d["hits"] > 0.9 * d["shots"]:
+        out.append("accuracy %d%% over %d shots" % (100 * d["hits"] // d["shots"], d["shots"]))
+    if d["kills"] >= 20 and d["headshots"] > 0.85 * d["kills"]:
+        out.append("headshot kills %d of %d" % (d["headshots"], d["kills"]))
+    if d["kills"] >= 15 and d["kills"] / minutes > 4:
+        out.append("%.1f kills per minute" % (d["kills"] / minutes))
+    if d["longestKill"] > 400:
+        out.append("kill at %d m" % d["longestKill"])
+    return out
+
+
+def ratios(t):
+    """Adds K/D, accuracy, headshot rate and the other ratios to a dict of summed stats."""
+    t = dict(t)
+    t["hitsAll"] = t.get("hitsHead", 0) + t.get("hitsBody", 0) + t.get("hitsLegs", 0)
+    t["minutes"] = t.get("timePlayed", 0) / 60.0
+    for name, (num, den, scale) in DERIVED.items():
+        a, b = t.get(num, 0), t.get(den, 0)
+        if name == "kd":
+            t[name] = round(a / b, 2) if b else float(a)
+        else:
+            t[name] = round(scale * a / b, 1) if b else None
+    t.pop("minutes")
+    return t
 
 
 def rate(match, ratings, counts):
@@ -258,16 +514,30 @@ CREATE TABLE IF NOT EXISTS players(pid TEXT PRIMARY KEY, name TEXT, first_seen T
   rating REAL, rated INTEGER, peak_rating REAL);
 CREATE TABLE IF NOT EXISTS player_weapons(pid TEXT, weapon TEXT, kills INTEGER, headshots INTEGER,
   shots INTEGER, hits INTEGER, PRIMARY KEY(pid, weapon));
+CREATE TABLE IF NOT EXISTS match_stats(server TEXT, match TEXT, pid TEXT, ended TEXT, ranked INTEGER, stat TEXT, value INTEGER,
+  PRIMARY KEY(server, match, pid, stat));
+CREATE INDEX IF NOT EXISTS match_stats_stat ON match_stats(stat, ended);
+CREATE INDEX IF NOT EXISTS match_stats_pid ON match_stats(pid, stat);
+CREATE TABLE IF NOT EXISTS match_weapons(server TEXT, match TEXT, pid TEXT, ended TEXT, ranked INTEGER, weapon TEXT,
+  kills INTEGER, headshots INTEGER, shots INTEGER, hits INTEGER, time INTEGER, longest INTEGER, PRIMARY KEY(server, match, pid, weapon));
+CREATE INDEX IF NOT EXISTS match_weapons_pid ON match_weapons(pid);
+CREATE TABLE IF NOT EXISTS match_vs(server TEXT, match TEXT, pid TEXT, opp TEXT, ended TEXT, ranked INTEGER, kills INTEGER,
+  PRIMARY KEY(server, match, pid, opp));
+CREATE INDEX IF NOT EXISTS match_vs_pid ON match_vs(pid);
+CREATE INDEX IF NOT EXISTS match_vs_opp ON match_vs(opp);
+CREATE TABLE IF NOT EXISTS review(server TEXT, match TEXT, pid TEXT, reason TEXT, created TEXT, PRIMARY KEY(server, match, pid, reason));
+CREATE TABLE IF NOT EXISTS voided(kind TEXT, id TEXT, reason TEXT, created TEXT, PRIMARY KEY(kind, id));
 """
 
 
 class StatsStore:
-    def __init__(self, path=":memory:", allow_cheats=False, min_matches=3):
+    def __init__(self, path=":memory:", allow_cheats=False, min_matches=3, require_anticheat=False):
         self.db = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.lock = threading.RLock()
         self.allow_cheats = allow_cheats
         self.min_matches = min_matches
+        self.require_anticheat = require_anticheat   # refuse reports without Easy Anti-Cheat on (live service)
         self.rate_window = {}
         with self.lock:
             self.db.execute("PRAGMA journal_mode=WAL")
@@ -294,6 +564,10 @@ class StatsStore:
         cols = {r["name"] for r in self.db.execute("PRAGMA table_info(players)")}
         if "abandons" not in cols:
             self.db.execute("ALTER TABLE players ADD COLUMN abandons INTEGER DEFAULT 0")
+        mcols = {r["name"] for r in self.db.execute("PRAGMA table_info(matches)")}
+        for col in ("ranked", "verified", "bots"):
+            if col not in mcols:
+                self.db.execute("ALTER TABLE matches ADD COLUMN %s INTEGER DEFAULT %d" % (col, 1 if col == "ranked" else 0))
 
     def ensure_server(self, sid, name=""):
         with self.lock:
@@ -334,6 +608,12 @@ class StatsStore:
     def ingest(self, report, server, trusted=False):
         """Stores one report. Returns (status, info): status is 'stored' or 'duplicate'."""
         m = sanitize(report, trusted=trusted, allow_cheats=self.allow_cheats)
+        if m["schema"] == "tcp-match/2":
+            why = integrity(m)
+            if why and (self.require_anticheat or m["verified"]):
+                raise Rejected(why)
+        elif self.require_anticheat:
+            raise Rejected("no anti-cheat record (update the server to 0.35.0)")
         if not m["id"]:
             m["id"] = hashlib.sha256(json.dumps(report, sort_keys=True).encode()).hexdigest()[:16]
         with self.lock:
@@ -356,14 +636,35 @@ class StatsStore:
             "SELECT pid, rating, rated, last_seen FROM players WHERE pid IN (%s)" % ",".join("?" * len(pids)), pids)}
         ratings = {pid: r["rating"] for pid, r in rows.items()}
         counts = {pid: r["rated"] for pid, r in rows.items()}
-        deltas = rate(m, ratings, counts)
-        db.execute("INSERT INTO matches(server, id, ended, map, mode, duration, rounds, winner, players, received, report, pub) "
-                   "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+        m.setdefault("ranked", True)
+        m.setdefault("kills", [])
+        m.setdefault("events", [])
+        m.setdefault("bots", 0)
+        detail, weapons, vs = derive(m)
+        if m["schema"] == "tcp-match/2":
+            # the counted kills (real opponents, farming rules applied) replace the game's totals
+            for p, d in zip(m["players"], detail):
+                p.update({"kills": d["kills"], "deaths": d["deaths"], "headshots": d["headshots"]})
+        deltas = rate(m, ratings, counts) if m["ranked"] else {}
+        ranked = int(bool(m["ranked"]))
+        db.execute("INSERT INTO matches(server, id, ended, map, mode, duration, rounds, winner, players, received, report, pub, "
+                   "ranked, verified, bots) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                    (server, m["id"], m["ended"], m["map"], m["mode"], m["duration"], m["rounds"], m["winner"],
-                    len(m["players"]), received or now_iso(), json.dumps(m, separators=(",", ":")), match_pub(server, m["id"])))
-        for p in m["players"]:
+                    len(m["players"]), received or now_iso(), json.dumps(m, separators=(",", ":")), match_pub(server, m["id"]),
+                    ranked, int(bool(m.get("verified"))), int(m.get("bots") or 0)))
+        for i, p in enumerate(m["players"]):
             pid = p["id"]
             xp = match_xp(p, m["duration"])
+            detail[i]["xp"] = xp
+            db.executemany("INSERT INTO match_stats VALUES(?,?,?,?,?,?,?)",
+                           [(server, m["id"], pid, m["ended"], ranked, k, v) for k, v in detail[i].items() if v])
+            db.executemany("INSERT INTO match_weapons VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+                           [(server, m["id"], pid, m["ended"], ranked, w, ws["kills"], ws["headshots"], ws["shots"], ws["hits"],
+                             ws["time"], ws["longest"]) for w, ws in weapons[i].items()])
+            db.executemany("INSERT INTO match_vs VALUES(?,?,?,?,?,?,?)",
+                           [(server, m["id"], pid, m["players"][j]["id"], m["ended"], ranked, n) for j, n in vs[i].items()])
+            for reason in suspicious(detail[i], m):
+                db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)", (server, m["id"], pid, reason, now_iso()))
             before = ratings.get(pid, RATING_START)
             after = before + deltas.get(pid, 0.0)
             top = max(p["weapons"].items(), key=lambda kv: kv[1]["kills"])[0] if p["weapons"] else ""
@@ -389,11 +690,22 @@ class StatsStore:
                         p["suicides"], p["headshots"], p["damage"], p["roundsWon"], int(p["won"]), p["objectives"],
                         p["timePlayed"], xp, after, int(pid in deltas), after,
                         int(bool(p.get("left")) and m["team"] and not p["won"]), pid))
-            for w, ws in p["weapons"].items():
+            for w, ws in weapons[i].items():
                 db.execute("""INSERT INTO player_weapons VALUES(?,?,?,?,?,?) ON CONFLICT(pid, weapon) DO UPDATE SET
                     kills=kills+excluded.kills, headshots=headshots+excluded.headshots,
                     shots=shots+excluded.shots, hits=hits+excluded.hits""",
                            (pid, w, ws["kills"], ws["headshots"], ws["shots"], ws["hits"]))
+        if len(m["players"]) == 2:
+            # two players who keep meeting alone: worth a look (stat padding between friends)
+            a, b = m["players"][0]["id"], m["players"][1]["id"]
+            since = (parse_time(m["ended"]) - dt.timedelta(days=14)).isoformat().replace("+00:00", "Z")
+            n = db.execute("SELECT COUNT(*) FROM matches x JOIN match_players pa ON pa.server=x.server AND pa.match=x.id AND pa.pid=? "
+                           "JOIN match_players pb ON pb.server=x.server AND pb.match=x.id AND pb.pid=? "
+                           "WHERE x.players=2 AND x.ended >= ?", (a, b, since)).fetchone()[0]
+            if n >= 5:
+                for pid in (a, b):
+                    db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)",
+                               (server, m["id"], pid, "%d two-player matches with the same opponent in 14 days" % n, now_iso()))
 
     def recompute(self):
         """Rebuilds every total, XP and rating from the stored reports, oldest first."""
@@ -402,9 +714,12 @@ class StatsStore:
                       self.db.execute("SELECT server, received, report FROM matches ORDER BY ended, received")]
             self.db.execute("BEGIN")
             try:
-                for t in ("matches", "match_players", "players", "player_weapons"):
+                for t in ("matches", "match_players", "players", "player_weapons", "match_stats", "match_weapons", "match_vs", "review"):
                     self.db.execute("DELETE FROM " + t)
+                void = {r[0] for r in self.db.execute("SELECT id FROM voided WHERE kind='match'")}
                 for server, received, m in stored:
+                    if match_pub(server, m["id"]) in void:
+                        continue
                     self._apply(m, server, received)
                 self.db.execute("COMMIT")
             except Exception:
@@ -450,7 +765,7 @@ class StatsStore:
         except (ValueError, TypeError):
             return None
 
-    def leaderboard(self, period="all", sort="rating", mode="", limit=100, since="", until=""):
+    def leaderboard(self, period="all", sort="rating", mode="", limit=100, since="", until="", scope="all"):
         """period is all, 30d or 7d; since/until (ISO times) select any other window, e.g. a season.
         sort "season" ranks by XP earned inside the window and "gain" by rating won inside it."""
         sort = sort if sort in ("rating", "xp", "kills", "kd", "headshots", "wins", "season", "gain") else "rating"
@@ -470,6 +785,11 @@ class StatsStore:
         if mode:
             where.append("m.mode = ?")
             args.append(clean(mode, 32))
+        if sort in ("rating", "gain"):
+            scope = "ranked"      # the skill rating only moves on ranked servers
+        if scope == "ranked":
+            where.append("m.ranked = 1")
+        where.append("mp.pid NOT IN (SELECT id FROM voided WHERE kind='player')")
         cond = ("WHERE " + " AND ".join(where)) if where else ""
         with self.lock:
             nmatches = self.db.execute("SELECT COUNT(DISTINCT m.server || '/' || m.id) FROM match_players mp JOIN matches m "
@@ -495,7 +815,7 @@ class StatsStore:
         for i, p in enumerate(players):
             p["position"] = i + 1
         return {"schema": "tcp-leaderboard/1", "updated": now_iso(), "period": period,
-                "since": since if period == "all" else None, "until": until, "sort": sort, "mode": mode, "minMatches": self.min_matches, "matches": nmatches,
+                "since": since if period == "all" else None, "until": until, "sort": sort, "mode": mode, "scope": scope, "minMatches": self.min_matches, "matches": nmatches,
                 "players": players[:limit]}
 
     def player(self, pid):
@@ -531,6 +851,193 @@ class StatsStore:
         out["topWeapon"] = weapons[0]["weapon"] if weapons and weapons[0]["kills"] else ""
         return out
 
+    def _window(self, period, scope, map_="", mode="", alias="x"):
+        where, args = ["%s.pid NOT IN (SELECT id FROM voided WHERE kind='player')" % alias], []
+        if period in ("7d", "30d", "90d", "365d"):
+            where.append("%s.ended >= ?" % alias)
+            args.append((dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=int(period[:-1]))).replace(
+                microsecond=0).isoformat().replace("+00:00", "Z"))
+        if scope == "ranked":
+            where.append("%s.ranked = 1" % alias)
+        if map_ or mode:
+            sub, sargs = [], []
+            if map_:
+                sub.append("map = ?")
+                sargs.append(clean(map_, 40))
+            if mode:
+                sub.append("mode = ?")
+                sargs.append(clean(mode, 32))
+            where.append("(%s.server || '/' || %s.match) IN (SELECT server || '/' || id FROM matches WHERE %s)"
+                         % (alias, alias, " AND ".join(sub)))
+            args += sargs
+        return " AND ".join(where), args
+
+    def totals(self, pid, scope="all", period="all"):
+        """Every stat of one player, summed (or best, for "max" stats), with the ratios."""
+        cond, args = self._window(period, scope)
+        with self.lock:
+            rows = self.db.execute("SELECT stat, SUM(value) s, MAX(value) mx FROM match_stats x WHERE x.pid=? AND " + cond +
+                                   " GROUP BY stat", [pid] + args).fetchall()
+        t = {k: 0 for k in STATS}
+        for r in rows:
+            if r["stat"] in STATS:
+                t[r["stat"]] = r["mx"] if STATS[r["stat"]] == "max" else r["s"]
+        return ratios(t)
+
+    def detail(self, pid, scope="all", period="all"):
+        """The full stats page of one player (tcp-player-stats/1)."""
+        pid = str(pid or "").lower()
+        if not re.fullmatch(r"[0-9a-f]{16}", pid):
+            return None
+        with self.lock:
+            r = self.db.execute("SELECT name FROM players WHERE pid=?", (pid,)).fetchone()
+            if not r:
+                return None
+            if self.db.execute("SELECT 1 FROM voided WHERE kind='player' AND id=?", (pid,)).fetchone():
+                return {"schema": "tcp-player-stats/1", "id": pid, "name": r["name"], "removed": True}
+        cond, args = self._window(period, scope)
+        out = {"schema": "tcp-player-stats/1", "updated": now_iso(), "id": pid, "name": r["name"], "scope": scope,
+               "period": period, "totals": self.totals(pid, scope, period)}
+        with self.lock:
+            out["weapons"] = [{"name": w["weapon"], "kills": w["k"], "headshots": w["hs"], "shots": w["sh"], "hits": w["hi"],
+                               "accuracy": round(100.0 * w["hi"] / w["sh"], 1) if w["sh"] else None,
+                               "headshotRate": round(100.0 * w["hs"] / w["k"], 1) if w["k"] else None,
+                               "time": w["t"], "longest": w["lg"]} for w in self.db.execute(
+                "SELECT weapon, SUM(kills) k, SUM(headshots) hs, SUM(shots) sh, SUM(hits) hi, SUM(time) t, MAX(longest) lg "
+                "FROM match_weapons x WHERE x.pid=? AND " + cond + " GROUP BY weapon ORDER BY k DESC, t DESC", [pid] + args)]
+            per = lambda col: [dict(x) for x in self.db.execute(
+                "SELECT m.%s name, COUNT(*) matches, SUM(mp.won) wins, SUM(mp.kills) kills, SUM(mp.deaths) deaths, "
+                "SUM(mp.time_played) timePlayed FROM match_players mp JOIN matches m ON m.server=mp.server AND m.id=mp.match "
+                "JOIN (SELECT DISTINCT server, match FROM match_stats x WHERE x.pid=? AND %s) w ON w.server=mp.server AND w.match=mp.match "
+                "WHERE mp.pid=? GROUP BY m.%s ORDER BY matches DESC" % (col, cond, col), [pid] + args + [pid])]
+            out["maps"], out["modes"] = per("map"), per("mode")
+            for x in out["maps"] + out["modes"]:
+                x["winRate"] = round(100.0 * x["wins"] / x["matches"], 1) if x["matches"] else None
+                x["kd"] = round(x["kills"] / x["deaths"], 2) if x["deaths"] else float(x["kills"])
+            def rival(sql):
+                row = self.db.execute(sql + " AND " + cond + " GROUP BY 1 ORDER BY n DESC LIMIT 1", [pid] + args).fetchone()
+                if not row or not row["n"]:
+                    return None
+                name = self.db.execute("SELECT name FROM players WHERE pid=?", (row["o"],)).fetchone()
+                return {"id": row["o"], "name": name["name"] if name else "Player", "kills": row["n"]}
+            out["nemesis"] = rival("SELECT x.pid o, SUM(x.kills) n FROM match_vs x WHERE x.opp=?")
+            out["favouriteVictim"] = rival("SELECT x.opp o, SUM(x.kills) n FROM match_vs x WHERE x.pid=?")
+            out["activity"] = [{"day": a["d"], "matches": a["n"]} for a in self.db.execute(
+                "SELECT substr(ended, 1, 10) d, COUNT(*) n FROM match_players WHERE pid=? AND ended >= ? GROUP BY d ORDER BY d",
+                (pid, (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=371)).strftime("%Y-%m-%d")))]
+            out["ratingHistory"] = [{"ended": h["ended"], "rating": int(round(h["rating_after"]))} for h in self.db.execute(
+                "SELECT mp.ended, mp.rating_after FROM match_players mp JOIN matches m ON m.server=mp.server AND m.id=mp.match "
+                "WHERE mp.pid=? AND m.ranked=1 ORDER BY mp.ended DESC LIMIT 100", (pid,))][::-1]
+        return out
+
+    def statboard(self, stat="kills", period="all", scope="all", map_="", mode="", weapon="", limit=100):
+        """A leaderboard for any stat or ratio (tcp-statboard/1). Ratios need a fair sample."""
+        stat = stat if stat in STATS or stat in DERIVED else "kills"
+        limit = max(1, min(500, _int(limit, 1, 500)))
+        cond, args = self._window(period, scope, map_, mode)
+        minimum = {"kd": ("kills", 25), "headshotRate": ("kills", 25), "accuracy": ("shots", 500), "headHitRate": ("hitsAll", 50),
+                   "adr": ("roundsPlayed", 20), "winRate": ("matches", 10), "kpm": ("timePlayed", 3600),
+                   "avgKillDistance": ("kills", 25)}
+        if weapon and stat not in ("kills", "headshots", "longestKill", "accuracy", "timePlayed"):
+            stat = "kills"        # per weapon, only these exist
+        with self.lock:
+            if weapon:
+                col = {"kills": "SUM(kills)", "headshots": "SUM(headshots)", "longestKill": "MAX(longest)",
+                       "accuracy": "100.0 * SUM(hits) / MAX(1, SUM(shots))", "timePlayed": "SUM(time)"}.get(stat, "SUM(kills)")
+                having = "SUM(shots) >= 200" if stat == "accuracy" else "1"
+                minimum["accuracy"] = ("shots", 200)
+                rows = self.db.execute("SELECT x.pid, %s v, COUNT(DISTINCT x.match) n FROM match_weapons x WHERE x.weapon=? AND %s "
+                                       "GROUP BY x.pid HAVING %s AND v > 0 ORDER BY v DESC LIMIT ?" % (col, cond, having),
+                                       [clean(weapon, 24)] + args + [limit]).fetchall()
+            elif stat in STATS:
+                agg = "MAX" if STATS[stat] == "max" else "SUM"
+                rows = self.db.execute("SELECT x.pid, %s(x.value) v, COUNT(DISTINCT x.match) n FROM match_stats x WHERE x.stat=? AND %s "
+                                       "GROUP BY x.pid HAVING v > 0 ORDER BY v DESC LIMIT ?" % (agg, cond),
+                                       [stat] + args + [limit]).fetchall()
+            else:
+                num, den, scale = DERIVED[stat]
+                floor_stat, floor = minimum[stat]
+                parts = {num, den, floor_stat} - {"hitsAll", "minutes"}
+                need = sorted(parts | ({"hitsHead", "hitsBody", "hitsLegs"} if "hitsAll" in (num, den, floor_stat) else set())
+                              | ({"timePlayed"} if "minutes" in (num, den) else set()))
+                q = "SELECT x.pid, x.stat, SUM(x.value) v FROM match_stats x WHERE x.stat IN (%s) AND %s GROUP BY x.pid, x.stat" % (
+                    ",".join("?" * len(need)), cond)
+                acc = {}
+                for r in self.db.execute(q, need + args):
+                    acc.setdefault(r["pid"], {})[r["stat"]] = r["v"]
+                ranked_rows = []
+                for pid_, t in acc.items():
+                    full = ratios({k: t.get(k, 0) for k in STATS})
+                    if full.get(floor_stat, 0) < floor or full.get(stat) is None:
+                        continue
+                    ranked_rows.append({"pid": pid_, "v": full[stat], "n": None})
+                ranked_rows.sort(key=lambda r: r["v"], reverse=True)
+                rows = ranked_rows[:limit]
+            names = {r["pid"]: r["name"] for r in self.db.execute(
+                "SELECT pid, name FROM players WHERE pid IN (%s)" % ",".join("?" * len(rows)), [r["pid"] for r in rows])} if rows else {}
+        return {"schema": "tcp-statboard/1", "updated": now_iso(), "stat": stat, "period": period, "scope": scope, "map": map_,
+                "mode": mode, "weapon": weapon, "minimum": dict(zip(("stat", "value"), minimum[stat])) if stat in minimum else None,
+                "players": [{"position": i + 1, "id": r["pid"], "name": names.get(r["pid"], "Player"),
+                             "value": round(r["v"], 1) if isinstance(r["v"], float) else r["v"]} for i, r in enumerate(rows)]}
+
+    def h2h(self, a, b, scope="all"):
+        """Head-to-head between two players (tcp-h2h/1)."""
+        a, b = str(a or "").lower(), str(b or "").lower()
+        if not (re.fullmatch(r"[0-9a-f]{16}", a) and re.fullmatch(r"[0-9a-f]{16}", b)) or a == b:
+            return None
+        cond, args = self._window("all", scope)
+        with self.lock:
+            names = {r["pid"]: r["name"] for r in self.db.execute("SELECT pid, name FROM players WHERE pid IN (?, ?)", (a, b))}
+            if len(names) < 2:
+                return None
+            def kills(x, y):
+                return self.db.execute("SELECT COALESCE(SUM(kills), 0) FROM match_vs x WHERE x.pid=? AND x.opp=? AND " + cond,
+                                       [x, y] + args).fetchone()[0]
+            shared = self.db.execute(
+                "SELECT m.pub, m.ended, m.map, m.mode, pa.team ta, pb.team tb, pa.won wa, pb.won wb FROM match_players pa "
+                "JOIN match_players pb ON pb.server=pa.server AND pb.match=pa.match AND pb.pid=? "
+                "JOIN matches m ON m.server=pa.server AND m.id=pa.match WHERE pa.pid=? %s ORDER BY m.ended DESC"
+                % ("AND m.ranked=1" if scope == "ranked" else ""), (b, a)).fetchall()
+        against = [x for x in shared if x["ta"] != x["tb"] or not x["ta"]]
+        return {"schema": "tcp-h2h/1", "updated": now_iso(), "scope": scope,
+                "a": {"id": a, "name": names[a], "kills": kills(a, b), "wins": sum(1 for x in against if x["wa"])},
+                "b": {"id": b, "name": names[b], "kills": kills(b, a), "wins": sum(1 for x in against if x["wb"])},
+                "matchesAgainst": len(against), "matchesTogether": len(shared) - len(against),
+                "recent": [{"id": x["pub"], "ended": x["ended"], "map": x["map"], "mode": x["mode"],
+                            "together": bool(x["ta"]) and x["ta"] == x["tb"], "aWon": bool(x["wa"]), "bWon": bool(x["wb"])}
+                           for x in shared[:10]]}
+
+    def meta(self):
+        """What the stat boards can filter on: the maps, modes and weapons that have verified matches (tcp-statmeta/1)."""
+        with self.lock:
+            maps = [r[0] for r in self.db.execute("SELECT map FROM matches GROUP BY map ORDER BY COUNT(*) DESC") if r[0]]
+            modes = [r[0] for r in self.db.execute("SELECT mode FROM matches GROUP BY mode ORDER BY COUNT(*) DESC") if r[0]]
+            weapons = [r[0] for r in self.db.execute("SELECT weapon FROM match_weapons WHERE kills > 0 GROUP BY weapon "
+                                                     "ORDER BY SUM(kills) DESC") if r[0]]
+        return {"schema": "tcp-statmeta/1", "updated": now_iso(), "stats": list(STATS), "ratios": list(DERIVED),
+                "maps": maps, "modes": modes, "weapons": weapons}
+
+    # ------------------------------------------------------------ staff
+    def review_list(self, limit=100):
+        with self.lock:
+            return [dict(r) for r in self.db.execute(
+                "SELECT r.pid, p.name, m.pub AS match_id, r.reason, r.created FROM review r LEFT JOIN players p ON p.pid=r.pid "
+                "LEFT JOIN matches m ON m.server=r.server AND m.id=r.match "
+                "WHERE r.pid NOT IN (SELECT id FROM voided WHERE kind='player') ORDER BY r.created DESC LIMIT ?", (limit,))]
+
+    def void(self, kind, ident, reason=""):
+        """Staff: remove a match (by its public id) or every stat of a player. Rebuilds the totals."""
+        if kind not in ("match", "player") or not re.fullmatch(r"[0-9a-f]{16}", str(ident or "")):
+            raise ValueError("void match|player <16-character id>")
+        with self.lock:
+            self.db.execute("INSERT OR REPLACE INTO voided VALUES(?,?,?,?)", (kind, ident, clean(reason, 200), now_iso()))
+        return self.recompute()
+
+    def unvoid(self, kind, ident):
+        with self.lock:
+            self.db.execute("DELETE FROM voided WHERE kind=? AND id=?", (kind, ident))
+        return self.recompute()
+
     def export_ratings(self, path):
         """Writes '<pid> <rating>' lines for the game servers' skill-based team
         balance (g_balanceSkill reads ratings.txt from the server's home folder).
@@ -557,11 +1064,13 @@ class StatsStore:
     def recent(self, limit=20):
         with self.lock:
             rows = self.db.execute("SELECT m.server sid, m.id mid, m.pub id, m.ended, m.map, m.mode, m.duration, m.rounds, m.winner, "
-                                   "m.players, s.name server FROM matches m LEFT JOIN servers s ON s.id=m.server "
+                                   "m.players, m.ranked, COALESCE(NULLIF(json_extract(m.report, '$.server'), ''), s.name) server "
+                                   "FROM matches m LEFT JOIN servers s ON s.id=m.server "
                                    "ORDER BY m.ended DESC LIMIT ?", (max(1, min(100, limit)),)).fetchall()
             matches = []
             for r in rows:
                 m = {k: r[k] for k in ("id", "ended", "map", "mode", "duration", "rounds", "winner", "players", "server")}
+                m["ranked"] = bool(r["ranked"])
                 # the match MVP: most kills, then most XP
                 top = self.db.execute("SELECT pid, name, kills FROM match_players WHERE server=? AND match=? "
                                       "ORDER BY kills DESC, xp DESC LIMIT 1", (r["sid"], r["mid"])).fetchone()
@@ -626,9 +1135,10 @@ class StatsStore:
             rows = self.db.execute("SELECT * FROM match_players WHERE server=? AND match=? ORDER BY kills DESC, xp DESC",
                                    (r["server"], r["id"])).fetchall()
         try:
-            version = clean(json.loads(r["report"] or "{}").get("version"), 48)
+            rep = json.loads(r["report"] or "{}")
+            version, host = clean(rep.get("version"), 48), clean(rep.get("server"), 64)
         except ValueError:
-            version = ""
+            version, host = "", ""
         players = [{"id": p["pid"], "name": p["name"], "team": p["team"], "won": bool(p["won"]), "kills": p["kills"],
                     "deaths": p["deaths"], "headshots": p["headshots"], "damage": p["damage"], "teamKills": p["team_kills"],
                     "objectives": p["objectives"], "roundsWon": p["rounds_won"], "timePlayed": p["time_played"], "xp": p["xp"],
@@ -642,7 +1152,8 @@ class StatsStore:
         top = players[0] if players and players[0]["kills"] else None
         return {"schema": "tcp-match-page/1", "updated": now_iso(), "id": pub, "ended": r["ended"], "map": r["map"],
                 "mode": r["mode"], "duration": r["duration"], "rounds": r["rounds"], "winner": r["winner"],
-                "server": r["server_name"], "version": version, "score": score,
+                "server": host or r["server_name"], "version": version, "score": score, "ranked": bool(r["ranked"]),
+                "antiCheat": bool(r["verified"]),
                 "mvp": {"id": top["id"], "name": top["name"], "kills": top["kills"]} if top else None, "players": players}
 
     def recap(self, days=7):
@@ -690,7 +1201,20 @@ def handle_get(store, path, query):
     q = {k: v[0] for k, v in query.items()}
     if path == "/leaderboard.json":
         return 200, store.leaderboard(q.get("period", "all"), q.get("sort", "rating"), q.get("mode", ""),
-                                      q.get("limit", 100), q.get("since", ""), q.get("until", ""))
+                                      q.get("limit", 100), q.get("since", ""), q.get("until", ""),
+                                      "ranked" if q.get("scope") == "ranked" else "all")
+    scope = "ranked" if q.get("scope") == "ranked" else "all"
+    if path == "/stats.json":
+        p = store.detail(q.get("id"), scope, q.get("period", "all"))
+        return (200, p) if p else (404, {"error": "unknown player"})
+    if path == "/statboard.json":
+        return 200, store.statboard(q.get("stat", "kills"), q.get("period", "all"), scope, q.get("map", ""), q.get("mode", ""),
+                                    q.get("weapon", ""), q.get("limit", 100))
+    if path == "/statmeta.json":
+        return 200, store.meta()
+    if path == "/h2h.json":
+        h = store.h2h(q.get("a"), q.get("b"), scope)
+        return (200, h) if h else (404, {"error": "unknown players"})
     if path == "/player.json":
         p = store.player(q.get("id"))
         return (200, p) if p else (404, {"error": "unknown player"})
@@ -783,6 +1307,8 @@ def main(argv=None):
     ap.add_argument("--db", default="stats.db")
     ap.add_argument("--allow-cheats", action="store_true", help="accept matches played with sv_cheats 1 (testing)")
     ap.add_argument("--min-matches", type=int, default=3)
+    ap.add_argument("--require-anticheat", action="store_true",
+                    help="only accept tcp-match/2 reports from matches with Easy Anti-Cheat on (live service)")
     sub = ap.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("serve")
     s.add_argument("--listen", default="127.0.0.1:8091")
@@ -800,8 +1326,16 @@ def main(argv=None):
     i.add_argument("folder")
     sub.add_parser("recompute")
     sub.add_parser("export-ratings").add_argument("file")
+    sub.add_parser("review")
+    for name in ("void", "unvoid"):
+        v = sub.add_parser(name)
+        v.add_argument("kind", choices=("match", "player"))
+        v.add_argument("id")
+        if name == "void":
+            v.add_argument("--reason", default="")
     args = ap.parse_args(argv)
-    store = StatsStore(args.db, allow_cheats=args.allow_cheats, min_matches=args.min_matches)
+    store = StatsStore(args.db, allow_cheats=args.allow_cheats, min_matches=args.min_matches,
+                       require_anticheat=args.require_anticheat)
     if args.cmd == "add-server":
         sid, key = store.add_server(args.name)
         print(json.dumps({"server": sid, "key": key}, indent=2))
@@ -814,6 +1348,12 @@ def main(argv=None):
         print("stored", store.import_dir(args.folder, args.server))
     elif args.cmd == "recompute":
         print("recomputed", store.recompute(), "matches")
+    elif args.cmd == "review":
+        print(json.dumps(store.review_list(), indent=2))
+    elif args.cmd == "void":
+        print("voided; rebuilt", store.void(args.kind, args.id, args.reason), "matches")
+    elif args.cmd == "unvoid":
+        print("restored; rebuilt", store.unvoid(args.kind, args.id), "matches")
     elif args.cmd == "export-ratings":
         print("exported", store.export_ratings(args.file), "ratings")
     elif args.cmd == "serve":
