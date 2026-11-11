@@ -910,3 +910,17 @@ PAGES["support"] = [
 ]
 
 PAGES['index'] = [('href="faq.html">All questions and answers</a>', 'href="faq.html">Alle vragen en antwoorden</a>')] + PAGES['index']
+
+PAGES['index'] = [
+    ('aria-label="TrueCombat: Platinum in numbers"', 'aria-label="TrueCombat: Platinum in cijfers"'),
+    ('<dt>Original maps</dt>', '<dt>Originele maps</dt>'),
+    ('<span>Rebuilt for DirectX 12</span>', '<span>Herbouwd voor DirectX 12</span>'),
+    ('<dt>Guns</dt>', '<dt>Wapens</dt>'),
+    ('<span>With the original values</span>', '<span>Met de originele waarden</span>'),
+    ('<dt>Game modes</dt>', '<dt>Spelmodi</dt>'),
+    ('<span>From Elimination to Bomb</span>', '<span>Van Elimination tot Bomb</span>'),
+    ('<dt>Official servers</dt>', '<dt>Officiële servers</dt>'),
+    ('<span>EU, around the clock</span>', '<span>EU, dag en nacht</span>'),
+    ('<dt>To play</dt><dd>Free</dd>', '<dt>Om te spelen</dt><dd>Gratis</dd>'),
+    ('<span>No store, no forced sign-up</span>', '<span>Geen winkel, geen verplichte registratie</span>'),
+] + PAGES['index']
