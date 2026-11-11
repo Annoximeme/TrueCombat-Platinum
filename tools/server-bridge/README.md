@@ -36,7 +36,7 @@ mode. Otherwise pass `--modes "2=Elimination,3=Team elimination"`.
   "servers": [{
     "address": "203.0.113.5:27971", "name": "Red Server", "map": "obj_railhouse",
     "mode": "Team elimination", "players": 2, "bots": 6, "maxPlayers": 16, "password": false,
-    "ranked": true, "version": "0.30.0", "playerList": [{ "name": "Gianni", "score": 12, "ping": 30 }]
+    "ranked": true, "eac": 2, "version": "0.30.0", "playerList": [{ "name": "Gianni", "score": 12, "ping": 30 }]
   }]
 }
 ```
@@ -45,6 +45,8 @@ mode. Otherwise pass `--modes "2=Elimination,3=Team elimination"`.
 counted in `bots` instead. `ranked` comes from the server's `tcp_ranked` serverinfo cvar (`sets tcp_ranked 1`
 on a server that reports to the leaderboards, `sets tcp_ranked 0` on one that does not); it is `null`
 when a server does not set it.
+`eac` is the server's Easy Anti-Cheat setting from its `sv_eac` serverinfo key: 0 off, 1 on, 2 required
+to join. It is 0 for servers that do not report it. The website shows an anti-cheat badge for 1 and 2.
 
 ## Player stats and ranks
 
