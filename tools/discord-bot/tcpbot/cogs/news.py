@@ -200,7 +200,7 @@ class News(commands.Cog):
         if not draft or channel is None:
             return False, "No announcements channel is configured."
         rel = draft["release"]
-        ping_id = int(self.cfg["releases"].get("ping_role_id") or 0)
+        ping_id = int(self.cfg["releases"].get("ping_role_id") or 0) or self.bot.role_id("patchnotes")
         ping = self.bot.guild.get_role(ping_id) if (ping_id and self.bot.guild) else None
         try:
             first = await channel.send(
@@ -249,7 +249,7 @@ class News(commands.Cog):
             if entry["id"] in seen or channel is None:
                 continue
             meta = article_meta(self.cfg["devlog"]["site_root"], entry["url"])
-            role = int(self.cfg["devlog"].get("ping_role_id") or 0)
+            role = int(self.cfg["devlog"].get("ping_role_id") or 0) or self.bot.role_id("devlog")
             view = _link_view("Read the article", entry["url"], emoji="\N{OPEN BOOK}")
             view.add_item(discord.ui.Button(label="All devlog posts", url=self.cfg.site + "/devlog"))
             try:
