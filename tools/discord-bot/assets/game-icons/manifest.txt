@@ -1,0 +1,16 @@
+# TrueCombat: Platinum icons for Discord emoji. Source: game data pk3s (tcetest).
+# png	source pk3:path	size	shows
+team_specops.png	zzz_hd_interface.pk3:custom/default/gfx/icons/team_specops.tga	238x232	Team: Special Forces (Spec Ops) emblem
+team_terrorists.png	zzz_hd_interface.pk3:custom/default/gfx/icons/team_terror.tga	238x232	Team: Terrorists emblem
+flag_specops.png	zzz_hd_interface.pk3:custom/default/gfx/icons/flag_specops.tga	226x228	Team: Special Forces (Spec Ops) flag
+flag_terrorists.png	zzz_hd_interface.pk3:custom/default/gfx/icons/flag_terror.tga	226x228	Team: Terrorists flag
+rank02_private_first_class.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank2.tga	104x97	Rank insignia 2: Private First Class
+rank03_corporal.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank3.tga	102x128	Rank insignia 3: Corporal
+rank04_sergeant.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank4.tga	100x128	Rank insignia 4: Sergeant
+rank05_lieutenant.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank5.tga	56x114	Rank insignia 5: Lieutenant
+rank06_captain.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank6.tga	114x114	Rank insignia 6: Captain
+rank07_major.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank7.tga	128x128	Rank insignia 7: Major
+rank08_colonel.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank8.tga	128x76	Rank insignia 8: Colonel
+rank09_brigadier_general.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank9.tga	99x97	Rank insignia 9: Brigadier General
+rank10_lieutenant_general.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank10.tga	128x75	Rank insignia 10: Lieutenant General
+rank11_general.png	zzz_hd_interface.pk3:gfx/hud/ranks/rank11.tga	128x62	Rank insignia 11: General
