@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/devlog.html"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog.html</id>
-  <updated>2026-11-09T12:00:00Z</updated>
+  <updated>2026-11-11T12:00:00Z</updated>
+  <entry>
+    <title>The road ahead, in full</title>
+    <link href="https://truecombat.eu/devlog-the-road-ahead.html"/>
+    <id>https://truecombat.eu/devlog-the-road-ahead.html</id>
+    <published>2026-11-11T12:00:00Z</published>
+    <updated>2026-11-11T12:00:00Z</updated>
+    <category term="Roadmap"/>
+    <summary>The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Counting readers without tracking anyone</title>
     <link href="https://truecombat.eu/devlog-reads-and-ratings.html"/>

@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/nl/devlog.html"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog.html</id>
-  <updated>2026-11-09T12:00:00Z</updated>
+  <updated>2026-11-11T12:00:00Z</updated>
+  <entry>
+    <title>De weg vooruit, voluit</title>
+    <link href="https://truecombat.eu/nl/devlog-the-road-ahead.html"/>
+    <id>https://truecombat.eu/nl/devlog-the-road-ahead.html</id>
+    <published>2026-11-11T12:00:00Z</published>
+    <updated>2026-11-11T12:00:00Z</updated>
+    <category term="Roadmap"/>
+    <summary>De volgende twee updates zijn gepland, en het werk erachter ook. Een herbouwde bewegingskern, een matchverslag dat replays en coaching mogelijk maakt, bots die moeten kijken en luisteren zoals jij, pick-ups op Discord en meer. Dit is de lange versie, met hoe elk onderdeel werkt en waarom we het zo bouwen.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Lezers tellen zonder iemand te volgen</title>
     <link href="https://truecombat.eu/nl/devlog-reads-and-ratings.html"/>
