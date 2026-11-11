@@ -10,10 +10,10 @@ button2=Watch the trailer
 url2=https://www.youtube.com/watch?v=pb1IvJOg7Lg
 [slide]
 eyebrow=Devlog
-title=The road ahead,|in full.
-text=The next two updates are planned, and so is the work behind them.
+title=Every fight|on the record.
+text=Player profiles are about to get a lot deeper, and unranked servers count too. Here is what we track, and the rules that keep every number honest.
 button=Read the devlog
-url=https://truecombat.eu/devlog-the-road-ahead.html
+url=https://truecombat.eu/devlog-every-fight-counts.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -28,9 +28,9 @@ button=Join Discord
 url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
-title=The road ahead, in full
-text=The next two updates are planned, and so is the work behind them.
-url=https://truecombat.eu/devlog-the-road-ahead.html
+title=Every fight on the record
+text=Player profiles are about to get a lot deeper, and unranked servers count too. Here is what we track, and the rules that keep every number honest.
+url=https://truecombat.eu/devlog-every-fight-counts.html
 [news]
 tag=Community
 title=Weekend ranked ladder
