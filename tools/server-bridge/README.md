@@ -113,6 +113,60 @@ One finished match for its page on the website (`match.html?id=`): map, mode, le
 Headers `X-TCP-Server`, `X-TCP-Time` (unix seconds) and `X-TCP-Signature`; body is the report. Answers
 200 stored, 409 already stored, 401 bad server/signature/time, 422 refused report, 429 rate limited.
 
+## Detailed stats (`tcp-match/2`, game 0.35.0)
+
+Game servers from 0.35.0 write `tcp-match/2`. It is `tcp-match/1` plus the integrity record and an event log,
+and every number in it is between real players only: kills, deaths, hits, damage and assists count when both
+sides are human, and only while a round is live (no warm-up, waiting, countdown or competitive hold).
+
+Extra fields: `eac` (`start`, `end`, `min`: the server's `sv_eac` at match start, at the end and the lowest value
+seen, checked every second), `password` (a join password was set at any point), `ranked` (`tcp_ranked`),
+`botSeconds`, `maxBots`; per player `idle` (seconds alive with no input for over 60 s, not counted in
+`timePlayed`), `hits` `{head, body, legs}`, `ip` (a hash of the address with a per-match secret salt the server
+never writes down, so it only says "same connection" within one match), per weapon `time` and `longest`;
+`kills` `[t ms, round, killer, victim, weapon, flags, distance in units, [assists]]` with indices into `players`
+(flags: 1 headshot, 2 aimed, 4 crouched, 8 prone, 16 leaning, 32 airborne) and `events`
+(`["o", t, round, player, "capture"|"plant"|"defuse"|"return"]`, `["r", t, round, winner, clutch player or -1,
+enemies alive, human enemies alive]`).
+
+**Integrity rules** (`integrity()` and `derive()` in `tcp_stats.py`). A match counts only when:
+
+1. it is signed with an issued server key (or imported from a trusted local folder);
+2. Easy Anti-Cheat was on for the whole match (`eac.start`, `eac.end` and `eac.min` all at least 1);
+3. no join password was set and cheats were off (practice matches are refused as before);
+4. at least two real players took part, on both teams in team modes, each present for 2 minutes (or half of a
+   short match); two clients behind one address count as one person.
+
+Inside a counted match, same-address opponents never count against each other, only 10 kills on one opponent
+count, team kills are kept apart, and accuracy only comes from matches without bots (hit locations and headshot
+rate count real hits everywhere). The skill rating only moves on `ranked` matches; unranked matches earn XP and
+every other stat. `serve --require-anticheat` (bridge: `--require-anticheat`) refuses everything else, including
+`tcp-match/1`; without it the service also takes `tcp-match/1` and uncounted test reports, for development and
+for the switch-over while 0.34 servers still report.
+
+**Review.** Numbers no fair player reaches (90%+ accuracy over 50+ shots, 85%+ headshot kills over 20+ kills,
+over 4 kills a minute, a kill beyond 400 m) and two players who meet alone 5+ times in 14 days are listed by
+`tcp_stats.py review`. `void match <match id>` or `void player <player id>` removes them and rebuilds every
+total; `unvoid` restores.
+
+**Routes.**
+
+- `GET /stats.json?id=<player>&scope=all|ranked&period=all|7d|30d|90d|365d` (`tcp-player-stats/1`): every stat
+  summed (best value for streaks, longest kill, best clutch) with ratios (`kd`, `headshotRate`, `accuracy`,
+  `headHitRate`, `adr`, `winRate`, `kpm`, `avgKillDistance`), weapons, maps, modes, nemesis, favourite victim,
+  activity per day for a year and the last 100 ranked ratings.
+- `GET /statboard.json?stat=<stat>&scope=&period=&map=&mode=&weapon=&limit=` (`tcp-statboard/1`): a leaderboard
+  for any stat or ratio. Ratios need a fair sample (for example 25 kills for K/D, 500 shots for accuracy); the
+  answer's `minimum` says which.
+- `GET /h2h.json?a=<player>&b=<player>&scope=` (`tcp-h2h/1`): kills on each other, wins as opponents, matches
+  together and the last 10 shared matches.
+- `GET /statmeta.json` (`tcp-statmeta/1`): the stats, ratios, maps, modes and weapons the boards can filter on.
+- `/leaderboard.json` takes `scope=ranked`; sorting by rating or rating gain always uses ranked matches only.
+
+**Several local servers.** The bridge's `--stats-dir` is repeatable and takes `name=folder`, so each server on
+the VPS keeps its own id: `--stats-dir /var/lib/tcpgame/home/tcetest/stats --stats-dir
+official2=/var/lib/tcpgame/home-unranked/tcetest/stats`.
+
 ## Match reports (`tcp-match/1`)
 
 A game server that opts in writes one JSON file per finished match into `--stats-dir`.

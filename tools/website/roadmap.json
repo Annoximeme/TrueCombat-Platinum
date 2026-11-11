@@ -397,6 +397,11 @@
    "version": "0.35"
   },
   {
+   "en": "Detailed player stats from every verified server, ranked and unranked",
+   "nl": "Uitgebreide spelersstatistieken van elke geverifieerde server, ranked en unranked",
+   "version": "0.35"
+  },
+  {
    "en": "Reworked warm-up",
    "nl": "Vernieuwde opwarmfase",
    "version": "0.36"

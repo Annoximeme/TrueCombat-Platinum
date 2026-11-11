@@ -206,7 +206,8 @@ class Bridge:
         self.lock = threading.Lock()
         self.servers = {"schema": "tcp-servers/1", "updated": None, "master": {"online": False}, "servers": []}
         self.stats = tcp_stats.StatsStore(args.stats_db or ":memory:", allow_cheats=args.allow_cheats,
-                                          min_matches=args.min_matches)
+                                          min_matches=args.min_matches,
+                                          require_anticheat=getattr(args, "require_anticheat", False))
 
     def refresh(self):
         try:
@@ -223,8 +224,8 @@ class Bridge:
         verified = load_verified(getattr(self.args, "verified", ""))
         for s in servers:
             s["verified"] = s["address"] in verified
-        if self.args.stats_dir:
-            self.stats.import_dir(self.args.stats_dir)
+        for spec in stats_dirs(self.args.stats_dir):
+            self.stats.import_dir(spec[1], spec[0])
         with self.lock:
             self.servers = {"schema": "tcp-servers/1", "updated": now_iso(),
                             "master": {"online": online, "listed": len(addrs)}, "servers": servers}
@@ -290,6 +291,20 @@ def make_handler(bridge):
     return Handler
 
 
+def stats_dirs(values):
+    """--stats-dir values as (server id, folder). Accepts the old single string too."""
+    if isinstance(values, str):
+        values = [values] if values else []
+    out = []
+    for v in values:
+        name, sep, folder = v.partition("=")
+        if sep and re.fullmatch(r"[A-Za-z0-9_-]{1,32}", name):
+            out.append((name, folder))
+        else:
+            out.append(("local", v))
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--master", default="127.0.0.1:27950", help="master server host:port")
@@ -298,7 +313,11 @@ def main(argv=None):
     ap.add_argument("--interval", type=int, default=60, help="seconds between refreshes")
     ap.add_argument("--max-servers", type=int, default=256)
     ap.add_argument("--stats-db", default="", help="SQLite file for player stats (empty = in memory)")
-    ap.add_argument("--stats-dir", default="", help="also import tcp-match/1 files from this local folder")
+    ap.add_argument("--stats-dir", action="append", default=[],
+                    help="also import match reports from this local folder (repeatable; name=folder gives the "
+                         "server its own id, e.g. official2=/var/lib/.../stats; a bare folder is server 'local')")
+    ap.add_argument("--require-anticheat", action="store_true",
+                    help="only count matches played with Easy Anti-Cheat on (tcp-match/2)")
     ap.add_argument("--allow-cheats", action="store_true", help="accept matches played with cheats on (tests)")
     ap.add_argument("--min-matches", type=int, default=3)
     ap.add_argument("--verified", default="", help="file of staff-checked community servers (host:port per line)")

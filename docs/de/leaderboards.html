@@ -36,7 +36,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=f31321805c">
+<link rel="stylesheet" href="../style.css?v=2d1a1c7ae7">
 </head>
 <body>
 <!--nav-->
@@ -76,7 +76,7 @@
   <div class="wrap">
     <span class="eyebrow">Bestenlisten</span>
     <h1>Beste Spieler</h1>
-    <p class="lede">Rang, Skill-Rating und Gefechtsbilanz aus jedem Match auf einem Ranked-Server. Kein Konto nötig: Du erscheinst hier automatisch nach deinem ersten abgeschlossenen Match.</p>
+    <p class="lede">Rang, Skill-Rating und vollständige Gefechtsbilanz aus jedem verifizierten Match, ranked und unranked. Kein Konto nötig: Du erscheinst hier automatisch nach deinem ersten abgeschlossenen Match.</p>
   </div>
 </section>
 
@@ -112,6 +112,12 @@
   </div>
 </section>
 
+<section class="band sb-band">
+  <div class="wrap">
+    <div class="server-card full" data-statboard aria-live="polite"></div>
+  </div>
+</section>
+
 <section class="band">
   <div class="wrap">
     <div class="section-head">
@@ -121,16 +127,16 @@
     <div class="stat-cards">
       <div><b>Rang</b><span>Verdient durch Erfahrung: Kills, Kopfschüsse, Rundensiege, Ziele, Matchsiege und Zeit im Feld. 21 Ränge, vom Recruit bis zum General. Teamkills kosten Erfahrung.</span></div>
       <div><b>Skill-Rating</b><span>Alle starten bei 1000. Schlägst du eine stärkere Seite, gewinnst du mehr; verlierst du gegen eine schwächere, fällst du tiefer. Dein Anteil hängt davon ab, wie lange du gespielt hast.</span></div>
-      <div><b>Gefechtsbilanz</b><span>Kills, Tode und Kopfschüsse gegen den Gegner. Teamkills und Selbsttötungen werden getrennt gezählt.</span></div>
-      <div><b>Siege</b><span>Matches, die dein Team gewonnen hat. Dein Profil zeigt außerdem deine Waffen, deine Trefferquote und die letzten 20 Matches.</span></div>
+      <div><b>Gefechtsbilanz</b><span>Nur Gefechte gegen echte Spieler zählen, auch wenn Bots auf dem Server sind. Teamkills und Selbsttötungen werden getrennt gezählt.</span></div>
+      <div><b>Siege</b><span>Matches, die dein Team gewonnen hat. Dein Profil schlüsselt jede Waffe, jede Map, jeden Rivalen und jeden Clutch auf.</span></div>
     </div>
-    <p class="yt-note" style="margin-top:20px">Nur Ranked-Server melden Matches, und jede Meldung ist mit dem eigenen Schlüssel des Servers signiert. Practice-Matches, Matches mit aktivierten Cheats und Bots zählen nie. Das Spiel erkennt dich an einem Schlüssel, den es beim ersten Start auf deinem PC anlegt, also musst du dich nirgends anmelden. Veröffentlicht wird nur eine verschlüsselte ID, nie dieser Schlüssel oder deine IP-Adresse. Behalte deine <code>etkey</code>-Datei bei einer Neuinstallation, dann bleibt dein Rang erhalten.</p>
+    <p class="yt-note" style="margin-top:20px">Gewertet werden Matches auf offiziellen und freigegebenen Servern, ranked und unranked, mit Easy Anti-Cheat von der ersten bis zur letzten Sekunde. Jeder Bericht ist mit dem eigenen Schlüssel des Servers signiert. Kills an Bots, Aufwärmphase, Leerlaufzeit, Übungsmatches und Matches mit aktivierten Cheats zählen nie, und das Skill-Rating bewegt sich nur auf Ranked-Servern. Das Spiel erkennt dich an einem Schlüssel, den es beim ersten Start auf deinem PC erzeugt, du musst dich also nirgends anmelden. Veröffentlicht wird nur eine verschlüsselte ID, nie dieser Schlüssel oder deine IP-Adresse. Behalte bei einer Neuinstallation deine <code>etkey</code>-Datei, und dein Rang zieht mit um.</p>
   </div>
 </section>
 </main>
 
 <!--footer-->
-<aside class="log-strip" aria-label="Aus dem Devlog"><div class="wrap"><a class="log-strip-h" href="../devlog">Aus dem Devlog</a><div class="log-strip-posts"><a href="../devlog-the-road-ahead"><time datetime="2026-11-11">11 Nov. 2026</time><span>The road ahead, in full</span></a><a href="../devlog-reads-and-ratings"><time datetime="2026-11-09">9 Nov. 2026</time><span>Counting readers without tracking anyone</span></a></div><a class="log-strip-all" href="../devlog">Alle Devlog-Artikel</a></div></aside>
+<aside class="log-strip" aria-label="Aus dem Devlog"><div class="wrap"><a class="log-strip-h" href="../devlog">Aus dem Devlog</a><div class="log-strip-posts"><a href="../devlog-every-fight-counts"><time datetime="2026-11-11">11 Nov. 2026</time><span>Every fight on the record</span></a><a href="../devlog-the-road-ahead"><time datetime="2026-11-11">11 Nov. 2026</time><span>The road ahead, in full</span></a></div><a class="log-strip-all" href="../devlog">Alle Devlog-Artikel</a></div></aside>
 <footer>
   <div class="wrap">
     <div class="foot">
@@ -162,6 +168,6 @@
 <!--/footer-->
 
 <script src="../js/lang-de.js"></script>
-<script src="../js/site.js?v=f631d645f0"></script>
+<script src="../js/site.js?v=36fa7c6143"></script>
 </body>
 </html>
