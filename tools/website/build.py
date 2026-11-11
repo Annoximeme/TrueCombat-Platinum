@@ -1469,6 +1469,71 @@ def lastmod(path):
         return today
 
 
+def launcher_feed(posts):
+    """docs/launcher-feed.txt: the slides and news cards on the launcher's Play page, from launcher.json,
+    the current release and the latest devlog post. The launcher only accepts links to the project's own sites."""
+    data = json.loads((HERE / "launcher.json").read_text(encoding="utf-8"))
+    version = latest_version()
+
+    def one_line(text, limit):
+        text = " ".join(strip_tags(inline(text)).split())
+        if len(text) <= limit:
+            return text
+        cut = text[:limit - 1].rsplit(" ", 1)[0].rstrip(",;:")
+        return cut + "\u2026"
+
+    def two_lines(title):
+        title = title.rstrip(".")
+        if "," in title:
+            a, b = title.split(",", 1)
+            if len(a) + 1 <= 22 and len(b.strip()) + 1 <= 22:
+                return a + ",|" + b.strip() + "."
+        words = title.split()
+        best = None
+        for i in range(1, len(words)):
+            a, b = " ".join(words[:i]), " ".join(words[i:])
+            score = max(len(a), len(b))
+            if best is None or score < best[0]:
+                best = (score, a + "|" + b + ".")
+        return best[1] if best and best[0] <= 22 else None
+
+    def sentences(text, limit):
+        text = " ".join(strip_tags(inline(text)).split())
+        keep = ""
+        for part in re.split(r"(?<=[.!?])\s+", text):
+            if len((keep + " " + part).strip()) > limit:
+                break
+            keep = (keep + " " + part).strip()
+        return keep or one_line(text, limit)
+
+    slides = []
+    rel = data["releases"].get(version, {})
+    slides.append({"eyebrow": "Update " + version, "chip": "Live now",
+                   "title": rel.get("title", "Update %s|is live." % version),
+                   "text": rel.get("text", "See everything that changed in the latest update."),
+                   "button": "Read patch notes", "url": SITE + "news.html",
+                   "button2": rel.get("button2", ""), "url2": rel.get("url2", "")})
+    post = next((p for p in posts if two_lines(p["title"])), None)
+    if post:
+        slides.append({"eyebrow": "Devlog", "title": two_lines(post["title"]), "text": sentences(post["summary"], 200),
+                       "button": "Read the devlog", "url": "%sdevlog-%s.html" % (SITE, post["slug"])})
+    slides += data["slides"]
+    news = [{"tag": "Devlog", "title": one_line(posts[0]["title"], 60), "text": sentences(posts[0]["summary"], 150),
+             "url": "%sdevlog-%s.html" % (SITE, posts[0]["slug"])}] + data["news"]
+    allowed = ("https://truecombat.eu/", "https://github.com/", "https://www.youtube.com/", "https://youtu.be/",
+               "https://discord.gg/", "https://ko-fi.com/")
+    out = ["# Launcher Play page. Written by tools/website/build.py from tools/website/launcher.json; do not edit."]
+    for kind, items, keys in (("slide", slides[:4], ("eyebrow", "chip", "title", "text", "button", "url", "button2", "url2")),
+                              ("news", news[:3], ("tag", "title", "text", "url"))):
+        for item in items:
+            for key in ("url", "url2"):
+                if item.get(key) and not item[key].startswith(allowed):
+                    sys.exit("launcher.json: %s is not a link the launcher accepts" % item[key])
+            out.append("[%s]" % kind)
+            out += ["%s=%s" % (k, " ".join(str(item[k]).split())) for k in keys if item.get(k)]
+    return "\n".join(out) + "\n"
+
+
 def main():
     extend_tables()
     posts = {lang: devlog_posts(lang) for lang in LANGS}
@@ -1548,6 +1613,7 @@ def main():
             "/* Written by tools/website/build.py from tools/website/i18n/%s.py. */\nwindow.TCP_L = %s;\n"
             % (lang, json.dumps(i18n.MODS[lang].JS, ensure_ascii=False, separators=(",", ":"))), encoding="utf-8")
     (DOCS / "llms.txt").write_text(clean(llms_txt(posts["en"])), encoding="utf-8")
+    (DOCS / "launcher-feed.txt").write_text(launcher_feed(posts["en"]), encoding="utf-8")
 
     old = DOCS / "sitemap.xml"
     if old.exists():
