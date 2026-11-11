@@ -6,9 +6,9 @@
 <title>The official servers now run on Linux · TrueCombat: Platinum</title>
 <meta name="description" content="Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.">
 <meta name="theme-color" content="#0d1016">
-<link rel="canonical" href="https://truecombat.eu/devlog-linux-servers.html">
+<link rel="canonical" href="https://truecombat.eu/devlog-linux-servers">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://truecombat.eu/devlog-linux-servers.html">
+<meta property="og:url" content="https://truecombat.eu/devlog-linux-servers">
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="The official servers now run on Linux">
@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-linux-servers.jpg">
 <meta property="article:published_time" content="2026-11-09">
 <meta property="article:section" content="Servers">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"The official servers now run on Linux","description":"Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.","datePublished":"2026-11-09","dateModified":"2026-11-09","inLanguage":"en","articleSection":"Servers","timeRequired":"PT3M","image":"https://truecombat.eu/img/og-devlog-linux-servers.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-linux-servers.html","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio.html"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"The official servers now run on Linux","description":"Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.","datePublished":"2026-11-09","dateModified":"2026-11-09","inLanguage":"en","articleSection":"Servers","timeRequired":"PT3M","image":"https://truecombat.eu/img/og-devlog-linux-servers.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-linux-servers","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
 <!--alt-->
 <link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -29,11 +29,11 @@
 <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="The official servers now run on Linux">
 <meta name="twitter:description" content="Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog.html"},{"@type":"ListItem","position":3,"name":"The official servers now run on Linux","item":"https://truecombat.eu/devlog-linux-servers.html"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"The official servers now run on Linux","item":"https://truecombat.eu/devlog-linux-servers"}]}</script>
 <link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
-<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-linux-servers.html">
-<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-linux-servers.html">
-<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-linux-servers.html">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-linux-servers">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-linux-servers">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-linux-servers">
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
@@ -46,27 +46,27 @@
   <div class="wrap">
     <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
     <ul class="nav-links">
-      <li><a href="maps.html">Maps</a></li>
-      <li><a href="weapons.html">Weapons</a></li>
-      <li><a href="media.html">Media</a></li>
-      <li><a href="guide.html">Guide</a></li>
-      <li><a href="servers.html">Servers</a></li>
-      <li><a href="leaderboards.html">Leaderboards</a></li>
-      <li><a href="competitive.html">Competitive</a></li>
-      <li><a href="news.html">News</a></li>
-      <li><a href="devlog.html" aria-current="page" data-devlog-new="2026-11-11">Devlog</a></li>
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news">News</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-11">Devlog</a></li>
     </ul>
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
       <nav aria-label="Sections">
-        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Search</button><a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a><a href="news.html">News</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="support.html">Support</a><hr><a href="download.html">Download</a><a href="truecombat-elite.html">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq.html">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-linux-servers.html" hreflang="nl" lang="nl">Nederlands</a>
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-linux-servers" hreflang="nl" lang="nl">Nederlands</a>
       </nav>
     </details>
     <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
-    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-linux-servers.html" hreflang="nl" lang="nl">Nederlands</a></div></details>
-    <a class="nav-support" href="support.html" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Support</span></a>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-linux-servers" hreflang="nl" lang="nl">Nederlands</a></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Support</span></a>
     <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
-    <a class="btn" href="download.html">Download</a>
+    <a class="btn" href="download">Download</a>
   </div>
 </header>
 <!--/nav-->
@@ -76,7 +76,7 @@
   <header class="page-head post-head">
     <div class="head-art" style="--art: url(img/shot-hosted.webp); --art-s: url(img/shot-hosted-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
-      <a class="back" href="devlog.html">All devlog posts</a>
+      <a class="back" href="devlog">All devlog posts</a>
       <p class="post-meta"><span class="tag">Servers</span><span class="state shipped">Shipped in v0.34.0</span><time datetime="2026-11-09">9 Nov 2026</time><span>3 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="linux-servers" hidden></span></p>
       <h1>The official servers now run on Linux</h1>
       <p class="lede">Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.</p>
@@ -104,7 +104,7 @@
 <p>The Linux build is also the version community hosts get. Since 0.34.0, every release ships a ready-made Linux server package next to the Windows download, built from the same source code as the official servers. If you rent a small server somewhere, you can now run exactly what we run.</p>
 <h2 id="how-the-move-was-done">How the move was done</h2>
 <p>The switch happened late at night, in a quiet window, one server at a time. Before anything was touched, the Linux build was checked against the release: the same game files, the same checksums, the same maps. The old setup was left in place next to the new one. Going back is a single change and a restart, which takes seconds, and that path was ready before the first server was switched.</p>
-<p>The watchdog described in <a href="devlog-official-servers.html">What keeps the official servers running</a> kept an eye on both servers throughout, as it does every minute of every day.</p>
+<p>The watchdog described in <a href="devlog-official-servers">What keeps the official servers running</a> kept an eye on both servers throughout, as it does every minute of every day.</p>
 <h2 id="what-comes-next">What comes next</h2>
 <p>Two things follow directly from this move. First, the hit-registration test over a real internet connection, at both tick rates and with extra delay added on purpose, so we can see how the game behaves for players further away. Second, automatic server updates: new releases are already published with the Linux package, and the official servers will pick them up on their own once the update script has been adapted to their setup.</p>
 <p>If a match on an official server feels different since the move, in a good way or a bad way, tell us on Discord with the server, the map and the time. That is exactly the feedback this change needs.</p>
@@ -128,8 +128,8 @@
         </div>
       </div>
       <nav class="post-pager">
-        <a class="prev" href="devlog-ultra-visuals.html"><small>Older post</small>New light for old maps</a>
-        <a class="next" href="devlog-playtest-fixes.html"><small>Newer post</small>What the playtests told us</a>
+        <a class="prev" href="devlog-ultra-visuals"><small>Older post</small>New light for old maps</a>
+        <a class="next" href="devlog-playtest-fixes"><small>Newer post</small>What the playtests told us</a>
       </nav>
     </div>
   </div>
@@ -140,21 +140,21 @@
     <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
     <div class="post-list">
       <article class="post-card" data-tag="Servers">
-        <a class="post-art" href="devlog-official-servers.html" tabindex="-1" aria-hidden="true"><img src="img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <a class="post-art" href="devlog-official-servers" tabindex="-1" aria-hidden="true"><img src="img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
           <p class="post-meta"><span class="tag">Servers</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="official-servers" hidden></span></p>
-          <h2><a href="devlog-official-servers.html">What keeps the official servers running</a></h2>
+          <h2><a href="devlog-official-servers">What keeps the official servers running</a></h2>
           <p>Two official servers, a master list, live leaderboards and this website all run around the clock. Here is what happens behind the scenes when nobody is watching.</p>
-          <a class="more" href="devlog-official-servers.html">Read the post</a>
+          <a class="more" href="devlog-official-servers">Read the post</a>
         </div>
       </article>
       <article class="post-card" data-tag="Roadmap">
-        <a class="post-art" href="devlog-the-road-ahead.html" tabindex="-1" aria-hidden="true"><img src="img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <a class="post-art" href="devlog-the-road-ahead" tabindex="-1" aria-hidden="true"><img src="img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
           <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-11">11 Nov 2026</time><span>17 min read</span><span class="post-stat" data-post-stat="the-road-ahead" hidden></span></p>
-          <h2><a href="devlog-the-road-ahead.html">The road ahead, in full</a></h2>
+          <h2><a href="devlog-the-road-ahead">The road ahead, in full</a></h2>
           <p>The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.</p>
-          <a class="more" href="devlog-the-road-ahead.html">Read the post</a>
+          <a class="more" href="devlog-the-road-ahead">Read the post</a>
         </div>
       </article>
     </div>
@@ -179,9 +179,9 @@
         </div>
       </div>
       <nav aria-label="Footer" class="foot-cols">
-        <div><p class="foot-h">Game</p><a href="download.html">Download</a><a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="guide.html">Guide</a><a href="media.html">Media</a><a href="faq.html">FAQ</a><a href="truecombat-elite.html">TrueCombat: Elite</a></div>
-        <div><p class="foot-h">Play</p><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a></div>
-        <div><p class="foot-h">Studio</p><a href="news.html">News</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="press.html">Press kit</a><a href="support.html">Support</a></div>
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a></div>
         <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
       </nav>
     </div>
@@ -193,6 +193,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=8b49dfc777"></script>
+<script src="js/site.js?v=ecebb78fb3"></script>
 </body>
 </html>
