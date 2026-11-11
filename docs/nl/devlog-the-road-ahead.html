@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>De weg vooruit, voluit · TrueCombat: Platinum</title>
+<meta name="description" content="De volgende twee updates zijn gepland, en het werk erachter ook. Een herbouwde bewegingskern, een matchverslag dat replays en coaching mogelijk maakt, bots die moeten kijken en luisteren zoals jij, pick-ups op Discord en meer. Dit is de lange versie, met hoe elk onderdeel werkt en waarom we het zo bouwen.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-the-road-ahead.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-the-road-ahead.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="De weg vooruit, voluit">
+<meta property="og:description" content="De volgende twee updates zijn gepland, en het werk erachter ook. Een herbouwde bewegingskern, een matchverslag dat replays en coaching mogelijk maakt, bots die moeten kijken en luisteren zoals jij, pick-ups op Discord en meer. Dit is de lange versie, met hoe elk onderdeel werkt en waarom we het zo bouwen.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-the-road-ahead.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-the-road-ahead.jpg">
+<meta property="article:published_time" content="2026-11-11">
+<meta property="article:section" content="Roadmap">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"De weg vooruit, voluit","description":"De volgende twee updates zijn gepland, en het werk erachter ook. Een herbouwde bewegingskern, een matchverslag dat replays en coaching mogelijk maakt, bots die moeten kijken en luisteren zoals jij, pick-ups op Discord en meer. Dit is de lange versie, met hoe elk onderdeel werkt en waarom we het zo bouwen.","datePublished":"2026-11-11","dateModified":"2026-11-11","inLanguage":"nl","articleSection":"Roadmap","timeRequired":"PT17M","image":"https://truecombat.eu/img/og-devlog-the-road-ahead.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-the-road-ahead.html","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio.html"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="De weg vooruit, voluit">
+<meta name="twitter:description" content="De volgende twee updates zijn gepland, en het werk erachter ook. Een herbouwde bewegingskern, een matchverslag dat replays en coaching mogelijk maakt, bots die moeten kijken en luisteren zoals jij, pick-ups op Discord en meer. Dit is de lange versie, met hoe elk onderdeel werkt en waarom we het zo bouwen.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog.html"},{"@type":"ListItem","position":3,"name":"De weg vooruit, voluit","item":"https://truecombat.eu/nl/devlog-the-road-ahead.html"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-the-road-ahead.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-the-road-ahead.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-the-road-ahead.html">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=5181a944a2">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Wapens</a></li>
+      <li><a href="media.html">Media</a></li>
+      <li><a href="guide.html">Gids</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Ranglijsten</a></li>
+      <li><a href="competitive.html">Competitief</a></li>
+      <li><a href="news.html">Nieuws</a></li>
+      <li><a href="devlog.html" aria-current="page" data-devlog-new="2026-11-11">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Zoeken</button><a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="media.html">Media</a><a href="guide.html">Gids</a><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="competitive.html">Competitief</a><a href="news.html">Nieuws</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="support.html">Steun ons</a><hr><a href="download.html">Download</a><a href="truecombat-elite.html">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq.html">Vragen</a><a href="press.html">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-the-road-ahead.html" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-the-road-ahead.html" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support.html" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Steun ons</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download.html">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="the-road-ahead" data-min="17">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/map-delta.webp); --art-s: url(../img/map-delta-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog.html">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-11">11 nov 2026</time><span>17 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="the-road-ahead" hidden></span></p>
+      <h1>De weg vooruit, voluit</h1>
+      <p class="lede">De volgende twee updates zijn gepland, en het werk erachter ook. Een herbouwde bewegingskern, een matchverslag dat replays en coaching mogelijk maakt, bots die moeten kijken en luisteren zoals jij, pick-ups op Discord en meer. Dit is de lange versie, met hoe elk onderdeel werkt en waarom we het zo bouwen.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#hoe-het-werk-is-ingedeeld">Hoe het werk is ingedeeld</a></li>
+          <li><a href="#update-0-35-wat-het-onderzoek-opleverde">Update 0.35: wat het onderzoek opleverde</a></li>
+          <li><a href="#het-matchverslag">Het matchverslag</a></li>
+          <li><a href="#ook-nieuw-in-0-35">Ook nieuw in 0.35</a></li>
+          <li><a href="#bots-herbouwd-vanaf-de-zintuigen">Bots, herbouwd vanaf de zintuigen</a></li>
+          <li><a href="#online-spelen-en-launcher-1-5-0">Online spelen en launcher 1.5.0</a></li>
+          <li><a href="#discord-pick-ups-en-meldingen">Discord: pick-ups en meldingen</a></li>
+          <li><a href="#easy-anti-cheat">Easy Anti-Cheat</a></li>
+          <li><a href="#dlss-5">DLSS 5</a></li>
+          <li><a href="#daarna">Daarna</a></li>
+          <li><a href="#wat-jij-kunt-doen">Wat jij kunt doen</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Twee dagen geleden publiceerden we <a href="devlog-whats-next.html">Waar we hierna aan werken</a> en <a href="devlog-playtest-fixes.html">Wat de playtests ons leerden</a>. Sindsdien is het plan van een lijst een werkvolgorde geworden: we weten wat in de volgende update zit, wat in die daarna, en hoe de grotere projecten erachter eruitzien.</p>
+<p>Deze post is de lange versie. Hij herhaalt de twee eerdere lijsten niet. Hij legt uit hoe de belangrijkste onderdelen werken, want een aantal ervan zijn dingen waarvoor een spel van deze leeftijd nooit ontworpen is, en een opsommingsteken doet ze geen recht. Het is een lange tekst, dus gebruik de inhoudslijst om naar het deel te springen dat je interesseert.</p>
+<aside class="callout"><p>Niets in deze post heeft een datum. Een update komt uit als elk onderdeel door de volledige testronde komt, op het spel, de server, beide renderers en de launcher. Waar iets afhangt van een partij buiten ons team, zeggen we dat erbij.</p></aside>
+<h2 id="hoe-het-werk-is-ingedeeld">Hoe het werk is ingedeeld</h2>
+<p>Er staan twee updates in het plan, en ze hebben bewust een ander karakter.</p>
+<p><strong>Update 0.35</strong> gaat over hoe het spel speelt. Ze bevat de kernfixes uit de playtests, en de eerste nieuwe functies die geen verzamelde gegevens nodig hebben om te werken.</p>
+<p><strong>Update 0.36</strong> gaat over bots, maps en de opwarmfase, plus de functies die uit opgenomen matches lezen. Die functies hebben eerst echte matches nodig, en daarom komen ze als tweede: het opnemen begint met 0.35, en 0.36 bouwt voort op wat er dan verzameld is.</p>
+<p>Binnen 0.35 worden de fixes eerst gebouwd. Als de update kleiner moet worden om de fixes sneller uit te brengen, schuiven de nieuwe functies op, nooit de fixes.</p>
+<h2 id="update-0-35-wat-het-onderzoek-opleverde">Update 0.35: wat het onderzoek opleverde</h2>
+<p>Toen we de playtestrapporten regel voor regel naast de broncode legden, verklaarde één vaststelling meer dan alle andere.</p>
+<p>De spelcode van Platinum is niet de originele TC:E-code met wijzigingen erbovenop. Het is een nieuwe, eigen implementatie, geschreven om zich te gedragen als het origineel. Dat maakt de DirectX 12-renderer, de lagcompensatie en de bots überhaupt mogelijk. Het betekent ook dat sommige dingen die spelers als bug meldden geen kapotte functies zijn. Het zijn functies die nog niet herbouwd zijn, of die als eerste benadering gebouwd zijn en nooit vervangen werden.</p>
+<h3>Beweging heeft één oorzaak</h3>
+<p>Springafstand, hurksnelheid, laddersnelheid, voetstappen en het wiebelen van het beeld werden als aparte problemen gemeld. Het is één probleem. Het stuk code dat een speler elk frame door de wereld beweegt, met wrijving, versnelling, treden en hellingen, is nog de voorlopige versie uit de vroege ontwikkeling. Alles wat van je snelheid afhangt, erft de kleine fouten ervan: wanneer een voetstap klinkt, hoeveel het beeld beweegt, hoe ver een sprong draagt.</p>
+<p>We vonden ook een concrete fout in de sprong zelf. Een sprong uit beweging verliest een groot deel van zijn hoogte tegenover een sprong uit stilstand, en daardoor is de sprong op de container op Delta nu onmogelijk.</p>
+<p>We gaan die waarden dus niet één voor één bijstellen. De voorlopige bewegingskern wordt vervangen door een getrouwe, en daarna wordt elke waarde gemeten tegenover het originele spel: spronghoogte, sprongafstand bij lopen en sprinten, de snelheid bij hurken en gehurkt lopen, laddersnelheid, hoe hoog een rand mag zijn om erop te klimmen. We hebben een testopstelling die dezelfde invoer door het origineel en door Platinum stuurt en de resultaten vergelijkt, zodat "voelt juist" een getal wordt dat we na elke wijziging kunnen nakijken.</p>
+<p>Ook de nauwkeurigheid van wapens hangt hiervan af. De straf op nauwkeurigheid bij bewegen wordt uit je snelheid berekend, dus elk wapen wordt opnieuw gecontroleerd zodra de nieuwe beweging erin zit.</p>
+<h3>Gunplay, gemeten</h3>
+<p>Voor treffers op afstand en schoten die naast het richtpunt landen, bouwen we een schietbaan die vanzelf draait: vaste doelen op 10, 25, 50 en 100 meter, elk wapen in het arsenaal, gericht via het vizier en vanuit de heup, op een perfecte verbinding en op een vertraagde. Ze legt vast waar elke kogel landt tegenover het vizier en vergelijkt dat met het origineel. Wat die gegevens tonen, wordt opgelost, voor het hele arsenaal en niet alleen voor de wapens die in meldingen genoemd werden.</p>
+<p>Dezelfde ronde omvat de schade per lichaamsdeel voor elk wapen, het tempo van het grendelgeweer en de wapengeluiden, ook de geluiden die je als toeschouwer hoort.</p>
+<h3>Oorzaken die we al bevestigd hebben</h3>
+<ul>
+  <li><strong>Een granaatworp die je wapen afvuurt.</strong> Na je laatste granaat schakelde het spel meteen terug naar je wapen, zonder de normale wisselvertraging, zodat een muisknop die nog ingedrukt was direct vuurde. De fix voegt de vertraging toe en vraagt een nieuwe druk op de trekker.</li>
+  <li><strong>Geluiddempers.</strong> Je kunt een demper kiezen in het Deployment Menu, maar niets in de vuur- of geluidscode leest die keuze al. Hij krijgt een gedempt geluid, geen mondingsflits en een kortere afstand waarop bots hem kunnen horen.</li>
+  <li><strong>Granaten vasthouden.</strong> Granaten worden nu gegooid zodra je de knop indrukt. Het originele gedrag keert terug: inhouden om scherp te stellen, loslaten om te gooien, terwijl de lont loopt zolang je vasthoudt.</li>
+  <li><strong>Je team tussen maps.</strong> Het spel onthield niet in welk team je zat als de map wisselde. Dat doet het straks wel, en het bewaart ook je team en je score als je wegvalt en binnen enkele minuten terugkomt.</li>
+</ul>
+<h3>Al het andere in de fixronde van 0.35</h3>
+<ul>
+  <li>Invoer voor chat en teamchat, met geschiedenis.</li>
+  <li>Teamkeuze die bij de eerste klik registreert.</li>
+  <li>Een serverbrowser in het spel, in het Esc-menu, zodat je van server kunt wisselen zonder terug te gaan naar de launcher.</li>
+  <li>Het menu voor spraakcommando's.</li>
+  <li>Gekleurde spelersnamen die een herstart overleven en overal hetzelfde getoond worden.</li>
+  <li>Toetsen toewijzen aan extra muisknoppen, en schakelopties voor wandelen en sprinten.</li>
+  <li>Een pagina Opties in het Esc-menu: muis- en richtgevoeligheid met getypte waarden, gezichtsveld, geluidsvolumes en HUD-opties, allemaal meteen toegepast.</li>
+  <li>Een instelling voor de hitmarker. Op Unranked kiest de speler, op Ranked staat hij altijd uit.</li>
+  <li>Een langere, instelbare killfeed met namen in teamkleur.</li>
+  <li>Deuren die de instellingen van elke map volgen zoals in het origineel, met een aanwijzing op het scherm.</li>
+  <li>Flitsgranaten die bots even lang verblinden en verdoven als een speler.</li>
+  <li>Valschade op de benen, zoals in het origineel.</li>
+  <li>Ontbrekende wapens in het Deployment Menu, te donkere red dots en verkeerd gekleurde wapenonderdelen.</li>
+</ul>
+<h3>Een bugmelder in het spel zelf</h3>
+<p>Druk op F12, of kies "Een bug melden" in het Esc-menu, en er opent een tekstvak. Geen console, geen commando om te onthouden. De melding vertrekt met wat we nodig hebben om het probleem na te spelen: de map, je positie, de server, de build, de renderer, een screenshot en de laatste regels van het spellogboek. Gegevens over je hardware gaan alleen mee als je het vinkje laat staan, en je ziet precies wat er verstuurd wordt.</p>
+<p>We willen dit in 0.35 om een egoïstische reden: de feedback van de volgende playtests moet hierlangs binnenkomen, met bij elke melding een positie en een screenshot.</p>
+<h2 id="het-matchverslag">Het matchverslag</h2>
+<p>Dit is het onderdeel waar de meeste nieuwe functies op steunen, dus het verdient een degelijke uitleg.</p>
+<p>Vanaf 0.35 schrijven de officiële servers op wat er in elke match gebeurt: elke kill, elk punt schade, elk doel, het begin en einde van elke ronde, en waar elke speler zich bevindt, enkele keren per seconde gemeten. Het is een compact logboek van het spelverloop, een paar honderd kilobyte per match, dat een beperkte tijd bewaard en daarna gewist wordt. Het legt vast wat er in de match gebeurt en niets over jou daarbuiten.</p>
+<p>Oudere spellen beschouwden een match als voorbij zodra het scorebord sluit. Met zo'n verslag wordt een match iets dat je achteraf kunt bestuderen. Eén opname voedt veel functies:</p>
+<ul>
+  <li><strong>2D-replays.</strong> Bekijk elke match van bovenaf op de plattegrond van de map, ronde per ronde, met een tijdlijn en de killfeed.</li>
+  <li><strong>Automatische hoogtepunten.</strong> De server herkent een ace, een clutch, meerdere kills binnen enkele seconden of een bom die op het nippertje onschadelijk gemaakt wordt, en kiest de beste momenten.</li>
+  <li><strong>Heatmaps.</strong> Waar gevochten wordt en waar spelers sneuvelen op elke map, per team en per modus.</li>
+  <li><strong>Een publiek balansoverzicht.</strong> Hoe elk wapen het over tijd doet: tijd tot een kill, aandeel hoofdschoten, hoe vaak het gekozen wordt. Over balans kan dan gediscussieerd worden met gegevens die iedereen kan zien.</li>
+  <li><strong>Een coach na de match.</strong> Enkele cijfers uit je laatste match en één praktische tip, zoals het gebied waar je het vaakst stierf en of dat van voren of van opzij was. De tips schrijven we zelf, één voor één. Geen gegenereerde tekst.</li>
+  <li><strong>Wekelijkse contracten en seizoenen.</strong> Kleine wekelijkse uitdagingen en een seizoen van acht weken met een eigen ranglijst. Niets te koop en niets dat het spel beïnvloedt.</li>
+  <li><strong>Bots die leren.</strong> Daarover verderop meer.</li>
+</ul>
+<p>We bouwen het verslag één keer en laten elke functie eruit lezen, in plaats van elke functie op haar eigen manier gegevens te laten verzamelen. Het opnemen komt in 0.35. De functies die eruit lezen volgen in 0.36, als er genoeg matches zijn om ze zinvol te maken.</p>
+<h2 id="ook-nieuw-in-0-35">Ook nieuw in 0.35</h2>
+<p>Drie functies die geen verzamelde gegevens nodig hebben, komen mee met de eerste update.</p>
+<h3>Pings met locatie</h3>
+<p>Richt op iets, druk op de pingtoets, en je team ziet een markering in de wereld en een regel in de chat met de naam van het gebied, zoals "[Markt] Vijand gezien". Twee keer tikken betekent "vijand hier", en een klein wiel biedt de rest: hulp nodig, ik ga hierheen, ik verdedig, bom of vlag.</p>
+<p>Twee details zijn belangrijk. Ten eerste controleert de server of je een vijand echt kunt zien voor hij een vijandping aanvaardt, zodat pings nooit iemand door een muur kunnen verraden, op Ranked of elders. Ten tweede bevatten de meeste originele maps helemaal geen gebiedsnamen, dus leiden we die af uit de indeling van de map en benoemen we ze met de hand, te beginnen met Village.</p>
+<h3>Bots die zich aanpassen aan de server</h3>
+<p>Op Unranked vergelijkt de server elke minuut hoe de menselijke spelers het doen tegenover de bots, en stelt hij het richten en de reactietijd van de bots een klein beetje bij, naar boven of naar beneden. De stappen zijn klein en gelijkmatig, zodat je het nooit zou mogen merken. Je merkt alleen dat een server vol nieuwkomers niet afgeslacht wordt en dat een server vol veteranen zich niet verveelt. Ranked heeft geen bots, dus daar geldt dit niet.</p>
+<h3>Wanneer er gespeeld wordt</h3>
+<p>De servers weten al hoeveel spelers online zijn. Ze gaan die geschiedenis bijhouden en er op de website een grafiek met de drukste momenten van maken. De launcher en Discord krijgen een optionele melding: geef een aantal op, en je krijgt een seintje als er zoveel spelers online zijn. Voor een kleine community is weten wanneer je moet opdagen de helft van een volle server.</p>
+<h2 id="bots-herbouwd-vanaf-de-zintuigen">Bots, herbouwd vanaf de zintuigen</h2>
+<p>De bots van Platinum kunnen bewegen, schieten, voor het doel spelen en in duo's werken. De playtests waren duidelijk over wat ze niet kunnen: ze nemen dezelfde routes, ze richten zelden via het vizier, ze leunen op de verkeerde momenten, en hun reacties schommelen tussen traag en ogenblikkelijk. We zouden die vier dingen kunnen oplappen. In plaats daarvan hebben we een nieuw botbrein ontworpen in vier lagen, en de eerste laag wordt nu gebouwd voor 0.36.</p>
+<h3>1. Een bot die de map begrijpt</h3>
+<p>De originele maps bevatten geen informatie voor bots. Platinum rekent al uit waar een bot kan lopen. De volgende stap is uitrekenen wat een plek <em>betekent</em>.</p>
+<p>Als een map laadt, verdeelt het spel hem in een paar honderd kleine gebieden en berekent het welke gebieden elkaar kunnen zien. Uit die ene tabel volgt heel wat, zonder dat iemand een map met de hand moet markeren:</p>
+<ul>
+  <li><strong>Blootstelling.</strong> Een gebied dat vanuit veel andere te zien is, is gevaarlijk om in te staan. Een gebied dat weinig andere zien, is een plek om te houden.</li>
+  <li><strong>Dekking.</strong> Voor elke plek: welke richtingen beschermd zijn, en of je ervoor moet hurken.</li>
+  <li><strong>Flessenhalzen.</strong> De gebieden waar elke route tussen een spawn en een doel doorheen moet.</li>
+  <li><strong>Hoeken.</strong> De plekken waar één stap opzij plots een groot stuk van de map blootlegt. Daar vertraagt een speler, brengt hij het vizier omhoog en leunt hij, dus daar gaan bots het ook doen: op hoofdhoogte op de rand richten voor ze de hoek om komen, en naar de open kant leunen als ze hem houden.</li>
+  <li><strong>Banen.</strong> Tot vier duidelijk verschillende routes tussen elke spawn en elk doel. Bots worden bij het begin van een ronde over de banen verdeeld, met een maximum per baan, zodat ze niet meer in één groep bij dezelfde deur aankomen. Bij smalle deuropeningen komt er een wachtrij in plaats van een opstopping.</li>
+</ul>
+<p>Omdat het uit de geometrie berekend wordt, werkt het op elke map, ook op communitymaps die we nooit gezien hebben.</p>
+<h3>2. Een bot die moet kijken en luisteren</h3>
+<p>Dit is de laag die het meest verandert aan hoe bots aanvoelen.</p>
+<p>Vandaag is een bot zich van je bewust op het moment dat er niets tussen jullie in staat. Daarom voelen hun reacties het ene moment oneerlijk en het andere blind. In het nieuwe ontwerp neemt een bot de wereld ongeveer waar zoals jij:</p>
+<ul>
+  <li><strong>Opmerken kost tijd.</strong> Bewustzijn bouwt zich op. Snel als je dichtbij bent, recht voor de bot en in het open veld. Traag als je ver weg bent, aan de rand van zijn blikveld, stilstaat of in de schaduw staat. Een bot kan je over het hoofd zien, en je kunt het zien gebeuren.</li>
+  <li><strong>Horen.</strong> Voetstappen, herladen en deuren vertellen een bot ongeveer waar iets is, niet precies waar. Stil lopen wordt een echte tactiek tegen bots, zoals tegen mensen.</li>
+  <li><strong>Vermoeden, niet weten.</strong> Elk team bots houdt een gedeeld beeld bij van waar de vijand <em>zou kunnen</em> zijn, alleen opgebouwd uit wat zijn leden gezien en gehoord hebben. Het vervaagt en verspreidt zich met de tijd. Een bot controleert de hoek waar hij je het laatst zag, niet de hoek waar je echt bent.</li>
+  <li><strong>Beslissen door af te wegen.</strong> In plaats van een vast script geeft een bot een score aan een kleine reeks acties, zoals doordrukken, houden, flankeren, terugtrekken, een teamgenoot steunen of voor het doel gaan, afhankelijk van de situatie waarin hij denkt te zitten.</li>
+  <li><strong>Persoonlijkheden.</strong> Elke botnaam krijgt een eigen temperament: geduldig of agressief, een favoriete afstand, hoe snel hij een risico neemt. Dezelfde naam speelt van match tot match herkenbaar op dezelfde manier.</li>
+  <li><strong>Zenuwen.</strong> Een bot die alleen tegenover drie staat, speelt anders dan een bot in een winnend team, en bots maken af en toe een geloofwaardige fout.</li>
+</ul>
+<h3>3. Een team dat een plan maakt</h3>
+<p>Bij het begin van een ronde kiest een team bots een plan uit een klein draaiboek: welke banen ze nemen, wie houdt en wie doordrukt. Het team houdt bij welke plannen op deze map tegen deze tegenstanders gewerkt hebben en gaat die geleidelijk verkiezen, terwijl het de andere af en toe blijft proberen om niet voorspelbaar te worden.</p>
+<p>Bots melden wat ze zien via dezelfde spraakcommando's en pings die spelers gebruiken, met gebiedsnamen, en reageren op meldingen van teamgenoten. Dat werkt in twee richtingen: je zult een bot een eenvoudig bevel kunnen geven, zoals volg mij of houd deze plek.</p>
+<h3>4. Bots die leren van echte matches</h3>
+<p>Hier komt het matchverslag terug. Zodra er op een map genoeg matches opgenomen zijn, kunnen bots die gebruiken:</p>
+<ul>
+  <li><strong>Routes.</strong> Bots verkiezen de paden die echte spelers op elke map werkelijk nemen, gemengd met hun eigen baan, zodat ze flankeren en houden waar mensen dat doen.</li>
+  <li><strong>Posities en timing.</strong> Waar spelers doorgaans post vatten, en hoelang na het begin van een ronde de gevechten in elk gebied meestal losbarsten.</li>
+  <li><strong>Richten.</strong> Hoe een mensenhand een vizier echt naar een doel brengt: de snelheid, het doorschieten, het tot rust komen. Het richten van bots volgt die curves in plaats van een verzonnen formule.</li>
+</ul>
+<p>We ontwerpen ook een optionele modus voor later, waarin een bot kan spelen in de stijl van een specifieke speler die daarmee ingestemd heeft.</p>
+<p>Hier zit nergens een chatbot in. De beslissingen van een bot worden genomen door spellogica die op de server draait en getest en gemeten kan worden, niet door een taalmodel.</p>
+<h3>Hoe we weten of het gelukt is</h3>
+<p>Elke wijziging aan de bots wordt nu al getest met volledige matches op alle zes de maps, oude versie tegen nieuwe, waarna we de cijfers vergelijken. Voor dit werk voegen we een maat toe voor hoe menselijk de bots eruitzien: hoe vaak ze het vizier gebruiken, hoeveel verschillende routes een team per ronde neemt, hoe hun reactietijden verdeeld zijn.</p>
+<p>En zodra de latere lagen erin zitten, willen we een aangekondigde testavond houden op de officiële servers waarop spelers raden wie in de match een bot was. Als je het niet kunt zeggen, zijn we klaar.</p>
+<p>De eerste laag, het begrip van de map met hoeken en banen, is in ontwikkeling voor 0.36. De andere drie volgen één voor één, telkens nadat de vorige zich bewezen heeft.</p>
+<h2 id="online-spelen-en-launcher-1-5-0">Online spelen en launcher 1.5.0</h2>
+<p>Dit werk is gebouwd en bijgewerkt naar de huidige versie. Wat het nog nodig heeft, is zijn test met echte spelers op echte verbindingen, en het komt in een update zodra het daardoor is.</p>
+<ul>
+  <li><strong>Een verbinding die je kunt aflezen.</strong> Verbindingsicoontjes met vier streepjes naast elke ping op het scorebord, gekleurd volgens kwaliteit, en een netwerkgrafiek die je onder de rondeklok kunt aanzetten: ping, pakketverlies en jitter, of een lopende grafiek van zes seconden met pieken in verlies in het rood. Als een gevecht verkeerd aanvoelt, zie je of het aan jouw verbinding lag, aan die van de ander of aan de server.</li>
+  <li><strong>Met één klik meedoen.</strong> Een link op de website of in Discord opent de launcher en zet je in de server, in het juiste team als de link dat aangeeft. Is de server vol, dan wacht de launcher op een vrije plek en doet hij vanzelf mee. Voor het verbinden doet hij een korte verbindingstest en zet hij extra pakketbescherming aan als je route pakketten verliest.</li>
+  <li><strong>IPv6.</strong> De launcher, het spel, de serverlijst en de dedicated server kunnen allemaal overweg met IPv6-adressen. Voor spelers die van hun provider geen volwaardig IPv4-adres meer krijgen, kan dat het verschil zijn tussen wel en niet kunnen hosten.</li>
+  <li><strong>Een Verified-label.</strong> Communityservers die de officiële build draaien, worden gemarkeerd in de serverbrowser en op de website.</li>
+  <li><strong>Uitleg bij elke optie.</strong> De launcher legt zijn eigen opties uit: houd de muisaanwijzer boven een grafische instelling en je leest wat ze doet en wat ze kost.</li>
+  <li><strong>Eerlijker Ranked.</strong> Een pinglimiet op Official #1, tijdelijke bans die op alle officiële servers gelden, en het volle ratingverlies als je een teammatch verlaat die je aan het verliezen bent.</li>
+</ul>
+<h2 id="discord-pick-ups-en-meldingen">Discord: pick-ups en meldingen</h2>
+<p>Onze eigen Discord-bot is gebouwd en getest. Hij staat nog niet aan, omdat die stap de live servers raakt en op zijn eigen groen licht wacht.</p>
+<ul>
+  <li><strong>Pick-ups.</strong> Druk op Join queue. Als er twee volle teams wachten, krijgt iedereen een ready check van 60 seconden. De bot brengt de teams dan in evenwicht op skill rating door elke mogelijke verdeling te proberen, neemt een vrije matchserver, stelt een nieuw wachtwoord in, zet de competitieve wedstrijdmodus aan en stuurt elke speler een link waarmee hij in het juiste team terechtkomt. Na de match post hij de uitslag met de ratingwijziging van elke speler en start hij de volgende groep. Voor een community van onze grootte is dit matchmaking die werkt met twaalf mensen online.</li>
+  <li><strong>Meldingen met bewijs.</strong> Een <code>/report</code> in het spel komt in het staffkanaal terecht met de statistieken van de gemelde speler op die map en een verwijzing naar de juiste minuut in de opname die de server zelf van de match maakt. Een mens neemt altijd de beslissing.</li>
+  <li><strong>Je account, gekoppeld.</strong> Eén code die je in het spel typt, verbindt je Discord-account met je spelersprofiel. Geen wachtwoord en geen registratie. Vanaf dan toont <code>/profile</code> je rang, je rating en je laatste matches, en volgen je Discord-rollen je rang.</li>
+  <li><strong>Live serverkaarten, evenementen en playtests.</strong> Een kaart per officiële server die elke minuut bijgewerkt wordt, en inschrijvingen voor evenementen met herinneringen in je eigen tijdzone.</li>
+</ul>
+<h2 id="easy-anti-cheat">Easy Anti-Cheat</h2>
+<p>De integratie van Easy Anti-Cheat zit in de engine en staat uit. Er rest één controle: een echte client die als beschermd bevestigd wordt wanneer hij via de echte anti-cheatlauncher gestart wordt. We kondigen het niet aan op basis van een build die er alleen juist uitziet. Het komt uit als die controle slaagt, en het krijgt een eigen post waarin staat wat het op je pc wel en niet ziet.</p>
+<h2 id="dlss-5">DLSS 5</h2>
+<p>We krijgen er vragen over, dus hier is de eerlijke stand van zaken.</p>
+<p>Platinum ondersteunt al DLSS-upscaling, DLAA, Frame Generation en Reflex. DLSS 5 is een ander soort technologie: in plaats van het beeld te verscherpen of frames toe te voegen, gebruikt het een neuraal netwerk om het afgewerkte beeld opnieuw te belichten en te verfijnen. Voor een spel met belichting uit deze periode is dat mogelijk de grootste visuele stap die er te zetten valt.</p>
+<p>Ons plan is om het als een volwaardige, ingebouwde functie in de DirectX 12-renderer op te nemen. De renderer levert de bewegings- en diepte-informatie die zo'n techniek nodig heeft al zelf aan, dus er hoeft niets van buiten het spel aan vastgemaakt te worden.</p>
+<p>Drie dingen liggen vast:</p>
+<ul>
+  <li>Het wordt <strong>optioneel en staat standaard uit</strong>.</li>
+  <li>Het staat <strong>uit op Ranked</strong>, en vijandelijke spelers worden overal van het effect uitgesloten. Een techniek die het beeld opnieuw schildert, mag nooit veranderen hoe zichtbaar een tegenstander is.</li>
+  <li>Het komt alleen uit met <strong>software die NVIDIA voor ontwikkelaars vrijgegeven heeft om te verspreiden</strong>. Die is voor een project als het onze nog niet beschikbaar, en de timing hebben wij niet in handen.</li>
+</ul>
+<p>Dus: gepland, onderzocht en niet beschikbaar. Je hebt er ook een grafische kaart voor nodig die het ondersteunt. We plakken geen datum op iets dat afhangt van een release die we niet zelf bepalen.</p>
+<h2 id="daarna">Daarna</h2>
+<p>Verder weg, telkens met een eigen beslissing die nog genomen moet worden: meer maps uit de geschiedenis van TC:E, extra wapens en spelerskins uit andere TrueCombat-releases, eigen maps op communityservers met een veilige manier om ze te downloaden, en vrienden en party's in de launcher.</p>
+<h2 id="wat-jij-kunt-doen">Wat jij kunt doen</h2>
+<p>De volgorde hierboven komt rechtstreeks uit wat spelers ons na de playtests vertelden, en ze kan op dezelfde manier veranderen. Als iets hier voor jou zwaarder weegt dan de rest, of als er iets ontbreekt, laat het weten op <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. De <a href="index.html#roadmap">roadmap</a> volgt dit plan, en elk onderdeel krijgt een eigen devlogpost als het klaar is.</p>
+      </div>
+      <div class="post-rate" data-rate="the-road-ahead" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-reads-and-ratings.html"><small>Vorig artikel</small>Lezers tellen zonder iemand te volgen</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Roadmap">
+        <a class="post-art" href="devlog-whats-next.html" tabindex="-1" aria-hidden="true"><img src="../img/media-map-vote-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 nov 2026</time><span>4 min lezen</span><span class="post-stat" data-post-stat="whats-next" hidden></span></p>
+          <h2><a href="devlog-whats-next.html">Waar we hierna aan werken</a></h2>
+          <p>Nu 0.34.0 uit is, een open blik op het werk dat erachter klaarstaat: beter online spelen, pick-ups via Discord, met één klik meedoen en een reeks nieuwe functies op basis van een gedeeld matchverslag. Plannen, geen beloftes.</p>
+          <a class="more" href="devlog-whats-next.html">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Roadmap">
+        <a class="post-art" href="devlog-playtest-fixes.html" tabindex="-1" aria-hidden="true"><img src="../img/media-grenade-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 nov 2026</time><span>5 min lezen</span><span class="post-stat" data-post-stat="playtest-fixes" hidden></span></p>
+          <h2><a href="devlog-playtest-fixes.html">Wat de playtests ons leerden</a></h2>
+          <p>Onze laatste communityplaytests leverden een duidelijke lijst problemen op, met de gunplay voorop. Een grote reeks fixes staat klaar voor de volgende patch. Hier staat alles wat we vonden, in welke volgorde we het oplossen en hoe het past bij de rest van het werk dat eraan komt.</p>
+          <a class="more" href="devlog-playtest-fixes.html">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download.html">Download</a><a href="maps.html">Maps</a><a href="weapons.html">Wapens</a><a href="guide.html">Gids</a><a href="media.html">Media</a><a href="faq.html">Vragen</a><a href="truecombat-elite.html">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers.html">Servers</a><a href="leaderboards.html">Ranglijsten</a><a href="competitive.html">Competitief</a></div>
+        <div><p class="foot-h">Studio</p><a href="news.html">Nieuws</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="press.html">Perskit</a><a href="support.html">Steun ons</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=09d46d6466"></script>
+</body>
+</html>

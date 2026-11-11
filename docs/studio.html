@@ -21,6 +21,9 @@
 <!--alt-->
 <link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="Team Terminus, the studio · TrueCombat: Platinum">
 <meta name="twitter:description" content="Team Terminus is the studio behind TrueCombat: Platinum: TrueCombat: Elite veterans from |TexT| and SeF, rebuilding the game they grew up on.">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Studio","item":"https://truecombat.eu/studio.html"}]}</script>
@@ -30,7 +33,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=cf3baa0a40">
+<link rel="stylesheet" href="style.css?v=5181a944a2">
 </head>
 <body>
 <!--nav-->
@@ -47,17 +50,19 @@
       <li><a href="leaderboards.html">Leaderboards</a></li>
       <li><a href="competitive.html">Competitive</a></li>
       <li><a href="news.html">News</a></li>
+      <li><a href="devlog.html" data-devlog-new="2026-11-11">Devlog</a></li>
     </ul>
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
       <nav aria-label="Sections">
-        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a><a href="news.html">News</a><a href="studio.html">Studio</a><a href="support.html">Support</a><hr><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/studio.html" hreflang="nl" lang="nl">Nederlands</a>
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Search</button><a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a><a href="news.html">News</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="support.html">Support</a><hr><a href="download.html">Download</a><a href="truecombat-elite.html">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq.html">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/studio.html" hreflang="nl" lang="nl">Nederlands</a>
       </nav>
     </details>
-    <a class="nav-lang" href="nl/studio.html" hreflang="nl" lang="nl" title="Nederlands">NL</a>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/studio.html" hreflang="nl" lang="nl">Nederlands</a></div></details>
     <a class="nav-support" href="support.html" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Support</span></a>
     <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
-    <a class="btn" href="./#download">Download</a>
+    <a class="btn" href="download.html">Download</a>
   </div>
 </header>
 <!--/nav-->
@@ -133,14 +138,14 @@
     </div>
 <!--studio-workshop-->
     <ul class="workshop">
+      <li class="ws-testing"><span class="ws-state">In testing</span><b>Gunplay pass: hits at range, aim point, spread and damage</b></li>
+      <li class="ws-testing"><span class="ws-state">In testing</span><b>Rebuilt movement core: original jump, crouch, ladder and footstep behaviour</b></li>
+      <li class="ws-testing"><span class="ws-state">In testing</span><b>Options page and server browser in the in-game pause menu</b></li>
+      <li class="ws-testing"><span class="ws-state">In testing</span><b>Chat input, team memory between maps and coloured names</b></li>
       <li class="ws-dev"><span class="ws-state">In development</span><b>Shadows from muzzle flashes and explosions</b></li>
       <li class="ws-dev"><span class="ws-state">In development</span><b>Matchmaking through a Discord pickup queue</b></li>
-      <li class="ws-dev"><span class="ws-state">In development</span><b>Gunplay pass: hits at range, aim point, spread and damage</b></li>
-      <li class="ws-dev"><span class="ws-state">In development</span><b>Movement and sound pass: jump distance, crouch-walking, footsteps and weapon sounds</b></li>
-      <li class="ws-dev"><span class="ws-state">In development</span><b>Map audit: invisible walls and textures on every map</b></li>
-      <li class="ws-dev"><span class="ws-state">In development</span><b>Settings in the in-game pause menu and a reworked warm-up</b></li>
-      <li class="ws-dev"><span class="ws-state">In development</span><b>Bots that aim down sights, lean and vary their routes</b></li>
-      <li class="ws-dev"><span class="ws-state">In development</span><b>In-game bug reports</b></li>
+      <li class="ws-dev"><span class="ws-state">In development</span><b>Connection quality on the scoreboard and one-click join</b></li>
+      <li class="ws-dev"><span class="ws-state">In development</span><b>Bots with honest senses, personalities and team plans</b></li>
     </ul>
 <!--/studio-workshop-->
   </div>
@@ -268,6 +273,15 @@
     </div>
 <!--studio-devlog-->
     <div class="post-list post-trio">
+      <article class="post-card" data-tag="Roadmap">
+        <a class="post-art" href="devlog-the-road-ahead.html" tabindex="-1" aria-hidden="true"><img src="img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-11">11 Nov 2026</time><span>17 min read</span><span class="post-stat" data-post-stat="the-road-ahead" hidden></span></p>
+          <h3><a href="devlog-the-road-ahead.html">The road ahead, in full</a></h3>
+          <p>The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.</p>
+          <a class="more" href="devlog-the-road-ahead.html">Read the post</a>
+        </div>
+      </article>
       <article class="post-card" data-tag="Community">
         <a class="post-art" href="devlog-reads-and-ratings.html" tabindex="-1" aria-hidden="true"><img src="img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
@@ -284,15 +298,6 @@
           <h3><a href="devlog-whats-next.html">What we are working on next</a></h3>
           <p>With 0.34.0 out, here is an open look at the work lined up behind it: better online play, Discord pickups, one-click joining, and a set of new features built on a shared match record. Plans, not promises.</p>
           <a class="more" href="devlog-whats-next.html">Read the post</a>
-        </div>
-      </article>
-      <article class="post-card" data-tag="Community">
-        <a class="post-art" href="devlog-support.html" tabindex="-1" aria-hidden="true"><img src="img/map-snow-640.webp" alt="" width="640" height="360" loading="lazy"></a>
-        <div>
-          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-09">9 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="support" hidden></span></p>
-          <h3><a href="devlog-support.html">Free means free: how support works</a></h3>
-          <p>TrueCombat: Platinum now has a support page and a Ko-fi. Why we added it, where the money goes, and the rules we set for ourselves so that supporting never changes how the game plays.</p>
-          <a class="more" href="devlog-support.html">Read the post</a>
         </div>
       </article>
     </div>
@@ -320,6 +325,7 @@
 </main>
 
 <!--footer-->
+<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog.html">From the devlog</a><div class="log-strip-posts"><a href="devlog-the-road-ahead.html"><time datetime="2026-11-11">11 Nov 2026</time><span>The road ahead, in full</span></a><a href="devlog-reads-and-ratings.html"><time datetime="2026-11-09">9 Nov 2026</time><span>Counting readers without tracking anyone</span></a></div><a class="log-strip-all" href="devlog.html">All devlog posts</a></div></aside>
 <footer>
   <div class="wrap">
     <div class="foot">
@@ -336,7 +342,7 @@
         </div>
       </div>
       <nav aria-label="Footer" class="foot-cols">
-        <div><p class="foot-h">Game</p><a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="guide.html">Guide</a><a href="media.html">Media</a><a href="./#download">Download</a></div>
+        <div><p class="foot-h">Game</p><a href="download.html">Download</a><a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="guide.html">Guide</a><a href="media.html">Media</a><a href="faq.html">FAQ</a><a href="truecombat-elite.html">TrueCombat: Elite</a></div>
         <div><p class="foot-h">Play</p><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a></div>
         <div><p class="foot-h">Studio</p><a href="news.html">News</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="press.html">Press kit</a><a href="support.html">Support</a></div>
         <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
@@ -350,6 +356,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=d68cf64364"></script>
+<script src="js/site.js?v=09d46d6466"></script>
 </body>
 </html>

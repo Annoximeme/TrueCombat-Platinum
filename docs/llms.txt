@@ -1,0 +1,97 @@
+# TrueCombat: Platinum
+
+> TrueCombat: Platinum is a free, native 64-bit Windows rebuild of TrueCombat: Elite (TC:E), the realistic modern-combat tactical shooter originally made as a total conversion for Wolfenstein: Enemy Territory. It has a DirectX 12 renderer with an OpenGL fallback, the original maps, weapons, movement and HUD, a launcher with signed updates, official EU servers and leaderboards. It is developed by Team Terminus.
+
+- Current version: v0.34.1 (9 Nov 2026)
+- Platform: Windows 10 and 11, 64-bit. Price: free. Status: early access.
+- Not affiliated with Team Terminator, the creators of TrueCombat: Elite. Fan project.
+- The site is also available in Dutch under https://truecombat.eu/nl/.
+
+## Start here
+
+- [Download](https://truecombat.eu/download.html): the installer, system requirements and first steps
+- [Questions and answers](https://truecombat.eu/faq.html): install, online play, graphics and project questions
+- [TrueCombat: Elite](https://truecombat.eu/truecombat-elite.html): what TrueCombat: Elite was and how Platinum compares with the original
+- [Guide](https://truecombat.eu/guide.html): controls, movement and stamina, game modes, tactics and hosting
+
+## The game
+
+- [Maps](https://truecombat.eu/maps.html): the six maps (Delta, Northport, Railhouse, Snow, Stadtrand, Village) with overhead layouts
+- [Weapons](https://truecombat.eu/weapons.html): all 27 guns with their damage, recoil and handling values
+- [Media](https://truecombat.eu/media.html): in-game screenshots from the DirectX 12 renderer
+- [Competitive](https://truecombat.eu/competitive.html): match mode for clan matches: ready-up, knife round, half-time, timeouts
+
+## Maps
+
+- [Delta](https://truecombat.eu/map-delta.html): Brick warehouses, loading bays and parked trucks line a wide industrial road under a heavy night sky.
+- [Northport](https://truecombat.eu/map-northport.html): Red sheds, loading docks and flatbed trailers spread across the harbour yard. Fog rolls in at range, so the far end of the yard fades out before you can see who's waiting there.
+- [Railhouse](https://truecombat.eu/map-railhouse.html): A brick rail yard at night. Tracks run under an arched gate, and crates and stacked pallets fill the lit back alleys and the yard behind the station.
+- [Snow](https://truecombat.eu/map-snow.html): Snow-covered yards and loading platforms above, and a concrete basement with cages, tyres and storage rooms below.
+- [Stadtrand](https://truecombat.eu/map-stadtrand.html): Narrow brick alleys on the edge of town, with bins, back doors and fire escapes. The fog keeps every corner close.
+- [Village](https://truecombat.eu/map-village.html): Barns, walled courtyards and trees in a small village. Hay bales and open sheds give cover between the houses.
+
+## Weapons
+
+- [Beretta](https://truecombat.eu/weapon-beretta.html): The Beretta is a secondary weapon for SpecOps, chambered in 9×19 mm. It deals 54 damage per hit at 600 rounds per minute, from a magazine of 15.
+- [Glock](https://truecombat.eu/weapon-glock.html): The Glock is a secondary weapon for Terrorists, chambered in 9×19 mm. It deals 54 damage per hit at 600 rounds per minute, from a magazine of 15.
+- [Desert Eagle](https://truecombat.eu/weapon-desert-eagle.html): The Desert Eagle is a secondary weapon for both teams, chambered in .50 AE. It deals 77 damage per hit at 300 rounds per minute, from a magazine of 7.
+- [Akimbo Beretta](https://truecombat.eu/weapon-akimbo-beretta.html): The Akimbo Beretta is a secondary weapon for SpecOps, chambered in 9×19 mm. It deals 54 damage per hit at 600 rounds per minute, from a magazine of 15.
+- [Akimbo Glock](https://truecombat.eu/weapon-akimbo-glock.html): The Akimbo Glock is a secondary weapon for Terrorists, chambered in 9×19 mm. It deals 54 damage per hit at 600 rounds per minute, from a magazine of 15.
+- [MAC-10](https://truecombat.eu/weapon-mac-10.html): The MAC-10 is a primary weapon for Terrorists, chambered in .45 ACP. It deals 40 damage per hit at 1200 rounds per minute, from a magazine of 30.
+- [MAC-10 SD](https://truecombat.eu/weapon-mac-10-sd.html): The MAC-10 SD is a primary weapon for Terrorists, chambered in .45 ACP. It deals 40 damage per hit at 1200 rounds per minute, from a magazine of 30.
+- [MP5/10](https://truecombat.eu/weapon-mp5-10.html): The MP5/10 is a primary weapon for SpecOps, chambered in .40 S&W. It deals 45 damage per hit at 800 rounds per minute, from a magazine of 30.
+- [MP5SD](https://truecombat.eu/weapon-mp5sd.html): The MP5SD is a primary weapon for SpecOps, chambered in 9×19 mm. It deals 45 damage per hit at 800 rounds per minute, from a magazine of 30.
+- [UMP45](https://truecombat.eu/weapon-ump45.html): The UMP45 is a primary weapon for SpecOps, chambered in .45 ACP. It deals 50 damage per hit at 600 rounds per minute, from a magazine of 25.
+- [M4](https://truecombat.eu/weapon-m4.html): The M4 is a primary weapon for SpecOps, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [M4 SOPMOD](https://truecombat.eu/weapon-m4-sopmod.html): The M4 SOPMOD is a primary weapon for SpecOps, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [M16](https://truecombat.eu/weapon-m16.html): The M16 is a primary weapon for SpecOps, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [AKS-74U](https://truecombat.eu/weapon-aks-74u.html): The AKS-74U is a primary weapon for Terrorists, chambered in 5.45×39 mm. It deals 45 damage per hit at 800 rounds per minute, from a magazine of 30.
+- [AKS-74U SD](https://truecombat.eu/weapon-aks-74u-sd.html): The AKS-74U SD is a primary weapon for Terrorists, chambered in 5.45×39 mm. It deals 45 damage per hit at 800 rounds per minute, from a magazine of 30.
+- [SIG 552](https://truecombat.eu/weapon-sig-552.html): The SIG 552 is a primary weapon for Terrorists, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [AK-74M Spetsnaz](https://truecombat.eu/weapon-ak-74m-spetsnaz.html): The AK-74M Spetsnaz is a primary weapon for Terrorists, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [AK-47](https://truecombat.eu/weapon-ak-47.html): The AK-47 is a primary weapon for Terrorists, chambered in 7.62×39 mm. It deals 47 damage per hit at 600 rounds per minute, from a magazine of 30.
+- [M3 Super 90](https://truecombat.eu/weapon-m3-super-90.html): The M3 Super 90 is a primary weapon for SpecOps, in 12 gauge. Each shell spreads 150 damage over 9 pellets, and it reloads one shell at a time.
+- [SPAS-12](https://truecombat.eu/weapon-spas-12.html): The SPAS-12 is a primary weapon for Terrorists, in 12 gauge. Each shell spreads 150 damage over 9 pellets, and it reloads one shell at a time.
+- [M590 Compact](https://truecombat.eu/weapon-m590-compact.html): The M590 Compact is a primary weapon for both teams, in 12 gauge. Each shell spreads 150 damage over 9 pellets, and it reloads one shell at a time.
+- [PSG-1](https://truecombat.eu/weapon-psg-1.html): The PSG-1 is a primary weapon for SpecOps, chambered in 7.62×51 mm. It deals 54 damage per hit at 400 rounds per minute, from a magazine of 10.
+- [M76](https://truecombat.eu/weapon-m76.html): The M76 is a primary weapon for Terrorists, chambered in 7.92×57 mm. It deals 54 damage per hit at 400 rounds per minute, from a magazine of 10.
+- [R93](https://truecombat.eu/weapon-r93.html): The R93 is a primary weapon for SpecOps, chambered in .338 Lapua. It deals 90 damage per hit at 120 rounds per minute, from a magazine of 5.
+- [SR-8](https://truecombat.eu/weapon-sr-8.html): The SR-8 is a primary weapon for Terrorists, chambered in .338 Lapua. It deals 90 damage per hit at 120 rounds per minute, from a magazine of 5.
+- [SPR SD](https://truecombat.eu/weapon-spr-sd.html): The SPR SD is a primary weapon for SpecOps, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 20.
+- [SIG 550 SD](https://truecombat.eu/weapon-sig-550-sd.html): The SIG 550 SD is a primary weapon for Terrorists, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 20.
+- [Knife](https://truecombat.eu/weapon-knife.html): Combat knife, carried by both teams. Always with you. One swing every half second.
+- [Mk3A2 / M26](https://truecombat.eu/weapon-mk3a2-m26.html): Fragmentation grenade, carried by both teams. Clears rooms and corners. Throw it and take cover.
+- [M83 smoke](https://truecombat.eu/weapon-m83-smoke.html): Smoke grenade, carried by both teams. Thrown with 4, one per life. Blocks sight lines so you can cross open ground.
+- [XM84 stun](https://truecombat.eu/weapon-xm84-stun.html): Stun grenade, carried by both teams. Stuns whoever is caught near it. Throw it before you push in.
+- [Dynamite](https://truecombat.eu/weapon-dynamite.html): Demolition charge, carried by both teams. Planted on objectives in the bomb mode.
+
+## Play
+
+- [Servers](https://truecombat.eu/servers.html): public and official servers, live scoreboards and latest results
+- [Leaderboards](https://truecombat.eu/leaderboards.html): ranks and ratings from every ranked match
+
+## Studio
+
+- [News](https://truecombat.eu/news.html): patch notes for every release
+- [Devlog](https://truecombat.eu/devlog.html): articles on how the game is built
+- [Studio](https://truecombat.eu/studio.html): Team Terminus, the people behind the game
+- [Press kit](https://truecombat.eu/press.html): press kit with logos, screenshots and a fact sheet
+- [Support](https://truecombat.eu/support.html): how the project is funded and where the money goes
+
+## Devlog
+
+- [The road ahead, in full](https://truecombat.eu/devlog-the-road-ahead.html): The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.
+- [Counting readers without tracking anyone](https://truecombat.eu/devlog-reads-and-ratings.html): Every devlog post now ends with a star rating, and we can finally see which posts people read. Here is how we built that without cookies, without analytics and without storing anything that points back to you.
+- [What we are working on next](https://truecombat.eu/devlog-whats-next.html): With 0.34.0 out, here is an open look at the work lined up behind it: better online play, Discord pickups, one-click joining, and a set of new features built on a shared match record. Plans, not promises.
+- [Free means free: how support works](https://truecombat.eu/devlog-support.html): TrueCombat: Platinum now has a support page and a Ko-fi. Why we added it, where the money goes, and the rules we set for ourselves so that supporting never changes how the game plays.
+- [What the playtests told us](https://truecombat.eu/devlog-playtest-fixes.html): Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.
+- [The official servers now run on Linux](https://truecombat.eu/devlog-linux-servers.html): Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.
+- [New light for old maps](https://truecombat.eu/devlog-ultra-visuals.html): The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.
+- [Teaching bots to play like people](https://truecombat.eu/devlog-smarter-bots.html): Bots that never miss are no fun, and bots that ignore the objective are worse. This is how we test every change to Platinum's bots before it reaches a server.
+- [When the test is wrong](https://truecombat.eu/devlog-recoil-check.html): Our recoil checks flagged the Desert Eagle as broken. The game was right. Here is how we found out, and why we would rather chase a false alarm than miss a real one.
+- [Ten pieces of work, one update](https://truecombat.eu/devlog-one-update.html): The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.
+- [What keeps the official servers running](https://truecombat.eu/devlog-official-servers.html): Two official servers, a master list, live leaderboards and this website all run around the clock. Here is what happens behind the scenes when nobody is watching.
+- [One small installer, every version](https://truecombat.eu/devlog-installer.html): Platinum used to be a zip of almost 800 MB. Now it is a 7 MB installer, a launcher that only downloads what changed, and a button that takes you back to any earlier release.
+- [Every shot leaves a mark](https://truecombat.eu/devlog-every-shot.html): Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.
+- [Match mode, built for clan nights](https://truecombat.eu/devlog-match-mode.html): Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.
+- [Back to full speed](https://truecombat.eu/devlog-full-speed.html): For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.

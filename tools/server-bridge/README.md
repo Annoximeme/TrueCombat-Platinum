@@ -102,6 +102,10 @@ Totals, rank with XP progress, rating and peak rating, leaderboard position, per
 accuracy, and the last 20 matches with their rating change. Also `GET /search.json?q=<name>`,
 `GET /recent.json` and `GET /ranks.json`.
 
+### `GET /match.json?id=<match id>` (`tcp-match-page/1`)
+
+One finished match for its page on the website (`match.html?id=`): map, mode, length, rounds, winner, the score per team, the MVP and every player's line (kills, deaths, headshots, damage, objectives, top weapon, XP, rating change). The id is the `id` field of an entry in `/recent.json` or in a profile's `recent` list. It is a hash, so it gives away neither the server id nor the server's own match id.
+
 ### `POST /api/v1/match`
 
 Headers `X-TCP-Server`, `X-TCP-Time` (unix seconds) and `X-TCP-Signature`; body is the report. Answers
@@ -132,7 +136,16 @@ The native qagame writes this format itself (fields below plus `id`, `cheats`, `
 
 `kills` counts enemy kills only, and team kills go in `teamKills`. `timePlayed` is in seconds.
 
-## `GET /leaderboard.json?period=all|30d&sort=rating|xp|kills|kd|headshots|wins&mode=&limit=` (`tcp-leaderboard/1`)
+## `GET /recap.json?days=7` (`tcp-recap/1`)
+
+Totals for the last 1 to 92 days (matches, time played, players, new players, kills, headshots), the three
+busiest maps, and the standout players: `mostKills`, `mostWins`, `mostXp`, `mostObjectives`, `biggestClimb`
+(rating gained), `bestKd` (3 matches or more) and `mostActive`.
+
+## `GET /leaderboard.json?period=all|30d|7d&sort=rating|xp|kills|kd|headshots|wins|season|gain&mode=&limit=&since=&until=` (`tcp-leaderboard/1`)
+
+`since` and `until` (ISO times) select any window, for example a season; `sort=season` ranks by XP earned inside
+the window (`periodXp`) and `sort=gain` by rating won inside it (`ratingGain`).
 
 Totals per player over the period, for players with at least `--min-matches` (default 3) matches. Each
 player also has `rating`, `kd`, `objectives`, `position` and `rank` (`level`, `title`, `short`, `xp`, `xpThis`,

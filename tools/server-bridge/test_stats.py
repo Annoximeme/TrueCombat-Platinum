@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Loopback test of the stats service: signed uploads, refusals, ranks, rating, profiles and the upload agent."""
-import json, pathlib, sys, tempfile, threading, time, urllib.error, urllib.request
+import json
+import re, pathlib, sys, tempfile, threading, time, urllib.error, urllib.request
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import tcp_stats, tcp_stats_agent
 
@@ -96,6 +97,16 @@ rec = get("/recent.json")["matches"]
 check("recent matches", len(rec) == 6)
 check("recent matches name the server and MVP", rec[0]["server"] == "Red Server" and rec[0]["mvp"]["name"] == "Gianni"
       and rec[0]["mvp"]["kills"] == 12 and rec[0]["mvp"]["id"] == gianni["id"], rec[0])
+check("recent matches and profile matches carry a public id", re.fullmatch(r"[0-9a-f]{16}", rec[0]["id"] or "") and prof["recent"][0]["id"] == rec[0]["id"], rec[0])
+mp = get("/match.json?id=" + rec[0]["id"])
+check("match page: result and scoreboard", mp["map"] == rec[0]["map"] and mp["winner"] == "terrorists" and len(mp["players"]) == 4
+      and mp["players"][0]["name"] == "Gianni" and mp["mvp"]["name"] == "Gianni" and mp["players"][0]["topWeapon"] == "M4", mp)
+check("match page: rating changes and no private ids", mp["players"][0]["ratingChange"] < 0 and sid not in json.dumps(mp)
+      and all(G[n] not in json.dumps(mp) for n in G), mp["players"][0])
+try:
+    get("/match.json?id=0000000000000000"); check("unknown match 404", False)
+except urllib.error.HTTPError as e:
+    check("unknown match 404", e.code == 404)
 dax = [p for p in lb["players"] if p["name"] == "Dax"][0]
 before = {p["id"]: (p["rating"], p["rank"]["xp"]) for p in lb["players"]}
 check("recompute gives the same result", store.recompute() == 6 and
@@ -158,6 +169,18 @@ check("abandon counted on the profile", t2.player(dax_quit["id"])["abandons"] ==
 ns = t2.netstats()["servers"][0]
 check("netstats per server", ns["avgPing"] == 40 and ns["avgLoss"] == 0.5 and ns["rewindCappedPct"] == 1.0 and ns["leaves"] == 1, ns)
 check("netstats over http", "servers" in get("/netstats.json"))
+
+# Weekly recap and season windows (used by the Discord bot).
+rc = get("/recap.json?days=7")
+check("recap totals", rc["schema"] == "tcp-recap/1" and rc["matches"] >= 1 and rc["players"] >= 2
+      and rc["maps"] and rc["mostKills"]["name"] and "biggestClimb" in rc, rc)
+wide = get("/leaderboard.json?since=2000-01-01T00:00:00Z&until=2100-01-01T00:00:00Z&sort=season")
+none = get("/leaderboard.json?since=2100-01-01T00:00:00Z")
+xs = [p["periodXp"] for p in wide["players"]]
+check("season window and season sort", wide["players"] and xs == sorted(xs, reverse=True)
+      and all("ratingGain" in p for p in wide["players"]) and none["players"] == [] and none["matches"] == 0, (xs, none))
+check("7 day board and bad since are safe", get("/leaderboard.json?period=7d")["period"] == "7d"
+      and get("/leaderboard.json?since=garbage")["period"] == "all")
 
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))
