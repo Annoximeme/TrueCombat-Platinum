@@ -12,7 +12,9 @@ The English pages in docs/*.html are hand-edited. This script:
   4. writes the devlog: one page per post in devlog/<slug>.en.md and
      .nl.md (docs/devlog-<slug>.html and docs/nl/...), plus the post list
      between the <!--devlog--> markers on devlog.html,
-  5. writes docs/sitemap.xml.
+  5. writes the download, FAQ and TrueCombat: Elite pages in full from landing.py,
+  6. writes the site search index (docs/js/search-<lang>.json) and docs/llms.txt,
+  7. writes docs/sitemap.xml, with the screenshots on each page.
 
 Run it after changing any English page:   python tools/website/build.py
 """
@@ -21,6 +23,9 @@ import json
 import pathlib
 import re
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import landing  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
@@ -31,13 +36,15 @@ GITHUB = "https://github.com/Annoximeme/TrueCombat-Platinum"
 FEED = GITHUB + "/releases.atom"
 
 MAPLIST = ["delta", "northport", "railhouse", "snow", "stadtrand", "village"]
+# written out in full by this script from landing.py (the other pages are hand-edited)
+LANDING = ["download", "faq", "truecombat-elite"]
 PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio", "support"]
 
 LABELS = {
     "en": {
         "maps": "Maps", "weapons": "Weapons", "guide": "Guide", "servers": "Servers",
         "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support",
-        "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About",
+        "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About", "truecombat-elite": "TrueCombat: Elite", "search": "Search", "top": "Back to top",
         "download": "Download", "menu": "Menu", "sections": "Sections", "discord": "Join the Discord",
         "other": "Nederlands", "other_short": "NL", "skip": "Skip to content", "footer": "Footer", "releases": "Releases",
         "dev": "TrueCombat: Platinum is developed by RaziC*.", "col_game": "Game", "col_play": "Play", "col_studio": "Studio", "col_community": "Community", "rss": "Patch notes (RSS)",
@@ -47,7 +54,7 @@ LABELS = {
     "nl": {
         "maps": "Maps", "weapons": "Wapens", "guide": "Gids", "servers": "Servers",
         "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons",
-        "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over",
+        "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over", "truecombat-elite": "TrueCombat: Elite", "search": "Zoeken", "top": "Terug naar boven",
         "download": "Download", "menu": "Menu", "sections": "Onderdelen", "discord": "Word lid van de Discord",
         "other": "English", "other_short": "EN", "skip": "Naar de inhoud", "footer": "Voettekst", "releases": "Releases",
         "dev": "TrueCombat: Platinum wordt ontwikkeld door RaziC*.", "col_game": "Spel", "col_play": "Spelen", "col_studio": "Studio", "col_community": "Community", "rss": "Patchnotes (RSS)",
@@ -58,6 +65,7 @@ LABELS = {
 
 DISCORD_SVG = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg>')
 HEART_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg>'
+SEARCH_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>'
 MENU_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'
 
 
@@ -86,8 +94,10 @@ def nav(lang, current):
         for p in main)
     menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
     menu += '<a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"])
-    menu += '<hr><a href="%s">%s</a><a href="%s#graphics">%s</a><a href="%s#faq">%s</a><a href="%s">%s</a><a href="%s">Discord</a><a href="%s" hreflang="%s" lang="%s">%s</a>' % (
-        home + "#gallery", L["gallery"], home, L["graphics"], home, L["faq"], href("press"), L["press"], DISCORD, other_href, other, other, L["other"])
+    menu += '<hr><a href="%s">%s</a><a href="%s#graphics">%s</a><a href="%s">%s</a><a href="%s">%s</a><a href="%s">Discord</a><a href="%s" hreflang="%s" lang="%s">%s</a>' % (
+        home + "#gallery", L["gallery"], home, L["graphics"], href("faq"), L["faq"], href("press"), L["press"], DISCORD, other_href, other, other, L["other"])
+    menu = menu.replace('<hr>', '<hr><a href="%s">%s</a><a href="%s">%s</a>' % (href("download"), L["download"], href("truecombat-elite"), L["truecombat-elite"]), 1)
+    download = home + "#download" if current == "index" else href("download")
     return f"""<!--nav-->
 <a class="skip" href="#top">{L['skip']}</a>
 <header class="nav">
@@ -99,13 +109,14 @@ def nav(lang, current):
     <details class="menu" id="menu">
       <summary aria-label="{L['menu']}">{MENU_SVG}</summary>
       <nav aria-label="{L['sections']}">
-        {menu}
+        <button type="button" class="menu-search" data-search-open>{SEARCH_SVG}{L['search']}</button>{menu}
       </nav>
     </details>
+    <button class="nav-search" type="button" data-search-open aria-label="{L['search']}" title="{L['search']} (Ctrl K)">{SEARCH_SVG}</button>
     <a class="nav-lang" href="{other_href}" hreflang="{other}" lang="{other}" title="{L['other']}">{L['other_short']}</a>
     <a class="nav-support" href="{href('support')}"{' aria-current="page"' if current == 'support' else ''} title="{L['support']}">{HEART_SVG}<span>{L['support']}</span></a>
     <a class="nav-icon" href="{DISCORD}" aria-label="{L['discord']}" title="{L['discord']}">{DISCORD_SVG}</a>
-    <a class="btn" href="{home}#download">{L['download']}</a>
+    <a class="btn" href="{download}">{L['download']}</a>
   </div>
 </header>
 <!--/nav-->"""
@@ -119,7 +130,7 @@ def footer(lang):
     L = LABELS[lang]
     up = "../" if lang == "nl" else ""
     cols = [
-        (L["col_game"], [(href(p), L[p]) for p in ("maps", "weapons", "guide", "media")] + [("./#download", L["download"])]),
+        (L["col_game"], [(href(p), L[p]) for p in ("download", "maps", "weapons", "guide", "media", "faq", "truecombat-elite")]),
         (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "competitive")]),
         (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press", "support")]),
         (L["col_community"], [(DISCORD, "Discord"), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]),
@@ -188,6 +199,49 @@ def crumbs(lang, page, html):
     return '<script type="application/ld+json">%s</script>\n' % json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 
 
+# Instant navigation: Chromium fetches a same-site page the moment a link is hovered or pressed, so the
+# click itself is served from memory. It is a prefetch, not a prerender: no script runs early, so devlog
+# read counts and the live server polls stay honest. Other browsers ignore the block.
+SPECULATION = ('<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},'
+               '{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},'
+               '{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>\n')
+
+SHOTS = ["map-northport", "map-railhouse", "map-delta", "map-stadtrand", "map-village", "map-snow", "hud-scoreboard", "media-deployment"]
+GAME_DESC = {
+    "en": "A free, native 64-bit DirectX 12 rebuild of TrueCombat: Elite, the realistic tactical shooter, for Windows 10 and 11.",
+    "nl": "Een gratis, native 64-bit DirectX 12-versie van TrueCombat: Elite, de realistische tactische shooter, voor Windows 10 en 11.",
+}
+
+
+def ld(data):
+    return '<script type="application/ld+json">%s</script>\n' % json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+
+
+def org_ld():
+    return {"@type": "Organization", "@id": SITE + "#studio", "name": "Team Terminus", "url": SITE + "studio.html",
+            "logo": {"@type": "ImageObject", "url": SITE + "img/team-terminus.webp"}, "sameAs": [GITHUB, DISCORD, "https://ko-fi.com/truecombatplatinum"]}
+
+
+def game_node(lang):
+    return {"@type": "VideoGame", "@id": SITE + "#game", "name": "TrueCombat: Platinum", "alternateName": ["TC:P", "TrueCombat Platinum"],
+            "url": url(lang, "index"), "image": SITE + "img/og.jpg", "description": GAME_DESC[lang], "inLanguage": ["en", "nl"],
+            "genre": ["Tactical shooter", "First-person shooter"], "gamePlatform": "PC", "operatingSystem": "Windows 10, Windows 11 (64-bit)",
+            "applicationCategory": "Game", "playMode": "MultiPlayer", "softwareVersion": latest_version(),
+            "isBasedOn": {"@type": "VideoGame", "name": "TrueCombat: Elite"},
+            "screenshot": [SITE + "img/%s.webp" % n for n in SHOTS],
+            "author": {"@id": SITE + "#studio"}, "publisher": {"@id": SITE + "#studio"},
+            "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR", "availability": "https://schema.org/InStock", "url": url(lang, "download")},
+            "downloadUrl": url(lang, "download"), "installUrl": url(lang, "download"),
+            "sameAs": [GITHUB, DISCORD]}
+
+
+def game_ld(lang):
+    """Home page structured data: the site, the studio and the game, as one linked graph."""
+    site = {"@type": "WebSite", "@id": SITE + "#site", "url": SITE, "name": "TrueCombat: Platinum", "alternateName": "truecombat.eu",
+            "inLanguage": ["en", "nl"], "publisher": {"@id": SITE + "#studio"}}
+    return ld({"@context": "https://schema.org", "@graph": [site, org_ld(), game_node(lang)]})
+
+
 def alt(lang, page, html=""):
     L = LABELS[lang]
     up = "../" if lang == "nl" else ""
@@ -196,7 +250,10 @@ def alt(lang, page, html=""):
         feed = f'<link rel="alternate" type="application/atom+xml" title="{DL[lang]["feed"]}" href="{SITE}{"nl/" if lang == "nl" else ""}devlog.xml">\n'
     return ("<!--alt-->\n"
             + "".join(f'<link rel="preload" href="{up}fonts/{f}" as="font" type="font/woff2" crossorigin>\n' for f in FONTS)
-            + social(html) + crumbs(lang, page, html) + feed +
+            + f'<link rel="apple-touch-icon" href="{up}img/apple-touch-icon.png">\n'
+            + f'<link rel="manifest" href="{up}site.webmanifest">\n'
+            + SPECULATION
+            + social(html) + (game_ld(lang) if page == "index" else "") + crumbs(lang, page, html) + feed +
             f'<link rel="alternate" hreflang="en" href="{url("en", page)}">\n'
             f'<link rel="alternate" hreflang="nl" href="{url("nl", page)}">\n'
             f'<link rel="alternate" hreflang="x-default" href="{url("en", page)}">\n'
@@ -232,9 +289,14 @@ def weapons_html(lang):
     data = json.loads((HERE / "weapons.json").read_text(encoding="utf-8"))
     W, T = WL[lang], TEAM[lang]
     out = []
+    used = set()
     for group in data["groups"]:
         cards = []
         for w in group["weapons"]:
+            wid = re.sub(r"[^a-z0-9]+", "-", w["name"].lower()).strip("-")
+            if wid in used:
+                wid += "-" + w["team"]
+            used.add(wid)
             tags = ['<span class="t-%s">%s</span>' % (w["team"], T[w["team"]])]
             if w.get("slot"):
                 tags.append("<span>%s</span>" % W[w["slot"]])
@@ -274,7 +336,7 @@ def weapons_html(lang):
                 cls = "wcard equip"
                 cmp = ""
             cards.append(
-                f'<article class="{cls}" data-team="{w["team"]}"' + (f" data-w=\"{cmp}\"" if cmp else "") + f'><header><h3>{htmlmod.escape(w.get("name_" + lang, w["name"]))}</h3><span class="full">{htmlmod.escape(w.get("full_" + lang, w["full"]))}</span></header>'
+                f'<article class="{cls}" id="{wid}" data-team="{w["team"]}"' + (f" data-w=\"{cmp}\"" if cmp else "") + f'><header><h3>{htmlmod.escape(w.get("name_" + lang, w["name"]))}</h3><span class="full">{htmlmod.escape(w.get("full_" + lang, w["full"]))}</span></header>'
                 f'<div class="wtags">{"".join(tags)}</div>{stats}{note}<div class="wmodes">{modes}</div></article>')
         out.append(
             f'<section class="wgroup" id="{group["id"]}"><header><h2>{group["title_" + lang]}</h2><p>{group["sub_" + lang]}</p></header>'
@@ -850,6 +912,178 @@ def support_funding(lang):
 <!--/support-funding-->"""
 
 
+# ---------------------------------------------------------------- landing pages
+OGLOCALE = {"en": "en_GB", "nl": "nl_NL"}
+
+
+def release_values():
+    """Version, size, date and link of the current download, as the release workflow wrote them on the home page."""
+    home = (DOCS / "index.html").read_text(encoding="utf-8")
+    def grab(pat, default):
+        m = re.search(pat, home)
+        return m.group(1) if m else default
+    return {"version": grab(r"data-version>(v[\d.]+)<", "v0.0.0"), "size": grab(r"<span data-size>([^<]*)<", ""),
+            "date": grab(r"<span data-date>([^<]*)<", ""), "link": grab(r'<a [^>]*data-download[^>]*href="([^"]*)"', GITHUB + "/releases/latest"),
+            "is_setup": 'data-kind="short">Installer<' in home}
+
+
+def strip_tags(s):
+    return htmlmod.unescape(re.sub(r"<[^>]+>", "", s))
+
+
+def landing_page(lang, page):
+    up = "../" if lang == "nl" else ""
+    v = release_values()
+    kind = {"en": ("Windows installer", "Full game, zip"), "nl": ("Windows-installatieprogramma", "Volledig spel, zip")}[lang][0 if v["is_setup"] else 1]
+    date = v["date"]
+    if lang == "nl":
+        months = dict(zip("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(), "jan feb mrt apr mei jun jul aug sep okt nov dec".split()))
+        date = re.sub(r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b", lambda m: months[m.group(1)], date)
+    values = {"up": up, "version": v["version"], "size": v["size"], "date": date, "link": v["link"], "kind": kind}
+    title, desc, og = landing.meta(page, lang)
+    e = lambda t: htmlmod.escape(t, quote=True)
+    extra = ""
+    if page == "faq":
+        extra = ld({"@context": "https://schema.org", "@type": "FAQPage", "inLanguage": lang, "mainEntity": [
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a.replace('href="', 'href="' + url(lang, "index")).replace(url(lang, "index") + "http", "http").replace(url(lang, "index") + "./", url(lang, "index"))}}
+            for _, q, a in landing.faq_items(lang)]})
+    if page == "download":
+        node = game_node(lang)
+        node.pop("@id")
+        node.update({"@context": "https://schema.org", "@type": ["VideoGame", "SoftwareApplication"], "downloadUrl": v["link"],
+                     "author": {"@type": "Organization", "name": "Team Terminus", "url": SITE + "studio.html"}})
+        node.pop("publisher")
+        extra = ld(node)
+    if page == "truecombat-elite":
+        extra = ld({"@context": "https://schema.org", "@type": "Article", "headline": strip_tags(landing.ELITE_T[lang]["h1"]), "description": desc,
+                    "inLanguage": lang, "image": SITE + "img/og-truecombat-elite.jpg", "mainEntityOfPage": url(lang, page),
+                    "about": [{"@type": "VideoGame", "name": "TrueCombat: Elite"}, {"@type": "VideoGame", "name": "TrueCombat: Platinum", "url": SITE}],
+                    "author": {"@type": "Organization", "name": "Team Terminus", "url": SITE + "studio.html"},
+                    "publisher": {"@type": "Organization", "name": "Team Terminus", "logo": {"@type": "ImageObject", "url": SITE + "img/team-terminus.webp"}}})
+    html = f"""<!doctype html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="{url(lang, page)}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{url(lang, page)}">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="{OGLOCALE[lang]}">
+<meta property="og:title" content="{e(title.split(' · TrueCombat: Platinum')[0])}">
+<meta property="og:description" content="{e(og)}">
+<meta property="og:image" content="{SITE}img/og-{page}.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{SITE}img/og-{page}.jpg">
+{extra}<!--alt-->
+<!--/alt-->
+<link rel="icon" type="image/png" href="{up}img/favicon.png">
+<link rel="stylesheet" href="{up}style.css">
+</head>
+<body>
+<!--nav-->
+<!--/nav-->
+
+<main id="top">
+{landing.body(page, lang, values)}</main>
+
+<!--footer-->
+<!--/footer-->
+
+<script src="{up}js/site.js"></script>
+</body>
+</html>
+"""
+    html = put(html, "nav", nav(lang, page), page)
+    html = put(html, "footer", footer(lang), page)
+    html = put(html, "alt", alt(lang, page, html), page)
+    return html
+
+
+# ---------------------------------------------------------------- site search
+KIND = {"en": {"page": "Page", "section": "Section", "weapon": "Weapon", "map": "Map", "post": "Devlog", "faq": "Question", "release": "Patch notes"},
+        "nl": {"page": "Pagina", "section": "Onderdeel", "weapon": "Wapen", "map": "Map", "post": "Devlog", "faq": "Vraag", "release": "Patchnotes"}}
+
+
+def search_index(lang, posts):
+    """Everything the Ctrl+K search can find: pages, their sections, weapons, maps, devlog posts, FAQ entries and releases."""
+    K = KIND[lang]
+    base = DOCS / ("nl" if lang == "nl" else "")
+    rows = []
+    def text(s):
+        return re.sub(r"\s+", " ", strip_tags(s)).strip()
+    for page in [p for p in PAGES if p != "player"] + LANDING:
+        html = (base / (page + ".html")).read_text(encoding="utf-8")
+        title = text(re.search(r"<title>(.*?)</title>", html, re.S).group(1)).split(" · ")[0]
+        if page == "index":
+            title = "TrueCombat: Platinum"
+        desc = htmlmod.unescape(re.search(r'<meta name="description" content="([^"]*)"', html).group(1))
+        rows.append({"t": title, "u": href(page), "k": K["page"], "d": desc})
+        main = html[html.index("<main"):html.index("</main>")]
+        if page == "news":
+            for m in re.finditer(r'<details class="release" id="([^"]+)".*?<span class="sum">(.*?)</span>', main, re.S):
+                rows.append({"t": m.group(1), "u": "news.html#" + m.group(1), "k": K["release"], "d": text(m.group(2))[:150]})
+            continue
+        if page == "faq":
+            for qid, q, a in landing.faq_items(lang):
+                rows.append({"t": text(q), "u": "faq.html#" + qid, "k": K["faq"], "d": text(a)[:150]})
+            continue
+        for m in re.finditer(r'<section[^>]*\bid="([^"]+)"[^>]*>', main):
+            h = re.search(r"<h([23])[^>]*>(.*?)</h\1>", main[m.end():m.end() + 1800], re.S)
+            if not h:
+                continue
+            kind = K["map"] if page == "maps" and m.group(1) in MAPLIST else K["section"]
+            rows.append({"t": text(h.group(2)), "u": href(page) + "#" + m.group(1), "k": kind, "d": LABELS[lang].get(page, title) if page != "index" else ""})
+    weapons = (base / "weapons.html").read_text(encoding="utf-8")
+    for m in re.finditer(r'<article class="[^"]*" id="([^"]+)"[^>]*>.*?<h3[^>]*>(.*?)</h3><span class="full">(.*?)</span>', weapons, re.S):
+        rows.append({"t": text(m.group(2)), "u": "weapons.html#" + m.group(1), "k": K["weapon"], "d": text(m.group(3))})
+    for p in posts:
+        rows.append({"t": p["title"], "u": "devlog-%s.html" % p["slug"], "k": K["post"], "d": p["summary"][:150]})
+    return json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
+
+
+def llms_txt(posts):
+    """A plain-text summary of the site for AI assistants and answer engines (llmstxt.org)."""
+    v = release_values()
+    def line(page, note):
+        return "- [%s](%s): %s" % (LABELS["en"].get(page, page).replace("FAQ", "Questions and answers"), url("en", page), note)
+    out = ["# TrueCombat: Platinum", "",
+           "> TrueCombat: Platinum is a free, native 64-bit Windows rebuild of TrueCombat: Elite (TC:E), the realistic modern-combat tactical shooter "
+           "originally made as a total conversion for Wolfenstein: Enemy Territory. It has a DirectX 12 renderer with an OpenGL fallback, the original maps, "
+           "weapons, movement and HUD, a launcher with signed updates, official EU servers and leaderboards. It is developed by Team Terminus.", "",
+           "- Current version: %s (%s)" % (v["version"], v["date"]),
+           "- Platform: Windows 10 and 11, 64-bit. Price: free. Status: early access.",
+           "- Not affiliated with Team Terminator, the creators of TrueCombat: Elite. Fan project.",
+           "- The site is also available in Dutch under %snl/." % SITE, "",
+           "## Start here", "",
+           line("download", "the installer, system requirements and first steps"),
+           line("faq", "install, online play, graphics and project questions"),
+           line("truecombat-elite", "what TrueCombat: Elite was and how Platinum compares with the original"),
+           line("guide", "controls, movement and stamina, game modes, tactics and hosting"), "",
+           "## The game", "",
+           line("maps", "the six maps (Delta, Northport, Railhouse, Snow, Stadtrand, Village) with overhead layouts"),
+           line("weapons", "all 27 guns with their damage, recoil and handling values"),
+           line("media", "in-game screenshots from the DirectX 12 renderer"),
+           line("competitive", "match mode for clan matches: ready-up, knife round, half-time, timeouts"), "",
+           "## Play", "",
+           line("servers", "public and official servers, live scoreboards and latest results"),
+           line("leaderboards", "ranks and ratings from every ranked match"), "",
+           "## Studio", "",
+           line("news", "patch notes for every release"),
+           line("devlog", "articles on how the game is built"),
+           line("studio", "Team Terminus, the people behind the game"),
+           line("press", "press kit with logos, screenshots and a fact sheet"),
+           line("support", "how the project is funded and where the money goes"), "",
+           "## Devlog", ""]
+    out += ["- [%s](%s): %s" % (p["title"], url("en", "devlog-" + p["slug"]), p["summary"]) for p in posts]
+    return "\n".join(out) + "\n"
+
+
 # ---------------------------------------------------------------- Dutch
 ASSET = re.compile(r"(?<=[\s\"'(,])(img|js|press)/")
 
@@ -897,6 +1131,22 @@ def bust(html):
     return html
 
 
+OLD_LASTMOD = {}
+
+
+def page_images(path):
+    """Game screenshots on a page, for the image sitemap."""
+    html = path.read_text(encoding="utf-8")
+    html = html[html.index("<main"):html.index("</main>")] if "<main" in html else html
+    seen = []
+    for m in re.finditer(r'(?:src|data-src)="(?:\.\./)?(img/[^"]+\.webp)"|url\((?:\.\./)?(img/[^)]+\.webp)\)', html):
+        name = m.group(1) or m.group(2)
+        if "-640" in name or "team-" in name or "logo" in name or name in seen:
+            continue
+        seen.append(name)
+    return seen[:24]
+
+
 def lastmod(path):
     """The date a page last changed: today when it differs from the last commit, else that commit's date."""
     import datetime
@@ -904,8 +1154,14 @@ def lastmod(path):
     today = datetime.date.today().isoformat()
     try:
         rel = str(path.relative_to(ROOT))
-        if subprocess.run(["git", "diff", "--quiet", "HEAD", "--", rel], cwd=ROOT).returncode:
+        tracked = subprocess.run(["git", "ls-files", "--error-unmatch", rel], cwd=ROOT, capture_output=True).returncode == 0
+        if not tracked or subprocess.run(["git", "diff", "--quiet", "HEAD", "--", rel], cwd=ROOT).returncode:
             return today
+        # a shallow clone only knows its newest commit, which would stamp every page with the same date
+        if subprocess.run(["git", "rev-parse", "--is-shallow-repository"], cwd=ROOT, capture_output=True, text=True).stdout.strip() == "true":
+            old = OLD_LASTMOD.get(SITE + str(path.relative_to(DOCS)).replace("\\", "/").replace("index.html", ""))
+            if old:
+                return old
         out = subprocess.run(["git", "log", "-1", "--format=%cs", "--", rel], cwd=ROOT, capture_output=True, text=True).stdout.strip()
         return out or today
     except (OSError, ValueError):
@@ -966,6 +1222,10 @@ def main():
         du = put(du, "alt", alt("nl", page, du), path)
         (DOCS / "nl" / (page + ".html")).write_text(bust(du), encoding="utf-8")
 
+    for page in LANDING:
+        for lang in ("en", "nl"):
+            (DOCS / ("nl" if lang == "nl" else "") / (page + ".html")).write_text(bust(landing_page(lang, page)), encoding="utf-8")
+
     template = unbust((DOCS / "devlog.html").read_text(encoding="utf-8"))
     posts = {lang: devlog_posts(lang) for lang in ("en", "nl")}
     if [p["slug"] for p in posts["en"]] != [p["slug"] for p in posts["nl"]]:
@@ -978,17 +1238,26 @@ def main():
     for lang in ("en", "nl"):
         (DOCS / ("nl" if lang == "nl" else "") / "devlog.xml").write_text(devlog_feed(lang, posts[lang]), encoding="utf-8")
 
+    for lang in ("en", "nl"):
+        (DOCS / "js" / ("search-%s.json" % lang)).write_text(search_index(lang, posts[lang]), encoding="utf-8")
+    (DOCS / "llms.txt").write_text(llms_txt(posts["en"]), encoding="utf-8")
+
+    old = DOCS / "sitemap.xml"
+    if old.exists():
+        OLD_LASTMOD.update(re.findall(r"<url><loc>([^<]+)</loc><lastmod>([^<]+)</lastmod>", old.read_text(encoding="utf-8")))
     rows = []
     # player.html without an id is an empty profile, so only real pages go in the sitemap
-    for page in [p for p in PAGES if p != "player"] + ["devlog-" + p["slug"] for p in posts["en"]]:
+    for page in [p for p in PAGES if p != "player"] + LANDING + ["devlog-" + p["slug"] for p in posts["en"]]:
         for lang in ("en", "nl"):
             alts = "".join('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, url(l, page)) for l in ("en", "nl"))
-            rows.append("  <url><loc>%s</loc><lastmod>%s</lastmod>%s</url>" % (url(lang, page), lastmod(DOCS / ("nl" if lang == "nl" else "") / (page + ".html")), alts))
+            path = DOCS / ("nl" if lang == "nl" else "") / (page + ".html")
+            images = "".join("<image:image><image:loc>%s%s</image:loc></image:image>" % (SITE, i) for i in page_images(path))
+            rows.append("  <url><loc>%s</loc><lastmod>%s</lastmod>%s%s</url>" % (url(lang, page), lastmod(path), alts, images))
     (DOCS / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
         + "\n".join(rows) + "\n</urlset>\n", encoding="utf-8")
-    print("built %d pages in English and Dutch" % len(PAGES))
+    print("built %d pages in English and Dutch" % (len(PAGES) + len(LANDING)))
 
 
 if __name__ == "__main__":
