@@ -3,6 +3,9 @@ Description=TrueCombat: Platinum Discord bot
 Documentation=file:///opt/tcp/discord-bot/README.md
 After=network-online.target tcp-bridge.service
 Wants=network-online.target
+# Discord allows 1000 logins a day; don't spin if something is badly wrong.
+StartLimitIntervalSec=600
+StartLimitBurst=10
 
 [Service]
 Type=simple
@@ -18,9 +21,6 @@ StateDirectory=tcp-discord-bot
 StateDirectoryMode=0750
 Restart=always
 RestartSec=10
-# Discord allows 1000 logins a day; don't spin if something is badly wrong.
-StartLimitIntervalSec=600
-StartLimitBurst=10
 
 # Hardening: the bot only needs the network, its state folder and the link and report folders.
 NoNewPrivileges=yes

@@ -213,6 +213,7 @@ done
 say "installing the systemd service"
 install -m 0644 "$SRC/deploy/systemd/tcp-discord-bot.service" "$UNIT"
 printf '%s%s%s' "$RW" "$CREDS" "$EXTRA" >> "$UNIT"
+printf '\n[Install]\nWantedBy=multi-user.target\n' >> "$UNIT"
 systemctl daemon-reload
 
 if ! TCPBOT_CONFIG="$ETC/config.json" "$APP/venv/bin/python" -c "import sys; sys.path.insert(0, '$APP'); from tcpbot.__main__ import main; sys.exit(main(['check']))"; then
