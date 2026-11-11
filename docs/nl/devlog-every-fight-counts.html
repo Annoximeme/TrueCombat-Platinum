@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Elk gevecht in de boeken · TrueCombat: Platinum</title>
+<meta name="description" content="Spelersprofielen worden een stuk uitgebreider, en unranked servers tellen voortaan ook mee. Dit is wat we bijhouden, en de regels die elk getal eerlijk houden.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-every-fight-counts">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-every-fight-counts">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Elk gevecht in de boeken">
+<meta property="og:description" content="Spelersprofielen worden een stuk uitgebreider, en unranked servers tellen voortaan ook mee. Dit is wat we bijhouden, en de regels die elk getal eerlijk houden.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-every-fight-counts.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-every-fight-counts.jpg">
+<meta property="article:published_time" content="2026-11-11">
+<meta property="article:section" content="Competitief">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Elk gevecht in de boeken","description":"Spelersprofielen worden een stuk uitgebreider, en unranked servers tellen voortaan ook mee. Dit is wat we bijhouden, en de regels die elk getal eerlijk houden.","datePublished":"2026-11-11","dateModified":"2026-11-11","inLanguage":"nl","articleSection":"Competitief","timeRequired":"PT3M","image":"https://truecombat.eu/img/og-devlog-every-fight-counts.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-every-fight-counts","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Elk gevecht in de boeken">
+<meta name="twitter:description" content="Spelersprofielen worden een stuk uitgebreider, en unranked servers tellen voortaan ook mee. Dit is wat we bijhouden, en de regels die elk getal eerlijk houden.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Elk gevecht in de boeken","item":"https://truecombat.eu/nl/devlog-every-fight-counts"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-every-fight-counts">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-every-fight-counts">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-every-fight-counts">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=2d1a1c7ae7">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Wapens</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Gids</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Ranglijsten</a></li>
+      <li><a href="competitive">Competitief</a></li>
+      <li><a href="news">Nieuws</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-11">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Zoeken</button><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="media">Media</a><a href="guide">Gids</a><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Steun ons</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq">Vragen</a><a href="press">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-every-fight-counts" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-every-fight-counts" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Steun ons</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="every-fight-counts" data-min="3">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/map-stadtrand.webp); --art-s: url(../img/map-stadtrand-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Competitief</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-11">11 nov 2026</time><span>3 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="every-fight-counts" hidden></span></p>
+      <h1>Elk gevecht in de boeken</h1>
+      <p class="lede">Spelersprofielen worden een stuk uitgebreider, en unranked servers tellen voortaan ook mee. Dit is wat we bijhouden, en de regels die elk getal eerlijk houden.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#wat-je-krijgt">Wat je krijgt</a></li>
+          <li><a href="#de-regels">De regels</a></li>
+          <li><a href="#een-paar-eerlijke-grenzen">Een paar eerlijke grenzen</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Tot nu toe vulde je profiel zich alleen op gerankte servers, en het vertelde je de basis: kills, doden, headshots, overwinningen. Met de volgende update verandert dat. Elk geverifieerd potje telt, ranked of unranked, en je profiel wordt een volledig staat van dienst.</p>
+<h2 id="wat-je-krijgt">Wat je krijgt</h2>
+<p>Je profiel ontleedt je spel zoals een coach dat zou doen:</p>
+<ul>
+  <li><strong>Gevecht.</strong> K/D, schade per ronde, headshotpercentage, trefzekerheid, assists, kills per minuut, langste en gemiddelde killafstand, beste reeks.</li>
+  <li><strong>De momenten die rondes beslissen.</strong> Openingskills, gewonnen clutches en je beste clutch, tradekills, wraakkills, dubbele, driedubbele en viervoudige kills, ronde-MVP's.</li>
+  <li><strong>Waar je treffers landen.</strong> Hoofd, romp en benen, als aandeel van elke treffer op een andere speler.</li>
+  <li><strong>Speelstijl.</strong> Kills met richten tegenover vanuit de heup, staand, gehurkt en liggend, leunend en in de lucht, met het mes en met granaten.</li>
+  <li><strong>Doelen.</strong> Bommen geplaatst en ontmanteld, vlaggen veroverd en teruggebracht, gewonnen rondes.</li>
+  <li><strong>Maps en modi.</strong> Winstpercentage, K/D en speeltijd per map en per modus.</li>
+  <li><strong>Rivalen.</strong> Je aartsvijand, je favoriete doelwit, en een onderlinge vergelijking met elke speler die je opzoekt.</li>
+  <li><strong>Activiteit.</strong> Een jaar aan potjes in één oogopslag.</li>
+</ul>
+<p>De ranglijsten krijgen naast de hoofdranglijst een nieuw bord: <strong>Toppers per stat</strong>. Kies een van deze statistieken en verfijn naar alleen ranked, een map, een modus, een wapen of de laatste 7 of 30 dagen. Verhoudingen zoals K/D en trefzekerheid tonen alleen spelers met genoeg potjes, zodat drie gelukkige rondes niet bovenaan eindigen.</p>
+<h2 id="de-regels">De regels</h2>
+<p>Meer statistieken hebben alleen zin als je ze kunt vertrouwen. Een potje telt alleen als dit allemaal klopt:</p>
+<ol>
+  <li><strong>Geverifieerde server.</strong> Het verslag is ondertekend met een sleutel die wij aan die server hebben gegeven. Dat zijn onze officiële servers en community-servers die we hebben goedgekeurd.</li>
+  <li><strong>Anti-cheat aan van begin tot eind.</strong> De server legt de status van Easy Anti-Cheat vast bij de start, bij het einde en elke seconde daartussen. Stond hij ook maar even uit, dan telt het hele potje niet.</li>
+  <li><strong>Alleen echte spelers.</strong> Een kill, een treffer of een punt schade telt alleen als beide kanten mensen zijn. Bots mogen de server vullen, maar niets wat jij een bot aandoet, of een bot jou, komt in je statistieken.</li>
+  <li><strong>Een echt potje.</strong> Minstens twee echte spelers aan weerszijden, elk minstens twee minuten in het spel. Opwarmen, oefenpotjes, servers met een wachtwoord en alles met cheats aan tellen nooit.</li>
+  <li><strong>Niet farmen.</strong> Twee spelers op dezelfde verbinding tellen nooit tegen elkaar. Per potje tellen maximaal tien kills op dezelfde tegenstander, en duo's die vooral alleen tegen elkaar spelen, worden gemarkeerd voor controle.</li>
+  <li><strong>Geen stilstand.</strong> Sta je langer dan een minuut stil, dan telt die tijd niet als speeltijd.</li>
+  <li><strong>Een tweede blik.</strong> Getallen die geen eerlijke speler haalt, zoals bijna perfecte trefzekerheid over een lang potje, komen op een controlelijst die alleen het team ziet. Wij kunnen een los potje of het hele verleden van een speler verwijderen.</li>
+</ol>
+<p>Je skill-rating beweegt nog steeds alleen op gerankte servers. Unranked potjes leveren wel ervaring op voor je rang, en alle andere statistieken.</p>
+<h2 id="een-paar-eerlijke-grenzen">Een paar eerlijke grenzen</h2>
+<p>Op een server met bots valt een gemist schot niet te koppelen aan het doelwit. Trefzekerheid komt daarom alleen uit potjes zonder bots. Headshotpercentage en trefferzones werken overal, omdat ze echte treffers op echte spelers tellen.</p>
+<p>Gedetailleerde statistieken starten met de update die anti-cheat aanzet op onze servers. Potjes van daarvoor blijven op je profiel staan, maar alleen met de totalen die we toen bijhielden.</p>
+<p>Net als eerst hoef je geen account aan te maken. De game herkent je aan een sleutel die hij op je pc aanmaakt, en er wordt alleen een versleutelde ID getoond.</p>
+      </div>
+      <div class="post-rate" data-rate="every-fight-counts" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-the-road-ahead"><small>Vorig artikel</small>De weg vooruit, voluit</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Competitief">
+        <a class="post-art" href="devlog-match-mode" tabindex="-1" aria-hidden="true"><img src="../img/media-deployment-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Competitief</span><span class="state shipped">Uitgebracht in v0.32.0</span><time datetime="2026-11-07">7 nov 2026</time><span>2 min lezen</span><span class="post-stat" data-post-stat="match-mode" hidden></span></p>
+          <h2><a href="devlog-match-mode">Wedstrijdmodus, gebouwd voor clanavonden</a></h2>
+          <p>Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.</p>
+          <a class="more" href="devlog-match-mode">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Roadmap">
+        <a class="post-art" href="devlog-the-road-ahead" tabindex="-1" aria-hidden="true"><img src="../img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-11">11 nov 2026</time><span>17 min lezen</span><span class="post-stat" data-post-stat="the-road-ahead" hidden></span></p>
+          <h2><a href="devlog-the-road-ahead">De weg vooruit, voluit</a></h2>
+          <p>De volgende twee updates zijn gepland, en het werk erachter ook. Een herbouwde bewegingskern, een matchverslag dat replays en coaching mogelijk maakt, bots die moeten kijken en luisteren zoals jij, pick-ups op Discord en meer. Dit is de lange versie, met hoe elk onderdeel werkt en waarom we het zo bouwen.</p>
+          <a class="more" href="devlog-the-road-ahead">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=36fa7c6143"></script>
+</body>
+</html>

@@ -36,7 +36,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=f31321805c">
+<link rel="stylesheet" href="style.css?v=2d1a1c7ae7">
 </head>
 <body>
 <!--nav-->
@@ -76,7 +76,7 @@
   <div class="wrap">
     <span class="eyebrow">Leaderboards</span>
     <h1>Top players</h1>
-    <p class="lede">Rank, skill rating and combat record from every match on a ranked server. No account needed: you appear here automatically after your first completed match.</p>
+    <p class="lede">Rank, skill rating and a full combat record from every verified match, ranked and unranked. No account needed: you appear here automatically after your first completed match.</p>
   </div>
 </section>
 
@@ -112,6 +112,12 @@
   </div>
 </section>
 
+<section class="band sb-band">
+  <div class="wrap">
+    <div class="server-card full" data-statboard aria-live="polite"></div>
+  </div>
+</section>
+
 <section class="band">
   <div class="wrap">
     <div class="section-head">
@@ -121,16 +127,16 @@
     <div class="stat-cards">
       <div><b>Rank</b><span>Earned through experience: kills, headshots, round wins, objectives, match wins and time in the field. 21 ranks, from Recruit to General. Team kills cost experience.</span></div>
       <div><b>Skill rating</b><span>Everyone starts at 1000. Beat a stronger side and you gain more; lose to a weaker one and you drop more. Your share depends on how long you played.</span></div>
-      <div><b>Combat record</b><span>Kills, deaths and headshots against the enemy. Team kills and suicides are tracked separately.</span></div>
-      <div><b>Wins</b><span>Matches your team won. Your profile also lists your weapons, accuracy and last 20 matches.</span></div>
+      <div><b>Combat record</b><span>Only fights against real players count, even when bots share the server. Team kills and suicides are tracked separately.</span></div>
+      <div><b>Wins</b><span>Matches your team won. Your profile breaks down every weapon, map, rival and clutch.</span></div>
     </div>
-    <p class="yt-note" style="margin-top:20px">Only ranked servers report matches, and every report is signed with that server's own key. Practice matches, matches with cheats enabled and bots never count. The game recognises you by a key it creates on your PC the first time it starts, so there is nothing to sign up for. Only a scrambled ID is published, never that key or your IP address. Keep your <code>etkey</code> file when you reinstall and your rank comes with you.</p>
+    <p class="yt-note" style="margin-top:20px">Matches count from official and approved servers, ranked and unranked, with Easy Anti-Cheat on from the first second to the last. Every report is signed with that server's own key. Kills on bots, warm-up, idle time, practice matches and matches with cheats enabled never count, and the skill rating only moves on ranked servers. The game recognises you by a key it creates on your PC the first time it starts, so there is nothing to sign up for. Only a scrambled ID is published, never that key or your IP address. Keep your <code>etkey</code> file when you reinstall and your rank comes with you.</p>
   </div>
 </section>
 </main>
 
 <!--footer-->
-<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-the-road-ahead"><time datetime="2026-11-11">11 Nov 2026</time><span>The road ahead, in full</span></a><a href="devlog-reads-and-ratings"><time datetime="2026-11-09">9 Nov 2026</time><span>Counting readers without tracking anyone</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
+<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-every-fight-counts"><time datetime="2026-11-11">11 Nov 2026</time><span>Every fight on the record</span></a><a href="devlog-the-road-ahead"><time datetime="2026-11-11">11 Nov 2026</time><span>The road ahead, in full</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
 <footer>
   <div class="wrap">
     <div class="foot">
@@ -161,6 +167,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=f631d645f0"></script>
+<script src="js/site.js?v=36fa7c6143"></script>
 </body>
 </html>
