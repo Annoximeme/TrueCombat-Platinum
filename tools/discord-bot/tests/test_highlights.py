@@ -75,7 +75,18 @@ def test_first_run_is_silent_then_new_matches_are_reported(stats):
     check_embed(e)
     assert e.title.startswith("Match report") and "win" in e.description
     names = [f.name for f in e.fields]
-    assert "Player of the match" in names and "Special Ops" in names and "Terrorists" in names
+    # the scoreboard is drawn as an image; the embed keeps the headline, MVP and unlocks
+    assert "Player of the match" in names and "Special Ops" not in names
+    f = ch.sent[0].kwargs["file"]
+    assert f.filename == "match.png" and e.image.url == "attachment://match.png"
+    assert f.fp.getvalue()[:8] == b"\x89PNG\r\n\x1a\n"
+    bot.cfg["cards"]["enabled"] = False             # text fallback keeps the team tables
+    bot.store.set("matches_seen", bot.store.get("matches_seen")[1:])
+    run(cog.check_matches())
+    e2 = ch.sent[-1].kwargs["embed"]
+    assert "Special Ops" in [f.name for f in e2.fields] and "file" not in ch.sent[-1].kwargs
+    bot.cfg["cards"]["enabled"] = True
+    del ch.sent[2:]
     run(cog.check_matches())
     assert len(ch.sent) == 2                          # nothing twice
 

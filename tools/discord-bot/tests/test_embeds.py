@@ -89,9 +89,11 @@ def test_server_card_online_offline(cfg, stats):
     status = parse_status(status_packet([("^1Red^7Fox", 12, 40), ("Gianni", 30, 25), ("[BOT]Ghost", 3, 0)]))
     servers = {"servers": [{"address": "1.2.3.4:27960", "players": 3}, {"address": "2.24.59.195:27961", "players": 0}]}
     d = check(embeds.server_card(cfg, cfg["servers"][0], status, board, servers, None))
-    assert d["description"].startswith("**Online** · Ranked")
+    assert d["description"].startswith("**Match live** · Ranked")
+    assert "`██▒░░░░░░░░░░░░░`  2 / 16 players" in d["description"]
+    assert d["color"] == embeds.LIVE
     fields = {f["name"]: f["value"] for f in d["fields"]}
-    assert fields["Map"] == "Snow" and fields["Players"] == "2 / 16  ·  1 bot"
+    assert fields["Map"] == "Snow" and fields["Bots"] == "1 filling empty slots"
     assert fields["On the server"].index("Gianni") < fields["On the server"].index("RedFox")
     assert fields["Community servers"].startswith("1 online · 3 players")   # official #2 is not "community"
     assert d["image"]["url"].endswith("/img/maps/snow-hd.webp")
@@ -183,3 +185,38 @@ def test_devlog_card_reads_the_article(cfg):
     assert d["timestamp"].startswith("2026-11-08")
     assert embeds.devlog_headline(article) == "**New on the devlog:** Teaching bots to play like people"
     assert embeds.devlog_headline(article, 42).startswith("<@&42> ")
+
+
+def test_server_states_and_bar():
+    assert embeds.server_state(0, 8, False)[1:] == ("empty", embeds.EMPTY)
+    assert embeds.server_state(3, 8, False) == ("Filling up · 5 more to start", "filling", embeds.FILLING)
+    assert embeds.server_state(8, 8, False)[1:] == ("live", embeds.LIVE)
+    assert embeds.server_state(2, 0, False)[1] == "live"
+    assert embeds.server_state(16, 8, True)[0] == "Server full"
+    assert embeds.player_bar(0, 10, 16) == "▒" * 10 + "░" * 6
+    assert embeds.player_bar(1, 0, 32) == "█" + "░" * 15
+    assert len(embeds.player_bar(16, 0, 16)) == 16
+
+
+def test_emoji_markup_only_after_upload(cfg):
+    from tcpbot import emoji as E
+    E.load({})
+    assert E.get("live") == "" and E.tier(5) == "" and E.medal(1) == ""
+    E.load({"tcp_live": 11, "tcp_rank03": 22, "tcp_medal1": 33, "tcp_specops": 44})
+    try:
+        assert E.get("live") == "<:tcp_live:11>" and E.tier(5) == "<:tcp_rank03:22>"
+        assert E.medal(1) == "<:tcp_medal1:33>" and E.team("blue") == "" and E.team("specops") == "<:tcp_specops:44>"
+    finally:
+        E.load({})
+
+
+def test_presence_line():
+    from tcpbot.cogs.status import presence_line
+    assert presence_line([], 0, "truecombat.eu") == "truecombat.eu"
+    seen = [("Official #1", 6, "obj_village"), ("Official #2", 2, "obj_snow")]
+    assert presence_line(seen, 0, "x") == "6 players on Official #1 · Village"
+    assert presence_line(seen, 2, "x") == "8 players across our servers"
+    idle = [("Official #1", 0, "obj_village"), ("Official #2", 0, "obj_snow")]
+    assert presence_line(idle, 0, "x") == "Village on Official #1 · join now"
+    assert presence_line(idle, 3, "x") == "Snow on Official #2 · join now"
+    assert presence_line(idle, 2, "truecombat.eu") == "truecombat.eu"

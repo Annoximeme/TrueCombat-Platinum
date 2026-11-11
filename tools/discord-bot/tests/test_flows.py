@@ -71,6 +71,13 @@ class FakeBot:
     def is_staff(self, member):
         return True
 
+    async def set_presence(self, text):
+        self.presence = text
+
+    async def draw(self, name, fn, *args):
+        from tcpbot.bot import TCPBot
+        return await TCPBot.draw(self, name, fn, *args)
+
 
 def make_cfg(**extra):
     raw = {"guild_id": 1, "channels": {"status": 10, "announcements": 20, "staff": 30, "events": 40}}

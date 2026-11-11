@@ -10,6 +10,7 @@ import datetime as dt
 import discord
 
 from . import achievements as A
+from . import emoji as E
 from . import text as T
 from .sources import is_bot, release_download, release_version
 
@@ -20,6 +21,12 @@ GREEN = 0x4FBF7A
 STEEL = 0x262E3B
 GOLD = 0xC9A227
 BLUE = 0x5B9BD5
+GREY = 0x6E7684
+ORANGE = 0xF29D1F      # Spec Ops orange from the game's team emblem
+
+# One meaning per colour, used on every card
+LIVE, FILLING, EMPTY, DOWN = GREEN, AMBER, GREY, RED
+TEAM_COLOURS = {"specops": ORANGE, "terrorists": RED, "blue": BLUE, "red": RED}
 
 FOOTER = "TrueCombat: Platinum"
 # The studio crest, used as the small icon on every card's footer.
@@ -58,20 +65,30 @@ def server_card(cfg, server: dict, status: dict | None, board: dict | None, serv
             maxp = int(cv.get("sv_maxclients", "0")) - int(cv.get("sv_privateclients", "0") or 0)
         except ValueError:
             maxp = 0
+        try:
+            need = int(cv.get("g_minGameClients") or 0)
+        except ValueError:
+            need = 0
         full = bool(maxp) and len(players) >= maxp
         mname = cv.get("mapname", "")
         mode = T.clean(cv.get("tcp_mode", ""), 32) or "-"
         version = T.clean(cv.get("tcp_version", ""), 32)
         kind = T.clean(server.get("match_type") or "", 60)
-        e.colour = AMBER if full else GREEN
-        state = "Server full" if full else "Online"
-        e.description = "**%s**%s\n`/connect %s`" % (state, " · " + kind if kind else "", addr)
-        count = "%d / %d" % (len(humans), maxp) if maxp else str(len(humans))
-        if bots:
-            count += "  ·  %d bot%s" % (bots, "" if bots == 1 else "s")
+        state, light, e.colour = server_state(len(humans), need, full)
+        lines = [(E.get(light) + " " if E.get(light) else "") + "**%s**%s" % (state, " · " + kind if kind else "")]
+        if maxp:
+            lines.append("`%s`  %d / %d players" % (player_bar(len(humans), bots, maxp), len(humans), maxp))
+        lines.append("`/connect %s`" % addr)
+        e.description = "\n".join(lines)
         e.add_field(name="Map", value=T.map_label(mname), inline=True)
         e.add_field(name="Mode", value=mode, inline=True)
-        e.add_field(name="Players", value=count, inline=True)
+        try:
+            rounds = int(cv.get("g_roundlimit") or 0)
+        except ValueError:
+            rounds = 0
+        e.add_field(name="Match", value=("%d rounds" % rounds) if rounds else "-", inline=True)
+        if bots:
+            e.add_field(name="Bots", value="%d filling empty slots" % bots, inline=True)
         if humans:
             rows = sorted(humans, key=lambda p: -p["score"])[:16]
             body = T.table([(p["name"], p["score"], "%d ms" % p["ping"]) for p in rows], "lrr")
@@ -82,16 +99,17 @@ def server_card(cfg, server: dict, status: dict | None, board: dict | None, serv
         if version:
             footer = "Version %s · %s" % (version, footer)
     else:
-        e.colour = RED
+        e.colour = DOWN
         since = offline_since or int(_now().timestamp())
-        e.description = ("**Offline** since <t:%d:R>\nThe server is restarting or down for maintenance. "
-                         "This card updates by itself when it is back." % since)
+        e.description = ("%s**Offline** since <t:%d:R>\nThe server is restarting or down for maintenance. "
+                         "This card updates by itself when it is back." % ((E.get("offline") + " ") if E.get("offline") else "", since))
 
     top = int(cfg["status"].get("top_players") or 0)
     if top and board and board.get("players"):
-        lines = ["`%d.` [%s](%s) · %s · %s" % (
-            p["position"], T.md(p["name"]), profile_url(site, p["id"]), T.num(p["rating"]), p["rank"]["title"])
-            for p in board["players"][:top]]
+        lines = ["%s [%s](%s) · %s · %s%s" % (
+            E.medal(p["position"]) or "`%d.`" % p["position"], T.md(p["name"]), profile_url(site, p["id"]),
+            T.num(p["rating"]), (E.tier(p["rank"].get("level")) + " ") if E.tier(p["rank"].get("level")) else "",
+            p["rank"]["title"]) for p in board["players"][:top]]
         e.add_field(name="Top of the leaderboard", value="\n".join(lines)[:1024], inline=False)
 
     if cfg["status"].get("show_community") and servers is not None:
@@ -105,6 +123,34 @@ def server_card(cfg, server: dict, status: dict | None, board: dict | None, serv
             value = "None online right now · [Host your own](%s/guide.html)" % site
         e.add_field(name="Community servers", value=value, inline=False)
     return _brand(e, footer)
+
+
+def server_state(humans: int, need: int, full: bool) -> tuple[str, str, int]:
+    """(label, status light, colour) for a server: live, filling up or waiting."""
+    if full:
+        return "Server full", "live", LIVE
+    if humans and humans >= max(2, need):
+        return "Match live", "live", LIVE
+    if humans:
+        return "Filling up · %d more to start" % (max(2, need) - humans) if need > humans else "Filling up", \
+            "filling", FILLING
+    return "Waiting for players", "empty", EMPTY
+
+
+def player_bar(humans: int, bots: int, slots: int, width: int = 16) -> str:
+    """Slots as a bar: solid for players, light for bots, empty for open slots."""
+    if slots <= 0:
+        return ""
+    scale = width / float(slots)
+    h = min(width, int(round(humans * scale)))
+    if humans and not h:
+        h = 1
+    b = min(width - h, int(round(bots * scale)))
+    return "█" * h + "▒" * b + "░" * (width - h - b)
+
+
+def join_link(cfg, addr: str) -> str:
+    return "%s/join#%s" % (cfg.site, addr)
 
 
 def how_to_join(cfg, server: dict) -> discord.Embed:
@@ -143,20 +189,32 @@ def match_on(cfg, server: dict, status: dict, humans: int) -> discord.Embed:
 
 
 # ================================================================ stats
-def profile(cfg, p: dict, member: discord.abc.User | None = None, unlocked: dict | None = None) -> discord.Embed:
+def profile(cfg, p: dict, member: discord.abc.User | None = None, unlocked: dict | None = None,
+            card: str | None = None) -> discord.Embed:
+    """`card` is the attachment name of the drawn profile card; the stat fields then move into the image."""
     site = cfg.site
     rank = p["rank"]
-    e = discord.Embed(title=T.md(T.clean(p["name"])), url=profile_url(site, p["id"]), colour=RED)
+    tier_colour = next((c for k, _n, _f, c in T.RANK_TIERS if k == T.tier_for_level(rank["level"])), RED)
+    e = discord.Embed(title=T.md(T.clean(p["name"])), url=profile_url(site, p["id"]), colour=tier_colour)
     if member is not None:
         e.set_author(name=member.display_name, icon_url=member.display_avatar.url)
 
-    lines = ["**%s**  ·  Level %d" % (rank["title"], rank["level"])]
+    badge = E.tier(rank["level"])
+    lines = ["%s**%s**  ·  Level %d" % (badge + " " if badge else "", rank["title"], rank["level"])]
     if rank.get("xpNext"):
         lines.append("`%s`  %s / %s XP" % (T.progress_bar(rank["xp"], rank["xpThis"], rank["xpNext"]),
                                            T.num(rank["xp"]), T.num(rank["xpNext"])))
     else:
         lines.append("`%s`  %s XP · highest rank" % (T.progress_bar(1, 0, 1), T.num(rank["xp"])))
     e.description = "\n".join(lines)
+    if card:
+        e.set_image(url="attachment://" + card)
+        if unlocked:
+            best = A.best_first(unlocked)
+            e.add_field(name="Achievements · %d of %d" % (len(best), len(A.ALL)),
+                        value=T.clip("  ".join(A.label(k) for k in best[:6]), 1000) +
+                        ("\nSee them all with `/achievements`." if len(best) > 6 else ""), inline=False)
+        return _brand(e, "Full profile on truecombat.eu")
 
     rating = T.num(p["rating"])
     if p.get("peakRating") and p["peakRating"] > p["rating"]:
@@ -194,7 +252,7 @@ def profile(cfg, p: dict, member: discord.abc.User | None = None, unlocked: dict
     return _brand(e, "Full profile on truecombat.eu")
 
 
-def leaderboard(cfg, board: dict, sort: str, period: str) -> discord.Embed:
+def leaderboard(cfg, board: dict, sort: str, period: str, card: str | None = None) -> discord.Embed:
     label = T.SORT_LABELS.get(sort, "Skill rating")
     title = "Leaderboard · %s%s" % (label, " · last 30 days" if period == "30d" else "")
     e = discord.Embed(title=title, url=cfg.site + "/leaderboards.html", colour=RED)
@@ -208,12 +266,17 @@ def leaderboard(cfg, board: dict, sort: str, period: str) -> discord.Embed:
         return {"rating": T.num(p["rating"]), "xp": T.num(p["rank"]["xp"]), "kills": T.num(p["kills"]),
                 "kd": "%.2f" % p["kd"], "headshots": T.num(p["headshots"]), "wins": T.num(p["wins"])}[sort]
 
-    rows = [("#", "Player", label.split(" ")[0], "Rank")] + [
-        (str(p["position"]), T.clean(p["name"], 20), value(p), p["rank"]["short"]) for p in players]
-    e.description = "```\n%s\n```" % T.table(rows, "rlrl")
+    if card:
+        e.colour = GOLD
+        e.set_image(url="attachment://" + card)
+    else:
+        rows = [("#", "Player", label.split(" ")[0], "Rank")] + [
+            (str(p["position"]), T.clean(p["name"], 20), value(p), p["rank"]["short"]) for p in players]
+        e.description = "```\n%s\n```" % T.table(rows, "rlrl")
     top = players[0]
-    e.add_field(name="Leader", value="[%s](%s) · %s" % (T.md(top["name"]), profile_url(cfg.site, top["id"]),
-                                                       top["rank"]["title"]), inline=True)
+    e.add_field(name="Leader", value="%s[%s](%s) · %s" % (E.medal(1) + " " if E.medal(1) else "", T.md(top["name"]),
+                                                         profile_url(cfg.site, top["id"]), top["rank"]["title"]),
+                inline=True)
     e.add_field(name="Matches counted", value=T.num(board.get("matches")), inline=True)
     return _brand(e, "Full standings at truecombat.eu/leaderboards")
 
@@ -493,7 +556,7 @@ def team_label(key: str | None) -> str:
 
 
 def match_report(cfg, row: dict, detail: dict | None, unlocked: list[tuple[str, str]] | None = None,
-                 mentions: dict[str, int] | None = None) -> discord.Embed:
+                 mentions: dict[str, int] | None = None, card: str | None = None) -> discord.Embed:
     """A finished match. `row` is the entry from recent matches; `detail` the full scoreboard when the
     stats service has it. `unlocked` is [(player name, achievement key)], `mentions` maps player id to member."""
     m = detail or row
@@ -501,15 +564,21 @@ def match_report(cfg, row: dict, detail: dict | None, unlocked: list[tuple[str, 
     e = discord.Embed(title="Match report · %s" % T.map_label(m.get("map")), colour=GOLD,
                       url=(cfg.site + "/match.html?id=%s" % row["id"]) if detail and row.get("id")
                       else cfg.site + "/leaderboards.html")
-    img = T.map_image(cfg.site, m.get("map"))
-    if img:
-        e.set_thumbnail(url=img)
+    if winner_key := (m.get("winner") or "").lower():
+        e.colour = TEAM_COLOURS.get(winner_key, GOLD)
+    if card:
+        e.set_image(url="attachment://" + card)
+    else:
+        img = T.map_image(cfg.site, m.get("map"))
+        if img:
+            e.set_thumbnail(url=img)
     head = []
     rounds = (detail or {}).get("score") or {}
     winner = m.get("winner")
     if winner and len(rounds) == 2 and winner in rounds:
         other = next(k for k in rounds if k != winner)
-        head.append("**%s win %d – %d**" % (team_label(winner), rounds[winner], rounds[other]))
+        head.append("%s**%s win %d – %d**" % (E.team(winner) + " " if E.team(winner) else "", team_label(winner),
+                                              rounds[winner], rounds[other]))
     elif winner and str(winner).lower() not in ("", "draw", "none"):
         head.append("**%s win**" % team_label(winner))
     else:
@@ -533,10 +602,11 @@ def match_report(cfg, row: dict, detail: dict | None, unlocked: list[tuple[str, 
         for p in players:
             teams.setdefault(p.get("team") or "", []).append(p)
         order = sorted(teams, key=lambda t: (t != winner, t))
-        for t in order[:2]:
+        for t in ([] if card else order[:2]):
             rows = [(T.clean(p["name"], 16), "%d-%d" % (p["kills"], p["deaths"]), T.signed(p["ratingChange"]))
                     for p in sorted(teams[t], key=lambda p: (-p["kills"], p["deaths"]))[:8]]
-            e.add_field(name=team_label(t), value="```\n%s\n```" % T.table(rows, "lrr"), inline=True)
+            e.add_field(name=(E.team(t) + " " if E.team(t) else "") + team_label(t),
+                        value="```\n%s\n```" % T.table(rows, "lrr"), inline=True)
         best = max(players, key=lambda p: (p.get("xp") or 0, p["kills"]))
         who = "<@%d>" % mentions[best["id"]] if best["id"] in mentions else "[%s](%s)" % (
             T.md(best["name"]), profile_url(cfg.site, best["id"]))
@@ -547,7 +617,8 @@ def match_report(cfg, row: dict, detail: dict | None, unlocked: list[tuple[str, 
             bits.append("%d objective%s" % (best["objectives"], "" if best["objectives"] == 1 else "s"))
         if best.get("topWeapon"):
             bits.append(best["topWeapon"])
-        e.add_field(name="Player of the match", value="%s · %s" % (who, ", ".join(bits)), inline=False)
+        e.add_field(name="Player of the match", value="%s%s · %s" % (E.get("mvp") + " " if E.get("mvp") else "", who,
+                                                                   ", ".join(bits)), inline=False)
     elif row.get("mvp"):
         e.add_field(name="Player of the match", value="[%s](%s) · %d kills" % (
             T.md(row["mvp"]["name"]), profile_url(cfg.site, row["mvp"]["id"]), row["mvp"]["kills"]), inline=False)
