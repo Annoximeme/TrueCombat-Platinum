@@ -26,6 +26,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import landing  # noqa: E402
+import detail  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
@@ -89,6 +90,10 @@ def nav(lang, current):
     active = {"player": "leaderboards", "devlog": "news"}.get(current, current)
     if current.startswith("devlog-"):
         active = "news"
+    if current.startswith("map-"):
+        active = "maps"
+    if current.startswith("weapon-"):
+        active = "weapons"
     links = "\n".join(
         '      <li><a href="%s"%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "", L[p])
         for p in main)
@@ -191,6 +196,11 @@ def crumbs(lang, page, html):
     if page.startswith("devlog-"):
         items.append(("Devlog", url(lang, "devlog")))
         m = re.search(r'<meta property="og:title" content="([^"]*)"', re.sub(r"<!--alt-->.*?<!--/alt-->", "", html, flags=re.S))
+        items.append((htmlmod.unescape(m.group(1)) if m else page, url(lang, page)))
+    elif page.startswith(("map-", "weapon-")):
+        parent = "maps" if page.startswith("map-") else "weapons"
+        items.append((LABELS[lang][parent], url(lang, parent)))
+        m = re.search(r"<h1>(.*?)</h1>", html, re.S)
         items.append((htmlmod.unescape(m.group(1)) if m else page, url(lang, page)))
     else:
         items.append((LABELS[lang].get(page, page), url(lang, page)))
@@ -336,7 +346,7 @@ def weapons_html(lang):
                 cls = "wcard equip"
                 cmp = ""
             cards.append(
-                f'<article class="{cls}" id="{wid}" data-team="{w["team"]}"' + (f" data-w=\"{cmp}\"" if cmp else "") + f'><header><h3>{htmlmod.escape(w.get("name_" + lang, w["name"]))}</h3><span class="full">{htmlmod.escape(w.get("full_" + lang, w["full"]))}</span></header>'
+                f'<article class="{cls}" id="{wid}" data-team="{w["team"]}"' + (f" data-w=\"{cmp}\"" if cmp else "") + f'><header><h3><a href="weapon-{wid}.html">{htmlmod.escape(w.get("name_" + lang, w["name"]))}</a></h3><span class="full">{htmlmod.escape(w.get("full_" + lang, w["full"]))}</span></header>'
                 f'<div class="wtags">{"".join(tags)}</div>{stats}{note}<div class="wmodes">{modes}</div></article>')
         out.append(
             f'<section class="wgroup" id="{group["id"]}"><header><h2>{group["title_" + lang]}</h2><p>{group["sub_" + lang]}</p></header>'
@@ -1005,6 +1015,81 @@ def landing_page(lang, page):
     return html
 
 
+# ---------------------------------------------------------------- map and weapon pages
+MAP_MORE = {"en": "Full {m} guide", "nl": "Volledige gids voor {m}"}
+
+
+def map_links(lang, html):
+    """On the maps page, a link from each map to its own page."""
+    html = re.sub(r'\n        <p class="map-more">.*?</p>', "", html)
+    for name in MAPLIST:
+        at = html.index("</dl>", html.index('<section class="band map-sec" id="%s">' % name)) + 5
+        html = html[:at] + '\n        <p class="map-more"><a class="text-link" href="map-%s.html">%s</a></p>' % (name, MAP_MORE[lang].format(m=name.capitalize())) + html[at:]
+    return html
+
+
+def detail_pages(lang):
+    """(page name, html) for every map page and weapon page in one language."""
+    up = "../" if lang == "nl" else ""
+    e = lambda t: htmlmod.escape(t, quote=True)
+    pages = []
+    for name in MAPLIST:
+        title, desc, og = detail.map_meta(lang, name)
+        pages.append(("map-" + name, title, desc, og, "og-map-%s.jpg" % name, detail.map_body(lang, name, MAPLIST, layout_html), ""))
+    allw = detail.weapons(lang)
+    for w in allw:
+        title, desc = detail.weapon_meta(lang, w)
+        pages.append(("weapon-" + w["id"], title, desc, desc, "og-weapons.jpg", detail.weapon_body(lang, w, allw, WL[lang]["modes"]), ""))
+    out = []
+    for page, title, desc, og, image, body, extra in pages:
+        if lang == "nl":
+            body = ASSET.sub(r"../\1/", body)
+        html = f"""<!doctype html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="{url(lang, page)}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{url(lang, page)}">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="{OGLOCALE[lang]}">
+<meta property="og:title" content="{e(title.split(' · TrueCombat: Platinum')[0])}">
+<meta property="og:description" content="{e(og)}">
+<meta property="og:image" content="{SITE}img/{image}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{SITE}img/{image}">
+{extra}<!--alt-->
+<!--/alt-->
+<link rel="icon" type="image/png" href="{up}img/favicon.png">
+<link rel="stylesheet" href="{up}style.css">
+</head>
+<body>
+<!--nav-->
+<!--/nav-->
+
+<main id="top">
+{body}</main>
+
+<!--footer-->
+<!--/footer-->
+
+<script src="{up}js/site.js"></script>
+</body>
+</html>
+"""
+        html = put(html, "nav", nav(lang, page), page)
+        html = put(html, "footer", footer(lang), page)
+        html = put(html, "alt", alt(lang, page, html), page)
+        out.append((page, html))
+    return out
+
+
 # ---------------------------------------------------------------- site search
 KIND = {"en": {"page": "Page", "section": "Section", "weapon": "Weapon", "map": "Map", "post": "Devlog", "faq": "Question", "release": "Patch notes"},
         "nl": {"page": "Pagina", "section": "Onderdeel", "weapon": "Wapen", "map": "Map", "post": "Devlog", "faq": "Vraag", "release": "Patchnotes"}}
@@ -1037,11 +1122,15 @@ def search_index(lang, posts):
             h = re.search(r"<h([23])[^>]*>(.*?)</h\1>", main[m.end():m.end() + 1800], re.S)
             if not h:
                 continue
-            kind = K["map"] if page == "maps" and m.group(1) in MAPLIST else K["section"]
+            if page == "maps" and m.group(1) in MAPLIST:
+                continue
+            kind = K["section"]
             rows.append({"t": text(h.group(2)), "u": href(page) + "#" + m.group(1), "k": kind, "d": LABELS[lang].get(page, title) if page != "index" else ""})
     weapons = (base / "weapons.html").read_text(encoding="utf-8")
     for m in re.finditer(r'<article class="[^"]*" id="([^"]+)"[^>]*>.*?<h3[^>]*>(.*?)</h3><span class="full">(.*?)</span>', weapons, re.S):
-        rows.append({"t": text(m.group(2)), "u": "weapons.html#" + m.group(1), "k": K["weapon"], "d": text(m.group(3))})
+        rows.append({"t": text(m.group(2)), "u": "weapon-%s.html" % m.group(1), "k": K["weapon"], "d": text(m.group(3))})
+    for name in MAPLIST:
+        rows.append({"t": name.capitalize(), "u": "map-%s.html" % name, "k": K["map"], "d": detail.map_text(lang, name)[0]})
     for p in posts:
         rows.append({"t": p["title"], "u": "devlog-%s.html" % p["slug"], "k": K["post"], "d": p["summary"][:150]})
     return json.dumps(rows, ensure_ascii=False, separators=(",", ":"))
@@ -1070,6 +1159,11 @@ def llms_txt(posts):
            line("weapons", "all 27 guns with their damage, recoil and handling values"),
            line("media", "in-game screenshots from the DirectX 12 renderer"),
            line("competitive", "match mode for clan matches: ready-up, knife round, half-time, timeouts"), "",
+           "## Maps", ""]
+    out += ["- [%s](%s): %s" % (n.capitalize(), url("en", "map-" + n), detail.map_text("en", n)[0]) for n in MAPLIST]
+    out += ["", "## Weapons", ""]
+    out += ["- [%s](%s): %s" % (w["label"], url("en", "weapon-" + w["id"]), detail.weapon_lede("en", w)) for w in detail.weapons("en")]
+    out += ["",
            "## Play", "",
            line("servers", "public and official servers, live scoreboards and latest results"),
            line("leaderboards", "ranks and ratings from every ranked match"), "",
@@ -1193,6 +1287,8 @@ def main():
         if page == "support":
             en = put(en, "support-funding", support_funding("en"), path)
         src = en
+        if page == "maps":
+            en = map_links("en", en)
         en = put(en, "nav", nav("en", page), path)
         en = put(en, "footer", footer("en"), path)
         en = put(en, "alt", alt("en", page, en), path)
@@ -1217,6 +1313,8 @@ def main():
         if page == "support":
             du = put(du, "support-funding", support_funding("nl"), path)
         du = to_dutch(page, du)
+        if page == "maps":
+            du = map_links("nl", du)
         du = put(du, "nav", nav("nl", page), path)
         du = put(du, "footer", footer("nl"), path)
         du = put(du, "alt", alt("nl", page, du), path)
@@ -1225,6 +1323,13 @@ def main():
     for page in LANDING:
         for lang in ("en", "nl"):
             (DOCS / ("nl" if lang == "nl" else "") / (page + ".html")).write_text(bust(landing_page(lang, page)), encoding="utf-8")
+
+    details = []
+    for lang in ("en", "nl"):
+        for page, html in detail_pages(lang):
+            (DOCS / ("nl" if lang == "nl" else "") / (page + ".html")).write_text(bust(html), encoding="utf-8")
+            if lang == "en":
+                details.append(page)
 
     template = unbust((DOCS / "devlog.html").read_text(encoding="utf-8"))
     posts = {lang: devlog_posts(lang) for lang in ("en", "nl")}
@@ -1247,7 +1352,7 @@ def main():
         OLD_LASTMOD.update(re.findall(r"<url><loc>([^<]+)</loc><lastmod>([^<]+)</lastmod>", old.read_text(encoding="utf-8")))
     rows = []
     # player.html without an id is an empty profile, so only real pages go in the sitemap
-    for page in [p for p in PAGES if p != "player"] + LANDING + ["devlog-" + p["slug"] for p in posts["en"]]:
+    for page in [p for p in PAGES if p != "player"] + LANDING + details + ["devlog-" + p["slug"] for p in posts["en"]]:
         for lang in ("en", "nl"):
             alts = "".join('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, url(l, page)) for l in ("en", "nl"))
             path = DOCS / ("nl" if lang == "nl" else "") / (page + ".html")
@@ -1257,7 +1362,7 @@ def main():
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
         + "\n".join(rows) + "\n</urlset>\n", encoding="utf-8")
-    print("built %d pages in English and Dutch" % (len(PAGES) + len(LANDING)))
+    print("built %d pages in English and Dutch" % (len(PAGES) + len(LANDING) + len(details)))
 
 
 if __name__ == "__main__":
