@@ -1,0 +1,20 @@
+# truecombat.eu: addresses without .html.
+# Imported from the truecombat.eu site block in /etc/caddy/Caddyfile by install-clean-urls.sh.
+#   /maps        serves maps.html
+#   /maps.html   301 to /maps (old links and bookmarks keep working, the query string is kept)
+#   /index.html  301 to /,  /de/index.html  301 to /de/
+
+@tcp_html_q {
+	path_regexp tcp_page ^(.*?)(index)?\.html$
+	expression {http.request.uri.query} != ""
+}
+redir @tcp_html_q {re.tcp_page.1}?{http.request.uri.query} 301
+
+@tcp_html {
+	path_regexp tcp_page ^(.*?)(index)?\.html$
+	expression {http.request.uri.query} == ""
+}
+redir @tcp_html {re.tcp_page.1} 301
+
+# a page file wins over a folder of the same name (press.html next to press/)
+try_files {path}.html {path}

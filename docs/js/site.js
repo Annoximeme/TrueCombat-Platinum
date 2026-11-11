@@ -3,8 +3,8 @@
      [data-download]              download buttons, pointed at the newest installer (TrueCombat-Platinum-Setup.exe)
      [data-releases="5"|"all"]    patch notes from GitHub Releases (static HTML stays as fallback)
      [data-servers="5"|"all"]     live server list from the bridge (tools/server-bridge)
-     [data-leaderboard]           leaderboards from the bridge (rows link to player.html?id=)
-     [data-player]                player profile page (player.html?id=<player id>)
+     [data-leaderboard]           leaderboards from the bridge (rows link to player?id=)
+     [data-player]                player profile page (player?id=<player id>)
      [data-gallery]               screenshot grid with filter tabs and a lightbox (media page)
      [data-yt]                    click-to-play YouTube embed (privacy-enhanced, nothing loads before a click)
      [data-compare] [data-post-filter] [data-copy-link]   devlog sliders, topic filter and copy-link button
@@ -216,7 +216,7 @@ var TCP_API = 'https://api.truecombat.eu';
   function mapLabel(m) {
     var key = String(m || '').toLowerCase();
     var name = MAPS[key];
-    return name ? '<a href="maps.html#' + name.toLowerCase() + '">' + name + '</a>' : esc(m);
+    return name ? '<a href="maps#' + name.toLowerCase() + '">' + name + '</a>' : esc(m);
   }
   function api(path) {
     if (!TCP_API) return Promise.reject(new Error('offline'));
@@ -284,7 +284,7 @@ var TCP_API = 'https://api.truecombat.eu';
         (s.need > 0 ? ' <span class="srv-tag need" title="' + L.needTip + '">' + (s.need === 1 ? L.need1 : L.needN.replace('{n}', s.need)) + '</span>' : '') +
         (s.verified ? ' <span class="srv-tag verified" title="' + L.verifiedTip + '">' + L.verified + '</span>' : '') +
         '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button>' +
-        ' <a class="srv-join" href="' + (lang === 'en' ? '' : '../') + 'join.html#' + esc(s.address) + '">' + L.joinBtn + '</a></td>' +
+        ' <a class="srv-join" href="' + (lang === 'en' ? '' : '../') + 'join#' + esc(s.address) + '">' + L.joinBtn + '</a></td>' +
         '<td>' + mapLabel(s.map) + '</td><td>' + (s.players || 0) + ' / ' + (s.maxPlayers || '?') + (s.bots ? ' <span class="srv-bots">+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</span>' : '') + '</td><td>' + esc(s.mode || '') + '</td></tr>';
     }).join('');
     renderBoards(list);
@@ -341,7 +341,7 @@ var TCP_API = 'https://api.truecombat.eu';
   });
 
   var MID = /^[0-9a-f]{16}$/;
-  function matchHref(id) { return 'match.html?id=' + encodeURIComponent(id); }
+  function matchHref(id) { return 'match?id=' + encodeURIComponent(id); }
 
   /* latest match results (servers page) */
   function ago(iso) {
@@ -478,7 +478,7 @@ var TCP_API = 'https://api.truecombat.eu';
   function badge(r) { return r ? '<span class="badge" title="' + esc(r.title) + '">' + esc(r.short) + '</span>' : ''; }
   function dur(s) { var h = Math.floor((s || 0) / 3600), m = Math.round(((s || 0) % 3600) / 60); return h ? h + ' ' + L.hours + ' ' + m + ' ' + L.minutes : m + ' ' + L.minutes; }
   function kdOf(p) { return p.deaths ? p.kills / p.deaths : (p.kills || 0); }
-  function profileHref(id) { return 'player.html?id=' + encodeURIComponent(id); }
+  function profileHref(id) { return 'player?id=' + encodeURIComponent(id); }
   var PID = /^[0-9a-f]{16}$/;
 
   $all('[data-leaderboard]').forEach(function (root) {
@@ -668,7 +668,7 @@ var TCP_API = 'https://api.truecombat.eu';
     if (age < 14 && seen < newest) a.classList.add('fresh');
   });
 
-  /* ---------- match report (match.html?id=<match id>) ---------- */
+  /* ---------- match report (match?id=<match id>) ---------- */
   $all('[data-match]').forEach(function (root) {
     function q(sel) { return root.querySelector(sel); }
     var id = (new URLSearchParams(location.search).get('id') || '').toLowerCase();
@@ -951,7 +951,7 @@ var TCP_API = 'https://api.truecombat.eu';
     var script = document.querySelector('script[src*="js/site.js"]');
     if (!script || !window.HTMLDialogElement) { $all('[data-search-open]').forEach(function (b) { b.hidden = true; }); return; }
     var jsBase = new URL('.', script.src), root = new URL(lang === 'en' ? '../' : '../' + lang + '/', jsBase);
-    var QUICK = ['download.html', 'servers.html', 'guide.html', 'maps.html', 'weapons.html', 'faq.html'];
+    var QUICK = ['download', 'servers', 'guide', 'maps', 'weapons', 'faq'];
     var dlg, input, list, rows = null, shown = [], sel = 0;
 
     function norm(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }

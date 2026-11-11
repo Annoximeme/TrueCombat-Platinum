@@ -165,7 +165,7 @@
     $('rows').innerHTML = list.map(function (r) {
       var max = Math.max.apply(null, r.split.concat([1]));
       var open = r.slug === openSlug;
-      return '<tr class="post" data-slug="' + esc(r.slug) + '" aria-expanded="' + open + '"><td><a href="devlog-' + esc(r.slug) + '.html">' + esc(r.title) + '</a><small>' + esc(r.date.slice(0, 10)) + '</small></td>' +
+      return '<tr class="post" data-slug="' + esc(r.slug) + '" aria-expanded="' + open + '"><td><a href="devlog-' + esc(r.slug) + '">' + esc(r.title) + '</a><small>' + esc(r.date.slice(0, 10)) + '</small></td>' +
         '<td class="n">' + fmt(r.readers) + '</td><td class="n">' + fmt(r.week) + '</td><td>' + spark(r.last30) + '</td>' +
         '<td class="n">' + (r.readers ? Math.round(r.done * 100) + '%<small>' + fmt(r.finished) + ' of ' + fmt(r.readers) + '</small>' : '<span class="muted">-</span>') + '</td>' +
         '<td class="n">' + fmt(r.reads) + '</td>' +
