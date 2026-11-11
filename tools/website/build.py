@@ -1018,7 +1018,7 @@ OGLOCALE = {"en": "en_GB", "nl": "nl_NL"}
 
 def release_values():
     """Version, size, date and link of the current download, as the release workflow wrote them on the home page."""
-    home = (DOCS / "index.html").read_text(encoding="utf-8")
+    home = unbust((DOCS / "index.html").read_text(encoding="utf-8"))
     def grab(pat, default):
         m = re.search(pat, home)
         return m.group(1) if m else default
@@ -1256,7 +1256,7 @@ def search_index(lang, posts):
     for page in [p for p in PAGES if p != "player"] + LANDING:
         # a page the language does not have is listed from the English site
         there = "" if has(lang, page) else "../"
-        html = ((base if has(lang, page) else DOCS) / (page + ".html")).read_text(encoding="utf-8")
+        html = unbust(((base if has(lang, page) else DOCS) / (page + ".html")).read_text(encoding="utf-8"))
         title = text(re.search(r"<title>(.*?)</title>", html, re.S).group(1)).split(" · ")[0]
         if page == "index":
             title = "TrueCombat: Platinum"
@@ -1279,7 +1279,7 @@ def search_index(lang, posts):
                 continue
             kind = K["section"]
             rows.append({"t": text(h.group(2)), "u": there + href(page) + "#" + m.group(1), "k": kind, "d": LABELS[lang].get(page, title) if page != "index" else ""})
-    weapons = (base / "weapons.html").read_text(encoding="utf-8")
+    weapons = unbust((base / "weapons.html").read_text(encoding="utf-8"))
     for m in re.finditer(r'<article class="[^"]*" id="([^"]+)"[^>]*>.*?<h3[^>]*>(.*?)</h3><span class="full">(.*?)</span>', weapons, re.S):
         rows.append({"t": text(m.group(2)), "u": "weapon-%s.html" % m.group(1), "k": K["weapon"], "d": text(m.group(3))})
     for name in MAPLIST:
@@ -1399,10 +1399,32 @@ VERSIONED = re.compile(r'((?:href|src)="(?:\.\./)?(?:style\.css|js/site\.js))\?v
 
 
 def unbust(html):
-    return VERSIONED.sub(r'\1"', html)
+    return unclean(VERSIONED.sub(r'\1"', html))
+
+
+# ---------------------------------------------------------------- clean URLs
+# The site links to /maps, not /maps.html (the VPS serves {path}.html, GitHub Pages does the same).
+# The build itself keeps working with .html names: every page is read back through unclean() and
+# every file is written through clean(), so hand-edited English pages and translation pairs may
+# use either form.
+LINKED = re.compile(r'((?:href="/?|"u": ?"|https://truecombat\.eu/)(?:\.\./)?(?:(?:de|fr|pl|nl)/)?)([a-z0-9][a-z0-9-]*)\.html(?=[#?"<)\s\\])')
+
+
+def clean(text):
+    def one(m):
+        if m.group(2) != "index":
+            return m.group(1) + m.group(2)
+        return m.group(1) if m.group(1).endswith("/") else m.group(1) + "./"
+    return LINKED.sub(one, text)
+
+
+def unclean(html):
+    names = "|".join(re.escape(p.stem) for p in sorted(DOCS.glob("*.html"), key=lambda p: -len(p.stem)) if p.stem != "index")
+    return re.sub(r'((?:href="/?|https://truecombat\.eu/)(?:\.\./)?(?:(?:de|fr|pl|nl)/)?)(%s)(?=[#?"<)\s\\])' % names, r"\1\2.html", html)
 
 
 def bust(html):
+    html = clean(html)
     import hashlib
     for name, attr in (("style.css", "href"), ("js/site.js", "src")):
         v = hashlib.sha1((DOCS / name).read_bytes()).hexdigest()[:10]
@@ -1438,7 +1460,7 @@ def lastmod(path):
             return today
         # a shallow clone only knows its newest commit, which would stamp every page with the same date
         if subprocess.run(["git", "rev-parse", "--is-shallow-repository"], cwd=ROOT, capture_output=True, text=True).stdout.strip() == "true":
-            old = OLD_LASTMOD.get(SITE + str(path.relative_to(DOCS)).replace("\\", "/").replace("index.html", ""))
+            old = OLD_LASTMOD.get(clean(SITE + str(path.relative_to(DOCS)).replace("\\", "/").replace("index.html", "")))
             if old:
                 return old
         out = subprocess.run(["git", "log", "-1", "--format=%cs", "--", rel], cwd=ROOT, capture_output=True, text=True).stdout.strip()
@@ -1517,15 +1539,15 @@ def main():
         for post in posts[lang]:
             out = DOCS / sub(lang) / ("devlog-%s.html" % post["slug"])
             out.write_text(bust(devlog_page(lang, post, posts[lang], template)), encoding="utf-8")
-        (DOCS / sub(lang) / "devlog.xml").write_text(devlog_feed(lang, posts[lang]), encoding="utf-8")
+        (DOCS / sub(lang) / "devlog.xml").write_text(clean(devlog_feed(lang, posts[lang])), encoding="utf-8")
 
     for lang in LANGS:
-        (DOCS / "js" / ("search-%s.json" % lang)).write_text(search_index(lang, posts[lang]), encoding="utf-8")
+        (DOCS / "js" / ("search-%s.json" % lang)).write_text(clean(search_index(lang, posts[lang])), encoding="utf-8")
     for lang in XLANGS:
         (DOCS / "js" / ("lang-%s.js" % lang)).write_text(
             "/* Written by tools/website/build.py from tools/website/i18n/%s.py. */\nwindow.TCP_L = %s;\n"
             % (lang, json.dumps(i18n.MODS[lang].JS, ensure_ascii=False, separators=(",", ":"))), encoding="utf-8")
-    (DOCS / "llms.txt").write_text(llms_txt(posts["en"]), encoding="utf-8")
+    (DOCS / "llms.txt").write_text(clean(llms_txt(posts["en"])), encoding="utf-8")
 
     old = DOCS / "sitemap.xml"
     if old.exists():
@@ -1541,7 +1563,7 @@ def main():
     (DOCS / "sitemap.xml").write_text(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
-        + "\n".join(rows) + "\n</urlset>\n", encoding="utf-8")
+        + clean("\n".join(rows)) + "\n</urlset>\n", encoding="utf-8")
     left = {lang: len(v) for lang, v in UNTRANSLATED.items()}
     print("built %d pages in %s%s" % (len(PAGES) + len(LANDING) + len(details) + 1, ", ".join(LANGS),
                                       "; still in English: %s" % left if left else ""))

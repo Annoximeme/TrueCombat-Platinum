@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
   <title>TrueCombat: Platinum devlog</title>
-  <link href="https://truecombat.eu/devlog.html"/>
+  <link href="https://truecombat.eu/devlog"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
-  <id>https://truecombat.eu/devlog.html</id>
+  <id>https://truecombat.eu/devlog</id>
   <updated>2026-11-11T12:00:00Z</updated>
   <entry>
     <title>The road ahead, in full</title>
-    <link href="https://truecombat.eu/devlog-the-road-ahead.html"/>
-    <id>https://truecombat.eu/devlog-the-road-ahead.html</id>
+    <link href="https://truecombat.eu/devlog-the-road-ahead"/>
+    <id>https://truecombat.eu/devlog-the-road-ahead</id>
     <published>2026-11-11T12:00:00Z</published>
     <updated>2026-11-11T12:00:00Z</updated>
     <category term="Roadmap"/>
@@ -17,8 +17,8 @@
   </entry>
   <entry>
     <title>Counting readers without tracking anyone</title>
-    <link href="https://truecombat.eu/devlog-reads-and-ratings.html"/>
-    <id>https://truecombat.eu/devlog-reads-and-ratings.html</id>
+    <link href="https://truecombat.eu/devlog-reads-and-ratings"/>
+    <id>https://truecombat.eu/devlog-reads-and-ratings</id>
     <published>2026-11-09T12:00:00Z</published>
     <updated>2026-11-09T12:00:00Z</updated>
     <category term="Community"/>
@@ -27,8 +27,8 @@
   </entry>
   <entry>
     <title>What we are working on next</title>
-    <link href="https://truecombat.eu/devlog-whats-next.html"/>
-    <id>https://truecombat.eu/devlog-whats-next.html</id>
+    <link href="https://truecombat.eu/devlog-whats-next"/>
+    <id>https://truecombat.eu/devlog-whats-next</id>
     <published>2026-11-09T12:00:00Z</published>
     <updated>2026-11-09T12:00:00Z</updated>
     <category term="Roadmap"/>
@@ -37,8 +37,8 @@
   </entry>
   <entry>
     <title>Free means free: how support works</title>
-    <link href="https://truecombat.eu/devlog-support.html"/>
-    <id>https://truecombat.eu/devlog-support.html</id>
+    <link href="https://truecombat.eu/devlog-support"/>
+    <id>https://truecombat.eu/devlog-support</id>
     <published>2026-11-09T12:00:00Z</published>
     <updated>2026-11-09T12:00:00Z</updated>
     <category term="Community"/>
@@ -47,8 +47,8 @@
   </entry>
   <entry>
     <title>What the playtests told us</title>
-    <link href="https://truecombat.eu/devlog-playtest-fixes.html"/>
-    <id>https://truecombat.eu/devlog-playtest-fixes.html</id>
+    <link href="https://truecombat.eu/devlog-playtest-fixes"/>
+    <id>https://truecombat.eu/devlog-playtest-fixes</id>
     <published>2026-11-09T12:00:00Z</published>
     <updated>2026-11-09T12:00:00Z</updated>
     <category term="Roadmap"/>
@@ -57,8 +57,8 @@
   </entry>
   <entry>
     <title>The official servers now run on Linux</title>
-    <link href="https://truecombat.eu/devlog-linux-servers.html"/>
-    <id>https://truecombat.eu/devlog-linux-servers.html</id>
+    <link href="https://truecombat.eu/devlog-linux-servers"/>
+    <id>https://truecombat.eu/devlog-linux-servers</id>
     <published>2026-11-09T12:00:00Z</published>
     <updated>2026-11-09T12:00:00Z</updated>
     <category term="Servers"/>
@@ -67,8 +67,8 @@
   </entry>
   <entry>
     <title>New light for old maps</title>
-    <link href="https://truecombat.eu/devlog-ultra-visuals.html"/>
-    <id>https://truecombat.eu/devlog-ultra-visuals.html</id>
+    <link href="https://truecombat.eu/devlog-ultra-visuals"/>
+    <id>https://truecombat.eu/devlog-ultra-visuals</id>
     <published>2026-11-08T12:00:00Z</published>
     <updated>2026-11-08T12:00:00Z</updated>
     <category term="Graphics"/>
@@ -77,8 +77,8 @@
   </entry>
   <entry>
     <title>Teaching bots to play like people</title>
-    <link href="https://truecombat.eu/devlog-smarter-bots.html"/>
-    <id>https://truecombat.eu/devlog-smarter-bots.html</id>
+    <link href="https://truecombat.eu/devlog-smarter-bots"/>
+    <id>https://truecombat.eu/devlog-smarter-bots</id>
     <published>2026-11-08T12:00:00Z</published>
     <updated>2026-11-08T12:00:00Z</updated>
     <category term="Bots"/>
@@ -87,8 +87,8 @@
   </entry>
   <entry>
     <title>When the test is wrong</title>
-    <link href="https://truecombat.eu/devlog-recoil-check.html"/>
-    <id>https://truecombat.eu/devlog-recoil-check.html</id>
+    <link href="https://truecombat.eu/devlog-recoil-check"/>
+    <id>https://truecombat.eu/devlog-recoil-check</id>
     <published>2026-11-08T12:00:00Z</published>
     <updated>2026-11-08T12:00:00Z</updated>
     <category term="Testing"/>
@@ -97,8 +97,8 @@
   </entry>
   <entry>
     <title>Ten pieces of work, one update</title>
-    <link href="https://truecombat.eu/devlog-one-update.html"/>
-    <id>https://truecombat.eu/devlog-one-update.html</id>
+    <link href="https://truecombat.eu/devlog-one-update"/>
+    <id>https://truecombat.eu/devlog-one-update</id>
     <published>2026-11-08T12:00:00Z</published>
     <updated>2026-11-09T12:00:00Z</updated>
     <category term="Testing"/>
@@ -107,8 +107,8 @@
   </entry>
   <entry>
     <title>What keeps the official servers running</title>
-    <link href="https://truecombat.eu/devlog-official-servers.html"/>
-    <id>https://truecombat.eu/devlog-official-servers.html</id>
+    <link href="https://truecombat.eu/devlog-official-servers"/>
+    <id>https://truecombat.eu/devlog-official-servers</id>
     <published>2026-11-08T12:00:00Z</published>
     <updated>2026-11-08T12:00:00Z</updated>
     <category term="Servers"/>
@@ -117,8 +117,8 @@
   </entry>
   <entry>
     <title>One small installer, every version</title>
-    <link href="https://truecombat.eu/devlog-installer.html"/>
-    <id>https://truecombat.eu/devlog-installer.html</id>
+    <link href="https://truecombat.eu/devlog-installer"/>
+    <id>https://truecombat.eu/devlog-installer</id>
     <published>2026-11-08T12:00:00Z</published>
     <updated>2026-11-08T12:00:00Z</updated>
     <category term="Launcher"/>
@@ -127,8 +127,8 @@
   </entry>
   <entry>
     <title>Every shot leaves a mark</title>
-    <link href="https://truecombat.eu/devlog-every-shot.html"/>
-    <id>https://truecombat.eu/devlog-every-shot.html</id>
+    <link href="https://truecombat.eu/devlog-every-shot"/>
+    <id>https://truecombat.eu/devlog-every-shot</id>
     <published>2026-11-08T12:00:00Z</published>
     <updated>2026-11-08T12:00:00Z</updated>
     <category term="Gameplay"/>
@@ -137,8 +137,8 @@
   </entry>
   <entry>
     <title>Match mode, built for clan nights</title>
-    <link href="https://truecombat.eu/devlog-match-mode.html"/>
-    <id>https://truecombat.eu/devlog-match-mode.html</id>
+    <link href="https://truecombat.eu/devlog-match-mode"/>
+    <id>https://truecombat.eu/devlog-match-mode</id>
     <published>2026-11-07T12:00:00Z</published>
     <updated>2026-11-07T12:00:00Z</updated>
     <category term="Competitive"/>
@@ -147,8 +147,8 @@
   </entry>
   <entry>
     <title>Back to full speed</title>
-    <link href="https://truecombat.eu/devlog-full-speed.html"/>
-    <id>https://truecombat.eu/devlog-full-speed.html</id>
+    <link href="https://truecombat.eu/devlog-full-speed"/>
+    <id>https://truecombat.eu/devlog-full-speed</id>
     <published>2026-11-07T12:00:00Z</published>
     <updated>2026-11-07T12:00:00Z</updated>
     <category term="Gameplay"/>
