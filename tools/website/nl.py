@@ -409,6 +409,8 @@ PAGES["servers"] = [
     ("<p class=\"yt-note\" style=\"margin-top:12px\">Click an address to copy it, then paste it into the launcher. The launcher's Servers tab shows the same list with your ping.</p>",
      '<p class="yt-note" style="margin-top:12px">Klik op een adres om het te kopiëren en plak het in de launcher. Het tabblad Servers in de launcher toont dezelfde lijst met je ping.</p>'),
     ('<h3>Join a server</h3>', '<h3>Meedoen op een server</h3>'),
+    ('join.html#truecombat.eu:27960">Join now</a>', '../join.html#truecombat.eu:27960">Nu joinen</a>'),
+    ('join.html#truecombat.eu:27961">Join now</a>', '../join.html#truecombat.eu:27961">Nu joinen</a>'),
     ('<li>Open the launcher and go to <b>Servers</b>. Public servers, your favorites and recent servers are listed there.</li>',
      '<li>Open de launcher en ga naar <b>Servers</b>. Daar staan publieke servers, je favorieten en recente servers.</li>'),
     ('<li>Or copy an address from this page, paste it into the address box and press <b>PLAY</b>.</li>',

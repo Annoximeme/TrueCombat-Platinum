@@ -138,6 +138,26 @@ fr = report(31); fr["players"][3]["filler"] = True
 check("filler flag survives sanitize", [p for p in tcp_stats.sanitize(fr, trusted=True)["players"] if p["name"] == "Dax"][0]["filler"] is True)
 fr["players"][3]["filler"] = "yes"
 check("filler must be a real boolean", [p for p in tcp_stats.sanitize(fr, trusted=True)["players"] if p["name"] == "Dax"][0]["filler"] is False)
+# Leaving a losing match costs the full rating change; abandons show on the profile; net telemetry is summed
+t2 = tcp_stats.StatsStore(str(tmp / "leave.db"), min_matches=1)
+sid2, _ = t2.add_server("Blue Server")
+quit_rep = report(20, winner="specops")
+for pl in quit_rep["players"]:
+    pl["net"] = {"ping": 40, "pingMax": 80, "jitter": 3.5, "loss": 0.5, "rewind": 70, "rewindCapped": 1, "shotsRewound": 100}
+quit_rep["players"][3].update(connected=False, timePlayed=150, leaves=1)      # Dax quits after a quarter of the match
+stay_rep = report(20, winner="specops")
+stay_rep["players"][3]["timePlayed"] = 150
+t2.ingest(quit_rep, sid2, trusted=True)
+t3 = tcp_stats.StatsStore(str(tmp / "stay.db"), min_matches=1)
+sid3, _ = t3.add_server("Blue Server")
+t3.ingest(stay_rep, sid3, trusted=True)
+dax_quit = [p for p in t2.leaderboard()["players"] if p["name"] == "Dax"][0]
+dax_stay = [p for p in t3.leaderboard()["players"] if p["name"] == "Dax"][0]
+check("quitting a lost match costs more rating", dax_quit["rating"] < dax_stay["rating"], (dax_quit["rating"], dax_stay["rating"]))
+check("abandon counted on the profile", t2.player(dax_quit["id"])["abandons"] == 1 and t3.player(dax_stay["id"])["abandons"] == 0)
+ns = t2.netstats()["servers"][0]
+check("netstats per server", ns["avgPing"] == 40 and ns["avgLoss"] == 0.5 and ns["rewindCappedPct"] == 1.0 and ns["leaves"] == 1, ns)
+check("netstats over http", "servers" in get("/netstats.json"))
 
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))

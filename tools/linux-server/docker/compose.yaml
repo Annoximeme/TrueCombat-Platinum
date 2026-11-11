@@ -1,0 +1,26 @@
+# TrueCombat: Platinum community server.
+#   docker compose up -d && docker compose logs -f
+# Open UDP 27960 in your firewall / router. The server lists itself publicly within a minute.
+services:
+  truecombat:
+    image: truecombat-platinum-server
+    build: .
+    restart: unless-stopped
+    ports:
+      - "27960:27960/udp"
+    volumes:
+      - truecombat-data:/data
+    environment:
+      SERVER_NAME: "My TrueCombat: Platinum server"
+      MAX_PLAYERS: "16"
+      MODE: "2"                  # 1 Elimination, 2 Team Elimination, 3 Capture Point, 4 Team Deathmatch, 5 Flag Capture
+      BOTS: "0"                  # bots fill empty slots until players join
+      RCON_PASSWORD: ""          # set one to use remote admin
+      SERVER_PASSWORD: ""        # private server
+      MAX_PING: "0"              # e.g. 180 to keep matches fair; 0 = off
+      RECORD_DEMOS: "0"          # 1 records every match to /data/home/tcetest/svdemos
+      DOWNLOAD_URL: ""           # web folder with your custom map .pk3 files (players download them automatically)
+      LIST_PUBLICLY: "1"
+      IPV6: "0"                  # 1 also listens on IPv6 (needs IPv6 enabled in Docker, see README)
+volumes:
+  truecombat-data:
