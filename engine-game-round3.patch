@@ -330,10 +330,10 @@ index 0000000..4300e9b
 +#endif
 diff --git a/game_src/native/tcp_netq_cg.h b/game_src/native/tcp_netq_cg.h
 new file mode 100644
-index 0000000..fa5b86e
+index 0000000..cfbddb6
 --- /dev/null
 +++ b/game_src/native/tcp_netq_cg.h
-@@ -0,0 +1,71 @@
+@@ -0,0 +1,72 @@
 +/* Connection quality on the client (online play round 3, item 2).
 + *
 + * The server measures every player's packet loss, jitter and ping (tcp_netq.h) and sends
@@ -381,7 +381,8 @@ index 0000000..fa5b86e
 +    nqSampleAt=time;
 +    int me=p->clientNum>=0&&p->clientNum<MAX_CLIENTS?p->clientNum:0;
 +    int loss10=nqLast?nqSlots[me].loss10:0;
-+    nqPing[nqHead]=(short)(snap.ping>999?999:snap.ping<0?0:snap.ping);
++    {int ping=nqLast&&time-nqSlots[me].at<6000?nqSlots[me].ping:snap.ping;   /* the server-measured ping, as on the scoreboard */
++    nqPing[nqHead]=(short)(ping>999?999:ping<0?0:ping);}
 +    nqLossMark[nqHead]=(unsigned char)(loss10>nqLastLoss10);nqLastLoss10=loss10;
 +    nqHead=(nqHead+1)%NQ_HISTORY;
 +}
@@ -391,7 +392,7 @@ index 0000000..fa5b86e
 +    const int me=p->clientNum>=0&&p->clientNum<MAX_CLIENTS?p->clientNum:0;
 +    const int fresh=nqLast&&time-nqSlots[me].at<6000;
 +    char text[96];
-+    if(fresh)snprintf(text,sizeof(text),"%d ms  loss %d.%d%%  jitter %d",snap.ping,nqSlots[me].loss10/10,nqSlots[me].loss10%10,nqSlots[me].jitter);
++    if(fresh)snprintf(text,sizeof(text),"%d ms  loss %d.%d%%  jitter %d",nqSlots[me].ping,nqSlots[me].loss10/10,nqSlots[me].loss10%10,nqSlots[me].jitter);
 +    else snprintf(text,sizeof(text),"%d ms",snap.ping);
 +    hudTextRight(840,182,.17f,fresh?nqColor(nqSlots[me].grade):hudGrey,text);
 +    if(nqGraphCvar.integer<2)return;
@@ -473,10 +474,10 @@ index 2009534..2cc0f89 100644
  
  //=============================================================================
 diff --git a/reference/etlegacy/src/server/sv_admin.c b/reference/etlegacy/src/server/sv_admin.c
-index f19b7c5..eacaf58 100644
+index f19b7c5..3882135 100644
 --- a/reference/etlegacy/src/server/sv_admin.c
 +++ b/reference/etlegacy/src/server/sv_admin.c
-@@ -560,8 +560,18 @@ qboolean SV_AdminRejectBanned(const netadr_t *from, const char *userinfo)
+@@ -560,8 +560,24 @@ qboolean SV_AdminRejectBanned(const netadr_t *from, const char *userinfo)
  		return qfalse;
  	}
  	Q_strncpyz(name, Info_ValueForKey(userinfo, "name"), sizeof(name));
@@ -485,19 +486,25 @@ index f19b7c5..eacaf58 100644
 +	{
 +		long left = adminBans[index].expires ? adminBans[index].expires - (long)time(NULL) : 0;
 +		char until[64] = "";
++		const char *reason = adminBans[index].reason;
++		size_t      rlen   = strlen(reason);
++		const char *stop;
 +
 +		if (left > 0)
 +		{
 +			Com_sprintf(until, sizeof(until), left >= 86400 ? " The ban ends in %ld day(s)." : left >= 3600 ? " The ban ends in %ld hour(s)." : " The ban ends in %ld minute(s).",
 +			            left >= 86400 ? (left + 86399) / 86400 : left >= 3600 ? (left + 3599) / 3600 : (left + 59) / 60);
 +		}
-+		NET_OutOfBandPrint(NS_SERVER, from, "print\n[err_dialog]%s%s%s%s\n", sv_banMessage->string,
-+		                   adminBans[index].reason[0] ? " Reason: " : "", adminBans[index].reason, until);
++		/* end the reason with a full stop before the expiry sentence */
++		stop = rlen && until[0] && !strchr(".!?", reason[rlen - 1]) ? "." : "";
++
++		NET_OutOfBandPrint(NS_SERVER, from, "print\n[err_dialog]%s%s%s%s%s\n", sv_banMessage->string,
++		                   reason[0] ? " Reason: " : "", reason, stop, until);
 +	}
  	Com_Printf("Rejected banned client %s (%s) guid %s, ban #%i\n", NET_AdrToString(from), name,
  	           SV_GuidUsable(guid) ? guid : "-", index + 1);
  	SV_AdminLogFile("[ban] rejected %s name '%s' guid %s (ban #%i: %s)", NET_AdrToString(from), name,
-@@ -691,6 +701,67 @@ static const char *SV_AdminReason(int start)
+@@ -691,6 +707,67 @@ static const char *SV_AdminReason(int start)
  	return Cmd_ArgsFrom(start);
  }
  
@@ -565,7 +572,7 @@ index f19b7c5..eacaf58 100644
  static void SV_AdminKick(client_t *cl, const char *reason, const char *verb)
  {
  	char name[MAX_NAME_LENGTH];
-@@ -757,10 +828,11 @@ static void SV_Ban_f(void)
+@@ -757,10 +834,11 @@ static void SV_Ban_f(void)
  	const char   *reason;
  	const char   *ip = "";
  	netadrtype_t type;
@@ -578,7 +585,7 @@ index f19b7c5..eacaf58 100644
  		return;
  	}
  	cl = SV_AdminFindClient(Cmd_Argv(1));
-@@ -778,16 +850,18 @@ static void SV_Ban_f(void)
+@@ -778,16 +856,18 @@ static void SV_Ban_f(void)
  	{
  		ip = NET_AdrToStringNoPort(&cl->netchan.remoteAddress);
  	}
@@ -600,7 +607,7 @@ index f19b7c5..eacaf58 100644
  	SV_AdminKick(cl, reason, "banned");
  }
  
-@@ -812,11 +886,11 @@ static void SV_BanIp_f(void)
+@@ -812,11 +892,11 @@ static void SV_BanIp_f(void)
  {
  	const char   *ip = Cmd_Argv(1);
  	svAdminBan_t *b;
@@ -614,7 +621,7 @@ index f19b7c5..eacaf58 100644
  		return;
  	}
  	for (i = 0; ip[i]; i++)
-@@ -834,32 +908,46 @@ static void SV_BanIp_f(void)
+@@ -834,32 +914,46 @@ static void SV_BanIp_f(void)
  		Com_Printf("Refusing to ban every address.\n");
  		return;
  	}
@@ -666,7 +673,7 @@ index f19b7c5..eacaf58 100644
  	SV_KickMatchingNewBan();
  }
  
-@@ -1629,9 +1717,9 @@ void SV_AdminInit(void)
+@@ -1629,9 +1723,9 @@ void SV_AdminInit(void)
  
  	Cmd_AddCommand("kick", SV_Kick_f, "Kicks a player: kick <slot|name> [reason]");
  	Cmd_AddCommand("clientkick", SV_ClientKick_f, "Kicks a player by slot: clientkick <slot> [reason]");
