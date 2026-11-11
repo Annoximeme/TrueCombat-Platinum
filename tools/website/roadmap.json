@@ -334,32 +334,42 @@
   {
    "en": "Gunplay pass: hits at range, aim point, spread and damage",
    "nl": "Gunplaycontrole: treffers op afstand, richtpunt, spreiding en schade",
-   "version": null
+   "version": "0.35"
   },
   {
-   "en": "Movement and sound pass: jump distance, crouch-walking, footsteps and weapon sounds",
-   "nl": "Beweging en geluid rechtgezet: springafstand, gehurkt lopen, voetstappen en wapengeluiden",
-   "version": null
+   "en": "Rebuilt movement core: original jump, crouch, ladder and footstep behaviour",
+   "nl": "Herbouwde bewegingskern: originele sprongen, hurken, ladders en voetstappen",
+   "version": "0.35"
   },
   {
    "en": "Map audit: invisible walls and textures on every map",
    "nl": "Controle van alle maps: onzichtbare muren en textures",
-   "version": null
+   "version": "0.36"
   },
   {
-   "en": "Settings in the in-game pause menu and a reworked warm-up",
-   "nl": "Instellingen in het pauzemenu en een vernieuwde opwarmfase",
-   "version": null
+   "en": "Options page and server browser in the in-game pause menu",
+   "nl": "Pagina Opties en serverbrowser in het pauzemenu",
+   "version": "0.35"
   },
   {
-   "en": "Bots that aim down sights, lean and vary their routes",
-   "nl": "Bots die via het vizier richten, leunen en andere routes nemen",
-   "version": null
+   "en": "Chat input, team memory between maps and coloured names",
+   "nl": "Chatinvoer, je team onthouden tussen maps en gekleurde namen",
+   "version": "0.35"
   },
   {
-   "en": "In-game bug reports",
-   "nl": "Bugmeldingen in het spel",
-   "version": null
+   "en": "Grenade cooking and working suppressors",
+   "nl": "Granaten vasthouden en werkende geluiddempers",
+   "version": "0.35"
+  },
+  {
+   "en": "Bots that read the map: corners, cover, lanes and aiming down sights",
+   "nl": "Bots die de map lezen: hoeken, dekking, banen en richten via het vizier",
+   "version": "0.36"
+  },
+  {
+   "en": "In-game bug reporter on F12",
+   "nl": "Bugmelder in het spel onder F12",
+   "version": "0.35"
   },
   {
    "en": "Connection quality on the scoreboard and one-click join",
@@ -369,16 +379,51 @@
   {
    "en": "Location-aware pings",
    "nl": "Pings met locatie",
-   "version": null
+   "version": "0.35"
+  },
+  {
+   "en": "Match record on the official servers",
+   "nl": "Matchverslag op de officiële servers",
+   "version": "0.35"
+  },
+  {
+   "en": "Bots that adapt to the players on Unranked",
+   "nl": "Bots die zich aanpassen aan de spelers op Unranked",
+   "version": "0.35"
+  },
+  {
+   "en": "Busiest-times chart and player-count notifications",
+   "nl": "Grafiek met de drukste momenten en meldingen bij genoeg spelers",
+   "version": "0.35"
+  },
+  {
+   "en": "Reworked warm-up",
+   "nl": "Vernieuwde opwarmfase",
+   "version": "0.36"
   },
   {
    "en": "2D match replays, heatmaps and a post-match coach",
    "nl": "2D-replays van matches, heatmaps en een coach na de match",
+   "version": "0.36"
+  },
+  {
+   "en": "Weekly contracts and seasons",
+   "nl": "Wekelijkse contracten en seizoenen",
+   "version": "0.36"
+  },
+  {
+   "en": "Friends and parties",
+   "nl": "Vrienden en party's",
+   "version": "0.36"
+  },
+  {
+   "en": "Bots with honest senses, personalities and team plans",
+   "nl": "Bots met eerlijke zintuigen, persoonlijkheden en teamplannen",
    "version": null
   },
   {
-   "en": "Friends, parties, weekly contracts and seasons",
-   "nl": "Vrienden, party's, wekelijkse contracten en seizoenen",
+   "en": "Bots that learn routes and aim from real matches",
+   "nl": "Bots die routes en richten leren uit echte matches",
    "version": null
   }
  ]
