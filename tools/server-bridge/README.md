@@ -136,7 +136,16 @@ The native qagame writes this format itself (fields below plus `id`, `cheats`, `
 
 `kills` counts enemy kills only, and team kills go in `teamKills`. `timePlayed` is in seconds.
 
-## `GET /leaderboard.json?period=all|30d&sort=rating|xp|kills|kd|headshots|wins&mode=&limit=` (`tcp-leaderboard/1`)
+## `GET /recap.json?days=7` (`tcp-recap/1`)
+
+Totals for the last 1 to 92 days (matches, time played, players, new players, kills, headshots), the three
+busiest maps, and the standout players: `mostKills`, `mostWins`, `mostXp`, `mostObjectives`, `biggestClimb`
+(rating gained), `bestKd` (3 matches or more) and `mostActive`.
+
+## `GET /leaderboard.json?period=all|30d|7d&sort=rating|xp|kills|kd|headshots|wins|season|gain&mode=&limit=&since=&until=` (`tcp-leaderboard/1`)
+
+`since` and `until` (ISO times) select any window, for example a season; `sort=season` ranks by XP earned inside
+the window (`periodXp`) and `sort=gain` by rating won inside it (`ratingGain`).
 
 Totals per player over the period, for players with at least `--min-matches` (default 3) matches. Each
 player also has `rating`, `kd`, `objectives`, `position` and `rank` (`level`, `title`, `short`, `xp`, `xpThis`,
