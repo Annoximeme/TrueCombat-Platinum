@@ -1672,3 +1672,4 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
 /* nine links in the top bar: the Support button drops to its heart until the bar has room for the word */
 @media (min-width: 1240px) and (max-width: 1559px) { .nav-support span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .nav-support { padding: 0 12px; } }
 .hero-log { justify-self: start; }
+.hero-cta .hero-log { align-self: center; }
