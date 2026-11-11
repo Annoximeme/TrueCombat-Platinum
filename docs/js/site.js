@@ -21,7 +21,7 @@ var TCP_API = 'https://api.truecombat.eu';
       noServersOffline: 'The live server list is unreachable right now. The Servers tab in the launcher shows the same list.',
       moreNotes: 'Show the full notes', topAll: 'All time', top30: 'Last 30 days', cmpAdd: 'Compare', cmpOn: 'Comparing', cmpTitle: 'Compare weapons', cmpHint: 'Pick up to three weapons to compare.', cmpClear: 'Clear', cmpDmg: 'Damage per hit', cmpRpm: 'Fire rate', cmpDps: 'Damage per second', cmpMag: 'Magazine', cmpEmpty: 'Time to empty', cmpReload: 'Full reload', cmpPellets: 'pellets', cmpNote: 'Body hits before range and armour. Shotguns count every pellet.', lessNotes: 'Show less', liveNow: '{p} playing on {s} servers right now', liveIdle: '{s} servers online right now',
       noServers: 'Nobody is hosting a public server right now. Host one from the launcher with List publicly switched on.',
-      players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', need1: 'Needs 1 player', needN: 'Needs {n} players', needTip: 'A player left mid-match. Fill in now and you cannot lose rating this match.', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied',
+      players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', need1: 'Needs 1 player', needN: 'Needs {n} players', needTip: 'A player left mid-match. Fill in now and you cannot lose rating this match.', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied', verified: 'Verified', verifiedTip: 'Checked by the TrueCombat: Platinum team', joinBtn: 'Join',
       updated: 'Updated', join: 'In the launcher: Servers → Join by address',
       lbEmpty: 'No ranked matches yet. Leaderboards fill in once public servers report their matches.',
       lbOffline: 'The leaderboards are temporarily unavailable. Please check back in a few minutes.',
@@ -44,7 +44,7 @@ var TCP_API = 'https://api.truecombat.eu';
       noServersOffline: 'De live serverlijst is nu niet bereikbaar. Het tabblad Servers in de launcher toont dezelfde lijst.',
       moreNotes: 'Toon alle notities', topAll: 'Altijd', top30: 'Laatste 30 dagen', cmpAdd: 'Vergelijk', cmpOn: 'Vergeleken', cmpTitle: 'Wapens vergelijken', cmpHint: 'Kies tot drie wapens om te vergelijken.', cmpClear: 'Wissen', cmpDmg: 'Schade per treffer', cmpRpm: 'Vuursnelheid', cmpDps: 'Schade per seconde', cmpMag: 'Magazijn', cmpEmpty: 'Tijd tot leeg', cmpReload: 'Volledig herladen', cmpPellets: 'hagels', cmpNote: 'Rompschoten, voor afstand en bepantsering. Bij hagelgeweren telt elke hagel mee.', lessNotes: 'Minder tonen', liveNow: '{p} spelers op {s} servers op dit moment', liveIdle: '{s} servers nu online',
       noServers: 'Er host nu niemand een publieke server. Host er zelf een vanuit de launcher met Openbaar tonen aan.',
-      players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', need1: 'Zoekt 1 speler', needN: 'Zoekt {n} spelers', needTip: 'Er is iemand vertrokken tijdens het potje. Val nu in en je kunt deze match geen rating verliezen.', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd',
+      players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', need1: 'Zoekt 1 speler', needN: 'Zoekt {n} spelers', needTip: 'Er is iemand vertrokken tijdens het potje. Val nu in en je kunt deze match geen rating verliezen.', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd', verified: 'Geverifieerd', verifiedTip: 'Gecontroleerd door het TrueCombat: Platinum-team', joinBtn: 'Joinen',
       updated: 'Bijgewerkt', join: 'In de launcher: Servers → Verbinden met adres',
       lbEmpty: 'Nog geen gerankte potjes. De ranglijsten vullen zich zodra publieke servers hun potjes doorgeven.',
       lbOffline: 'De ranglijsten zijn tijdelijk niet beschikbaar. Probeer het over een paar minuten opnieuw.',
@@ -271,7 +271,9 @@ var TCP_API = 'https://api.truecombat.eu';
         (s.ranked === true ? ' <span class="srv-tag ranked" title="' + L.rankedTip + '">' + L.ranked + '</span>' :
          s.ranked === false ? ' <span class="srv-tag" title="' + L.unrankedTip + '">' + L.unranked + '</span>' : '') +
         (s.need > 0 ? ' <span class="srv-tag need" title="' + L.needTip + '">' + (s.need === 1 ? L.need1 : L.needN.replace('{n}', s.need)) + '</span>' : '') +
-        '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button></td>' +
+        (s.verified ? ' <span class="srv-tag verified" title="' + L.verifiedTip + '">' + L.verified + '</span>' : '') +
+        '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button>' +
+        ' <a class="srv-join" href="' + (lang === 'nl' ? '../' : '') + 'join.html#' + esc(s.address) + '">' + L.joinBtn + '</a></td>' +
         '<td>' + mapLabel(s.map) + '</td><td>' + (s.players || 0) + ' / ' + (s.maxPlayers || '?') + (s.bots ? ' <span class="srv-bots">+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</span>' : '') + '</td><td>' + esc(s.mode || '') + '</td></tr>';
     }).join('');
     renderBoards(list);
