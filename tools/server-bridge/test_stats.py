@@ -150,6 +150,18 @@ check("filler flag survives sanitize", [p for p in tcp_stats.sanitize(fr, truste
 fr["players"][3]["filler"] = "yes"
 check("filler must be a real boolean", [p for p in tcp_stats.sanitize(fr, trusted=True)["players"] if p["name"] == "Dax"][0]["filler"] is False)
 
+# Weekly recap and season windows (used by the Discord bot).
+rc = get("/recap.json?days=7")
+check("recap totals", rc["schema"] == "tcp-recap/1" and rc["matches"] >= 1 and rc["players"] >= 2
+      and rc["maps"] and rc["mostKills"]["name"] and "biggestClimb" in rc, rc)
+wide = get("/leaderboard.json?since=2000-01-01T00:00:00Z&until=2100-01-01T00:00:00Z&sort=season")
+none = get("/leaderboard.json?since=2100-01-01T00:00:00Z")
+xs = [p["periodXp"] for p in wide["players"]]
+check("season window and season sort", wide["players"] and xs == sorted(xs, reverse=True)
+      and all("ratingGain" in p for p in wide["players"]) and none["players"] == [] and none["matches"] == 0, (xs, none))
+check("7 day board and bad since are safe", get("/leaderboard.json?period=7d")["period"] == "7d"
+      and get("/leaderboard.json?since=garbage")["period"] == "all")
+
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))
 sys.exit(1 if failed else 0)
