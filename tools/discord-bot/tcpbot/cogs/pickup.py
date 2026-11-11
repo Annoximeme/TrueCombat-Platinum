@@ -7,8 +7,7 @@ sets a fresh password and competitive match mode over rcon (127.0.0.1 only),
 and sends each player their team and join details. When the server empties
 after the match it posts the result and returns the server to the pool.
 
-Design: /mnt/project-files/online-play/PICKUP-QUEUE.md. Match mode commands:
-competitive/MATCH-MODE.md (match on, match name r|b, ...).
+Match mode commands: match on, match name r|b, match status (see the competitive match mode docs).
 """
 
 from __future__ import annotations
