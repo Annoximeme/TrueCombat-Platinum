@@ -28,6 +28,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+          # full history without file contents, so the sitemap can date each page by its last change
+          fetch-depth: 0
+          filter: blob:none
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -48,3 +51,9 @@ jobs:
           git add docs
           git commit -m "Website: update patch notes and downloads"
           git push origin HEAD:main
+          echo "changed=1" >> "$GITHUB_ENV"
+      - name: Tell search engines what changed
+        if: env.changed == '1'
+        run: |
+          sleep 180   # the web server picks up main every two minutes
+          python tools/website/indexnow.py

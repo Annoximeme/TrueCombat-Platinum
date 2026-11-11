@@ -28,7 +28,13 @@ PAGES = {
     "press": ("map-snow.webp", "Press kit", "Logos, unedited screenshots and a fact sheet"),
     "studio": ("map-village.webp", "Team Terminus", "The studio behind TrueCombat: Platinum"),
     "support": ("map-snow.webp", "Support", "Free to play, no store, no pay-to-win"),
+    "download": ("map-northport.webp", "Download", "Free for Windows 10 and 11"),
+    "faq": ("media-deployment.webp", "Questions", "Install, online play, graphics and the project"),
+    "truecombat-elite": ("map-delta.webp", "TC:E today", "TrueCombat: Elite, playable on Windows 10 and 11"),
 }
+# one per map page (map-<name>.html)
+PAGES.update({"map-" + m: ("map-%s.webp" % m, m.capitalize(), "Layout, bomb sites and location names")
+              for m in ("delta", "northport", "railhouse", "snow", "stadtrand", "village")})
 
 
 def font(name, size):
