@@ -1,0 +1,733 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 83f4f16..1560d23 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -705,6 +705,7 @@ static void obituary(int victim,int killer,int weapon,int local,int time){
+     addBigPopup(line,hudDeath,time);
+ }
+ #include "tcp_staff_cg.h"
++#include "tcp_netq_cg.h" /* connection icons and cg_netGraph */
+ /* FUN_30059640/FUN_300596b0/FUN_3005a0b0/FUN_3005a960: TC:E scoreboard. */
+ static void hudBorder(float x,float y,float w,float h){
+     static const float black[4]={0,0,0,1};
+@@ -787,7 +788,7 @@ static void drawTeamPanel(float x,int team,const char *title,const hudScore_t *s
+         snprintf(line,sizeof(line),"%4.2f",(double)(s->damage*.01f));hudText(x+columns[5],y,.2f,hudWhite,line,0);
+         /* TCP_QOL: assists (tcp_as) in the column TC:E used for the skill level (AA). */
+         snprintf(line,sizeof(line),"%2i",qolAssistCount(s->slot));hudText(x+columns[6],y,.2f,hudWhite,line,0);
+-        snprintf(line,sizeof(line),"%4i",s->ping);hudText(x+columns[7],y,.2f,hudWhite,line,0);
++        snprintf(line,sizeof(line),"%4i",s->ping);hudText(x+columns[7],y,.2f,hudWhite,line,0);nqDrawBars(x+columns[7]+22,y,s->slot,hudNow);
+         y+=16;
+     }
+ }
+@@ -888,7 +889,7 @@ static void init(int serverNum,int reliable){
+     memset(modelLife,0,sizeof(modelLife));
+     SystemCall(CG_CVAR_REGISTER,&errorDecay,"cg_errorDecay","100",CVAR_ARCHIVE);
+     SystemCall(CG_CVAR_REGISTER,&showMiss,"cg_showmiss","0",0);lagClientInit();
+-    SystemCall(CG_CVAR_REGISTER,&hudAspect,"cg_hudAspect","2.4",CVAR_ARCHIVE);
++    SystemCall(CG_CVAR_REGISTER,&hudAspect,"cg_hudAspect","2.4",CVAR_ARCHIVE);nqInit();
+     SystemCall(CG_GETGAMESTATE,&gs);SystemCall(CG_GETGLCONFIG,&gl);
+     appliedMoveSpeed=0;refreshMovementSettings();
+     if(strcmp(config(CS_GAME_VERSION),TCP_NATIVE_VERSION)){SystemCall(CG_ERROR,"Native sandbox requires its matching server; original TC:E wire compatibility is not supported");return;}
+@@ -1016,6 +1017,7 @@ static void serverCommands(int last){
+             obituary(values[0],values[1],values[2],snap.ps.clientNum,hudNow);
+         }
+         else if(!strcmp(cmd,"tcp_sc"))parseScores();
++        else if(!strcmp(cmd,"tcp_nq"))nqServerCommand(hudNow);
+         else if(!strcmp(cmd,"tcp_vchat")&&SystemCall(CG_ARGC)==5)vcServerCommand(hudNow);
+         else if(!strncmp(cmd,"tcp_mapvote",11))mapVoteServerCommand(cmd);
+         else if(!strcmp(cmd,"tcp_match"))matchCgServerCommand();
+@@ -1304,10 +1306,12 @@ static void frame(int time,int demo){
+     drawCompass(hp,phase==TCP_ROUND_LIVE?captureMarker:NULL);
+     drawObjectivePanel(hp,objective[0]?objective:NULL);
+     qolHud(&p); /* TCP_QOL */
++    nqDrawGraph(&p,time);
+     }else{
+         if(time-hudScoreRequest>2000){hudScoreRequest=time;SystemCall(CG_SENDCLIENTCOMMAND,"score");}
+         drawScoreboard(&p);
+     }
++    nqFrame(&p,time);
+     matchCgDraw(&p,time);
+     qolOverlay(); /* TCP_QOL: vote panel, quick menus */
+     mapVoteDraw(time);
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index ceac530..5f1f1cd 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -1555,6 +1555,7 @@ static void followHud(int n){
+         (q->eFlags&EF_PRONE)?2:(q->pm_flags&PMF_DUCKED)?1:0,(w>=0&&w<MAX_WEAPONS)?q->ammoclip[w]:0,q->stats[STAT_HEALTH]);
+     if(strcmp(s,c->fhud)||levelTime-c->fhudAt>1000){snprintf(c->fhud,sizeof(c->fhud),"%s",s);c->fhudAt=levelTime;SystemCall(G_SEND_SERVER_COMMAND,n,s);}
+ }
++static int TCP_NetqTeamChoice(int n,int want);
+ static void deployCommand(int n){
+     client_t *c=&clients[n];char a[8],v[4][16];SystemCall(G_ARGV,1,a,sizeof(a));
+     for(int i=0;i<4;i++)SystemCall(G_ARGV,2+i,v[i],sizeof(v[i]));
+@@ -1566,6 +1567,7 @@ static void deployCommand(int n){
+     int want=a[0]=='b'?TCP_TEAM_BLUE:a[0]=='r'?TCP_TEAM_RED:0,identity=atoi(v[0]),cls,level=(int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"tcp_skill_level");
+     if(!want||identity<0||identity>5){SystemCall(G_SEND_SERVER_COMMAND,n,"print \"Usage: team <r|b> <identity 0-5> <primary> <secondary> <special>\n\"");return;}
+     cls=identity/2;level=level<1?1:level>3?3:level;
++    want=TCP_NetqTeamChoice(n,want);
+     const int leaving=c->spectator;if(leaving){c->spectator=0;c->team=TCP_TEAM_NONE;}
+     int team=teamMode?want:0;
+     if(teamMode&&want!=c->team&&TCP_MatchTeamLocked(n)){team=c->team;want=c->team;}
+@@ -1599,6 +1601,7 @@ static void status(int who){
+ #include "tcp_backfill.h"
+ #include "tcp_afk.h"
+ #include "tcp_report.h"
++#include "tcp_netq.h"
+ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_t a3,intptr_t a4,intptr_t a5,intptr_t a6,intptr_t a7,intptr_t a8,intptr_t a9,intptr_t a10,intptr_t a11){
+     int n=(int)a0;
+     if(command>=GAME_CLIENT_CONNECT&&command<=GAME_CLIENT_THINK&&(n<0||n>=maxClients))return command==GAME_CLIENT_CONNECT?(intptr_t)"Native sandbox slot out of range":0;
+@@ -1634,12 +1637,13 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+         TCP_MatchInit(mode);
+         SystemCall(G_CVAR_SET,"g_gametype","0");SystemCall(G_CVAR_SET,"g_gamestate","0");SystemCall(G_SET_CONFIGSTRING,CS_GAME_VERSION,TCP_NATIVE_VERSION);
+         if(SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"tcp_native_host_control")){wchar_t eventName[96];swprintf(eventName,96,L"Local\\TCPNativeSandboxStop-%lu",GetCurrentProcessId());hostStop=CreateEventW(NULL,TRUE,FALSE,eventName);}
+-        numEnts=MAX_CLIENTS;locate();parseMap();targetBase=numEnts;numEnts+=maxClients+captureMode;flagBase=numEnts;numEnts+=2;bombBase=numEnts++;smokeBase=numEnts;numEnts+=TCP_MAX_SMOKES;proxyEnt=numEnts++;impactBase=numEnts;numEnts+=TCP_IMPACT_SLOTS;memset(impactUntil,0,sizeof(impactUntil));memset(smokes,0,sizeof(smokes));if(numEnts>=ENTITYNUM_WORLD){SystemCall(G_ERROR,"Native combat target capacity exceeded");return 0;}locate();setupCapture(targetBase+maxClients);TCP_StatsInit(mode);TCP_BalanceMapStart();TCP_BackfillMapStart();botInit();SystemCall(G_DEMOSUPPORT,"");/* server demos: sv_autoDemo */TCP_CapturePlace(targetBase+maxClients);status(-1);return 0;}
++        numEnts=MAX_CLIENTS;locate();parseMap();targetBase=numEnts;numEnts+=maxClients+captureMode;flagBase=numEnts;numEnts+=2;bombBase=numEnts++;smokeBase=numEnts;numEnts+=TCP_MAX_SMOKES;proxyEnt=numEnts++;impactBase=numEnts;numEnts+=TCP_IMPACT_SLOTS;memset(impactUntil,0,sizeof(impactUntil));memset(smokes,0,sizeof(smokes));if(numEnts>=ENTITYNUM_WORLD){SystemCall(G_ERROR,"Native combat target capacity exceeded");return 0;}locate();setupCapture(targetBase+maxClients);TCP_StatsInit(mode);TCP_NetqInit();TCP_NetqMapStart();TCP_BalanceMapStart();TCP_BackfillMapStart();botInit();SystemCall(G_DEMOSUPPORT,"");/* server demos: sv_autoDemo */TCP_CapturePlace(targetBase+maxClients);status(-1);return 0;}
+     case GAME_CLIENT_CONNECT:{char values[MAX_INFO_STRING],version[64];SystemCall(G_GET_USERINFO,n,values,sizeof(values));TCP_InfoValue(values,"tcp_native_protocol",version,sizeof(version));
+         if(strcmp(version,TCP_NATIVE_VERSION))return (intptr_t)"Your Platinum build does not match this server. Use its matching Platinum sandbox package; older native builds and RC8 cannot join.";
+-        memset(&clients[n],0,sizeof(clients[n]));lagClear(n);clients[n].connected=1;TCP_StaffClear(n);sessionRead(n,(int)a1);joins++;if(!++connectionSerial)++connectionSerial;connectionIds[n]=connectionSerial;TCP_StatsConnect(n,(int)a2);userinfo(n);botConnect(n,(int)a2);if(!a2)botLastFill=levelTime-1000;return 0;}
++        memset(&clients[n],0,sizeof(clients[n]));lagClear(n);clients[n].connected=1;TCP_NetqClear(n);TCP_StaffClear(n);sessionRead(n,(int)a1);joins++;if(!++connectionSerial)++connectionSerial;connectionIds[n]=connectionSerial;TCP_StatsConnect(n,(int)a2);userinfo(n);botConnect(n,(int)a2);if(!a2)botLastFill=levelTime-1000;return 0;}
+     case GAME_CLIENT_BEGIN:
+         clients[n].begun=1;TCP_AfkReset(n);
++        {int keep=TCP_NetqBeginTeam(n);if(keep)sessionTeam[n]=keep;}
+         if (teamMode && sessionTeam[n]) {
+             clients[n].team = sessionTeam[n]; sessionTeam[n] = 0;
+             announceTeam(n);
+@@ -1656,7 +1660,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+         if(tdmMode&&roundPhase==TCP_ROUND_LIVE)clients[n].inRound=1;
+         TCP_StatsBind(n);spawn(n);TCP_MapVoteJoin(n);qolJoin(n);TCP_MatchJoin(n);SystemCall(G_SEND_SERVER_COMMAND,n,"print \"Welcome to TrueCombat: Platinum.\\n\"");return 0;
+     case GAME_CLIENT_USERINFO_CHANGED:userinfo(n);if(clients[n].begun)TCP_StatsBind(n);return 0;
+-    case GAME_CLIENT_DISCONNECT:TCP_BackfillLeave(n);casterSession[n]=0;qolDrop(n);TCP_StaffClear(n);TCP_MapVoteDrop(n);TCP_MatchDrop(n);TCP_StatsLeave(n);if(!bots[n].active)botLastFill=levelTime-1000;botDisconnect(n);if(ctfMode)dropFlags(n);if(bombMode)dropBomb(n);SystemCall(G_UNLINKENTITY,&ents[n]);if(targets[n].active)SystemCall(G_UNLINKENTITY,&ents[targetBase+n]);memset(&targets[n],0,sizeof(targets[n]));memset(&clients[n],0,sizeof(clients[n]));lagClear(n);if(lagTest.on&&(lagTest.target==n||lagTest.shooter==n))lagTest.on=0;SystemCall(G_SET_CONFIGSTRING,CS_PLAYERS+n,"");disconnects++;return 0;
++    case GAME_CLIENT_DISCONNECT:TCP_NetqLeave(n);TCP_BackfillLeave(n);casterSession[n]=0;qolDrop(n);TCP_StaffClear(n);TCP_MapVoteDrop(n);TCP_MatchDrop(n);TCP_StatsLeave(n);if(!bots[n].active)botLastFill=levelTime-1000;botDisconnect(n);if(ctfMode)dropFlags(n);if(bombMode)dropBomb(n);SystemCall(G_UNLINKENTITY,&ents[n]);if(targets[n].active)SystemCall(G_UNLINKENTITY,&ents[targetBase+n]);memset(&targets[n],0,sizeof(targets[n]));memset(&clients[n],0,sizeof(clients[n]));lagClear(n);if(lagTest.on&&(lagTest.target==n||lagTest.shooter==n))lagTest.on=0;SystemCall(G_SET_CONFIGSTRING,CS_PLAYERS+n,"");disconnects++;return 0;
+     case GAME_CLIENT_COMMAND:{char cmd[64];SystemCall(G_ARGV,0,cmd,sizeof(cmd));if(TCP_StaffCommand(n,cmd))return 0;if(qolClientCommand(n,cmd))return 0;if(!strcmp(cmd,"mapvote")){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));TCP_MapVoteCast(n,arg);return 0;}if(TCP_MatchClientCommand(n,cmd))return 0;if(!strcmp(cmd,"score")){sendScores(n);return 0;}if(botClientCommand(n,cmd))return 0;if(voCommand(n,cmd))return 0;if(!strcmp(cmd,"say")||!strcmp(cmd,"say_team")){if(clients[n].begun)say(n,cmd[3]=='_');return 0;}if(!roundPhase&&!strcmp(cmd,"tcp_reset")&&clients[n].begun&&clients[n].health.health>0)spawn(n);else if(!strcmp(cmd,"tcp_reload")&&canFight(&clients[n])&&clients[n].begun&&clients[n].health.health>0){int started=TCP_GunReload(GUN(&clients[n]),levelTime);char msg[160];snprintf(msg,sizeof(msg),"TCP_NATIVE_RELOAD slot=%d started=%d now=%d end=%d\n",n,started,levelTime,GUN(&clients[n])->reload_end);print(msg);}else if(!strcmp(cmd,"tcp_select")&&clients[n].begun){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));int w=atoi(arg);int was=clients[n].selected;if(w==TCP_DYNAMITE_ID&&bombMode&&bombState==0&&bombCarrier==n){clients[n].selected=w;clients[n].attackHeld=1;clients[n].aim.aimed=0;}else if(w==TCP_KNIFE_WEAPON){clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;clients[n].aim.aimed=0;}else if((w==TCP_SMOKE_WEAPON||w==TCP_FRAG_WEAPON||w==TCP_STUN_WEAPON)&&*grenadeCount(&clients[n],w)>0){clients[n].aim.aimed=0;clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;}else selectWeapon(n,w);
+             /* PM_BeginWeaponChange (cgame 0x30008e90) +250 ms drop, PM_FinishWeaponChange (0x30012bd0) +250 ms raise. */
+             if(clients[n].selected!=was){clients[n].switchUntil=levelTime+500;char m[96];snprintf(m,sizeof(m),"TCP_NATIVE_SWITCH slot=%d from=%d to=%d ready=%d\n",n,was,clients[n].selected,clients[n].switchUntil);print(m);}
+@@ -1670,7 +1674,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+         /* cg_toggleCrouch preference rides in the stance stat so prediction matches. */
+         if(c->toggleCrouch)c->ps.stats[TCP_STAT_STANCE]|=TCP_STANCE_TOGGLE_PREF;else c->ps.stats[TCP_STAT_STANCE]&=~(TCP_STANCE_TOGGLE_PREF|TCP_STANCE_TOGGLED);
+         c->ps.stats[TCP_STAT_PRIMARY_CLASS]=TCP_WeaponClass(c->guns[0].weapon);
+-        TCP_Move(&c->ps,&cmd,trace);c->moves++;lagCmdTime=c->ps.commandTime;lagCmdDelay=cmd.identClient;
++        TCP_Move(&c->ps,&cmd,trace);c->moves++;lagCmdTime=c->ps.commandTime;lagCmdDelay=cmd.identClient;TCP_NetqCmd(n);
+         if(TCP_MoveFallDelta>0)fallDamage(n,TCP_MoveFallDelta);
+         if(c->health.health>0&&GUN(c)->reload_end&&lagCmdTime>=GUN(c)->reload_end)TCP_GunAdvance(GUN(c),lagCmdTime);
+         {int msec=c->ps.commandTime-before;int ground=c->ps.groundEntityNum!=ENTITYNUM_NONE;
+@@ -1705,7 +1709,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+                     if(GUN(c)->next_fire<lagCmdTime+300)GUN(c)->next_fire=lagCmdTime+300;}
+                 if(reload&&!c->reloadHeld)TCP_GunReload(GUN(c),lagCmdTime);if(TCP_GunTrigger(GUN(c),attack))fire(n);}
+             c->reloadHeld=reload;c->attackHeld=attack;c->zoomHeld=zoom;}lagLogCmd(n,before,&cmd);syncStats(n);linkPlayer(n);return 0;}
+-    case GAME_RUN_FRAME:levelTime=(int)a0;frames++;TCP_StatsFrame();impactExpire();TCP_MatchFrame();if(!matchHold)tickRound();TCP_MapVoteTick();qolVoteFrame();qolPracticeFrame();if(!matchHold)tickSmokes();tickDoors();tickMapMovers();for(int i=0;i<maxClients;i++){client_t *c=&clients[i];if(c->begun){if(c->respawnAt&&levelTime>=c->respawnAt)spawn(i);else{if(c->health.health>0)TCP_GunAdvance(GUN(c),levelTime-500);syncStats(i);}worldEffects(i);followHud(i);if(c->spectator){c->ps.stats[STAT_HEALTH]=0;c->ps.pm_type=PM_SPECTATOR;}}if(targets[i].resetAt&&levelTime>=targets[i].resetAt)targetReset(i);}lagTestFrame();lagRecord();botFrame();TCP_BalanceLive();TCP_BackfillFrame();TCP_AfkFrame();if(hostStop&&WaitForSingleObject(hostStop,0)==WAIT_OBJECT_0){CloseHandle(hostStop);hostStop=NULL;SystemCall(G_SEND_CONSOLE_COMMAND,EXEC_APPEND,"quit\n");}return 0;
++    case GAME_RUN_FRAME:levelTime=(int)a0;frames++;TCP_StatsFrame();impactExpire();TCP_MatchFrame();if(!matchHold)tickRound();TCP_MapVoteTick();qolVoteFrame();qolPracticeFrame();if(!matchHold)tickSmokes();tickDoors();tickMapMovers();for(int i=0;i<maxClients;i++){client_t *c=&clients[i];if(c->begun){if(c->respawnAt&&levelTime>=c->respawnAt)spawn(i);else{if(c->health.health>0)TCP_GunAdvance(GUN(c),levelTime-500);syncStats(i);}worldEffects(i);followHud(i);if(c->spectator){c->ps.stats[STAT_HEALTH]=0;c->ps.pm_type=PM_SPECTATOR;}}if(targets[i].resetAt&&levelTime>=targets[i].resetAt)targetReset(i);}lagTestFrame();lagRecord();botFrame();TCP_BalanceLive();TCP_BackfillFrame();TCP_AfkFrame();TCP_NetqFrame();if(hostStop&&WaitForSingleObject(hostStop,0)==WAIT_OBJECT_0){CloseHandle(hostStop);hostStop=NULL;SystemCall(G_SEND_CONSOLE_COMMAND,EXEC_APPEND,"quit\n");}return 0;
+     case GAME_CONSOLE_COMMAND:{char cmd[64];SystemCall(G_ARGV,0,cmd,sizeof(cmd));if(TCP_MatchConsole(cmd))return 1;if(TCP_MapVoteConsole(cmd))return 1;if(!strcmp(cmd,"tcp_status")){status(-1);return 1;}if(!strcmp(cmd,"tcp_lagtest")&&SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"sv_cheats")){lagTestCommand();return 1;}if(botCommand(cmd,-1))return 1;if(!strcmp(cmd,"tcp_place")&&SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"sv_cheats")){char a[16],w[16];SystemCall(G_ARGV,1,a,sizeof(a));SystemCall(G_ARGV,2,w,sizeof(w));int v=atoi(a);
+             /* tcp_place <slot> <redflag|blueflag|redzone|bluezone>: move a player for automated checks. */
+             if(v>=0&&v<maxClients&&clients[v].begun){vec3_t at={0,0,0};int ok=0;
+diff --git a/game_src/native/tcp_lagcomp.h b/game_src/native/tcp_lagcomp.h
+index 4cd2334..520379c 100644
+--- a/game_src/native/tcp_lagcomp.h
++++ b/game_src/native/tcp_lagcomp.h
+@@ -82,13 +82,15 @@ static void lagReapply(int n){
+ }
+ static void linkPlayer(int n);
+ static void syncStats(int n);
++static void TCP_NetqRewind(int shooter,int rewindMs,int clamped);
+ /* Rewind everyone but the shooter. Returns the rewind time used (or 0 when off). */
+ static int lagBegin(int shooter){
+     memset(lagActive,0,sizeof(lagActive));lagRewinding=0;
+     if(!lagCvar("g_antilag"))return levelTime;
+     int maxMs=lagCvar("g_antilagMaxMs");if(maxMs<0)maxMs=0;if(maxMs>1000)maxMs=1000;
+-    int t=lagCmdTime-(lagCmdDelay<0?0:lagCmdDelay);
+-    if(t>levelTime)t=levelTime;if(t<levelTime-maxMs)t=levelTime-maxMs;
++    int t=lagCmdTime-(lagCmdDelay<0?0:lagCmdDelay),clamped=0;
++    if(t>levelTime)t=levelTime;if(t<levelTime-maxMs){t=levelTime-maxMs;clamped=1;}
++    TCP_NetqRewind(shooter,levelTime-t,clamped);
+     lagRewinding=1;
+     for(int i=0;i<maxClients;i++){
+         if(i==shooter||!clients[i].begun||clients[i].health.health<=0)continue;
+diff --git a/game_src/native/tcp_netq.h b/game_src/native/tcp_netq.h
+new file mode 100644
+index 0000000..4300e9b
+--- /dev/null
++++ b/game_src/native/tcp_netq.h
+@@ -0,0 +1,180 @@
++/* GPL-3.0-or-later. Online play round 3 (thread "Build next online play round"). Included by
++ * tcp_game.c after tcp_report.h.
++ *
++ * Connection quality. Once a second every human's packets received / lost (engine trap
++ * trap_TcpNetStats, absent on older engines: then loss reads 0), ping and ping jitter are
++ * sampled. Each player gets a grade (0 good, 1 fair, 2 poor, 3 bad) that is broadcast every
++ * 2 s as  tcp_nq <count> {slot grade loss_x10 jitter ping}  for the scoreboard icons and the
++ * net graph (cg_netGraph). The per-map averages, the lag compensation rewind (average, how
++ * often it hit the g_antilagMaxMs cap) and how many times a player left go into the match
++ * report (tcp-match/1 "net" object, "leaves").
++ *
++ * Fair play. g_maxPing (0 = off) with g_maxPingTime seconds of grace (default 20): a player
++ * over the limit is warned at half time and then moved to spectator (g_maxPingAction 0) or
++ * kicked (1). Players who drop and come back within g_reconnectKeep seconds (default 300)
++ * get their team, kills, deaths and damage back.
++ *
++ * Pickup teams. With g_pugTeams 1 a player whose userinfo carries tcp_team r|b (set by the
++ * launcher from a Discord pickup join link) always plays on that team.
++ *
++ * Automatic checks. g_cheatFlags 1 (default) watches for statistics no human produces
++ * (headshot rate, accuracy with automatic fire, flick-to-head hits) and files a report
++ * (schema tcp-report/1, "auto": true) for the staff channel. These are leads for an admin
++ * with the server demo, never an automatic ban. */
++#ifndef TCP_NETQ_H
++#define TCP_NETQ_H
++typedef struct {
++    int trapOk,lastRecv,lastDrop,lastPing,grade;
++    float loss,jitter;                     /* smoothed: percent, ms */
++    int highSince,highWarned;
++    /* flick detection: recent command view angles */
++    int angT[8];float angP[8],angY[8];int angHead;
++    int snapHeads,flagged;
++} tcp_netq;
++static tcp_netq netq[TCP_MAX_PLAYERS];
++static int netqTrapId,netqNextSample,netqNextSend,netqNextCheck;
++typedef struct {char guid[33];int team,kills,deaths,suicides,teamKills,damageGiven,damageReceived,teamDamage,hits;unsigned shots;int at;} tcp_netq_keep;
++static tcp_netq_keep netqKeep[TCP_MAX_PLAYERS];
++
++static int netqCvar(const char *name,int def){char v[16]="";SystemCall(G_CVAR_VARIABLE_STRING_BUFFER,name,v,sizeof(v));return v[0]?atoi(v):def;}
++static void TCP_NetqInit(void){
++    memset(netq,0,sizeof(netq));netqNextSample=netqNextSend=netqNextCheck=0;
++    char v[16]="";netqTrapId=SystemCall(G_TRAP_GETVALUE,v,(int)sizeof(v),"trap_TcpNetStats")?atoi(v):0;
++    SystemCall(G_CVAR_REGISTER,NULL,"g_maxPing","0",CVAR_ARCHIVE);
++    SystemCall(G_CVAR_REGISTER,NULL,"g_maxPingTime","20",CVAR_ARCHIVE);
++    SystemCall(G_CVAR_REGISTER,NULL,"g_maxPingAction","0",CVAR_ARCHIVE);
++    SystemCall(G_CVAR_REGISTER,NULL,"g_reconnectKeep","300",CVAR_ARCHIVE);
++    SystemCall(G_CVAR_REGISTER,NULL,"g_pugTeams","0",0);
++    SystemCall(G_CVAR_REGISTER,NULL,"g_cheatFlags","1",CVAR_ARCHIVE);
++}
++static void TCP_NetqClear(int n){if(n>=0&&n<TCP_MAX_PLAYERS)memset(&netq[n],0,sizeof(netq[n]));}
++static int netqGrade(float loss,float jitter,int ping){
++    if(loss>5.f||jitter>40.f||ping>250)return 3;
++    if(loss>2.f||jitter>20.f||ping>150)return 2;
++    if(loss>.5f||jitter>10.f||ping>90)return 1;
++    return 0;
++}
++/* lagBegin: how far this shot was rewound and whether the cap cut it short. */
++static void TCP_NetqRewind(int shooter,int rewindMs,int clamped){
++    tcp_stats_player *p=TCP_StatsOf(shooter);if(!p)return;p->rewindSum+=rewindMs;p->rewindN++;if(clamped)p->rewindClamped++;
++}
++/* GAME_CLIENT_THINK: remember view angles for the flick check. */
++static void TCP_NetqCmd(int n){
++    tcp_netq *q=&netq[n];int h=q->angHead=(q->angHead+1)&7;q->angT[h]=levelTime;q->angP[h]=clients[n].ps.viewangles[0];q->angY[h]=clients[n].ps.viewangles[1];
++}
++static float netqAngleDiff(float a,float b){float d=fmodf(a-b+540.f,360.f)-180.f;return d<0?-d:d;}
++/* A head hit: did the view swing more than 25 degrees in the 40-120 ms before it? */
++static void TCP_NetqHeadHit(int n){
++    if(n<0||n>=TCP_MAX_PLAYERS||bots[n].active)return;tcp_netq *q=&netq[n];
++    for(int k=1;k<8;k++){int i=(q->angHead-k)&7;int age=levelTime-q->angT[i];if(!q->angT[i]||age>120)break;
++        if(age>=40){float d=netqAngleDiff(clients[n].ps.viewangles[1],q->angY[i])+netqAngleDiff(clients[n].ps.viewangles[0],q->angP[i]);if(d>25.f)q->snapHeads++;break;}}
++}
++static void netqSample(void){
++    for(int i=0;i<maxClients;i++){client_t *c=&clients[i];tcp_netq *q=&netq[i];
++        if(!c->begun||bots[i].active)continue;
++        int ping=c->ps.ping>999?999:c->ps.ping,out[4]={0,0,0,0};
++        if(netqTrapId&&SystemCall(netqTrapId,i,out)){
++            int dr=out[0]-q->lastRecv,dd=out[1]-q->lastDrop;
++            if(q->trapOk&&dr>=0&&dd>=0&&dr+dd>0){float l=100.f*dd/(float)(dr+dd);q->loss=q->loss*.8f+l*.2f;
++                tcp_stats_player *p=TCP_StatsOf(i);if(p){p->netRecv+=dr;p->netDrop+=dd;}}
++            q->lastRecv=out[0];q->lastDrop=out[1];q->trapOk=1;}
++        if(q->lastPing){float j=(float)abs(ping-q->lastPing);q->jitter=q->jitter*.8f+j*.2f;}
++        q->lastPing=ping?ping:q->lastPing;q->grade=netqGrade(q->loss,q->jitter,ping);
++        tcp_stats_player *p=TCP_StatsOf(i);
++        if(p&&ping>0){p->netPingSum+=ping;p->netPingN++;if(ping>p->netPingMax)p->netPingMax=ping;p->netJitterSum+=(int)(q->jitter*10.f);}
++        /* g_maxPing */
++        int limit=netqCvar("g_maxPing",0),grace=netqCvar("g_maxPingTime",20)*1000;if(grace<5000)grace=5000;
++        if(limit<=0||c->spectator||ping<=limit){q->highSince=0;q->highWarned=0;continue;}
++        if(!q->highSince)q->highSince=levelTime;
++        int over=levelTime-q->highSince;char m[160];
++        if(over>=grace){
++            snprintf(m,sizeof(m),"TCP_NATIVE_MAXPING slot=%d ping=%d limit=%d action=%d\n",i,ping,limit,netqCvar("g_maxPingAction",0));print(m);
++            if(netqCvar("g_maxPingAction",0)){snprintf(m,sizeof(m),"Your ping stayed above this server's limit of %d ms.",limit);SystemCall(G_DROP_CLIENT,i,m,0);}
++            else{snprintf(m,sizeof(m),"chat \"^3Your ping stayed above this server's limit of %d ms, so you were moved to spectator.\"",limit);
++                SystemCall(G_SEND_SERVER_COMMAND,i,m);specEnter(i,"ping");}
++            q->highSince=0;q->highWarned=0;}
++        else if(over>=grace/2&&!q->highWarned){q->highWarned=1;
++            snprintf(m,sizeof(m),"chat \"^3Your ping is above this server's limit of %d ms. Fix your connection or you will be moved to spectator.\"",limit);
++            SystemCall(G_SEND_SERVER_COMMAND,i,m);}
++    }
++}
++static void netqBroadcast(void){
++    char line[MAX_STRING_CHARS]="",entry[48];int count=0;
++    for(int i=0;i<maxClients;i++){const client_t *c=&clients[i];if(!c->connected||!c->begun||bots[i].active)continue;
++        const tcp_netq *q=&netq[i];snprintf(entry,sizeof(entry)," %d %d %d %d %d",i,q->grade,(int)(q->loss*10.f+.5f),(int)(q->jitter+.5f),c->ps.ping>999?999:c->ps.ping);
++        if(strlen(line)+strlen(entry)>=sizeof(line)-16)break;strncat(line,entry,sizeof(line)-strlen(line)-1);count++;}
++    if(!count)return;   /* bots only: nothing to show */
++    char cmd[MAX_STRING_CHARS+16];snprintf(cmd,sizeof(cmd),"tcp_nq %d%s",count,line);SystemCall(G_SEND_SERVER_COMMAND,-1,cmd);
++}
++/* Automatic checks: one report per player and reason per map. */
++static void netqFlag(int n,int bit,const char *why){
++    tcp_netq *q=&netq[n];if(q->flagged&bit)return;q->flagged|=bit;
++    long long now=(long long)time(NULL);char iso[32],map[64]="",host[128]="",path[96],tn[48],tp[17];TCP_StatsIso(now,iso,sizeof(iso));
++    SystemCall(G_CVAR_VARIABLE_STRING_BUFFER,"mapname",map,sizeof(map));SystemCall(G_CVAR_VARIABLE_STRING_BUFFER,"sv_hostname",host,sizeof(host));
++    TCP_PlayerName(n,tn,sizeof(tn));TCP_PlayerPid(n,tp);snprintf(path,sizeof(path),"reports/%lld-auto-%d-%d.json",now,n,bit);
++    tcp_stats_out o;memset(&o,0,sizeof(o));if(SystemCall(G_FS_FOPEN_FILE,path,&o.f,FS_WRITE)<0||!o.f)return;
++    const client_t *c=&clients[n];
++    TCP_StatsPut(&o,"{\"schema\":\"tcp-report/1\",\"auto\":true,\"time\":");TCP_StatsStr(&o,iso);
++    TCP_StatsPut(&o,",\"server\":");TCP_StatsStr(&o,host);TCP_StatsPut(&o,",\"map\":");TCP_StatsStr(&o,map);
++    TCP_StatsPutf(&o,",\"level_time_ms\":%d,\"reporter\":{\"slot\":-1,\"name\":\"Automatic check\",\"id\":\"\"}",levelTime);
++    TCP_StatsPutf(&o,",\"reported\":{\"slot\":%d,\"bot\":false,\"name\":",n);TCP_StatsStr(&o,tn);TCP_StatsPut(&o,",\"id\":");TCP_StatsStr(&o,tp);
++    tcp_stats_player *p=TCP_StatsOf(n);
++    TCP_StatsPutf(&o,",\"kills\":%u,\"deaths\":%u,\"shots\":%u,\"hits\":%u,\"team_kills\":%d,\"headshots\":%d,\"flick_heads\":%d}",
++                  c->kills,c->deaths,c->shotsFired,c->hits,c->teamKills,p?p->headshots:0,q->snapHeads);
++    TCP_StatsPut(&o,",\"reason\":");TCP_StatsStr(&o,why);TCP_StatsPut(&o,"}\n");TCP_StatsFlush(&o);SystemCall(G_FS_FCLOSE_FILE,o.f);
++    char m[200];snprintf(m,sizeof(m),"TCP_NATIVE_CHEATFLAG slot=%d flag=%d file=%s\n",n,bit,path);print(m);
++}
++static void netqChecks(void){
++    if(!netqCvar("g_cheatFlags",1)||SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"sv_cheats"))return;
++    for(int i=0;i<maxClients;i++){const client_t *c=&clients[i];if(!c->begun||bots[i].active)continue;
++        tcp_stats_player *p=TCP_StatsOf(i);if(!p)continue;char why[160];
++        if(p->kills>=15&&p->headshots*100>=p->kills*80){snprintf(why,sizeof(why),"Automatic check: %d of %d kills this map were headshots.",p->headshots,p->kills);netqFlag(i,1,why);}
++        unsigned shots=0,hits=0;for(int w=0;w<p->weaponCount;w++){const tcp_stats_weapon *ws=&p->weapons[w];if(ws->id==TCP_KNIFE_WEAPON)continue;
++            const tcp_gear_weapon *g=TCP_GearWeapon(ws->id);if(g&&g->slot!=TCP_SLOT_PRIMARY)continue;shots+=ws->shots;hits+=ws->hits;}
++        if(shots>=200&&hits*100>=shots*75){snprintf(why,sizeof(why),"Automatic check: %u%% accuracy over %u primary weapon shots this map.",hits*100/shots,shots);netqFlag(i,2,why);}
++        if(netq[i].snapHeads>=8&&p->headshots>0&&netq[i].snapHeads*2>=p->headshots){snprintf(why,sizeof(why),"Automatic check: %d headshots came right after a flick of more than 25 degrees.",netq[i].snapHeads);netqFlag(i,4,why);}
++    }
++}
++static void TCP_NetqFrame(void){
++    if(levelTime>=netqNextSample){netqNextSample=levelTime+1000;netqSample();}
++    if(levelTime>=netqNextSend){netqNextSend=levelTime+2000;netqBroadcast();}
++    if(levelTime>=netqNextCheck){netqNextCheck=levelTime+10000;netqChecks();}
++}
++/* ---- reconnects and pickup teams ---- */
++static void netqGuid(int n,char out[33]){
++    char info[MAX_INFO_STRING],g[64]="";out[0]=0;SystemCall(G_GET_USERINFO,n,info,sizeof(info));TCP_InfoValue(info,"cl_guid",g,sizeof(g));
++    if(!TCP_StatsValidGuid(g))return;for(char *p=g;*p;p++)*p=(char)toupper((unsigned char)*p);memcpy(out,g,33);
++}
++/* GAME_CLIENT_DISCONNECT, before the client is cleared. */
++static void TCP_NetqLeave(int n){
++    const client_t *c=&clients[n];tcp_stats_player *p=TCP_StatsOf(n);if(p)p->leaves++;
++    if(!c->begun||bots[n].active||!teamMode||c->spectator)return;char g[33];netqGuid(n,g);if(!g[0])return;
++    int slot=-1,oldest=0;for(int i=0;i<TCP_MAX_PLAYERS;i++){if(!netqKeep[i].guid[0]||!strcmp(netqKeep[i].guid,g)){slot=i;break;}if(slot<0||netqKeep[i].at<oldest){oldest=netqKeep[i].at;slot=i;}}
++    tcp_netq_keep *k=&netqKeep[slot];memset(k,0,sizeof(*k));memcpy(k->guid,g,33);k->team=c->pendingTeam?c->pendingTeam:c->team;
++    k->kills=(int)c->kills;k->deaths=(int)c->deaths;k->suicides=c->suicides;k->teamKills=c->teamKills;k->damageGiven=c->damageGiven;k->damageReceived=c->damageReceived;
++    k->teamDamage=c->teamDamage;k->hits=(int)c->hits;k->shots=c->shotsFired;k->at=levelTime;
++}
++static int netqPugTeam(int n){
++    if(!netqCvar("g_pugTeams",0)||!teamMode)return 0;char info[MAX_INFO_STRING],t[8]="";SystemCall(G_GET_USERINFO,n,info,sizeof(info));TCP_InfoValue(info,"tcp_team",t,sizeof(t));
++    return t[0]=='r'?TCP_TEAM_RED:t[0]=='b'?TCP_TEAM_BLUE:0;
++}
++/* GAME_CLIENT_BEGIN, before the team is picked: returns the team to use (0 = normal rules). */
++static int TCP_NetqBeginTeam(int n){
++    int pug=netqPugTeam(n);if(pug)return pug;
++    char g[33];netqGuid(n,g);if(!g[0]||!teamMode)return 0;int keep=netqCvar("g_reconnectKeep",300)*1000;
++    for(int i=0;i<TCP_MAX_PLAYERS;i++){tcp_netq_keep *k=&netqKeep[i];if(!k->guid[0]||strcmp(k->guid,g))continue;
++        if(levelTime-k->at>keep||levelTime<k->at){memset(k,0,sizeof(*k));return 0;}
++        client_t *c=&clients[n];c->kills=(unsigned)k->kills;c->deaths=(unsigned)k->deaths;c->suicides=k->suicides;c->teamKills=k->teamKills;
++        c->damageGiven=k->damageGiven;c->damageReceived=k->damageReceived;c->teamDamage=k->teamDamage;c->hits=(unsigned)k->hits;c->shotsFired=k->shots;
++        int team=k->team;char m[120];snprintf(m,sizeof(m),"TCP_NATIVE_REJOIN slot=%d team=%d kills=%d deaths=%d\n",n,team,k->kills,k->deaths);print(m);
++        SystemCall(G_SEND_SERVER_COMMAND,n,"chat \"^3Welcome back. Your team and score were kept.\"");memset(k,0,sizeof(*k));
++        return team==TCP_TEAM_RED||team==TCP_TEAM_BLUE?team:0;}
++    return 0;
++}
++/* team command: a pickup player can only play on the team the pickup gave them. */
++static int TCP_NetqTeamChoice(int n,int want){
++    int pug=netqPugTeam(n);if(pug&&want&&want!=pug){SystemCall(G_SEND_SERVER_COMMAND,n,"print \"This is a pickup match: you play on the team the pickup assigned.\n\"");return pug;}
++    return want;
++}
++static void TCP_NetqMapStart(void){memset(netqKeep,0,sizeof(netqKeep));}
++#endif
+diff --git a/game_src/native/tcp_netq_cg.h b/game_src/native/tcp_netq_cg.h
+new file mode 100644
+index 0000000..fa5b86e
+--- /dev/null
++++ b/game_src/native/tcp_netq_cg.h
+@@ -0,0 +1,71 @@
++/* Connection quality on the client (online play round 3, item 2).
++ *
++ * The server measures every player's packet loss, jitter and ping (tcp_netq.h) and sends
++ *   tcp_nq <count> {slot grade loss_x10 jitter ping}
++ * every 2 s. Grades: 0 good, 1 fair, 2 poor, 3 bad.
++ *
++ * Scoreboard: a four-bar connection icon next to each ping, coloured by grade.
++ * cg_netGraph 1: compact line under the round clock (ping, loss, jitter).
++ * cg_netGraph 2: the line plus a 6-second ping graph that marks loss spikes in red.
++ * Older servers send no tcp_nq: the icons and the server numbers simply stay hidden. */
++static vmCvar_t nqGraphCvar;
++static struct {int grade,loss10,jitter,ping,at;} nqSlots[MAX_CLIENTS];
++static int nqLast;                                    /* time of the last tcp_nq, 0 = never */
++#define NQ_HISTORY 60
++static short nqPing[NQ_HISTORY];static unsigned char nqLossMark[NQ_HISTORY];static int nqHead,nqSampleAt,nqLastLoss10;
++
++static void nqInit(void){
++    SystemCall(CG_CVAR_REGISTER,&nqGraphCvar,"cg_netGraph","0",CVAR_ARCHIVE);
++    memset(nqSlots,0,sizeof(nqSlots));nqLast=0;memset(nqPing,0,sizeof(nqPing));memset(nqLossMark,0,sizeof(nqLossMark));nqHead=nqSampleAt=nqLastLoss10=0;
++}
++static void nqServerCommand(int time){
++    char value[16];SystemCall(CG_ARGV,1,value,sizeof(value));
++    int count=atoi(value),fields=(int)SystemCall(CG_ARGC);
++    for(int i=0;i<count&&2+i*5+4<fields;i++){
++        int v[5];for(int f=0;f<5;f++){SystemCall(CG_ARGV,2+i*5+f,value,sizeof(value));v[f]=atoi(value);}
++        if(v[0]<0||v[0]>=MAX_CLIENTS)continue;
++        nqSlots[v[0]].grade=v[1]<0?0:v[1]>3?3:v[1];nqSlots[v[0]].loss10=v[2];nqSlots[v[0]].jitter=v[3];nqSlots[v[0]].ping=v[4];nqSlots[v[0]].at=time;
++    }
++    nqLast=time;
++}
++static const float *nqColor(int grade){
++    static const float c[4][4]={{.35f,.85f,.35f,1},{.95f,.85f,.25f,1},{1,.55f,.15f,1},{.95f,.25f,.25f,1}};
++    return c[grade<0?0:grade>3?3:grade];
++}
++/* Four rising bars, lit by quality: good 4, fair 3, poor 2, bad 1. */
++static void nqDrawBars(float x,float y,int slot,int time){
++    static const float dim[4]={.3f,.3f,.3f,.8f};
++    if(!nqLast||time-nqSlots[slot].at>6000)return;      /* no data for this player */
++    const int grade=nqSlots[slot].grade,lit=4-grade;
++    for(int b=0;b<4;b++){float h=3+b*2.5f;hudFill(x+b*2.5f,y-h,1.8f,h,b<lit?nqColor(grade):dim);}
++}
++static void nqFrame(const playerState_t *p,int time){
++    SystemCall(CG_CVAR_UPDATE,&nqGraphCvar);
++    if(time-nqSampleAt<100&&nqSampleAt)return;
++    nqSampleAt=time;
++    int me=p->clientNum>=0&&p->clientNum<MAX_CLIENTS?p->clientNum:0;
++    int loss10=nqLast?nqSlots[me].loss10:0;
++    nqPing[nqHead]=(short)(snap.ping>999?999:snap.ping<0?0:snap.ping);
++    nqLossMark[nqHead]=(unsigned char)(loss10>nqLastLoss10);nqLastLoss10=loss10;
++    nqHead=(nqHead+1)%NQ_HISTORY;
++}
++static void nqDrawGraph(const playerState_t *p,int time){
++    if(nqGraphCvar.integer<=0)return;
++    static const float back[4]={0,0,0,.45f},line[4]={.55f,.8f,1,.9f},red[4]={.95f,.25f,.25f,.9f};
++    const int me=p->clientNum>=0&&p->clientNum<MAX_CLIENTS?p->clientNum:0;
++    const int fresh=nqLast&&time-nqSlots[me].at<6000;
++    char text[96];
++    if(fresh)snprintf(text,sizeof(text),"%d ms  loss %d.%d%%  jitter %d",snap.ping,nqSlots[me].loss10/10,nqSlots[me].loss10%10,nqSlots[me].jitter);
++    else snprintf(text,sizeof(text),"%d ms",snap.ping);
++    hudTextRight(840,182,.17f,fresh?nqColor(nqSlots[me].grade):hudGrey,text);
++    if(nqGraphCvar.integer<2)return;
++    const float w=120,h=28,x=840-w,y=188;
++    hudFill(x,y,w,h,back);
++    int top=100;for(int i=0;i<NQ_HISTORY;i++)if(nqPing[i]>top)top=nqPing[i];
++    if(top>400)top=400;
++    for(int i=0;i<NQ_HISTORY;i++){
++        int k=(nqHead+i)%NQ_HISTORY;float v=nqPing[k]>top?1.f:nqPing[k]/(float)top;
++        float bx=x+i*(w/NQ_HISTORY);
++        hudFill(bx,y+h-v*h,w/NQ_HISTORY,v*h<1?1:v*h,nqLossMark[k]?red:line);
++    }
++}
+diff --git a/game_src/native/tcp_stats.h b/game_src/native/tcp_stats.h
+index 4ccb0b6..685baae 100644
+--- a/game_src/native/tcp_stats.h
++++ b/game_src/native/tcp_stats.h
+@@ -27,6 +27,8 @@ typedef struct {
+     int kills,deaths,teamKills,suicides,headshots,damage,damageTaken,teamDamage,roundsWon,objectives;
+     int timeMs,teamMs[3],lastTeam,filler;
+     int weaponCount;tcp_stats_weapon weapons[TCP_STATS_WEAPONS];
++    /* connection telemetry (tcp_netq.h) */
++    int netPingSum,netPingN,netPingMax,netJitterSum,netRecv,netDrop,rewindSum,rewindN,rewindClamped,leaves;
+ } tcp_stats_player;
+ static tcp_stats_player statsPlayers[TCP_STATS_MAX];static int statsCount;
+ static int statsSlot[TCP_MAX_PLAYERS];          /* slot -> record, -1 none */
+@@ -91,8 +93,10 @@ static tcp_stats_weapon *TCP_StatsWeapon(tcp_stats_player *p,int weapon){
+ }
+ static void TCP_StatsShot(int slot,int weapon){tcp_stats_player *p=TCP_StatsOf(slot);tcp_stats_weapon *w=p?TCP_StatsWeapon(p,weapon):NULL;if(w)w->shots++;}
+ /* A hit on a player. firstOfShot keeps shotgun pellets at one hit per shot. */
++static void TCP_NetqHeadHit(int n);
+ static void TCP_StatsHit(int slot,int victim,int weapon,int head,int firstOfShot){
+     if(victim>=0&&victim<TCP_MAX_PLAYERS)statsHeadHit[victim]=head;
++    if(head&&firstOfShot)TCP_NetqHeadHit(slot);
+     tcp_stats_player *p=TCP_StatsOf(slot);tcp_stats_weapon *w=p&&firstOfShot?TCP_StatsWeapon(p,weapon):NULL;if(w)w->hits++;
+ }
+ static void TCP_StatsDamage(int attacker,int victim,int taken){
+@@ -173,9 +177,13 @@ static int TCP_StatsWrite(void){
+         TCP_StatsPut(&o,",\"name\":");TCP_StatsStr(&o,p->name[0]?p->name:"Player");
+         TCP_StatsPut(&o,",\"team\":");TCP_StatsStr(&o,TCP_StatsTeamName(team));
+         TCP_StatsPutf(&o,",\"kills\":%d,\"deaths\":%d,\"teamKills\":%d,\"suicides\":%d,\"headshots\":%d,\"damage\":%d,\"damageTaken\":%d,\"teamDamage\":%d,"
+-                      "\"roundsWon\":%d,\"objectives\":%d,\"won\":%s,\"timePlayed\":%d,\"connected\":%s,\"filler\":%s,\"weapons\":{",
++                      "\"roundsWon\":%d,\"objectives\":%d,\"won\":%s,\"timePlayed\":%d,\"connected\":%s,\"filler\":%s,\"leaves\":%d,",
+                       p->kills,p->deaths,p->teamKills,p->suicides,p->headshots,p->damage,p->damageTaken,p->teamDamage,
+-                      p->roundsWon,p->objectives,won?"true":"false",p->timeMs/1000,p->slot>=0?"true":"false",p->filler?"true":"false");
++                      p->roundsWon,p->objectives,won?"true":"false",p->timeMs/1000,p->slot>=0?"true":"false",p->filler?"true":"false",p->leaves);
++        TCP_StatsPutf(&o,"\"net\":{\"ping\":%d,\"pingMax\":%d,\"jitter\":%.1f,\"loss\":%.2f,\"rewind\":%d,\"rewindCapped\":%d,\"shotsRewound\":%d",
++                      p->netPingN?p->netPingSum/p->netPingN:0,p->netPingMax,p->netPingN?p->netJitterSum/(10.0*p->netPingN):0.0,
++                      p->netRecv+p->netDrop?100.0*p->netDrop/(p->netRecv+p->netDrop):0.0,p->rewindN?p->rewindSum/p->rewindN:0,p->rewindClamped,p->rewindN);
++        TCP_StatsPut(&o,"},\"weapons\":{");
+         for(int w=0;w<p->weaponCount;w++){char nb[24];const tcp_stats_weapon *ws=&p->weapons[w];
+             if(w)TCP_StatsPut(&o,",");TCP_StatsStr(&o,TCP_StatsWeaponName(ws->id,nb,sizeof(nb)));
+             TCP_StatsPutf(&o,":{\"kills\":%u,\"headshots\":%u,\"shots\":%u,\"hits\":%u}",ws->kills,ws->headshots,ws->shots,ws->hits);}
+diff --git a/reference/etlegacy/src/game/g_public.h b/reference/etlegacy/src/game/g_public.h
+index 53a7229..a7e6aa1 100644
+--- a/reference/etlegacy/src/game/g_public.h
++++ b/reference/etlegacy/src/game/g_public.h
+@@ -231,7 +231,8 @@ typedef enum
+ 	G_DEMOSUPPORT,
+ 	G_SNAPSHOT_CALLBACK_EXT,
+ 	G_SNAPSHOT_SETCLIENTMASK,
+-	G_CVAR_SET_DESCRIPTION
++	G_CVAR_SET_DESCRIPTION,
++	G_TCP_NETSTATS                ///< TrueCombat: per-client packets received/dropped (trap_TcpNetStats)
+ 
+ } gameImport_t;
+ 
+diff --git a/reference/etlegacy/src/server/server.h b/reference/etlegacy/src/server/server.h
+index 2009534..2cc0f89 100644
+--- a/reference/etlegacy/src/server/server.h
++++ b/reference/etlegacy/src/server/server.h
+@@ -299,6 +299,8 @@ typedef struct client_s
+ #endif
+ 
+ 	uint64_t clientMask;                    ///< always send entities of those clients
++	int tcpNetReceived;                     ///< packets accepted from this client (TrueCombat net telemetry)
++	int tcpNetDropped;                      ///< packets that never arrived (sequence gaps)
+ } client_t;
+ 
+ //=============================================================================
+diff --git a/reference/etlegacy/src/server/sv_admin.c b/reference/etlegacy/src/server/sv_admin.c
+index f19b7c5..eacaf58 100644
+--- a/reference/etlegacy/src/server/sv_admin.c
++++ b/reference/etlegacy/src/server/sv_admin.c
+@@ -560,8 +560,18 @@ qboolean SV_AdminRejectBanned(const netadr_t *from, const char *userinfo)
+ 		return qfalse;
+ 	}
+ 	Q_strncpyz(name, Info_ValueForKey(userinfo, "name"), sizeof(name));
+-	NET_OutOfBandPrint(NS_SERVER, from, "print\n[err_dialog]%s%s%s\n", sv_banMessage->string,
+-	                   adminBans[index].reason[0] ? " Reason: " : "", adminBans[index].reason);
++	{
++		long left = adminBans[index].expires ? adminBans[index].expires - (long)time(NULL) : 0;
++		char until[64] = "";
++
++		if (left > 0)
++		{
++			Com_sprintf(until, sizeof(until), left >= 86400 ? " The ban ends in %ld day(s)." : left >= 3600 ? " The ban ends in %ld hour(s)." : " The ban ends in %ld minute(s).",
++			            left >= 86400 ? (left + 86399) / 86400 : left >= 3600 ? (left + 3599) / 3600 : (left + 59) / 60);
++		}
++		NET_OutOfBandPrint(NS_SERVER, from, "print\n[err_dialog]%s%s%s%s\n", sv_banMessage->string,
++		                   adminBans[index].reason[0] ? " Reason: " : "", adminBans[index].reason, until);
++	}
+ 	Com_Printf("Rejected banned client %s (%s) guid %s, ban #%i\n", NET_AdrToString(from), name,
+ 	           SV_GuidUsable(guid) ? guid : "-", index + 1);
+ 	SV_AdminLogFile("[ban] rejected %s name '%s' guid %s (ban #%i: %s)", NET_AdrToString(from), name,
+@@ -691,6 +701,67 @@ static const char *SV_AdminReason(int start)
+ 	return Cmd_ArgsFrom(start);
+ }
+ 
++/**
++ * @brief Optional ban length after the target: 30m, 12h, 7d, 2w (or a bare number of minutes
++ * with a trailing 'm'). Returns minutes (0 = permanent) and the argument index the reason starts at.
++ */
++static int SV_AdminBanDuration(int arg, int *reasonStart)
++{
++	const char *s = Cmd_Argv(arg);
++	int        len = (int)strlen(s), i;
++	long       n;
++
++	*reasonStart = arg;
++	if (len < 2)
++	{
++		return 0;
++	}
++	for (i = 0; i < len - 1; i++)
++	{
++		if (s[i] < '0' || s[i] > '9')
++		{
++			return 0;
++		}
++	}
++	n = atol(s);
++	switch (s[len - 1])
++	{
++	case 'm': case 'M': break;
++	case 'h': case 'H': n *= 60; break;
++	case 'd': case 'D': n *= 60 * 24; break;
++	case 'w': case 'W': n *= 60 * 24 * 7; break;
++	default: return 0;
++	}
++	if (n <= 0 || n > 60L * 24 * 365 * 5)
++	{
++		return 0;
++	}
++	*reasonStart = arg + 1;
++	return (int)n;
++}
++
++static void SV_AdminSetExpiry(svAdminBan_t *b, int minutes)
++{
++	b->expires = minutes > 0 ? (long)time(NULL) + minutes * 60L : 0;
++}
++
++static const char *SV_AdminBanLength(int minutes)
++{
++	if (minutes <= 0)
++	{
++		return "permanent";
++	}
++	if (minutes % (60 * 24) == 0)
++	{
++		return va("for %i day(s)", minutes / (60 * 24));
++	}
++	if (minutes % 60 == 0)
++	{
++		return va("for %i hour(s)", minutes / 60);
++	}
++	return va("for %i min", minutes);
++}
++
+ static void SV_AdminKick(client_t *cl, const char *reason, const char *verb)
+ {
+ 	char name[MAX_NAME_LENGTH];
+@@ -757,10 +828,11 @@ static void SV_Ban_f(void)
+ 	const char   *reason;
+ 	const char   *ip = "";
+ 	netadrtype_t type;
++	int          minutes, reasonStart;
+ 
+ 	if (Cmd_Argc() < 2)
+ 	{
+-		Com_Printf("Usage: ban <slot|name> [reason]\n");
++		Com_Printf("Usage: ban <slot|name> [30m|12h|7d|2w] [reason]\n");
+ 		return;
+ 	}
+ 	cl = SV_AdminFindClient(Cmd_Argv(1));
+@@ -778,16 +850,18 @@ static void SV_Ban_f(void)
+ 	{
+ 		ip = NET_AdrToStringNoPort(&cl->netchan.remoteAddress);
+ 	}
+-	reason = SV_AdminReason(2);
++	minutes = SV_AdminBanDuration(2, &reasonStart);
++	reason  = SV_AdminReason(reasonStart);
+ 	SV_CleanName(cl->name, name, sizeof(name));
+ 	b = SV_AddBan(ip, SV_GuidUsable(cl->guid) ? cl->guid : "", name, reason);
+ 	if (!b)
+ 	{
+ 		return;
+ 	}
++	SV_AdminSetExpiry(b, minutes);
+ 	SV_SaveBans();
+-	SV_AdminLog("ban #%i added: ip %s guid %s name '%s'%s%s", numAdminBans, b->ip[0] ? b->ip : "-",
+-	            b->guid[0] ? b->guid : "-", b->name, reason[0] ? " reason: " : "", reason);
++	SV_AdminLog("ban #%i added: ip %s guid %s name '%s' %s%s%s", numAdminBans, b->ip[0] ? b->ip : "-",
++	            b->guid[0] ? b->guid : "-", b->name, SV_AdminBanLength(minutes), reason[0] ? " reason: " : "", reason);
+ 	SV_AdminKick(cl, reason, "banned");
+ }
+ 
+@@ -812,11 +886,11 @@ static void SV_BanIp_f(void)
+ {
+ 	const char   *ip = Cmd_Argv(1);
+ 	svAdminBan_t *b;
+-	int          i;
++	int          i, minutes, reasonStart;
+ 
+ 	if (Cmd_Argc() < 2)
+ 	{
+-		Com_Printf("Usage: banip <address|prefix*> [reason]   e.g. banip 203.0.113.7  or  banip 203.0.113.*\n");
++		Com_Printf("Usage: banip <address|prefix*> [30m|12h|7d|2w] [reason]   e.g. banip 203.0.113.7  or  banip 203.0.113.*\n");
+ 		return;
+ 	}
+ 	for (i = 0; ip[i]; i++)
+@@ -834,32 +908,46 @@ static void SV_BanIp_f(void)
+ 		Com_Printf("Refusing to ban every address.\n");
+ 		return;
+ 	}
+-	b = SV_AddBan(ip, "", "", SV_AdminReason(2));
++	minutes = SV_AdminBanDuration(2, &reasonStart);
++	b       = SV_AddBan(ip, "", "", SV_AdminReason(reasonStart));
+ 	if (!b)
+ 	{
+ 		return;
+ 	}
++	SV_AdminSetExpiry(b, minutes);
+ 	SV_SaveBans();
+-	SV_AdminLog("ban #%i added: ip %s%s%s", numAdminBans, b->ip, b->reason[0] ? " reason: " : "", b->reason);
++	SV_AdminLog("ban #%i added: ip %s %s%s%s", numAdminBans, b->ip, SV_AdminBanLength(minutes), b->reason[0] ? " reason: " : "", b->reason);
+ 	SV_KickMatchingNewBan();
+ }
+ 
+ static void SV_BanGuid_f(void)
+ {
+ 	svAdminBan_t *b;
++	int          minutes, reasonStart, i;
+ 
+ 	if (Cmd_Argc() < 2 || !SV_GuidUsable(Cmd_Argv(1)))
+ 	{
+-		Com_Printf("Usage: banguid <cl_guid> [reason]\n");
++		Com_Printf("Usage: banguid <cl_guid> [30m|12h|7d|2w] [reason]\n");
+ 		return;
+ 	}
+-	b = SV_AddBan("", Cmd_Argv(1), "", SV_AdminReason(2));
++	// Pushed to every official server at once (Discord /admin ban): don't stack duplicates.
++	for (i = 0; i < numAdminBans; i++)
++	{
++		if (adminBans[i].guid[0] && !adminBans[i].ip[0] && !Q_stricmp(adminBans[i].guid, Cmd_Argv(1)))
++		{
++			Com_Printf("guid %s is already banned (#%i); unban it first to change the ban\n", Cmd_Argv(1), i + 1);
++			return;
++		}
++	}
++	minutes = SV_AdminBanDuration(2, &reasonStart);
++	b       = SV_AddBan("", Cmd_Argv(1), "", SV_AdminReason(reasonStart));
+ 	if (!b)
+ 	{
+ 		return;
+ 	}
++	SV_AdminSetExpiry(b, minutes);
+ 	SV_SaveBans();
+-	SV_AdminLog("ban #%i added: guid %s%s%s", numAdminBans, b->guid, b->reason[0] ? " reason: " : "", b->reason);
++	SV_AdminLog("ban #%i added: guid %s %s%s%s", numAdminBans, b->guid, SV_AdminBanLength(minutes), b->reason[0] ? " reason: " : "", b->reason);
+ 	SV_KickMatchingNewBan();
+ }
+ 
+@@ -1629,9 +1717,9 @@ void SV_AdminInit(void)
+ 
+ 	Cmd_AddCommand("kick", SV_Kick_f, "Kicks a player: kick <slot|name> [reason]");
+ 	Cmd_AddCommand("clientkick", SV_ClientKick_f, "Kicks a player by slot: clientkick <slot> [reason]");
+-	Cmd_AddCommand("ban", SV_Ban_f, "Bans a player by IP and GUID and kicks: ban <slot|name> [reason]");
+-	Cmd_AddCommand("banip", SV_BanIp_f, "Bans an address or prefix: banip <ip|prefix*> [reason]");
+-	Cmd_AddCommand("banguid", SV_BanGuid_f, "Bans a cl_guid: banguid <guid> [reason]");
++	Cmd_AddCommand("ban", SV_Ban_f, "Bans a player by IP and GUID and kicks: ban <slot|name> [30m|12h|7d|2w] [reason]");
++	Cmd_AddCommand("banip", SV_BanIp_f, "Bans an address or prefix: banip <ip|prefix*> [30m|12h|7d|2w] [reason]");
++	Cmd_AddCommand("banguid", SV_BanGuid_f, "Bans a cl_guid: banguid <guid> [30m|12h|7d|2w] [reason]");
+ 	Cmd_AddCommand("unban", SV_Unban_f, "Removes a ban: unban <banlist number|ip|guid>");
+ 	Cmd_AddCommand("banpuid", SV_BanPuid_f, "Bans an anti-cheat account id: banpuid <id> [reason]");
+ 	Cmd_AddCommand("banlist", SV_BanList_f, "Lists persistent bans");
+diff --git a/reference/etlegacy/src/server/sv_game.c b/reference/etlegacy/src/server/sv_game.c
+index 50002a7..e06b809 100644
+--- a/reference/etlegacy/src/server/sv_game.c
++++ b/reference/etlegacy/src/server/sv_game.c
+@@ -51,6 +51,7 @@ static ext_trap_keys_t g_extensionTraps[] =
+ 	{ "trap_SnapshotCallbackExt_Legacy",   G_SNAPSHOT_CALLBACK_EXT,  qfalse },
+ 	{ "trap_SnapshotSetClientMask_Legacy", G_SNAPSHOT_SETCLIENTMASK, qfalse },
+ 	{ "trap_CvarSetDescription_Legacy",    G_CVAR_SET_DESCRIPTION,   qfalse },
++	{ "trap_TcpNetStats",                  G_TCP_NETSTATS,           qfalse },
+ 	{ NULL,                                -1,                       qfalse }
+ };
+ 
+@@ -722,6 +723,22 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
+ 	case G_CVAR_SET_DESCRIPTION:
+ 		return Cvar_SetDescriptionByName(VMA(1), VMA(2));
+ 
++	case G_TCP_NETSTATS:
++	{
++		// out[0] packets received, out[1] packets lost on the way in, out[2] ping, out[3] snapshot interval (ms)
++		int *out = VMA(2);
++
++		if (args[1] < 0 || args[1] >= sv_maxclients->integer || svs.clients[args[1]].state < CS_CONNECTED)
++		{
++			return 0;
++		}
++		out[0] = svs.clients[args[1]].tcpNetReceived;
++		out[1] = svs.clients[args[1]].tcpNetDropped;
++		out[2] = svs.clients[args[1]].ping;
++		out[3] = svs.clients[args[1]].snapshotMsec;
++		return 1;
++	}
++
+ 	default:
+ 		Com_Error(ERR_DROP, "Bad game system trap: %ld", (long int) args[0]);
+ 		break;
+diff --git a/reference/etlegacy/src/server/sv_net_chan.c b/reference/etlegacy/src/server/sv_net_chan.c
+index 2ec14b2..cc4e168 100644
+--- a/reference/etlegacy/src/server/sv_net_chan.c
++++ b/reference/etlegacy/src/server/sv_net_chan.c
+@@ -332,6 +332,12 @@ qboolean SV_Netchan_Process(client_t *client, msg_t *msg)
+ 		return qfalse;
+ 	}
+ 
++	client->tcpNetReceived++;
++	if (client->netchan.dropped > 0 && client->netchan.dropped < 1000)
++	{
++		client->tcpNetDropped += client->netchan.dropped;
++	}
++
+ 	SV_Netchan_Decode(client, msg);
+ 
+ 	return qtrue;
