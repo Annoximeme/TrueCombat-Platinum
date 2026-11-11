@@ -1,0 +1,63 @@
+**TRUECOMBAT: PLATINUM — v0.33.0**
+**Patch Notes #54**
+**Packaged Native Sandbox** 0.33.0-sandbox24
+
+Our biggest visual update yet. The new Ultra preset brings modern lighting, real surface materials and real-time sun shadows to every map on DirectX 12, with NVIDIA Frame Generation for RTX 40-series cards. Gunfire now leaves its mark on the world, first-person combat has been rebuilt around the original animations, ledge climbing returns, and bots fight smarter and work as a team.
+
+**ULTRA VISUALS (DIRECTX 12)**
+- New Ultra graphics preset in the launcher.
+- Real-time sun shadows from players, props, weapons and the world, with contact shadows for grounded detail.
+- Modern lighting: filmic tone mapping, automatic exposure and a restrained colour grade that keeps players easy to read.
+- Surface materials on every map. Brick, metal, wood and concrete now respond to light with depth and sheen.
+- Ambient occlusion and reflections tuned per map.
+- Anti-aliasing picks itself: NVIDIA DLAA on RTX cards with 12 GB of video memory or more, TAA everywhere else.
+- Materials are compressed and cached on first load, so later map loads stay quick.
+- Low, High and OpenGL keep the classic look, unchanged.
+- Server hosts can require the classic look for every player with sv_forceClassicVisuals 1.
+
+**FRAME GENERATION AND REFLEX**
+- NVIDIA DLSS Frame Generation is now available as an opt-in setting under Advanced graphics in the launcher, for GeForce RTX 40-series and newer cards on the Ultra preset.
+- NVIDIA Reflex is on in Ultra for lower input latency.
+
+----- NEXT DISCORD MESSAGE -----
+
+**COMBAT**
+- Bullet impacts are back. Every surface takes the original per-material bullet holes, on entry and exit, with dust, splinters, sparks and blood.
+- Original impact sounds, plus the crack of a near miss as rounds fly past.
+- New first-person muzzle flash for every weapon.
+- Sniper scope overlay when aiming down a scoped rifle.
+- First-person animations rebuilt from the original TC:E set: last-shot slide lock, alternating akimbo hands, separate partial and empty reloads, and shell-by-shell shotgun reloads.
+- Switching weapons now lowers the old weapon before raising the new one.
+
+**MOVEMENT**
+- Ledge climbing returns. Jump at a ledge to pull yourself up, just like the original.
+
+**BOTS**
+- Sharper, more human aim: situational reactions, flicks that settle on target, and realistic tracking. Bots never fire through a teammate.
+- Smarter movement: bots slow down near danger, stop to shoot, strafe at close range, reload behind cover and spread out across routes.
+- Real teamwork: shared callouts, support pushes, trading kills, and buddy pairs in Team Deathmatch and Elimination.
+- Bomb and Capture the Flag objective play stays as sharp as before.
+- Fixed bots standing idle on Delta.
+
+----- NEXT DISCORD MESSAGE -----
+
+**INTERFACE AND LAUNCHER**
+- New Esc pause menu, centred and dimmed on every screen shape.
+- The launcher now has its own version number (Launcher 1.0.0), shown in the title bar, the update bar and the Versions dialog, and it can update itself separately from the game.
+
+**PERFORMANCE**
+- New frame-time graph: cl_drawFrameGraph 1 shows frame times, average fps, 1% lows and spikes, on DirectX 12 and OpenGL.
+- Detailed frame statistics for troubleshooting with cl_frameStats and cl_frameSpikeMs.
+- The console log is now written in the background, removing hitches on slow disks.
+
+**FIXES**
+- Fixed the black void below the water on Northport. Looking up from underwater now shows the water's colour, on DirectX 12 and OpenGL.
+- Fixed the console log being cut short when the game closed after an error.
+- The cheat detection recognises the new materials pack and the updated interface files.
+
+**STATUS**
+- Easy Anti-Cheat is prepared but not switched on yet.
+- Coming next: shadows from muzzle flashes and explosions, a full launcher redesign, and voice commands.
+
+**DEVELOPMENT**
+- Developed by RaziC* — Team Terminus.

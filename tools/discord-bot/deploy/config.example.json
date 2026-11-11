@@ -1,0 +1,63 @@
+{
+  "guild_id": 0,
+  "staff_role_ids": [],
+  "channels": {
+    "status": 0,
+    "feed": 0,
+    "announcements": 0,
+    "devlog": 0,
+    "welcome": 0,
+    "staff": 0,
+    "events": 0,
+    "reports": 0,
+    "matches": 0,
+    "teams": 0,
+    "bugs": 0,
+    "suggestions": 0,
+    "votes": 0,
+    "support": 0
+  },
+  "servers": [
+    {
+      "key": "official1",
+      "name": "TrueCombat: Platinum | Official #1 Ranked (EU)",
+      "host": "127.0.0.1",
+      "port": 27960,
+      "public_address": "2.24.59.195:27960",
+      "match_type": "Ranked",
+      "match_alerts": true
+    },
+    {
+      "key": "official2",
+      "name": "TrueCombat: Platinum | Official #2 Unranked (EU)",
+      "host": "127.0.0.1",
+      "port": 27961,
+      "public_address": "2.24.59.195:27961",
+      "match_type": "Unranked · bots fill empty slots",
+      "match_alerts": false
+    }
+  ],
+  "releases": {
+    "mode": "draft",
+    "ping_role_id": 0
+  },
+  "linking": {
+    "dirs": [
+      "/var/lib/tcpgame/home/tcetest/links"
+    ]
+  },
+  "seasons": {
+    "length": "month"
+  },
+  "map_votes": {
+    "enabled": false,
+    "apply": "notice",
+    "servers": []
+  },
+  "chat_bridge": {
+    "enabled": false,
+    "relay_to_game": "staff",
+    "servers": []
+  },
+  "timezone": "Europe/Brussels"
+}

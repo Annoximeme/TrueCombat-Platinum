@@ -1,0 +1,46 @@
+[Unit]
+Description=TrueCombat: Platinum Discord bot
+Documentation=file:///opt/tcp/discord-bot/README.md
+After=network-online.target tcp-bridge.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tcpbot
+Group=tcpbot
+WorkingDirectory=/opt/tcp/discord-bot
+Environment=TCPBOT_CONFIG=/etc/tcp-discord-bot/config.json PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+ExecStartPre=/opt/tcp/discord-bot/venv/bin/python -m tcpbot check
+ExecStart=/opt/tcp/discord-bot/venv/bin/python -m tcpbot run
+# The token never sits in the config or on a command line: systemd hands it over as a credential.
+LoadCredential=token:/etc/tcp-discord-bot/token
+StateDirectory=tcp-discord-bot
+StateDirectoryMode=0750
+Restart=always
+RestartSec=10
+# Discord allows 1000 logins a day; don't spin if something is badly wrong.
+StartLimitIntervalSec=600
+StartLimitBurst=10
+
+# Hardening: the bot only needs the network, its state folder and the link and report folders.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+UMask=0027
+# Written by install.sh: one line per link folder (ReadWritePaths=...)
