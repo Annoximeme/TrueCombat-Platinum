@@ -1608,3 +1608,28 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
 @media (max-width: 1000px) { .map-cards.five { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .map-cards.five { grid-template-columns: repeat(2, minmax(0, 1fr)); } .facts.wfacts { grid-template-columns: 1fr; } .facts.wfacts dt { padding-bottom: 0; } .facts.wfacts dd { border-top: 0; padding-top: 2px; } }
 .prose-block + .vs-scroll { margin-top: 18px; }
+
+/* ------------------------------------------------------------------ match report */
+.m-score, .m-teams { grid-column: 1 / -1; }
+.m-score { display: grid; gap: 14px; justify-items: center; padding: clamp(20px, 4vw, 36px) 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.m-line { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: clamp(14px, 4vw, 40px); width: 100%; max-width: 760px; }
+.m-side { display: flex; align-items: baseline; gap: clamp(10px, 2.4vw, 22px); color: var(--muted); }
+.m-side.specops { justify-content: flex-end; }
+.m-side span { font: 700 clamp(.9rem, 2.2vw, 1.3rem)/1 var(--f-display); letter-spacing: .12em; text-transform: uppercase; }
+.m-side b { font: 800 clamp(2.6rem, 8vw, 4.6rem)/1 var(--f-display); color: var(--dim); }
+.m-side.won b { color: var(--fg); }
+.m-side.specops.won span { color: #7fb2ff; }
+.m-side.terrorists.won span { color: var(--red-hi); }
+.m-mvp { margin: 0; color: var(--muted); }
+.m-mvp b { font: 700 .78rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; color: var(--amber, #f0b34a); margin-right: 6px; }
+.m-mvp a, .m-team td a { color: var(--fg); text-decoration: none; border-bottom: 1px solid var(--line); }
+.m-mvp a:hover, .m-team td a:hover { border-color: var(--red-hi); }
+.m-teams { display: grid; gap: 16px; }
+.m-team.specops { border-top: 2px solid #7fb2ff; }
+.m-team.terrorists { border-top: 2px solid var(--red); }
+.m-team .res { margin-left: 8px; color: var(--amber, #f0b34a); border-color: rgba(240, 179, 74, .4); }
+.r-top a { color: inherit; }
+.r-top a:hover b { color: var(--red-hi); }
+.pf-matches td a { color: inherit; }
+.m-team .srv-table th:first-child { width: 24%; }
+@media (max-width: 560px) { .m-side { flex-direction: column; align-items: flex-end; gap: 6px; } .m-side.terrorists { flex-direction: column-reverse; align-items: flex-start; } .m-side span { font-size: .78rem; letter-spacing: .08em; } }
