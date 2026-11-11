@@ -1,0 +1,642 @@
+# New situations, pass 3: numbers, clock, sites, respawn modes, loadout and edge cases.
+
+@numbers_advantage | contact | team | 30 | | | Bot's team has clearly more players alive.
+=e
+we got numbers, push
+more of us, go
+we outnumber them
+numbers, lets end it
+=a
+We have numbers. Trade, don't duel.
+Numbers are ours. Stay together.
+Man advantage. No solo plays.
+=l
+we got numbers
+more of us
+no hero plays lol
+=s
+we have numbers, together!
+more of us, trade them
+numbers, no solo peeks
+=m
+Numbers are ours.
+Advantage. Play it slow.
+We outnumber them. Hold lines.
+
+@numbers_disadvantage | contact | team | 30 | | | Bot's team is clearly outnumbered.
+=e
+we're down, need picks
+outnumbered, whatever
+need a pick
+=a
+We're outnumbered. Play together.
+Down on numbers. No peeking alone.
+Fewer of us. Make them come.
+=l
+outnumbered
+need to be sneaky
+we're down players
+=s
+we're down, stay together
+outnumbered, careful guys
+stick close, fewer of us
+=m
+Outnumbered. Pick fights.
+Down on numbers. Angles only.
+Need one pick to even it.
+
+@time_60 | objective | team | 0 | | | One minute left in the round.
+=e
+one minute
+1 min lets go
+=a
+One minute.
+A minute left.
+=l
+1 min
+minute left
+=s
+one minute left!
+1 minute guys
+=m
+One minute.
+Sixty seconds.
+
+@time_30 | objective | team | 0 | | | Thirty seconds left.
+=e
+30 sec go
+30 seconds
+=a
+Thirty seconds.
+30 seconds left.
+=l
+30s
+30 sec
+=s
+30 seconds!
+30 sec, hurry
+=m
+Thirty seconds.
+30.
+
+@time_10 | objective | team | 0 | | | Ten seconds left.
+=e
+10 sec!
+ten seconds go go
+=a
+Ten seconds.
+=l
+10s
+=s
+10 seconds!
+=m
+Ten.
+10 seconds.
+
+@site_taken | objective | team | 0 | {area} | | Attackers control the site.
+=e
+{area} is ours
+we got {area}
+site's ours, plant
+=a
+{area} is ours. Plant.
+Site taken. Set up.
+We have {area}.
+=l
+{area} taken
+site clear, plant
+=s
+we have {area}, plant it!
+site's clear, bomb here
+{area} is ours guys
+=m
+{area} taken.
+Site's ours. Covering the plant.
+
+@site_lost | objective | team | 0 | {area} | | Defenders lost the site.
+=e
+lost {area}
+they got {area}, retake
+=a
+{area} is lost.
+They have {area}. Regroup for the retake.
+=l
+{area} gone
+they took {area}
+=s
+we lost {area}, regroup
+they have {area}, retake together
+=m
+{area} lost.
+They hold {area}.
+
+@retake_start | objective | team | 0 | {area} | | Team begins a retake.
+=e
+retaking {area} now
+retake go
+=a
+Retaking {area}. Together.
+Retake, on my go.
+=l
+retake, I come from behind
+going in {area} from the side
+=s
+retake {area}, all together
+flash then retake
+=m
+Retake. I'll cover from long.
+Covering the retake on {area}.
+
+@retake_done | objective | team | 0 | | {area} | Site retaken, bomb is safe to defuse.
+=e
+site's clear defuse
+clear, defuse it
+=a
+Site is clear. Defuse.
+Retake done. Get on the bomb.
+=l
+clear, defuse
+=s
+clear! defuse, I cover
+site clear, defuse it
+=m
+Clear. Defuse.
+Site's clean.
+
+@enemy_reload_heard | contact | team | 10 | | {area} | Bot heard an enemy reloading: chance to push.
+=e
+he's reloading go
+reload, push him
+reloading {area} go go
+=a
+He's reloading. Push now.
+Reload at {area}. Go.
+=l
+he's reloading
+reload {area}, now
+=s
+he's reloading, go!
+reload, push {area}
+=m
+Reloading. Peek him.
+He's dry. Go.
+
+@enemy_jiggling | contact | team | 15 | {area} | | Enemy keeps shoulder-peeking the same corner.
+=e
+he's jiggling {area}
+he keeps peeking {area}
+=a
+He's shoulder peeking {area}. Don't bite.
+Jiggle peek at {area}.
+=l
+he's baiting {area}
+jiggle {area}
+=s
+he's baiting shots at {area}
+he keeps peeking {area}, wait
+=m
+Jiggle, {area}. I'll time him.
+He's baiting {area}. Waiting.
+
+@enemy_on_ladder | contact | team | 15 | {area} | | Enemy on a ladder: easy target.
+=e
+on the ladder {area}
+ladder {area} free kill
+=a
+One on the ladder, {area}.
+=l
+ladder {area}
+=s
+one on the ladder at {area}
+=m
+Ladder, {area}. Easy.
+On the ladder. Taking him.
+
+@enemy_in_water | contact | team | 20 | {area} | | Enemy swimming or wading.
+=e
+he's in the water {area}
+swimmer {area} lol
+=a
+One in the water, {area}.
+=l
+water {area}
+someone swimming {area}
+=s
+one in the water at {area}
+=m
+In the water, {area}.
+Swimmer, {area}.
+
+@enemy_lone | contact | team | 20 | {area} | | A lone enemy far from his team: go get him together.
+=e
+he's alone {area}, get him
+free kill {area}
+=a
+He's isolated at {area}. Take him together.
+One alone at {area}.
+=l
+he's alone {area}
+lone guy {area}
+=s
+he's alone at {area}, two of us go
+lone one {area}, let's get him
+=m
+Isolated, {area}.
+One alone, {area}. Easy pick.
+
+@nobody_coming | action | team | 40 | {area} | | Bot has held an area for a long time with no contact.
+=e
+nobody {area}, I'm pushing
+bored {area}, going
+=a
+Nothing at {area}. Still holding.
+{area} is quiet. Staying.
+=l
+nobody comes {area}
+{area} dead quiet
+=s
+nothing at {area}, need me somewhere?
+{area} is quiet, want me to rotate?
+=m
+No movement on {area}.
+{area}'s cold.
+
+@rotating_self | action | team | 20 | {area} | | Bot itself rotates.
+=e
+rotating {area}
+coming {area}
+=a
+Rotating to {area}.
+Coming to {area}.
+=l
+rotating {area}
+coming {area} from behind
+=s
+rotating {area}, hold on
+I'm coming {area}!
+=m
+Rotating, {area}.
+Shifting to {area}.
+
+@arriving | action | team | 15 | | {area} | Bot is about to arrive to help.
+=e
+almost there
+5 sec
+here
+=a
+Nearly there.
+Arriving at {area}.
+=l
+close
+almost there
+=s
+almost there, hold on!
+coming, 5 seconds
+=m
+Close.
+Nearly on the angle.
+
+@friendly_smoke_block | action | team | 30 | | | Team's own smoke blocks the bot's view.
+=e
+can't see anything
+our smoke lol
+=a
+Our smoke is blocking me.
+Can't see through our smoke.
+=l
+cant see
+=s
+I can't see through that
+=m
+Smoke's on my line.
+That smoke killed my angle.
+
+@out_of_breath | action | team | 60 | | | Stamina is empty.
+=e
+out of breath
+no stamina lol
+=a
+Out of stamina. Slowing down.
+=l
+tired
+=s
+out of breath, wait up
+=m
+Winded.
+No stamina.
+
+@stuck | action | team | 30 | | {area} | Bot's stall watchdog fired: it is stuck. Honest and useful for bug reports.
+=e
+I'm stuck lol
+stuck {area}
+=a
+I'm stuck.
+Stuck at {area}.
+=l
+stuck
+stuck lol
+=s
+I'm stuck, sorry
+stuck at {area}
+=m
+Stuck.
+Stuck, {area}.
+
+@weapon_choice_sniper | round | team | 0 | | | Round start: bot took a scoped rifle.
+=e
+sniping this round lol
+=a
+I'm on the scope this round.
+=l
+got the scope
+=s
+I've got the sniper this round
+=m
+Scope's mine.
+I have the long rifle.
+On the bolt action.
+
+@weapon_choice_shotgun | round | team | 0 | | | Round start: bot took a shotgun.
+=e
+shotgun round
+shotty lets go
+=a
+Shotgun. I'll hold close.
+=l
+shotgun, close corners
+=s
+shotgun this round
+=m
+Shotgun. Don't ask.
+
+@weapon_choice_mg | round | team | 0 | | | Round start: bot took a machine gun.
+=e
+big gun
+mg time
+=a
+Machine gun. I'll lock a lane.
+=l
+mg
+=s
+I've got the MG, I'll cover
+=m
+MG. I'll suppress.
+
+@respawned | round | team | 20 | | | Respawn modes: bot is back.
+=e
+back
+I'm back
+again
+=a
+Back up.
+Back in.
+=l
+back
+=s
+I'm back!
+back, coming
+=m
+Back.
+Respawned.
+
+@spawn_killed | round | all | 60 | | | Bot died right after spawning.
+=e
+spawn kill really
+let me spawn lol
+=a
+Killed on spawn.
+=l
+lol spawn
+=s
+ouch, on spawn
+=m
+Spawn's watched.
+
+@lead_taken | round | team | 0 | | | Respawn or capture modes: team took the lead.
+=e
+we lead
+in front now
+=a
+We're ahead.
+We have the lead.
+=l
+we lead
+=s
+we're ahead!
+=m
+Ahead.
+Lead's ours.
+
+@lead_lost | round | team | 0 | | | Team lost the lead.
+=e
+they lead now
+come on, get it back
+=a
+They're ahead now.
+We lost the lead.
+=l
+behind now
+=s
+they took the lead, come on
+=m
+Behind.
+Lead's gone.
+
+@humans_arguing | round | team | 120 | | | Two teammates are arguing in chat. Bot calms things once.
+=e
+chill, next round
+all good, go again
+=a
+Let it go. Next round.
+Easy. Next round.
+=l
+chill
+=s
+it's ok guys, next round
+all good, we got this
+=m
+Next round.
+Let it go.
+
+@human_tk_seen | round | team | 60 | | | A human teammate killed another by accident.
+=e
+oops
+friendly fire lol
+=a
+Careful with fire.
+=l
+oof
+=s
+it happens, all good
+=m
+Check targets.
+
+@called_by_name | orders | all | 30 | | {name} | Human typed the bot's name with nothing else.
+=e
+yeah?
+what's up
+=a
+Yes?
+Yes, {name}?
+=l
+?
+yes
+=s
+yes {name}?
+what's up?
+=m
+Yes?
+Go ahead.
+
+@vote_kick_bot | round | all | 0 | | | A vote to remove the bot passed.
+=e
+ok bye lol
+=a
+Understood. Bye.
+=l
+bye
+=s
+ok, have fun!
+=m
+Bye.
+
+@late_join_round | round | team | 0 | | | Bot joined mid-round and waits.
+=e
+next round I'm in
+=a
+In from next round.
+=l
+next round
+=s
+I'll join next round
+=m
+Next round.
+
+@carrier_needs_escort | objective | team | 15 | | | Bot carries the objective and is alone.
+=e
+need people with me
+come with the bomb
+=a
+I need an escort.
+Stay with the carrier.
+=l
+alone with it
+=s
+someone come with me please
+I need cover, I have it
+=m
+Carrier needs cover.
+Escort, please.
+
+@bomb_site_empty | objective | team | 0 | {area} | | Carrier found the site empty.
+=e
+{area} empty, planting
+free plant {area}
+=a
+{area} is open. Planting.
+=l
+{area} empty, planting
+=s
+{area} is empty, come plant
+=m
+{area}'s open.
+Free plant, {area}.
+
+@bomb_guard | objective | team | 20 | {area} | | Bot guards the dropped bomb.
+=e
+watching the bomb {area}
+=a
+I'm watching the bomb at {area}.
+Guarding the bomb.
+=l
+on the bomb {area}
+=s
+I'm watching the bomb, {area}
+=m
+Line on the bomb, {area}.
+Covering the bomb.
+
+@heard_plant | objective | team | 0 | | {area} | Bot heard the plant sound without seeing it.
+=e
+they're planting I hear it
+planting sound {area}
+=a
+I hear the plant.
+Plant sound, {area}.
+=l
+hearing the plant
+=s
+I hear them planting!
+=m
+Plant sound.
+Planting, by ear.
+
+@heard_defuse | objective | team | 0 | | | Bot heard the defuse.
+=e
+defuse sound go
+he's on it I hear it
+=a
+I hear the defuse.
+=l
+defuse sound
+=s
+I hear the defuse, peek!
+=m
+Defuse sound. Peeking.
+
+@smoke_fading | action | team | 30 | | {area} | Team's smoke is about to clear.
+=e
+smoke's going
+smoke fading move
+=a
+Smoke is fading.
+Smoke's nearly gone. Move now.
+=l
+smoke fading
+=s
+smoke's fading, hurry
+=m
+Smoke's thinning.
+Smoke's fading, {area}.
+
+@second_smoke | action | team | 30 | | {area} | Bot throws a follow-up smoke.
+=e
+another smoke
+=a
+Second smoke going.
+=l
+smoke again
+=s
+one more smoke for you
+second smoke {area}
+=m
+Re-smoking {area}.
+Second smoke.
+
+@nade_missed | action | team | 30 | | | Bot's grenade did nothing.
+=e
+bad nade
+wasted that one
+=a
+Grenade missed.
+=l
+bad nade lol
+=s
+bad throw, sorry
+=m
+Bad throw.
+Nade wasted.
+
+@enemy_flash_dodged | action | team | 30 | | | Bot turned away from a flash in time.
+=e
+dodged it
+not blind lol
+=a
+Flash missed me.
+=l
+dodged
+=s
+I'm not blind, go
+=m
+Turned in time.
+Dodged.

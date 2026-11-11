@@ -1,0 +1,261 @@
+# Game-mode pass (1.4.0): situations found missing when simulated defence, flag and deathmatch rounds were read.
+
+@kill_flag_carrier | objective | team | 0 | | {area} | Flag modes: bot killed the enemy who was carrying our flag.
+=e
+flag guy dead
+flag guy dead {area}
+got their runner
+runner down {area}, grab it
+flag carrier dead, get it back
+killed the flag guy
+=a
+Flag carrier's down.
+Their runner is down at {area}.
+Runner down. Return the flag.
+Stopped him at {area}.
+Flag carrier down. Flag's at {area}.
+=l
+got the flag guy btw
+flag guy dead {area}
+caught the runner
+runner dead, flag's {area}
+he ran right into me lol
+=s
+flag carrier down, get our flag!
+got their runner at {area}
+runner down, someone return it
+flag guy's dead, flag's at {area}
+got him, touch the flag guys
+=m
+Runner down.
+Flag carrier down, {area}.
+Dropped the runner at {area}.
+Carrier stopped. Flag's loose.
+Got the runner. Return it.
+
+@flag_going | action | team | 25 | | {area} | Flag modes: bot is heading for the enemy flag.
+=e
+going for the flag
+going flag, on me
+flag run, {area}
+im going for their flag
+flag run now, keep up
+getting the flag, trade me
+=a
+Going for their flag.
+Moving on their flag through {area}.
+Flag run. Steady.
+I'll take the flag run.
+=l
+going for the flag btw
+sneaking to their flag
+flag run through {area}, quiet
+i'll grab it while they look at you
+going flag, dont wait
+=s
+going for the flag, who's coming?
+flag run guys, with me
+going for their flag through {area}
+I'll go flag, cover me
+let's get their flag together
+=m
+Going for the flag.
+Flag run. Cover the long side.
+Moving on their flag, {area}.
+I'll go for it. Watch my lane.
+
+@flag_defend | action | team | 30 | | | Flag modes: bot is staying back to guard its own flag.
+=e
+fine, I'll watch the flag
+on flag, not for long
+guarding flag, boring
+i stay on flag this time
+=a
+I'm on our flag.
+Staying home. Flag's safe with me.
+Guarding the flag. Go play.
+Holding our flag. Nobody takes it.
+I stay on the flag.
+=l
+sitting near our flag btw
+hiding at our flag
+on flag, they wont see me
+i'll surprise whoever comes for it
+=s
+I'll stay on our flag guys
+guarding the flag, go get theirs
+I'm home on flag, shout if you need me
+on our flag, I have a smoke for it
+=m
+Covering our flag from range.
+Watching our flag. Long line.
+On overwatch for the flag.
+I hold the flag from distance.
+
+@flag_standoff | objective | team | 20 | | | Flag modes: we hold their flag but cannot capture because they hold ours.
+=e
+can't cap, kill their carrier
+need our flag back, go
+they have ours, hunt him
+can't cap yet, find their runner
+=a
+We can't capture. Get ours back first.
+Both flags are out. Find their carrier.
+Hold our carrier. Hunt theirs.
+No capture until ours is home.
+=l
+both flags out lol
+can't cap, I'll find their guy
+i'll hunt their carrier
+they have ours too, looking for him
+=s
+we need our flag back first guys
+protect our carrier, find theirs
+can't cap yet, get our flag home
+both flags out, stay with our carrier
+=m
+Both flags out. Find their carrier.
+Can't capture yet. Looking for their runner.
+Carrier, wait. Ours isn't home.
+I'll look for their runner.
+
+@flag_enemy_returned | objective | team | 0 | | | Flag modes: the enemy returned their own flag after we dropped it.
+=e
+they got it back, again
+flag's back at theirs, go again
+they returned it, going again
+ugh, they got it back
+=a
+They returned it. Reset.
+Their flag is home again.
+They have it back. Start over.
+Returned. We go again.
+=l
+they got it back
+flag's back home for them
+returned, I'll try again
+they picked it up first
+=s
+they returned it, no worries
+it's back at their base, again guys
+they got it back, next try together
+returned, we were close
+=m
+They returned it.
+Their flag's back.
+Flag reset. Again.
+They got to it first.
+
+@flag_enemy_captured | objective | team | 0 | | | Flag modes: the enemy captured our flag.
+=e
+they capped, get it back
+they scored, go go
+ugh they capped
+they capped, my turn
+=a
+They captured. Stay calm.
+They scored. Tighten up at home.
+Capture for them. Reset.
+They got one. Hold better.
+=l
+they capped
+they scored, nobody was home
+they capped, I was too far
+one for them
+=s
+they capped, it's ok guys
+they scored, we need someone home
+they capped, let's get one back
+they got one, heads up
+=m
+They captured.
+They scored. Watch the flag room.
+Capture for them.
+They capped. We need eyes on the flag.
+
+@kills_to_win | round | team | 30 | {count} | | Deathmatch: bot's team needs only {count} more kills to win (fire at 5 or fewer).
+=e
+{count} more
+{count} more kills, go
+{count} to go, send it
+only {count} more
+=a
+{count} more. Stay calm.
+{count} kills to go. No gifts.
+{count} left to win. Steady.
+We need {count} more.
+=l
+{count} more btw
+{count} to go
+need {count} more
+{count} more and it's over
+=s
+{count} more guys!
+{count} to go, stay together
+only {count} more, we got this
+{count} more kills, don't rush it
+=m
+{count} more.
+{count} to go.
+{count} kills from the win.
+Need {count}. Pick them clean.
+
+@time_hold | objective | team | 30 | | | Little time left and the clock favours the bot's side (defenders before a plant, a team ahead on score).
+=e
+they have to come now
+clock's ours, let them come
+no time for them lol
+they need to rush now
+=a
+Clock is on our side. Just hold.
+Time is ours. Don't give them anything.
+They have to come to us now.
+Hold your spots. Let the clock work.
+Nobody peeks. Time is ours.
+=l
+they're out of time lol
+no need to move, clock's ours
+they have to run past me now
+just wait them out
+=s
+just hold guys, time is ours
+don't peek, let the clock run
+they have to come, stay together
+time's on our side, play safe
+=m
+Time's ours. Hold lines.
+They have to cross now.
+No need to move. Clock wins.
+Hold the angles. They're out of time.
+
+# Neutral refills after the side-specific time lines were removed.
+@time_60
+=e
+1 min left
+60 sec
+minute
+=a
+One minute on the clock.
+@time_30
+=e
+30 sec left
+30s left
+=a
+Thirty left.
+=s
+30 sec left guys
+@time_10
+=e
+10 left
+10 seconds
+
+@enemy_above
+=l
+above me {area} btw
+one high {area}, he looks down
+he's up high {area}
+=m
+Above, {area}. Bad angle for me.
+One high at {area}. Looking down.
+=a
+One above at {area}. Don't walk under him.

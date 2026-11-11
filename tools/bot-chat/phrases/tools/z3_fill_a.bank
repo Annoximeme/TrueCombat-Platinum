@@ -1,0 +1,978 @@
+# Fill pass (1.2.0): bring thin buckets to four or more lines. Part A: gameplay.
+
+@flag_captured
+=l
+capped lol
+easy cap
+
+@time_low
+=l
+clock
+tick tock
+
+@human_clutch_cheer
+=e
+you got them {name}
+easy for you {name}
+=l
+shh, let {name} play
+{name} can do it
+
+@human_clutch_won
+=a
+Great clutch, {name}.
+Calm hands, {name}.
+=l
+{name} clutch
+wow {name}
+=m
+Good patience, {name}.
+Well taken, {name}.
+
+@nice_shot_teammate
+=l
+ns
+clean {name}
+
+@killed_by_good
+=l
+ok ns
+fair
+
+@killed_by_cheap
+=a
+Noted.
+I'll remember that spot.
+=l
+ok then
+sure
+=s
+aw
+that hurt
+ok ok
+=m
+Not how I'd do it.
+I'll watch for that.
+
+@order_push
+=m
+Moving up.
+Pushing. Cover my line.
+
+@order_regroup
+=a
+Falling in.
+Heading back to you.
+
+@order_unclear
+=a
+Didn't catch that.
+Which way?
+Again, please.
+=l
+huh
+say again
+=m
+Clarify.
+Which angle?
+
+@ping_enemy_ack
+=l
+got it
+ok seen
+
+@ping_help_ack
+=l
+omw
+coming, hold
+=m
+Moving to you.
+On my way.
+
+@ping_cancel
+=l
+ok back to it
+np
+=m
+Copy. Back on my angle.
+Resuming.
+
+@squad_leader
+=l
+your show {name}
+lead {name}
+=m
+Call the lines, {name}.
+You call it, {name}.
+
+@reply_thanks
+=l
+sure
+anytime
+
+@reply_sorry
+=l
+no worries
+happens
+
+@enemy_below
+=l
+under us {area}
+he's below {area} btw
+=s
+watch below, {area}
+one under us at {area}!
+
+@enemy_prone
+=a
+Low target at {area}. Prone.
+One on his belly, {area}.
+=l
+he's lying {area} lol
+crawler {area}
+=s
+one prone at {area}, check the floor
+prone {area}, easy to miss
+
+@enemy_saving
+=l
+he's sitting in a corner somewhere
+hide and seek
+=s
+he's hiding, go in pairs
+check every corner, he's hiding
+=m
+He's waiting us out.
+He won't peek. Go find him.
+
+@enemy_spawn_reached
+=e
+their spawn's open, come
+in their spawn, flank ready
+=a
+In their spawn. Coming from behind.
+Their spawn is clear.
+Reached their spawn.
+=s
+their spawn is empty, come round
+I'm behind them in spawn
+in their spawn, I'll hit when you do
+=m
+Their spawn. Long line on their backs.
+In their spawn. Setting up.
+Behind them, their spawn.
+
+@enemy_bomb_carrier
+=l
+bomb guy {area} btw
+he's carrying, {area}
+=s
+carrier {area}, get him
+bomb's with the guy at {area}
+=m
+Bomb, {area}. Tracking the carrier.
+Carrier at {area}. Taking the shot.
+
+@enemy_defusing
+=a
+Defuse in progress. Go.
+He's on it. Now.
+=l
+he's on it now
+defusing, go
+=s
+he's on the bomb, shoot!
+defusing, stop him!
+=m
+He's on it. Line's clear.
+Defuse. Firing.
+
+@contact_close
+=l
+he's right next to me
+close, dont move
+=s
+close! right here
+he's right on us
+
+@flashed
+=m
+Flashed. Off the scope.
+Blind. Cover my line.
+
+@team_flashed
+=l
+that was us lol
+flashed by friends
+=m
+Friendly flash. Lost the scope.
+Warn me next time.
+
+@hit_through_wall
+=l
+he's shooting the wall {area}
+bullets through {area}
+=s
+get off the wall!
+he's wallbanging us
+
+@fall_damage
+=a
+Bad drop.
+Legs took that one.
+=l
+my knees
+oops
+=s
+ow, I'm fine
+bad landing lol
+=m
+Hard landing.
+Too high.
+
+@bomb_ticking
+=s
+bomb's almost done, careful
+no time left on the bomb!
+
+@need_defuser_cover
+=e
+I defuse, watch me
+on the bomb, don't let them peek
+=a
+Starting the defuse. Hold them off.
+I need cover on the bomb.
+=l
+defusing, watch my back
+I go on it, cover
+=s
+I'll take the defuse, please cover
+going on the bomb, smoke it?
+=m
+I'll defuse. Someone take my angle.
+Going on it. Hold the line for me.
+
+@who_defuses
+=e
+{name} on the bomb, go
+get on it {name}
+=a
+{name}, take the defuse.
+{name}, on the bomb. We'll hold.
+=l
+{name} you're closest
+{name} take it
+=s
+{name}, you defuse, I smoke
+go {name}, we cover you
+=m
+{name}, on it. I hold long.
+Your defuse, {name}.
+
+@bomb_take_offer
+=e
+bomb's mine, follow
+I carry, let's go
+=a
+I'll carry it in.
+I can take the bomb.
+=l
+I'll sneak it in
+give it to me
+=s
+I'll carry if nobody wants it
+want me to take it?
+=m
+I can carry. Rather not.
+I'll take it if nobody else does.
+
+@bomb_site_choice
+=a
+We plant {area}.
+Bomb goes to {area}.
+=l
+sneaking it {area}
+{area} with the bomb
+=s
+bomb {area}, stay with me
+I'm taking it {area}, cover
+=m
+{area} for the plant.
+Carrying to {area}.
+
+@flag_carrier_escort
+=e
+I'm your shield {name}
+keep going {name}
+=a
+Stay on me, {name}.
+You run, {name}. I hold them.
+=l
+watching your back {name}
+go {name}
+=s
+I'll block for you {name}
+right beside you {name}
+=m
+Your lane's covered, {name}.
+Run the long side, {name}.
+
+@flag_returned
+=e
+flag's back lets go
+returned
+=a
+Flag secure.
+We have our flag back.
+=l
+got it back
+flag safe
+=s
+flag's safe again!
+returned, nice
+=m
+Flag secure.
+Back home.
+
+@flag_dropped
+=e
+grab the flag
+flag's loose
+=a
+Flag is loose.
+Someone pick up the flag.
+=l
+flag's loose
+flag down
+=s
+flag's loose, grab it!
+someone get the flag
+=m
+Flag's loose, {area}.
+Loose flag.
+
+@point_capturing
+=l
+on the point, quiet
+capping alone
+=s
+capping, come stand with me
+on point, need one more
+=m
+On the point. Not my place.
+Capturing. Watching long.
+
+@point_contested
+=l
+they're on it
+someone's capping
+=m
+They're on the point. Firing.
+Point's theirs for now.
+
+@low_ammo
+=s
+almost out of ammo
+low ammo, cover me
+=m
+Running low.
+Counting rounds.
+
+@out_of_ammo
+=a
+Primary's empty.
+No rounds left. Sidearm.
+=s
+no ammo left!
+empty, on pistol
+=m
+Dry. Sidearm out.
+No rounds. Pistol.
+
+@weapon_pickup
+=e
+upgraded
+his gun's mine now
+=a
+Picked one up.
+Using his weapon.
+=l
+borrowed a gun
+free gun
+=s
+found a gun
+picked up his weapon
+=m
+Borrowed a rifle.
+Different rifle. Adjusting.
+
+@no_utility
+=e
+nades all gone
+got nothing to throw
+=a
+Utility's spent.
+No smokes left.
+=l
+all out
+used them all
+=s
+used all my utility
+nothing left to throw, sorry
+=m
+No grenades.
+All spent.
+
+@ask_smoke
+=e
+smoke {area} and I go
+smoke {area} come on
+=a
+Smoke on {area}, then we move.
+Someone smoke {area}.
+=l
+smoke {area} would be nice
+anyone smoke {area}
+=s
+anyone got a smoke for {area}?
+smoke {area} and we cross together
+=m
+Smoke {area}. Sniper line.
+Block {area} with smoke.
+
+@ask_flash
+=a
+Flash, then we go.
+Someone flash it.
+=l
+flash it
+flash would help
+=s
+flash please!
+can you flash that?
+=m
+Flash the corner.
+Blind him for me.
+
+@going_quiet
+=e
+fine, slow
+sneaky time
+=a
+No running now.
+Slow from here.
+=s
+quiet from here guys
+no running
+=m
+Silent approach.
+Walking it.
+
+@door_open
+=e
+door, going through
+kicking the door
+=a
+Door. Stand ready.
+Opening. Watch it.
+=l
+door, shh
+slow door
+=s
+door, cover me
+opening, watch inside
+=m
+Door. Check the far side.
+Opening. Cover the gap.
+
+@ladder
+=e
+up the ladder
+climbing, cover
+=a
+Ladder. Watch me.
+Going up. Hold below.
+=l
+up the ladder
+climbing quiet
+=s
+going up the ladder
+ladder, watch my back
+=m
+Up for height.
+Ladder. Exposed.
+
+@blocked_by_teammate
+=a
+Step aside, please.
+I need that gap.
+=l
+blocking me
+scoot
+=s
+little room please
+can you move a bit?
+=m
+You're blocking the shot.
+Off my line, please.
+
+@in_the_way_sorry
+=e
+oops moving
+sorry go
+=a
+Excuse me.
+Stepping aside.
+=l
+oops
+out the way
+=s
+sorry, go ahead
+my fault, moving
+=m
+Clearing your line.
+Out of your way.
+
+@stay_together
+=e
+all together, go
+stick with me
+=l
+dont split
+stick
+=m
+Stay tight.
+No splitting.
+
+@spread_out
+=e
+spread, nades
+don't stack up
+=a
+Too tight. Space.
+Don't bunch.
+=l
+spread out
+nade bait
+=s
+spread a little!
+we're too close
+=m
+Spacing.
+Too tight.
+
+@ask_info
+=l
+anything?
+seen anyone
+=m
+Any contact?
+Report positions.
+
+@kill_grenade
+=s
+got one with the frag
+nade kill, nice
+
+@kill_pistol
+=a
+Pistol was enough.
+Sidearm kill.
+=l
+with the pistol
+pistol was enough
+=s
+pistol got him
+sidearm kill!
+=m
+Sidearm. Works.
+Pistol, close.
+
+@kill_long
+=a
+Down at range.
+Got him far out.
+=l
+long one lol
+far kill
+=s
+got him at range!
+far one down
+=m
+Range kill.
+Far. Down.
+
+@kill_wallbang
+=e
+wall kill lol
+shot him through it
+=a
+Shot through. Got him.
+Cover didn't hold.
+=l
+wall kill
+heard him, shot him
+=s
+through the wall, got him
+wall kill!
+=m
+Punched through.
+Thin wall. Down.
+
+@kill_through_smoke
+=e
+got him in the smoke
+blind spray worked
+=a
+Killed one in the smoke.
+Through the smoke. Down.
+=l
+got him in smoke
+smoke spray lol
+=s
+smoke spray worked
+through smoke!
+=m
+By sound, in smoke.
+Smoke didn't hide him.
+
+@kill_low_hp
+=a
+Got him. Almost lost that.
+Survived. Barely.
+=l
+won on 1hp
+still alive lol
+=s
+I'm alive, somehow
+won it, one shot left
+=m
+Won it on one hit.
+Still standing.
+
+@kill_last
+=l
+all dead
+last one, done
+=s
+that's the last!
+all down, nice
+=m
+Final one.
+Last. Down.
+
+@kill_carrier
+=l
+carrier dead
+bomb guy down
+=s
+bomb carrier down!
+carrier's dead, guard the bomb
+=m
+Carrier. Down.
+Bomb carrier's dead.
+
+@kill_defuser
+=a
+Defuse stopped.
+He's off the bomb. Down.
+=l
+no defuse
+killed the defuser
+=s
+defuse stopped!
+got him off the bomb
+=m
+Defuse denied.
+On the bomb. Down.
+
+@kill_sniper
+=a
+Sniper's dead. Lines are open.
+Their scope is down.
+=l
+scope's dead
+no more sniper
+=s
+sniper dead, cross now
+scope's gone!
+=m
+Sniper. Down.
+Their long gun's gone.
+
+@kill_flanker
+=l
+flanker dead
+no more flank
+=s
+flank's dead
+got the one behind us
+=m
+Flank's closed.
+Flanker. Down.
+
+@missed_shot
+=a
+Missed that one.
+My miss.
+=s
+argh, missed
+missed, he's still up
+
+@missed_scope
+=e
+scope miss lol
+can't snipe
+=a
+Scope shot missed.
+Missed the long one.
+=l
+whiffed it
+miss
+=s
+scope missed
+missed the snipe, sorry
+
+@assist
+=a
+Thanks for finishing, {name}.
+Good cleanup, {name}.
+=l
+ty for the finish
+good finish
+=m
+Finished. Thanks, {name}.
+Good cleanup.
+
+@kill_stolen
+=a
+I softened him. Yours.
+Good finish, {name}. Mine next.
+=l
+stolen lol
+ok {name} have it
+=s
+you earned it {name}
+nice steal {name} haha
+=m
+My setup, your kill.
+Fine. Yours.
+
+@saved_by_teammate
+=a
+Appreciated, {name}.
+You had my back, {name}.
+=l
+saved, ty
+owe you {name}
+=m
+Saved me, {name}.
+Good cover, {name}.
+
+@saved_teammate
+=e
+saved you {name}
+he's off you {name}
+=a
+He's dealt with, {name}.
+Got him for you, {name}.
+=l
+he's dead {name}
+saved you lol
+=s
+I got him {name}!
+he's off you {name}
+=m
+He's off you, {name}.
+Covered you, {name}.
+
+@died_first
+=a
+First down. Sorry.
+My mistake, early.
+=s
+first out, sorry team
+died early, my bad
+=m
+Lost the opening duel.
+First pick was me. Sorry.
+
+@died_to_grenade
+=e
+nade got me
+stupid nade
+=a
+Frag. Should've moved.
+Lost to a grenade.
+=l
+naded
+got naded lol
+=s
+got naded
+killed by a nade, spread out
+=m
+Naded.
+Grenade found me.
+
+@died_to_sniper
+=e
+got sniped
+sniper got me
+=a
+Sniper has that line.
+Picked off by their sniper.
+=l
+scope got me
+he's scoped {area}
+=s
+got sniped
+their sniper got me, don't cross
+=m
+Outsniped.
+Their scope was first.
+
+@died_from_behind
+=a
+Caught from behind.
+He came from our back.
+=l
+backstabbed
+he was behind me
+=s
+shot in the back, check behind
+he came from behind!
+=m
+Rear. Didn't check.
+He got behind my line.
+
+@died_in_duel
+=a
+Fair fight. Lost.
+He outshot me.
+=l
+he was better
+lost the 1v1
+=s
+he was faster
+lost that fight
+=m
+Lost the angle fight.
+He hit first.
+
+@died_reloading
+=e
+reload at the worst time
+died mid reload
+=a
+Died mid reload.
+Shouldn't have reloaded there.
+=l
+reload greed
+mid reload lol
+=s
+mid reload, ugh
+reloaded at the wrong time
+=m
+Mid reload.
+Reload cost me.
+
+@died_to_teamkill
+=a
+Friendly. No harm meant.
+Easy, {name}.
+=l
+friendly lol
+ty {name}
+=s
+friendly fire, it's fine
+don't worry {name}
+=m
+Friendly round.
+Wrong target, {name}.
+
+@teamkilled_someone
+=a
+Terrible. Sorry.
+I'm sorry. Didn't check.
+=l
+so sorry
+sorry, didnt see
+=s
+sorry!! my bad
+that's on me, sorry {name}
+=m
+Wrong target. Sorry.
+I'm sorry. Bad call.
+
+@nade_own_team
+=e
+sorry bad nade
+move move, mine
+=a
+Mine. Get clear.
+Careful, my throw.
+=l
+bad nade, move
+mine, run
+=s
+move, that's mine!
+my grenade, careful
+=m
+My frag. Clear.
+Short throw. Move.
+
+@on_fire
+=a
+Things are working.
+Good round for me.
+=l
+cant miss
+its going well
+=s
+I'm doing ok today!
+good run
+=m
+Seeing them early.
+Everything's lining up.
+
+@cold_streak
+=a
+Not my best.
+I'll tighten up.
+=l
+im useless today
+cant win a fight
+=s
+I'll get it together
+not my day, sorry
+=m
+Timing's off.
+Missing my shots.
+
+@revenge
+=a
+Got him back.
+Returned it.
+=l
+even now
+back at you
+=s
+got my revenge
+even!
+=m
+Settled.
+Score's even, {enemy}.
+
+@dominated_by
+=a
+{enemy} has my number.
+Well played, {enemy}.
+=l
+ok {enemy} you win
+{enemy} owns me
+=s
+you're good {enemy}
+{enemy} again, wp
+=m
+{enemy} beats my timing.
+Good shooting, {enemy}.

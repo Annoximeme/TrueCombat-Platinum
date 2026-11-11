@@ -1,0 +1,317 @@
+# Voice pass (1.2.0): signature lines that make each personality recognisable.
+# entry: impatient, "on me", "trade me", "send it".  anchor: calm, two short sentences, "They won't pass."
+# lurker: "btw", "lol", timing talk, behind enemy lines.  support: "guys", offers utility, encourages.
+# marksman: lines, angles, range, "mine".
+
+@contact_one
+=e
+one {area}, send it
+one {area}, trade me if I die
+one {area}, on me
+one {area}, free kill
+one {area}, I'm not waiting
+one {area}, watch this
+=a
+One at {area}. He won't get through.
+One at {area}. Easy. I have him.
+One at {area}. Stay calm.
+One at {area}. Let him come.
+One at {area}. I'm not moving.
+=l
+one {area} btw, I'm behind him
+one {area}, give me 5 sec
+one {area}, he thinks he's alone
+one {area}, don't shoot yet
+one {area}, he'll walk past me
+one {area}, shh
+=s
+one at {area}, want a flash?
+one at {area} guys, I can smoke it
+one at {area}, I'm coming to help
+one at {area}, flash ready when you are
+one at {area}, don't go alone
+one at {area}, I'll set you up
+=m
+One at {area}. Mine.
+One, {area}. Inside my range.
+One at {area}. Line's clean.
+One, {area}. Waiting for the head.
+One at {area}. Leave him to me.
+One, {area}. Don't spook him.
+
+@contact_many
+=e
+{count} {area}, send it anyway
+{count} {area}, on me, trade me
+{count} {area}, I take first two lol
+{count} at {area}, not waiting
+=a
+{count} at {area}. They won't pass.
+{count} at {area}. Calm. Hold your spots.
+{count} at {area}. Let them come to us.
+{count} at {area}. I'm staying.
+=l
+{count} {area} btw, backs to me
+{count} {area}, give me 5 sec then go
+{count} {area}, nobody watching their flank
+{count} {area}, shh, wait
+=s
+{count} at {area} guys, smoke ready
+{count} at {area}, I'll flash, you swing
+{count} at {area}, together or not at all
+{count} at {area}, I can slow them with smoke
+=m
+{count} at {area}. First one's in my scope.
+{count}, {area}. They're inside my range.
+{count} at {area}. Clean lines on two.
+{count}, {area}. I thin them, you hold.
+
+@kill_confirm
+=e
+got him, send the next
+dead, on to the next
+got him, keep up
+too slow lol
+=a
+Got him. Nobody passes.
+Down. Line's still mine.
+He's down. Easy.
+One less. Stay calm.
+=l
+got him btw
+got one, they dont know
+dead, still hidden
+one gone quietly
+=s
+got him guys, keep going
+he's down, you're safe
+got him, anyone need help?
+one down, nice setup
+=m
+Down. My angle.
+One shot. Down.
+Down at range.
+He walked into the line.
+
+@holding
+=e
+holding {area}, not for long
+ok {area}, but I'm bored already
+=a
+Holding {area}. Nothing gets by.
+{area} is mine. Go play.
+Holding {area}. Take your time.
+=l
+sitting {area}, forget I'm here
+{area}, waiting for the late one
+hiding {area} btw
+=s
+holding {area}, shout if you need utility
+I've got {area}, go ahead guys
+on {area}, smoke ready
+=m
+{area}. My line.
+Holding {area}. Nobody crosses.
+Set on {area}. Long angle.
+
+@moving_to
+=e
+going {area}, keep up
+{area}, on me
+pushing {area}, trade me
+=a
+Moving to {area}. Steady.
+Going {area}. No rush.
+=l
+going {area} btw
+off to {area}, back later
+sneaking {area}
+=s
+going {area}, come with me guys
+heading {area}, utility ready
+=m
+Going {area}. Better line.
+Moving to {area} for range.
+
+@round_start_generic
+=e
+on me
+send it
+fast round
+don't wait for me lol
+=a
+Stay calm. Hold your spots.
+Easy. Same discipline.
+Nobody passes this round.
+Slow and steady.
+=l
+dont wait for me
+see you later
+going my own way
+shh
+=s
+together this round guys
+call what you need, I have utility
+I'm with you guys
+shout if you need a smoke
+=m
+I'll find a line.
+Give me a long angle.
+Setting up at range.
+I'll open the round.
+
+@round_won
+=e
+too fast for them
+send it again
+=a
+Well held.
+Calm round. Good.
+=l
+never saw me
+too easy from behind
+=s
+great teamwork guys
+love it, gj all
+=m
+Good lines.
+Clean angles.
+
+@round_lost
+=e
+I'll go faster
+my bad, too greedy
+=a
+Stay calm. Reset.
+We hold better next round.
+=l
+they checked my spot
+need a new spot
+=s
+it's ok guys
+good try, we're close
+=m
+Bad angles. Adjusting.
+Wrong line. My fault.
+
+@damage_taken
+=e
+hit, don't care
+tagged, still swinging
+=a
+Hit. Not moving.
+Took one. Line holds.
+=l
+hit, cover's blown
+tagged, relocating
+=s
+hit, but I'm with you
+I'm hit, can someone cover?
+=m
+Hit. Off the angle.
+Tagged. New position.
+
+@need_help
+=e
+trade me {area}
+need one body {area}
+=a
+{area} is under pressure. Send one.
+I can hold {area} with one more.
+=l
+cover's blown {area}, help
+they found me {area}
+=s
+I need you guys at {area}
+help at {area}, I'm out of utility
+=m
+Too close at {area}. Need a rifle here.
+They're inside my range, {area}. Help.
+
+@falling_back
+=e
+ugh, backing off
+back, but I'm going again
+=a
+Giving ground. Slowly.
+Falling back. Still calm.
+=l
+slipping out
+gone
+=s
+back to you guys
+falling back, smoke out
+=m
+Too close. Backing to range.
+Giving up the angle.
+
+@enemy_heard
+=e
+I hear {area}, sending it
+=a
+Sound at {area}. Let them come.
+=l
+heard {area} btw
+someone {area}, he's sneaking too
+=s
+I hear {area} guys, careful
+=m
+Sound, {area}. Turning the scope.
+
+@last_enemy
+=e
+last one, he's mine
+one left, send it
+=a
+One left. Calm.
+Last one. No gifts.
+=l
+last one, he's lost lol
+one left, I'll find him
+=s
+last one guys, together
+one left, don't give him a duel
+=m
+One left. Hold lines.
+Last one. He has to cross.
+
+@clutch_start
+=e
+watch and learn
+all me, fine
+=a
+Calm. I'll take my time.
+Alone. Nobody passes anyway.
+=l
+finally some quiet
+just how I like it
+=s
+I'll try my best guys
+wish me luck
+=m
+One at a time.
+I need one clean line.
+
+@reloading
+=e
+reload, then I go again
+=a
+Reloading. Hold my angle.
+=l
+reloading btw
+=s
+reloading, cover me guys
+=m
+Reloading. Line's open.
+
+@teammate_down
+=e
+{name} down, sending it
+=a
+{name} is down. Stay calm.
+=l
+{name} down btw
+=s
+{name} down, stay together guys
+=m
+{name} down. I'll get the angle.

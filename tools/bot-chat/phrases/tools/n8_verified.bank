@@ -1,0 +1,249 @@
+# Pass 1.3.0: situations split out of the generic contact and kill calls, so a line never claims
+# something the game has not checked. Lines are moved here by edits.txt; the ones below fill the rest.
+
+@contact_unaware | contact | team | 8 | {area} | {count} | Bot sees an enemy who has not noticed it (not facing the bot, notice state idle). Beats contact_one and contact_many.
+=e
+one {area}, he hasn't seen me, going
+one {area} back turned, free kill
+he's looking away {area}, swinging
+one {area} doesn't see me, send it
+got the drop on one {area}
+=a
+One at {area}. He hasn't seen me.
+One at {area}, facing away.
+I have the drop on one at {area}.
+One at {area}, unaware. Taking the shot.
+=l
+one {area}, no idea I'm here
+one {area}, facing the wrong way lol
+he's got his back to me {area}
+behind one {area}, say when
+=s
+one at {area}, he hasn't seen us
+one at {area} facing away, go now
+he's not looking, {area}, take him
+one at {area}, back turned, I'll flash anyway
+=m
+One at {area}. Unaware.
+One, {area}. He hasn't looked up.
+One at {area}, facing away. Easy shot.
+One, {area}. No idea I'm here.
+He's looking the wrong way, {area}.
+
+@contact_running | contact | team | 8 | {area} | | Bot sees an enemy sprinting.
+=e
+one running {area}
+one sprinting {area}, cut him off
+runner {area}
+he's running {area}, on him
+one {area} full sprint
+=a
+One running through {area}.
+Runner at {area}.
+One moving fast at {area}.
+One sprinting, {area}. Let him come.
+=l
+one running {area}
+runner {area} btw
+one in a hurry {area}
+he's sprinting {area}, loud
+=s
+one running at {area}!
+runner at {area}, careful
+one sprinting through {area}
+he's running {area}, watch the exit
+=m
+Runner, {area}.
+One sprinting, {area}. Leading him.
+Fast mover at {area}.
+One running, {area}. Hard shot.
+
+@contact_sneaking | contact | team | 8 | {area} | {count} | Bot sees an enemy walking or crouched (moving quietly).
+=e
+one sneaking {area}
+one {area} walking, rush him
+he's creeping {area}
+one {area} crouch walking lol
+=a
+One walking at {area}.
+One at {area}, moving quietly.
+One creeping through {area}.
+One at {area}, taking his time.
+=l
+one sneaking {area}
+another sneaky one {area}
+one creeping {area}, like me
+he's walking {area}, thinks he's quiet
+=s
+one sneaking at {area}, careful
+one walking quietly at {area}
+careful, one creeping {area}
+one at {area}, moving slow
+=m
+One creeping, {area}.
+One walking, {area}. Easy track.
+Slow target at {area}.
+One, {area}, moving quietly.
+
+@contact_static | contact | team | 10 | {area} | {count} | Bot sees an enemy who is standing still or holding a spot.
+=e
+one {area} not moving
+one holding {area}, nade him
+he's just standing {area}
+one {area} parked
+=a
+One holding at {area}.
+One at {area}, not moving.
+One set up at {area}.
+One stationary at {area}.
+=l
+one parked {area}
+one {area}, statue
+he's holding {area}
+one not moving {area}
+=s
+one holding at {area}, careful
+one at {area}, he's set up
+one waiting at {area}
+one at {area} holding an angle
+=m
+One static, {area}.
+Stationary target, {area}.
+One holding, {area}. Easy shot.
+One at {area}. He's not moving.
+
+@enemy_heard_door | contact | team | 15 | {area} | | Bot heard a door open or close.
+=e
+door {area}
+someone opened {area}
+door {area}, they're coming
+heard the door {area}
+=a
+Door at {area}.
+Someone used the door at {area}.
+Door sound, {area}.
+I heard the door at {area}.
+=l
+door {area}
+heard the door {area}
+someone opened the door {area}
+door {area}, someone's coming
+=s
+door at {area}!
+I heard the door at {area}
+someone opened {area}, careful
+door {area} guys
+=m
+Door, {area}.
+Door sound at {area}.
+Heard the door, {area}.
+Door at {area}. Turning.
+
+@kill_unaware | action | team | 8 | | {area} {enemy} | Bot killed an enemy who never noticed it.
+=e
+he never saw me lol
+free kill
+got him from behind
+he wasn't even looking
+too easy, back turned
+=a
+Got him. He never saw me.
+One down. He wasn't looking.
+Got him from behind.
+Down. Never turned around.
+=l
+never knew
+free one
+from behind, as usual
+he had no idea
+=s
+got him, he didn't see me
+got one from behind!
+he never turned, got him
+one down, he wasn't looking
+=m
+Down. Never saw the line.
+He never looked up.
+Unaware. Down.
+Got him. He didn't know.
+
+@round_won_detonated | round | team | 0 | | | Attackers won because the bomb went off.
+=e
+boom
+bomb went off lets go
+kaboom ez
+it blew, nice
+=a
+Detonation. Good hold.
+Bomb went off. Well held.
+It went off. Good work.
+Held it to the end.
+=l
+boom
+it blew
+boom lol
+went off
+=s
+boom! great hold guys
+it went off, gj all
+bomb exploded, nice hold
+we held it, boom
+=m
+Detonation.
+It went off.
+Held the line to the end.
+Boom. Good hold.
+
+@round_won_defused | round | team | 0 | | | Defenders won by defusing.
+=e
+defused lets go
+defused ez
+got the defuse
+bomb's off
+=a
+Defused. Good retake.
+Bomb's defused. Well done.
+Defuse complete.
+Good retake. Defused.
+=l
+defused
+bomb's off
+defused lol
+got it off
+=s
+defused! great retake
+we defused it, gj all
+defused, nice teamwork
+bomb's off, well done
+=m
+Defused.
+Defuse done.
+Clean retake. Defused.
+Bomb's off.
+
+@dead_enemy_low | damage | team | 0 | | {area} | Bot died after dealing heavy damage to its killer (50 or more). Beats dead_info.
+=e
+he's low, finish him
+he's one shot {area}
+one shot, go get him
+he's nearly dead {area}
+=a
+He's low. Finish him.
+He's one shot, {area}.
+I hit him hard. He's weak.
+He's hurt badly. {area}.
+=l
+he's low
+one shot {area}
+he's nearly dead
+low, finish him
+=s
+he's one shot, go!
+he's very low, {area}
+I hurt him, finish him
+he's almost dead, {area}!
+=m
+He's low. One more.
+One shot, {area}.
+Hit him twice. He's weak.
+Low. {area}.

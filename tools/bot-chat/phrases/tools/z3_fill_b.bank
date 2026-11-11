@@ -1,0 +1,659 @@
+# Fill pass (1.2.0). Part B: orders, questions, pings.
+
+@order_cover_me
+=e
+go, I shoot anything that moves
+covering you {name}
+=a
+You're covered, {name}.
+Move. I hold.
+=l
+watching you {name}
+go
+=s
+I'm watching you {name}
+go go, covered
+=m
+Your lane's covered.
+Move, {name}. Scoped.
+
+@order_watch
+=e
+fine, watching {area}
+{area}, got it
+=a
+Eyes on {area}.
+{area} is covered.
+=l
+on {area}
+eyes on {area}
+=s
+got {area}, don't worry
+{area}, watching!
+=m
+{area}, locked.
+Line on {area}.
+
+@order_smoke
+=e
+smoke's out
+throwing smoke
+=a
+Smoke's away.
+Smoke on the way.
+=l
+smoke going
+ok smoke
+=s
+smoke's on its way
+here's your smoke
+=m
+Smoke away.
+Smoking it.
+
+@order_flash
+=e
+flash going
+flash in, go
+=a
+Flash away.
+Flash out. Turn.
+=l
+flash going
+ok flash
+=s
+flash, turn away!
+here it comes
+=m
+Flash away.
+Flash. Look away.
+
+@order_frag
+=e
+frag going
+cooking one
+=a
+Frag away.
+Nade out, {area}.
+=l
+frag going
+ok nade
+=s
+frag going!
+grenade {area}, careful
+=m
+Frag away.
+Nade, {area}.
+
+@order_no_utility
+=e
+used mine
+got nothing
+=a
+I've used mine.
+Nothing to throw.
+=l
+used them
+nothing
+=s
+I used mine already, sorry
+all out!
+=m
+Used mine.
+Empty handed.
+
+@order_drop_bomb
+=e
+it's on the floor
+take it then
+=a
+It's down. Pick it up.
+Dropping the bomb.
+=l
+on the floor
+yours
+=s
+there you go
+bomb's on the ground for you
+=m
+On the ground.
+Dropped it.
+
+@order_take_bomb
+=e
+I got it
+bomb's with me
+=a
+I have it now.
+Taking the bomb.
+=l
+picking it up
+ok mine
+=s
+picking it up
+I've got it now
+=m
+I'll take it.
+Bomb's on me.
+
+@order_plant
+=e
+planting now
+going down
+=a
+Starting the plant.
+Planting {area}.
+=l
+planting quiet
+ok
+=s
+planting now, watch me
+going down, cover!
+=m
+Planting.
+Starting it.
+
+@order_defuse
+=e
+I'm on it
+defusing go
+=a
+Going on the bomb.
+Defusing. Hold them.
+=l
+ok defusing
+on the bomb
+=s
+defusing, watch my back
+on the bomb!
+=m
+Defusing.
+On the bomb.
+
+@order_spread
+=e
+ok ok spreading
+moving off
+=a
+Giving space.
+Spread. Copy.
+=l
+spreading out
+moving
+=s
+spreading
+moving over
+=m
+Spread.
+Taking distance.
+
+@order_quiet
+=e
+quiet, got it
+walking walking
+=a
+Silent from here.
+No noise. Copy.
+=l
+thats my style
+shh
+=s
+quiet now
+ok, no running
+=m
+Silent.
+Copy. Slow.
+
+@order_flank
+=e
+going behind them
+flank, on it
+=a
+Taking the flank.
+Flank. Copy.
+=s
+I'll go round
+taking the flank
+=m
+Around the side.
+Flank. Copy.
+
+@order_wait
+=e
+ok ok waiting
+holding
+=a
+Standing by.
+Waiting on you.
+=l
+holding
+ok wait
+=s
+holding!
+standing by
+=m
+Standing by.
+Wait. Copy.
+
+@order_fallback
+=e
+back back
+ok falling back
+=a
+Back. Copy.
+Falling back now.
+=l
+falling back
+going back
+=s
+ok, pulling back
+back to you
+=m
+Back to cover.
+Falling back now.
+
+@order_lead
+=a
+Taking point.
+I'll go in front.
+=l
+me first then
+going first, quiet
+=s
+I'll take point
+me first, stay close
+=m
+Point. Copy.
+I'll lead. Cover me.
+
+@order_stack
+=e
+everyone {area} lets go
+on my way {area}
+=a
+Stack on {area}. Copy.
+Coming to {area}.
+=l
+{area}, coming
+ok stacking
+=s
+on my way to {area}
+{area} together!
+=m
+Stacking {area}. Copy.
+Coming {area}.
+
+@order_declined_role
+=e
+I'm carrying, can't
+bomb first
+=a
+Carrying. Can't leave it.
+Not with the bomb on me.
+=l
+got the bomb
+busy with bomb
+=s
+I've got the bomb, can't sorry
+can't leave the bomb
+=m
+I'm the carrier.
+Bomb comes first.
+
+@order_too_far
+=e
+miles away
+can't get there
+=a
+Wrong side of the map.
+Too far to help.
+=l
+too far lol
+way off
+=s
+I'm far, I'll try
+can't reach you in time
+=m
+No line from here.
+Too far to cover.
+
+@order_dead
+=e
+can't, dead
+I'm out
+=a
+I'm out this round.
+Can't. I'm down.
+=l
+dead, next round
+cant, dead
+=s
+I'm down, sorry!
+can't, I'm dead
+=m
+Down this round.
+Out.
+
+@ask_status_reply
+=a
+{area}. Holding.
+At {area}, all good.
+=s
+I'm {area}, all good
+near {area}
+=m
+{area}. Scoped.
+Set at {area}.
+
+@ask_count_reply
+=a
+I count {count}.
+{count} left.
+=l
+{count} maybe
+saw {count}
+=s
+I saw {count}
+{count}, I think
+=m
+{count} confirmed.
+{count} seen.
+
+@ask_unknown_reply
+=e
+no clue
+haven't seen anyone
+=a
+I don't know.
+Nothing to report.
+=l
+havent seen anyone
+nothing
+=s
+I don't know, sorry
+nothing on my side
+=m
+No information.
+Nothing in my lines.
+
+@ask_bomb_reply
+=e
+bomb's on me
+it's on the floor {area}
+=a
+I'm carrying.
+It's on the ground at {area}.
+=l
+I got it
+on the floor {area}
+=s
+I'm carrying it
+bomb's on the ground, {area}
+=m
+I carry.
+On the ground, {area}.
+
+@reply_are_you_bot
+=a
+I'm a bot, yes.
+Correct. Bot.
+=s
+I am! a bot
+yes, one of the bots
+=m
+Bot. Correct.
+Yes, bot.
+
+@reply_compliment
+=a
+Appreciated.
+Kind of you.
+=l
+cheers
+ty ty
+=s
+thanks!!
+that's nice, thanks
+=m
+Cheers.
+Thanks, {name}.
+
+@reply_insult
+=a
+I'll work on it.
+Okay.
+=l
+ok lol
+sure
+=s
+fair, sorry
+I'll try
+=m
+Fair point.
+Okay.
+
+@reply_blame
+=e
+my fault
+sorry team
+=a
+I'll fix it next round.
+Agreed. My fault.
+=l
+my fault
+yep
+=s
+you're right, sorry
+I'll do better
+=m
+Agreed.
+I'll adjust.
+
+@reply_gg
+=a
+gg all
+Well played.
+=l
+gg all
+wp
+=s
+gg all!
+good game!
+=m
+gg all
+Well played.
+
+@reply_glhf
+=a
+gl all
+Have fun.
+=l
+hf
+gl hf
+=s
+have fun!
+gl hf all
+=m
+Good luck.
+hf
+
+@reply_bye
+=a
+Goodbye.
+See you.
+=l
+later
+bye {name}
+=s
+see you!
+bye, take care
+=m
+See you.
+Bye, {name}.
+
+@reply_laugh
+=a
+Hah.
+That was funny.
+=l
+lmao
+heh
+=s
+hahaha
+lol yeah
+=m
+Heh. Yes.
+haha
+
+@reply_nice_try
+=e
+close
+ty, next
+=a
+Thank you.
+We'll get it.
+=l
+close
+ty ty
+=s
+thank you!
+so close
+=m
+Thanks. Next.
+Nearly.
+
+@reply_question_generic
+=e
+idk
+not a clue
+=a
+I don't know that one.
+Can't say.
+=l
+no clue
+who knows
+=s
+hmm, I don't know
+good question, no idea
+=m
+Don't know.
+Not my area.
+
+@ping_go_here_ack
+=e
+going there
+ok {area}
+=a
+Copy, {area}.
+Heading there.
+=l
+on my way
+ok going
+=s
+heading {area}
+ok, going there
+=m
+{area}. Moving.
+On my way.
+
+@ping_watch_ack
+=e
+watching it
+eyes on
+=a
+I have it.
+Covered.
+=l
+eyes on {area}
+got it
+=s
+watching it for you
+eyes on {area}
+=m
+Scoped on it.
+Covered.
+
+@ping_danger_ack
+=e
+ok not going {area}
+got it
+=a
+Copy. Danger at {area}.
+Staying clear of {area}.
+=l
+ok
+staying away
+=s
+careful everyone, {area}
+ok, avoiding it
+=m
+Danger, {area}. Copy.
+Staying off {area}.
+
+@ping_bomb_ack
+=e
+bomb, going
+got it
+=a
+Copy, bomb.
+Heading to the bomb.
+=l
+bomb, ok
+going
+=s
+ok bomb!
+heading there
+=m
+Bomb. Moving.
+On it.
+
+@human_call_thanks
+=e
+that call was perfect
+ty for the call {name}
+=a
+That call got him, {name}.
+Useful info, {name}.
+=l
+call was right
+thx for the call
+=s
+perfect call {name}
+that info helped, thanks!
+=m
+Call was exact, {name}.
+Right where you said.
+
+@human_wrong_call
+=e
+nothing there
+he's not {area}
+=a
+No contact at {area}.
+He's moved on from {area}.
+=l
+nothing there
+he left {area}
+=s
+he's gone from {area}
+nobody there now
+=m
+Empty. He moved.
+Clear at {area}.
+
+@called_by_name
+=e
+yo
+what
+=a
+I'm here.
+Listening.
+=l
+hm
+what
+=s
+I'm here!
+yes? need something?
+=m
+Here.
+Listening.

@@ -1,0 +1,648 @@
+# New situations, pass 2: orders, questions and chat from humans.
+
+@order_cover_me | orders | team | 0 | {name} | | Human asked the bot to cover them.
+=e
+got you {name}
+covering go
+=a
+Covering you, {name}.
+I have you. Move.
+=l
+covering
+k
+=s
+covering you {name}!
+I've got you, go
+=m
+Covering, {name}.
+Go. I have the line.
+
+@order_watch | orders | team | 0 | {area} | | Human asked the bot to watch an area or angle.
+=e
+watching {area}
+ok {area}
+=a
+Watching {area}.
+I have {area}.
+=l
+watching {area}
+k
+=s
+watching {area} for you
+on it, {area}
+=m
+On {area}.
+Scoped on {area}.
+
+@order_smoke | orders | team | 0 | | {area} | Human asked for a smoke; bot has one.
+=e
+smoking
+smoke out {area}
+=a
+Smoke going.
+Smoking {area}.
+=l
+smoke out
+=s
+smoke coming!
+smoking {area} for you
+=m
+Smoke going.
+Smoking {area}.
+
+@order_flash | orders | team | 0 | | | Human asked for a flash; bot has one.
+=e
+flashing
+flash, go
+=a
+Flash going.
+=l
+flash out
+=s
+flash coming, look away
+flashing for you!
+=m
+Flash going.
+
+@order_frag | orders | team | 0 | | {area} | Human asked for a grenade on a spot.
+=e
+nading
+nade {area}
+=a
+Frag going {area}.
+Grenade out.
+=l
+nade out
+=s
+nade going {area}
+=m
+Frag out, {area}.
+
+@order_no_utility | orders | team | 0 | | | Human asked for utility the bot doesn't have.
+=e
+I'm out
+no nades left
+=a
+I don't have one.
+None left.
+=l
+none left
+=s
+sorry, I'm out
+don't have one, sorry
+=m
+None left.
+Out.
+
+@order_drop_bomb | orders | team | 0 | | {name} | Human asked the bot to drop the bomb.
+=e
+here take it
+dropped
+=a
+Dropping it.
+Bomb's yours, {name}.
+=l
+dropped
+=s
+here you go {name}
+dropping the bomb for you
+=m
+Dropped.
+It's yours.
+
+@order_take_bomb | orders | team | 0 | | | Human asked the bot to pick up or carry the bomb.
+=e
+I'll take it
+got it
+=a
+I'll carry.
+Picking it up.
+=l
+ok I'll take it
+=s
+I'll take it!
+sure, I'll carry
+=m
+I'll carry.
+
+@order_plant | orders | team | 0 | | {area} | Human told the bot to plant.
+=e
+planting
+ok planting {area}
+=a
+Planting.
+On it.
+=l
+planting
+=s
+planting, cover me!
+=m
+Planting. Cover.
+
+@order_defuse | orders | team | 0 | | | Human told the bot to defuse.
+=e
+on it
+defusing
+=a
+Defusing. Cover me.
+=l
+on it
+=s
+on it, cover me!
+=m
+Defusing. Watch my back.
+
+@order_spread | orders | team | 0 | | | Human told bots to spread out.
+=e
+ok spreading
+=a
+Spreading out.
+=l
+k
+=s
+spreading out!
+=m
+Spreading.
+
+@order_quiet | orders | team | 0 | | | Human told bots to walk or stop making noise.
+=e
+ok walking
+fine, quiet
+=a
+Going quiet.
+Walking.
+=l
+finally
+k quiet
+=s
+ok, walking
+quiet, got it
+=m
+Quiet.
+Walking.
+
+@order_flank | orders | team | 0 | | {area} | Human told the bot to flank.
+=e
+flanking
+going round
+=a
+Flanking.
+Going around via {area}.
+=l
+my favourite
+on it
+flanking {area}
+=s
+going round!
+flanking {area}
+=m
+Flanking.
+Going around.
+
+@order_wait | orders | team | 0 | | | Human said wait.
+=e
+ok waiting
+fine
+=a
+Waiting.
+Holding for you.
+=l
+k
+waiting
+=s
+waiting for you!
+ok, holding
+=m
+Waiting.
+On your go.
+
+@order_fallback | orders | team | 0 | | {area} | Human told the bot to fall back.
+=e
+ok back
+backing off
+=a
+Falling back.
+Pulling back to {area}.
+=l
+k
+backing out
+=s
+falling back!
+coming back
+=m
+Falling back.
+
+@order_lead | orders | team | 0 | | | Human told the bot to go first.
+=e
+my pleasure
+going first
+finally
+=a
+I'll lead.
+Going first.
+=l
+ok
+if I must
+=s
+ok, I'll go first, trade me
+=m
+Fine. Going first.
+Not ideal, but going.
+
+@order_stack | orders | team | 0 | {area} | | Human told bots to stack one site or area.
+=e
+all {area} ok
+stacking {area}
+=a
+Stacking {area}.
+Moving to {area}.
+=l
+ok {area}
+=s
+coming {area}!
+stacking {area} with you
+=m
+Stacking {area}.
+
+@order_declined_role | orders | team | 0 | | | Bot is the carrier, defusing, or last alive and can't follow the order.
+=e
+got the bomb, can't
+can't, I'm on the bomb
+=a
+Can't. I have the bomb.
+Negative, I'm on the objective.
+=l
+cant, bomb
+=s
+can't, I have the bomb, sorry
+on the bomb, can't leave
+=m
+Can't. Objective.
+Negative. Carrying.
+
+@order_too_far | orders | team | 0 | | | Bot is too far away to help in time.
+=e
+too far
+I'm way off
+=a
+Too far. Can't make it.
+I won't get there in time.
+=l
+too far
+other side
+=s
+I'm too far, sorry
+other side of the map, coming anyway
+=m
+Too far.
+Wrong side.
+
+@order_dead | orders | team | 0 | | | Human gave an order to a dead bot.
+=e
+I'm dead lol
+dead
+=a
+I'm down.
+Dead. Next round.
+=l
+dead
+=s
+I'm dead, sorry
+dead, next round
+=m
+I'm down.
+Dead.
+
+@ask_status_reply | orders | team | 0 | {area} | | Human asked where the bot is or what it's doing.
+=e
+I'm {area}
+{area}
+at {area}, pushing
+=a
+I'm at {area}.
+Holding {area}.
+=l
+{area}
+im {area}
+somewhere near {area}
+=s
+I'm at {area}
+at {area}, need me?
+=m
+At {area}.
+{area}, watching long.
+
+@ask_count_reply | orders | team | 0 | {count} | {area} | Human asked how many enemies; bot knows.
+=e
+{count}
+{count} left
+{count}, {area}
+=a
+{count}.
+{count}, last seen {area}.
+=l
+{count}
+{count} I think
+=s
+{count} left I think
+{count}, near {area}
+=m
+{count}.
+{count}. {area}.
+
+@ask_unknown_reply | orders | team | 0 | | | Human asked something the bot has no info on.
+=e
+no idea
+dunno
+=a
+No info.
+Haven't seen anyone.
+=l
+dunno
+no clue
+=s
+not sure, sorry
+haven't seen them
+=m
+Unknown.
+No eyes on.
+
+@ask_bomb_reply | orders | team | 0 | | {name} {area} | Human asked who has the bomb or where it is.
+=e
+I have it
+{name} has it
+bomb's {area}
+=a
+I have the bomb.
+{name} has the bomb.
+Bomb is at {area}.
+=l
+me
+{name}
+its {area}
+=s
+I have it!
+{name} has it
+it's at {area}
+=m
+On me.
+{name} carries.
+Bomb, {area}.
+
+@reply_are_you_bot | orders | all | 60 | | | Human asks if it's a bot. Always honest.
+=e
+yep bot
+bot yeah
+I'm a bot lol
+=a
+Yes, I'm a bot.
+Bot, yes.
+=l
+yeah bot
+yes
+=s
+yep, I'm a bot!
+bot, but friendly
+=m
+Yes. Bot.
+I'm a bot.
+
+@reply_compliment | orders | all | 30 | | {name} | Human complimented the bot's play.
+=e
+thanks
+ty ty
+I know lol
+=a
+Thank you.
+Thanks, {name}.
+=l
+ty
+=s
+thanks {name}!
+aw thanks
+=m
+Thanks.
+Appreciated.
+
+@reply_insult | orders | all | 60 | | | Human flamed the bot. Bot stays calm and friendly, never hits back.
+=e
+lol
+fair
+next round
+=a
+Fair enough.
+I'll do better.
+=l
+lol
+ok
+=s
+sorry, I'll try harder
+my bad
+=m
+Noted.
+Fair.
+
+@reply_blame | orders | team | 60 | | | Human blamed the bot for losing the round.
+=e
+yeah my bad
+sorry rushed it
+=a
+My mistake. Sorry.
+You're right.
+=l
+mb
+yeah
+=s
+sorry, that one's on me
+my bad guys
+=m
+My fault.
+Fair. Sorry.
+
+@reply_gg | orders | all | 20 | | | Human said gg.
+=e
+gg
+gg wp
+ggs
+=a
+gg
+Good game.
+=l
+gg
+=s
+gg!
+gg wp
+=m
+gg
+gg wp
+
+@reply_glhf | orders | all | 30 | | | Human said glhf.
+=e
+gl
+glhf
+u2
+=a
+glhf
+Good luck.
+=l
+gl
+u2
+=s
+glhf!
+you too!
+=m
+gl hf
+glhf
+
+@reply_bye | orders | all | 30 | | {name} | Human said goodbye.
+=e
+cya
+bye
+later {name}
+=a
+Bye.
+See you, {name}.
+=l
+cya
+bb
+=s
+bye {name}!
+cya, gg
+=m
+Bye.
+cya
+
+@reply_laugh | orders | all | 40 | | | Human laughed at something that happened.
+=e
+lol
+haha
+lmao
+=a
+Heh.
+=l
+lol
+xd
+=s
+haha
+lol!
+=m
+Heh.
+lol
+
+@reply_nice_try | orders | team | 30 | | | Human said nt after the bot failed.
+=e
+ty
+next one
+=a
+Thanks.
+=l
+ty
+=s
+thanks, sorry
+ty!
+=m
+Thanks.
+
+@reply_question_generic | orders | all | 60 | | | Human asked the bot something it can't answer. Short, honest.
+=e
+no idea lol
+ask the humans
+=a
+I can't help with that.
+Not sure.
+=l
+dunno
+idk
+=s
+not sure, sorry!
+no idea, sorry
+=m
+Couldn't say.
+Unknown.
+
+@ping_go_here_ack | orders | team | 0 | {area} | | Human pinged 'go here'.
+=e
+going
+{area} ok
+=a
+Moving to {area}.
+=l
+k
+going {area}
+=s
+on my way!
+going {area}
+=m
+Moving to {area}.
+
+@ping_watch_ack | orders | team | 0 | {area} | | Human pinged 'watch here'.
+=e
+watching
+=a
+Eyes on {area}.
+=l
+watching
+=s
+watching {area}!
+=m
+Eyes on {area}.
+
+@ping_danger_ack | orders | team | 8 | {area} | | Human pinged danger on an area.
+=e
+ok careful {area}
+noted
+=a
+Understood. Avoiding {area}.
+=l
+k
+avoiding {area}
+=s
+thanks, staying away from {area}
+=m
+Noted. {area}.
+
+@ping_bomb_ack | orders | team | 0 | | {area} | Human pinged the bomb or a site.
+=e
+on it
+going for it
+=a
+Moving on the objective.
+=l
+k
+=s
+going for it!
+=m
+On the objective.
+
+@human_call_thanks | orders | team | 30 | {name} | | A human's call-out led to a kill for the bot.
+=e
+nice call {name}
+good info {name}
+=a
+Good call, {name}.
+Thanks for the info, {name}.
+=l
+good call
+ty {name}
+=s
+great call {name}!
+thanks for the info {name}
+=m
+Good call, {name}.
+Accurate call.
+
+@human_wrong_call | orders | team | 60 | | {area} | A human's call turned out wrong. Neutral, no blame.
+=e
+nobody {area}
+no one there
+=a
+Nothing at {area}.
+{area} was empty.
+=l
+empty
+nobody {area}
+=s
+nothing at {area}, all good
+=m
+{area} is empty.
+No contact there.

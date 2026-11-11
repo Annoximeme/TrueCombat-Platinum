@@ -1,0 +1,536 @@
+# New situations, pass 2: match flow, server events and the people on it.
+
+@round_start_generic | round | team | 0 | | | Round start, no specific plan to announce.
+=e
+lets go
+gl
+come on
+this one's ours
+go go
+=a
+Good luck.
+Same as before.
+Play together.
+Stay calm.
+=l
+gl
+ok
+=s
+gl guys
+good luck all
+let's get this one
+we got this
+=m
+Good luck.
+Steady round.
+
+@first_round | round | all | 0 | | | First round of the match.
+=e
+glhf
+lets go
+gl all
+=a
+glhf
+Good luck, have fun.
+=l
+glhf
+gl
+=s
+glhf everyone!
+good luck all
+=m
+glhf
+Good luck.
+
+@match_point_us | round | team | 0 | | | Bot's team needs one more round to win.
+=e
+one more
+match point lets go
+last one, finish it
+=a
+Match point. Stay focused.
+One more round.
+=l
+one more
+match point
+=s
+one more guys!
+match point, focus
+=m
+Match point.
+One more. No mistakes.
+
+@match_point_them | round | team | 0 | | | Enemy needs one more round to win.
+=e
+must win
+not over yet
+come on, this one
+=a
+We need this one.
+Not over. Play it clean.
+=l
+need this one
+=s
+we need this one guys
+not over yet, come on
+=m
+Must win.
+One at a time.
+
+@last_round | round | team | 0 | | | Final round of the match, score decides it.
+=e
+last round all in
+this is it
+=a
+Last round. Everything on this.
+Final round.
+=l
+last one
+=s
+last round, let's do it!
+this is it guys
+=m
+Final round.
+Last one. Make it count.
+
+@score_tied | round | team | 0 | | | Score is level.
+=e
+tied, come on
+even again
+=a
+All square.
+Tied. Next round matters.
+=l
+tied
+=s
+it's tied, we got this
+=m
+Level.
+Tied.
+
+@comeback | round | team | 0 | | | Team has won several in a row after being behind.
+=e
+comeback is on
+we're back
+they're shaking
+=a
+We're back in it.
+Keep this going.
+=l
+comeback
+=s
+we're coming back!
+keep it up guys
+=m
+Momentum's ours.
+Back in it.
+
+@big_lead | round | team | 0 | | | Team is far ahead. No gloating at the enemy.
+=e
+keep rolling
+don't slow down
+=a
+Good lead. Don't get sloppy.
+Stay sharp.
+=l
+easy so far
+=s
+great job so far, keep it up
+=m
+Good lead. Stay disciplined.
+
+@far_behind | round | team | 0 | | | Team is far behind. Encouraging.
+=e
+one round at a time
+still playable
+=a
+One round at a time.
+Let's take one and build.
+=l
+just get one
+=s
+it's ok, one round at a time
+we can still do this
+=m
+One at a time.
+Reset and take one.
+
+@flawless_round | round | team | 0 | | | Team won the round without losing anyone.
+=e
+flawless
+nobody died lol
+too clean
+=a
+Clean round. Nobody down.
+Perfect round.
+=l
+clean
+=s
+perfect round guys!
+nobody died, nice
+=m
+Flawless.
+Clean round.
+
+@close_round_won | round | team | 0 | | | Won a round with one player left or seconds on the clock.
+=e
+close one
+phew
+barely
+=a
+Close. Good hold.
+Tight round.
+=l
+close
+=s
+phew, close one!
+that was tight
+=m
+Close.
+Narrow.
+
+@round_won_time | round | team | 0 | | | Won because the clock ran out.
+=e
+time, ez
+they ran out
+=a
+Time. Good hold.
+Clock did the work.
+=l
+time lol
+=s
+time! good hold guys
+=m
+Time.
+Patience wins.
+
+@round_lost_time | round | team | 0 | | | Lost because the clock ran out.
+=e
+too slow
+we waited too long
+=a
+Ran out of time.
+We need to go earlier.
+=l
+too slow
+=s
+too slow, let's go earlier next time
+=m
+Too slow.
+Clock beat us.
+
+@round_won_bomb | round | team | 0 | | | Won by detonation or defuse.
+=e
+boom
+bomb ez
+defused lets go
+=a
+Objective done.
+Good work on the bomb.
+=l
+boom
+=s
+nice, objective!
+good job on the bomb
+=m
+Objective.
+Bomb did it.
+
+@side_switch | round | all | 0 | | | Teams switch sides at half.
+=e
+other side now
+attack time
+=a
+Switching sides.
+Second half.
+=l
+switch
+=s
+second half, gl all
+switching sides!
+=m
+Second half.
+Other side.
+
+@overtime | round | all | 0 | | | Match goes to extra rounds.
+=e
+overtime lets go
+OT
+=a
+Overtime.
+Extra rounds. Stay calm.
+=l
+ot
+=s
+overtime! good game so far
+=m
+Overtime.
+Close match.
+
+@teammate_joined | round | team | 30 | {name} | | A human joined the bot's team.
+=e
+hey {name}
+welcome {name}
+=a
+Welcome, {name}.
+Hi {name}.
+=l
+hi {name}
+=s
+welcome to the team {name}!
+hi {name}!
+=m
+Welcome, {name}.
+
+@teammate_left | round | team | 60 | | {name} | A teammate disconnected.
+=e
+we lost one
+{name} left
+=a
+We're one down.
+{name} left.
+=l
+{name} left
+=s
+{name} left, stay together
+we're one down, careful
+=m
+One short.
+{name}'s gone.
+
+@enemy_left | round | all | 60 | | | An enemy disconnected; teams uneven.
+=e
+they lost one
+=a
+They're one short.
+=l
+they're down one
+=s
+they lost a player, balance?
+=m
+They're one down.
+
+@auto_balanced | round | all | 60 | | | Bot was moved to the other team.
+=e
+switched lol
+new team who dis
+=a
+Moved over. Hi.
+=l
+hi new team
+=s
+hi new team!
+got balanced, hi
+=m
+Balanced. Hello.
+
+@bot_replaced | round | all | 0 | | {name} | Bot is about to leave because a human took the slot.
+=e
+all yours {name}
+cya
+=a
+Slot's yours. Good luck.
+=l
+bye
+=s
+have fun {name}!
+good luck all, bye
+=m
+Yours. Good luck.
+
+@vote_called | round | all | 60 | | | A vote was called.
+=e
+vote
+f1
+=a
+Vote's up.
+=l
+vote
+=s
+vote, everyone
+=m
+Vote.
+
+@map_voted_good | round | all | 0 | | | Next map chosen and the bot "likes" it.
+=e
+yes this map
+love this one
+=a
+Good map.
+=l
+nice map
+=s
+ooh, good map
+=m
+Long lines. Good.
+I like this one.
+
+@map_start | round | all | 0 | | | New map just loaded.
+=e
+new map lets go
+hi again
+=a
+glhf on this one.
+=l
+hi
+=s
+hi again all, glhf
+=m
+glhf
+
+@afk_teammate | round | team | 120 | {name} | | A teammate hasn't moved. Polite.
+=e
+{name} you there?
+{name} wake up
+=a
+{name}, are you there?
+=l
+{name} afk?
+=s
+{name}, you ok?
+are you there {name}?
+=m
+{name}, still with us?
+
+@waiting_for_players | round | all | 120 | | | Warm-up, server waiting for more humans.
+=e
+need more people
+anyone joining?
+=a
+Waiting for players.
+=l
+empty
+=s
+waiting for more players
+invite your friends!
+=m
+Waiting.
+
+@human_first_blood | round | team | 30 | {name} | | Human teammate got the opening kill.
+=e
+nice opener {name}
+{name} first blood
+=a
+Good opening, {name}.
+=l
+nice {name}
+=s
+nice opening kill {name}!
+=m
+Good pick, {name}.
+
+@human_multi_kill | round | team | 20 | {name} | | Human teammate got three or more.
+=e
+{name} is cracked
+{name}!!!
+ok {name}
+=a
+Great round, {name}.
+Well played, {name}.
+=l
+{name} carrying
+=s
+{name}!! amazing
+wow {name}
+=m
+Impressive, {name}.
+Sharp, {name}.
+
+@human_plant | round | team | 0 | {name} | | Human teammate planted.
+=e
+nice {name}, hold it
+=a
+Good plant, {name}.
+=l
+planted, nice
+=s
+nice plant {name}!
+=m
+Good plant. Holding.
+
+@human_defuse | round | team | 0 | {name} | | Human teammate defused.
+=e
+{name} defused lets go
+=a
+Good defuse, {name}.
+=l
+nice defuse
+=s
+great defuse {name}!
+=m
+Clean defuse, {name}.
+
+@human_capture | round | team | 0 | {name} | | Human teammate captured the flag or point.
+=e
+{name} cap!
+=a
+Good capture, {name}.
+=l
+nice cap {name}
+=s
+nice cap {name}!
+=m
+Good run, {name}.
+
+@human_died_unlucky | round | team | 30 | {name} | | Human teammate died in a way that wasn't their fault.
+=e
+unlucky {name}
+=a
+Unlucky, {name}.
+=l
+unlucky
+=s
+unlucky {name}, nt
+=m
+Unlucky.
+
+@top_fragger_bot | round | all | 0 | | | Match end, bot was top of the board. Modest.
+=e
+carried lol
+=a
+Good team effort.
+=l
+:)
+=s
+team effort!
+=m
+Good lines today.
+
+@top_fragger_human | round | all | 0 | {name} | | Match end, a human was top of the board.
+=e
+{name} carried
+=a
+Well played, {name}.
+=l
+wp {name}
+=s
+{name} carried us, wp!
+=m
+Strong game, {name}.
+
+@close_match_end | round | all | 0 | | | Match ended by one or two rounds.
+=e
+that was close
+what a game
+=a
+Close game. Well played.
+=l
+close one
+=s
+what a close game, wp all
+=m
+Close match. Good game.
+
+@rematch | round | all | 0 | | | After the match.
+=e
+again?
+one more?
+=a
+Another?
+=l
+again?
+=s
+rematch?
+one more game?
+=m
+Again?

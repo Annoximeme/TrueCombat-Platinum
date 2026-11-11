@@ -1,0 +1,66 @@
+# Fill after the 1.3.0 edits removed ambiguous lines.
+
+@enemy_planting
+=a
+They're planting now.
+He's on the plant. Push.
+=l
+he's planting btw
+they're planting now
+he's planting, go
+someone's planting
+=m
+He's planting. Shooting.
+They're planting. Line's open.
+He's planting now.
+
+@enemy_defusing
+=e
+he's defusing, peek him
+they're on the bomb, go
+=l
+someone's defusing
+he's on the bomb btw
+=m
+He's defusing. Firing.
+Someone's on the bomb.
+
+@died_in_duel
+=e
+he was faster
+he got me first
+
+@round_won_bomb
+=e
+objective, nice
+bomb did the work
+won it on the bomb
+=l
+objective win
+bomb round
+
+@heard_plant
+=l
+they're planting, I hear it
+hearing them plant
+i hear the plant
+=s
+I can hear them planting
+they're planting, hurry
+=m
+They're planting, by ear.
+I hear them planting.
+
+@heard_defuse
+=e
+I hear him defusing
+they're defusing, I hear it
+=l
+he's defusing, hear it
+i hear the defuse
+=s
+I hear him on the bomb
+he's defusing, I can hear it
+=m
+I hear him defusing.
+He's on it, by sound.
