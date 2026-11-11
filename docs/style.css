@@ -1673,3 +1673,13 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
 @media (min-width: 1240px) and (max-width: 1559px) { .nav-support span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .nav-support { padding: 0 12px; } }
 .hero-log { justify-self: start; }
 .hero-cta .hero-log { align-self: center; }
+
+/* ------------------------------------------------------------------ language menu (five languages) */
+.nav-langs { position: relative; }
+.nav-langs summary { list-style: none; cursor: pointer; font: 600 .82rem/1 var(--f-display); letter-spacing: .12em; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 6px 7px; }
+.nav-langs summary::-webkit-details-marker { display: none; }
+.nav-langs summary:hover, .nav-langs[open] summary { color: var(--fg); border-color: var(--muted); }
+.nav-langs div { position: absolute; top: calc(100% + 10px); right: 0; z-index: 30; min-width: 150px; display: grid; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 18px 40px rgba(0, 0, 0, .45); }
+.nav-langs a { padding: 9px 12px; border-radius: 5px; color: var(--fg); text-decoration: none; font-size: .92rem; }
+.nav-langs a:hover { background: rgba(232, 234, 239, .07); }
+@media (max-width: 700px) { .nav-langs { display: none; } }
