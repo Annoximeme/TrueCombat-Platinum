@@ -2355,7 +2355,7 @@ TABLES = {'LABELS': {'maps': 'Mapy',
              'r_c': 'Przywitaj się na <a href="https://discord.gg/8kcHdg2Hch">Discordzie</a>. Weterani i nowi gracze umawiają tam swoje mecze.',
              'r_note': '<b>Nie znasz TC:E?</b> <a href="guide.html">Poradnik dla początkujących</a> opisuje sterowanie, tryby gry i nawyki, które pozwalają przeżyć.'}}
 
-JS = {'joinBtn': 'Dołącz', 'verified': 'Zweryfikowany', 'verifiedTip': 'Sprawdzony przez zespół TrueCombat: Platinum',
+JS = {'eac': 'Anti-cheat', 'eacTip': 'Chroniony przez Easy Anti-Cheat', 'eacReqTip': 'Chroniony przez Easy Anti-Cheat. Wymagany, aby dołączyć.', 'joinBtn': 'Dołącz', 'verified': 'Zweryfikowany', 'verifiedTip': 'Sprawdzony przez zespół TrueCombat: Platinum',
  'months': ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'],
  'latest': 'Najnowsza',
  'kindSetupLong': 'Instalator dla Windows',
