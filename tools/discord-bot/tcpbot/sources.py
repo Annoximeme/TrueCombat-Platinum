@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import asyncio
+import html
 import logging
 import re
 import time
@@ -225,15 +226,48 @@ async def load_devlog(session: aiohttp.ClientSession, feed: str) -> list[dict]:
         return []
 
 
-def article_image(site_root: str, url: str) -> str | None:
-    """og:image of a devlog article, read from the local copy of the site."""
-    name = url.rstrip("/").rsplit("/", 1)[-1]
-    if not re.fullmatch(r"[A-Za-z0-9._-]+\.html", name or ""):
+def _article_html(site_root: str, url: str) -> str | None:
+    """The local copy of a devlog article. The site serves clean addresses
+    (/devlog-x) from files named devlog-x.html, so both forms resolve."""
+    name = url.split("#", 1)[0].split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
+    if name and "." not in name:
+        name += ".html"
+    if not re.fullmatch(r"[A-Za-z0-9_-]+\.html", name or ""):
         return None
     try:
-        html = (Path(site_root) / name).read_text(encoding="utf-8", errors="replace")[:20000]
+        return (Path(site_root) / name).read_text(encoding="utf-8", errors="replace")[:200000]
     except OSError:
         return None
-    m = re.search(r'<meta\s+property="og:image"\s+content="([^"]+)"', html)
-    return m.group(1) if m else None
+
+
+def _plain_html(text: str) -> str:
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", "", text)).split())
+
+
+def article_meta(site_root: str, url: str) -> dict:
+    """What the devlog card shows beyond the feed: cover image, read time,
+    release state and the post's section headings."""
+    page = _article_html(site_root, url)
+    if not page:
+        return {}
+    head = page[:20000]
+    meta: dict = {}
+    m = re.search(r'<meta\s+property="og:image"\s+content="([^"]+)"', head)
+    if m:
+        meta["image"] = m.group(1)
+    m = re.search(r'"timeRequired"\s*:\s*"PT(\d+)M"', head) or re.search(r"<span>(\d+) min read</span>", page)
+    if m:
+        meta["minutes"] = int(m.group(1))
+    m = re.search(r'class="state[^"]*">([^<]+)<', page)
+    if m:
+        meta["state"] = _plain_html(m.group(1))
+    toc = re.search(r'<nav class="post-toc".*?</nav>', page, re.S)
+    if toc:
+        meta["sections"] = [_plain_html(x) for x in re.findall(r"<li><a [^>]*>(.*?)</a></li>", toc.group(0), re.S)]
+    return meta
+
+
+def article_image(site_root: str, url: str) -> str | None:
+    """og:image of a devlog article, read from the local copy of the site."""
+    return article_meta(site_root, url).get("image")
 

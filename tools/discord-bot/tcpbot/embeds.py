@@ -22,6 +22,8 @@ GOLD = 0xC9A227
 BLUE = 0x5B9BD5
 
 FOOTER = "TrueCombat: Platinum"
+# The studio crest, used as the small icon on every card's footer.
+SITE_ICON = "https://truecombat.eu/img/icon-192.png"
 
 
 def _now():
@@ -29,7 +31,7 @@ def _now():
 
 
 def _brand(embed: discord.Embed, text: str = FOOTER, stamp: bool = True) -> discord.Embed:
-    embed.set_footer(text=text)
+    embed.set_footer(text=text, icon_url=SITE_ICON)
     if stamp:
         embed.timestamp = _now()
     return embed
@@ -323,15 +325,17 @@ def release_announcement(cfg, rel: dict) -> discord.Embed:
     version = release_version(rel)
     parsed = T.parse_release_body(rel.get("body") or "")
     e = discord.Embed(title="TrueCombat: Platinum %s is out" % version, url=rel.get("html_url"), colour=RED)
+    e.set_author(name="Patch notes", url=cfg.site + "/news", icon_url=site_icon(cfg))
+    e.set_image(url=banner(cfg, "og-news"))
     intro = parsed["intro"] or "A new update is ready to download."
     e.description = T.clip(intro, 1200)
     shown = 0
     for sec in parsed["sections"]:
         if sec["title"].upper() in ("DEVELOPMENT",) or not sec["items"]:
             continue
-        if shown >= 6:
+        if shown >= 4:
             break
-        items = sec["items"][:4]
+        items = sec["items"][:3]
         more = len(sec["items"]) - len(items)
         value = "\n".join("• " + T.clip(i, 160) for i in items)
         if more > 0:
@@ -345,13 +349,70 @@ def release_announcement(cfg, rel: dict) -> discord.Embed:
     return _brand(e, "Version %s" % version)
 
 
-def devlog_post(cfg, article: dict, image: str | None) -> discord.Embed:
-    e = discord.Embed(title=article["title"], url=article["url"], colour=AMBER)
-    e.description = T.clip(article["summary"], 600) + "\n\n[Read the full article](%s)" % article["url"]
-    e.set_author(name="Devlog" + (" · " + article["category"] if article.get("category") else ""))
-    if image:
-        e.set_image(url=image)
-    return _brand(e, "Behind the scenes at Team Terminus")
+DEVLOG_COLOURS = {"roadmap": GOLD, "community": BLUE, "bots": GREEN, "gunplay": RED, "engine": RED,
+                  "graphics": RED, "online play": BLUE, "servers": BLUE}
+
+
+def site_icon(cfg) -> str:
+    return cfg.site + "/img/icon-192.png"
+
+
+def banner(cfg, name: str) -> str:
+    """One of the website's 1200x630 share images, used as a card's cover."""
+    return "%s/img/%s.jpg" % (cfg.site, name)
+
+
+def hook(text: str, limit: int = 320) -> str:
+    """The opening of a summary, cut at a sentence end so it reads as written."""
+    text = " ".join((text or "").split())
+    if len(text) <= limit:
+        return text
+    cut = max(text.rfind(". ", 0, limit), text.rfind("? ", 0, limit), text.rfind("! ", 0, limit))
+    return text[: cut + 1] if cut > limit // 3 else T.clip(text, limit)
+
+
+def _published(value: str) -> dt.datetime | None:
+    try:
+        when = dt.datetime.fromisoformat((value or "").replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return when if when.tzinfo else when.replace(tzinfo=dt.timezone.utc)
+
+
+def devlog_post(cfg, article: dict, meta: dict | str | None = None) -> discord.Embed:
+    """The devlog card: cover art, the hook, what the post covers and how long it takes."""
+    if isinstance(meta, str) or meta is None:
+        meta = {"image": meta} if meta else {}
+    category = article.get("category") or ""
+    e = discord.Embed(title=article["title"], url=article["url"],
+                      colour=DEVLOG_COLOURS.get(category.lower(), AMBER))
+    e.set_author(name="Devlog" + (" · " + category if category else ""), url=cfg.site + "/devlog",
+                 icon_url=site_icon(cfg))
+    lines = [hook(article.get("summary", ""))]
+    sections = [x for x in meta.get("sections") or [] if x][:6]
+    if sections:
+        shown = sections[:4]
+        lines += ["", "**Inside this post**"] + ["› " + T.clip(x, 70) for x in shown]
+        if len(sections) > len(shown):
+            lines.append("› *and %d more*" % (len(meta["sections"]) - len(shown)))
+    e.description = T.clip("\n".join(lines), 1500)
+    if meta.get("minutes"):
+        e.add_field(name="Read time", value="%d min" % meta["minutes"], inline=True)
+    if category:
+        e.add_field(name="Topic", value=category, inline=True)
+    if meta.get("state"):
+        e.add_field(name="Status", value=meta["state"], inline=True)
+    if meta.get("image"):
+        e.set_image(url=meta["image"])
+    e.set_footer(text="Team Terminus · truecombat.eu/devlog", icon_url=site_icon(cfg))
+    e.timestamp = _published(article.get("published", "")) or _now()
+    return e
+
+
+def devlog_headline(article: dict, role_id: int = 0) -> str:
+    """The line above the card, which is what a push notification shows."""
+    ping = "<@&%d> " % role_id if role_id else ""
+    return "%s**New on the devlog:** %s" % (ping, T.md(article["title"]))
 
 
 def release_draft_notice(cfg, rel: dict, has_notes: bool) -> str:
@@ -379,6 +440,7 @@ def welcome(cfg, member: discord.Member) -> discord.Embed:
     e.add_field(name="4 · Make it yours", value="`/link` connects your game profile to Discord for your rank "
                 "role and `/profile`.", inline=False)
     e.set_thumbnail(url=member.display_avatar.url)
+    e.set_image(url=banner(cfg, "og"))
     return _brand(e, stamp=False)
 
 
@@ -390,6 +452,7 @@ def onboarding_panel(cfg) -> discord.Embed:
         "**Playtester** · early builds and playtest sessions before a release\n"
         "**Event alerts** · scrims, community nights and tournaments\n\n"
         "Link your game profile with `/link` to get your rank role.")
+    e.set_image(url=banner(cfg, "og"))
     return _brand(e, stamp=False)
 
 
