@@ -21,9 +21,9 @@ PAGES = {}
 
 # ---------------------------------------------------------------- home
 PAGES["index"] = [
-    ('<title>TrueCombat: Platinum · TrueCombat: Elite rebuilt for DirectX 12</title>', '<title>TrueCombat: Platinum · TrueCombat: Elite herbouwd voor DirectX 12</title>'),
-    ('content="TrueCombat: Platinum is a native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows, with the original maps, soldiers and HUD. Free download."',
-     'content="TrueCombat: Platinum is een native 64-bit DirectX 12-versie van TrueCombat: Elite voor Windows, met de originele maps, soldaten en HUD. Gratis te downloaden."'),
+    ('<title>TrueCombat: Platinum · Free tactical shooter, TrueCombat: Elite rebuilt</title>', '<title>TrueCombat: Platinum · Gratis tactische shooter, TrueCombat: Elite herbouwd</title>'),
+    ('content="TrueCombat: Platinum is a free tactical shooter for Windows: TrueCombat: Elite (TC:E) rebuilt as a native 64-bit DirectX 12 game, with the original maps, weapons and HUD."',
+     'content="TrueCombat: Platinum is een gratis tactische shooter voor Windows: TrueCombat: Elite (TC:E) herbouwd als native 64-bit DirectX 12-game, met de originele maps, wapens en HUD."'),
     ('content="A native 64-bit DirectX 12 rebuild of TrueCombat: Elite for Windows. Free download."',
      'content="Een native 64-bit DirectX 12-versie van TrueCombat: Elite voor Windows. Gratis te downloaden."'),
     ('<h1><span class="nw">TrueCombat: Elite,</span> rebuilt for <em>modern Windows</em>.</h1>', '<h1><span class="nw">TrueCombat: Elite,</span> opnieuw gebouwd voor <em>modern Windows</em>.</h1>'),
@@ -36,8 +36,8 @@ PAGES["index"] = [
     (' · in-game DX12 <span', ' · in-game DX12 <span'),
     ('<span class="eyebrow">The project</span>', '<span class="eyebrow">Het project</span>'),
     ("<h2>The game you remember, on an engine built for today</h2>", '<h2>Het spel dat je kent, op een engine van nu</h2>'),
-    ('<p><strong>TrueCombat: Elite</strong> was a realistic modern-combat total conversion for Enemy Territory: one life per round, real weapons, and maps built for slow, careful play. It still runs as a 32-bit mod on an engine from 2003.</p>',
-     '<p><strong>TrueCombat: Elite</strong> was een realistische total conversion voor Enemy Territory in een moderne setting: één leven per ronde, echte wapens en maps gemaakt voor rustig, voorzichtig spel. Het draait nog steeds als 32-bit mod op een engine uit 2003.</p>'),
+    ('<p><a href="truecombat-elite.html"><strong>TrueCombat: Elite</strong></a> was a realistic modern-combat total conversion for Enemy Territory: one life per round, real weapons, and maps built for slow, careful play. It still runs as a 32-bit mod on an engine from 2003.</p>',
+     '<p><a href="truecombat-elite.html"><strong>TrueCombat: Elite</strong></a> was een realistische total conversion voor Enemy Territory in een moderne setting: één leven per ronde, echte wapens en maps gemaakt voor rustig, voorzichtig spel. Het draait nog steeds als 32-bit mod op een engine uit 2003.</p>'),
     ('<p><strong>TrueCombat: Platinum</strong> rebuilds it as a native 64-bit Windows game. The renderer is new DirectX 12 code, the HUD is matched against the original pixel by pixel, and movement speeds come straight from the original values. If DirectX 12 gives you trouble, Safe start runs it on OpenGL.</p>',
      '<p><strong>TrueCombat: Platinum</strong> bouwt het opnieuw als native 64-bit Windows-spel. De renderer is nieuwe DirectX 12-code, de HUD is pixel voor pixel vergeleken met het origineel, en de bewegingssnelheden komen rechtstreeks uit de originele waarden. Werkt DirectX 12 niet goed, dan draait Safe start het op OpenGL.</p>'),
     ('<span>Native client &amp; server</span>', '<span>Native client &amp; server</span>'),
@@ -908,3 +908,5 @@ PAGES["support"] = [
     ("Contributions are voluntary gifts to the project. They are not tax-deductible and are not refundable. Payments are handled securely by Ko-fi; we never see your card details.",
      "Bijdragen zijn vrijwillige giften aan het project. Ze zijn niet fiscaal aftrekbaar en worden niet terugbetaald. Betalingen verlopen veilig via Ko-fi; wij zien je kaartgegevens nooit."),
 ]
+
+PAGES['index'] = [('href="faq.html">All questions and answers</a>', 'href="faq.html">Alle vragen en antwoorden</a>')] + PAGES['index']

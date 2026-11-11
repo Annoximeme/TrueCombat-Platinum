@@ -9,6 +9,7 @@
      [data-yt]                    click-to-play YouTube embed (privacy-enhanced, nothing loads before a click)
      [data-compare] [data-post-filter] [data-copy-link]   devlog sliders, topic filter and copy-link button
      [data-post] [data-rate] [data-post-stat]             devlog reads and star ratings (tools/server-bridge/tcp_devlog.py, no cookies)
+     [data-search-open]           opens the site search (also Ctrl+K and /), index in js/search-<lang>.json
    Set TCP_API to the bridge's public https URL once it is hosted. Empty means "offline". */
 var TCP_API = 'https://api.truecombat.eu';
 
@@ -851,5 +852,143 @@ var TCP_API = 'https://api.truecombat.eu';
       el.classList.add('rv'); io.observe(el);
     });
     document.documentElement.classList.add('js-reveal');
+  })();
+
+  /* ---------- site search (Ctrl+K, / or the magnifier in the top bar) ----------
+     The index (js/search-<lang>.json, written by tools/website/build.py) is only fetched the first time search opens. */
+  (function () {
+    var T = lang === 'nl'
+      ? { ph: 'Zoek maps, wapens, gidsen en posts', none: 'Niets gevonden voor', hint: '↑ ↓ kiezen · Enter openen · Esc sluiten', label: 'Zoeken op de site', quick: 'Snel naar', fail: 'Zoeken is nu niet beschikbaar.' }
+      : { ph: 'Search maps, weapons, guides and posts', none: 'Nothing found for', hint: '↑ ↓ to move · Enter to open · Esc to close', label: 'Search the site', quick: 'Jump to', fail: 'Search is unavailable right now.' };
+    var script = document.querySelector('script[src*="js/site.js"]');
+    if (!script || !window.HTMLDialogElement) { $all('[data-search-open]').forEach(function (b) { b.hidden = true; }); return; }
+    var jsBase = new URL('.', script.src), root = new URL(lang === 'nl' ? '../nl/' : '../', jsBase);
+    var QUICK = ['download.html', 'servers.html', 'guide.html', 'maps.html', 'weapons.html', 'faq.html'];
+    var dlg, input, list, rows = null, shown = [], sel = 0;
+
+    function norm(t) { return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+    function find(q) {
+      var words = norm(q).split(/\s+/).filter(Boolean);
+      if (!words.length) return QUICK.map(function (u) { return rows.filter(function (r) { return r.u === u; })[0]; }).filter(Boolean);
+      var out = [];
+      rows.forEach(function (r, i) {
+        var score = 0;
+        for (var w = 0; w < words.length; w++) {
+          var x = words[w], at = r.nt.indexOf(x), s = 0;
+          if (at === 0) s = 100; else if (at > 0 && /[^a-z0-9]/.test(r.nt.charAt(at - 1))) s = 70; else if (at > 0) s = 45;
+          else if (r.nk.indexOf(x) === 0) s = 25; else if (r.nd.indexOf(x) >= 0) s = 12;
+          if (!s) return;
+          score += s;
+        }
+        if (r.nt === words.join(' ')) score += 60;
+        out.push({ r: r, s: score - i / 1000 });
+      });
+      out.sort(function (a, b) { return b.s - a.s; });
+      return out.slice(0, 8).map(function (o) { return o.r; });
+    }
+    function draw() {
+      var q = input.value.trim();
+      if (!rows) { list.innerHTML = ''; return; }
+      shown = find(q); sel = 0;
+      if (!shown.length) { list.innerHTML = '<li class="sr-empty">' + esc(T.none) + ' “' + esc(q) + '”</li>'; return; }
+      list.innerHTML = (q ? '' : '<li class="sr-head">' + esc(T.quick) + '</li>') + shown.map(function (r, i) {
+        return '<li role="option" id="sr-' + i + '" aria-selected="' + (i === 0) + '"><a href="' + esc(new URL(r.u, root).href) + '" tabindex="-1"><span class="sr-k">' + esc(r.k) + '</span><span class="sr-t">' + esc(r.t) + '</span>' + (r.d ? '<span class="sr-d">' + esc(r.d) + '</span>' : '') + '</a></li>';
+      }).join('');
+      input.setAttribute('aria-activedescendant', 'sr-0');
+    }
+    function move(d) {
+      if (!shown.length) return;
+      sel = (sel + d + shown.length) % shown.length;
+      $all('[role=option]', list).forEach(function (li, i) { li.setAttribute('aria-selected', i === sel); if (i === sel) li.scrollIntoView({ block: 'nearest' }); });
+      input.setAttribute('aria-activedescendant', 'sr-' + sel);
+    }
+    function build() {
+      dlg = document.createElement('dialog');
+      dlg.className = 'search';
+      dlg.setAttribute('aria-label', T.label);
+      dlg.innerHTML = '<form method="dialog" class="sr-box"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>' +
+        '<input type="search" autocomplete="off" spellcheck="false" enterkeyhint="go" role="combobox" aria-expanded="true" aria-controls="sr-list" aria-label="' + esc(T.label) + '" placeholder="' + esc(T.ph) + '"><kbd>Esc</kbd></form>' +
+        '<ul id="sr-list" role="listbox" aria-label="' + esc(T.label) + '"></ul><p class="sr-hint">' + esc(T.hint) + '</p>';
+      document.body.appendChild(dlg);
+      input = dlg.querySelector('input'); list = dlg.querySelector('ul');
+      input.addEventListener('input', draw);
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
+        else if (e.key === 'Escape') { e.preventDefault(); dlg.close(); }  /* a search field would only clear itself first */
+        else if (e.key === 'Enter') { e.preventDefault(); var a = list.querySelector('[aria-selected=true] a'); if (a) { dlg.close(); location.href = a.href; } }
+      });
+      dlg.addEventListener('click', function (e) { if (e.target === dlg || e.target.closest('a')) dlg.close(); });
+      dlg.querySelector('kbd').addEventListener('click', function () { dlg.close(); });
+    }
+    function open() {
+      if (!dlg) build();
+      if (dlg.open) return;
+      var menu = document.getElementById('menu'); if (menu) menu.open = false;
+      input.value = ''; dlg.showModal(); input.focus();
+      if (rows) { draw(); return; }
+      fetch(new URL('search-' + (lang === 'nl' ? 'nl' : 'en') + '.json', jsBase), { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+        rows = d.map(function (r) { r.nt = norm(r.t); r.nd = norm(r.d); r.nk = norm(r.k); return r; });
+        draw();
+      }).catch(function () { list.innerHTML = '<li class="sr-empty">' + esc(T.fail) + '</li>'; });
+    }
+    $all('[data-search-open]').forEach(function (b) { b.addEventListener('click', open); });
+    document.addEventListener('keydown', function (e) {
+      var typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || '')) || e.target.isContentEditable;
+      if ((e.key === 'k' || e.key === 'K') && (e.ctrlKey || e.metaKey) && !e.altKey) { e.preventDefault(); open(); }
+      else if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); open(); }
+    });
+  })();
+
+  /* ---------- back to top, and the section rail on the home page ---------- */
+  (function () {
+    var label = lang === 'nl' ? 'Terug naar boven' : 'Back to top';
+    var top = document.createElement('button');
+    top.type = 'button'; top.className = 'to-top'; top.setAttribute('aria-label', label); top.title = label; top.hidden = true;
+    top.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14l6-6 6 6"/></svg>';
+    top.addEventListener('click', function () {
+      var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: calm ? 'auto' : 'smooth' });
+    });
+    document.body.appendChild(top);
+    var ticking = false;
+    function check() { ticking = false; top.hidden = window.scrollY < 1400; }
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(check); } }, { passive: true });
+    check();
+
+    /* the home page is long: a rail of section markers shows where you are and jumps between sections */
+    var hero = document.querySelector('.hero');
+    if (!hero || !('IntersectionObserver' in window)) return;
+    var secs = $all('main > section[id]').filter(function (s) { return s.querySelector('.eyebrow') && s.querySelector('h2'); });
+    if (secs.length < 4) return;
+    var rail = document.createElement('nav');
+    rail.className = 'rail'; rail.setAttribute('aria-label', lang === 'nl' ? 'Op deze pagina' : 'On this page');
+    rail.innerHTML = secs.map(function (s) { return '<a href="#' + esc(s.id) + '"><span>' + esc(s.querySelector('.eyebrow').textContent.trim()) + '</span></a>'; }).join('');
+    document.body.appendChild(rail);
+    var links = $all('a', rail);
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        var i = secs.indexOf(en.target);
+        links.forEach(function (a, j) { if (j === i) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current'); });
+      });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    secs.forEach(function (s) { io.observe(s); });
+    new IntersectionObserver(function (e) { rail.classList.toggle('on', !e[0].isIntersecting); }).observe(hero);
+  })();
+
+  /* ---------- cards catch the light under the cursor (mouse only) ---------- */
+  (function () {
+    if (!window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+    var cards = $all('.feature, .wcard, .reqs, .post-card, .member, .steps-flow li, .faq > div');
+    cards.forEach(function (el) {
+      if (getComputedStyle(el, '::after').content !== 'none') return;  /* keep cards that already use ::after */
+      el.classList.add('lit');
+      el.addEventListener('pointermove', function (e) {
+        var r = el.getBoundingClientRect();
+        el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+        el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+      });
+    });
   })();
 })();
