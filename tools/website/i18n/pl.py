@@ -1,6 +1,8 @@
 """Polish strings for the website. See i18n/__init__.py for how the three tables are used."""
 
-PAIRS = {'</span> · free</span>': '</span> · za darmo</span>',
+PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat.eu:27960">Dołącz teraz</a>',
+ 'join.html#truecombat.eu:27961">Join now</a>': '../join.html#truecombat.eu:27961">Dołącz teraz</a>',
+ '</span> · free</span>': '</span> · za darmo</span>',
  '<span class="latest">Latest</span>': '<span class="latest">Najnowsza</span>',
  'Windows x64 · free': 'Windows x64 · za darmo',
  '<span data-kind="long">Windows installer</span>': '<span data-kind="long">Instalator dla Windows</span>',
@@ -2353,7 +2355,8 @@ TABLES = {'LABELS': {'maps': 'Mapy',
              'r_c': 'Przywitaj się na <a href="https://discord.gg/8kcHdg2Hch">Discordzie</a>. Weterani i nowi gracze umawiają tam swoje mecze.',
              'r_note': '<b>Nie znasz TC:E?</b> <a href="guide.html">Poradnik dla początkujących</a> opisuje sterowanie, tryby gry i nawyki, które pozwalają przeżyć.'}}
 
-JS = {'months': ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'],
+JS = {'joinBtn': 'Dołącz', 'verified': 'Zweryfikowany', 'verifiedTip': 'Sprawdzony przez zespół TrueCombat: Platinum',
+ 'months': ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'],
  'latest': 'Najnowsza',
  'kindSetupLong': 'Instalator dla Windows',
  'kindSetup': 'Instalator',

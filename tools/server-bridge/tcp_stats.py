@@ -155,7 +155,20 @@ def sanitize(report, trusted=False, allow_cheats=False):
              "headshots": _int(p.get("headshots"), 0, cap * 4), "damage": _int(p.get("damage"), 0, cap * 2000),
              "roundsWon": _int(p.get("roundsWon"), 0, 1000), "objectives": _int(p.get("objectives"), 0, 1000),
              "won": bool(p.get("won")), "filler": p.get("filler") is True,
-             "timePlayed": _int(p.get("timePlayed", duration), 0, cap + 120), "weapons": {}}
+             "timePlayed": _int(p.get("timePlayed", duration), 0, cap + 120), "weapons": {},
+             # Left before the end (the game sets connected=false); abandoning a losing match costs full rating
+             "left": p.get("connected") is False, "leaves": _int(p.get("leaves"), 0, 100)}
+        net = p.get("net")
+        if isinstance(net, dict):
+            def f(v, hi):
+                try:
+                    return max(0.0, min(float(v), hi))
+                except (TypeError, ValueError):
+                    return 0.0
+            q["net"] = {"ping": _int(net.get("ping"), 0, 999), "pingMax": _int(net.get("pingMax"), 0, 999),
+                        "jitter": round(f(net.get("jitter"), 999), 1), "loss": round(f(net.get("loss"), 100), 2),
+                        "rewind": _int(net.get("rewind"), 0, 1000), "rewindCapped": _int(net.get("rewindCapped"), 0, 1 << 24),
+                        "shotsRewound": _int(net.get("shotsRewound"), 0, 1 << 24)}
         q["headshots"] = min(q["headshots"], q["kills"])
         for w, ws in list((p.get("weapons") or {}).items())[:32]:
             if not isinstance(ws, dict):
@@ -202,6 +215,8 @@ def rate(match, ratings, counts):
         for team, ps, e, s in ((ta, pa, ea, sa), (tb, pb, 1 - ea, 1 - sa)):
             for p in ps:
                 share = min(1.0, p["timePlayed"] / dur)
+                if p.get("left") and s - e < 0:
+                    share = 1.0      # quitting a match you are losing doesn't soften the loss
                 d = k(p["id"]) * share * (s - e)
                 if p.get("filler") and d < 0:
                     d = 0.0  # joined a short team to replace a leaver: no rating loss
@@ -264,6 +279,7 @@ class StatsStore:
             for r in self.db.execute("SELECT server, id FROM matches WHERE pub IS NULL").fetchall():
                 self.db.execute("UPDATE matches SET pub=? WHERE server=? AND id=?", (match_pub(r[0], r[1]), r[0], r[1]))
             self.db.execute("CREATE INDEX IF NOT EXISTS matches_pub ON matches(pub)")
+            self._migrate()
 
     # ------------------------------------------------------------ servers
     def add_server(self, name):
@@ -273,6 +289,11 @@ class StatsStore:
             self.db.execute("INSERT INTO servers(id, name, key, active, created) VALUES(?,?,?,1,?)",
                             (sid, clean(name, 64), key, now_iso()))
         return sid, key
+
+    def _migrate(self):
+        cols = {r["name"] for r in self.db.execute("PRAGMA table_info(players)")}
+        if "abandons" not in cols:
+            self.db.execute("ALTER TABLE players ADD COLUMN abandons INTEGER DEFAULT 0")
 
     def ensure_server(self, sid, name=""):
         with self.lock:
@@ -354,17 +375,20 @@ class StatsStore:
                         int(p["won"]), p["timePlayed"], xp, before, after, top))
             r = rows.get(pid)
             if r is None:
-                db.execute("INSERT INTO players VALUES(?,?,?,?,0,0,0,0,0,0,0,0,0,0,0,0,?,0,?)",
+                db.execute("INSERT INTO players(pid, name, first_seen, last_seen, matches, kills, deaths, team_kills, "
+                           "suicides, headshots, damage, rounds_won, wins, objectives, time_played, xp, rating, rated, "
+                           "peak_rating, abandons) VALUES(?,?,?,?,0,0,0,0,0,0,0,0,0,0,0,0,?,0,?,0)",
                            (pid, p["name"], m["ended"], m["ended"], RATING_START, RATING_START))
             newer = r is None or m["ended"] >= (r["last_seen"] or "")
             db.execute("""UPDATE players SET name=CASE WHEN ? THEN ? ELSE name END,
                 last_seen=MAX(last_seen, ?), first_seen=MIN(first_seen, ?), matches=matches+1, kills=kills+?, deaths=deaths+?,
                 team_kills=team_kills+?, suicides=suicides+?, headshots=headshots+?, damage=damage+?,
                 rounds_won=rounds_won+?, wins=wins+?, objectives=objectives+?, time_played=time_played+?, xp=xp+?,
-                rating=?, rated=rated+?, peak_rating=MAX(peak_rating, ?) WHERE pid=?""",
+                rating=?, rated=rated+?, peak_rating=MAX(peak_rating, ?), abandons=COALESCE(abandons, 0)+? WHERE pid=?""",
                        (int(newer), p["name"], m["ended"], m["ended"], p["kills"], p["deaths"], p["teamKills"],
                         p["suicides"], p["headshots"], p["damage"], p["roundsWon"], int(p["won"]), p["objectives"],
-                        p["timePlayed"], xp, after, int(pid in deltas), after, pid))
+                        p["timePlayed"], xp, after, int(pid in deltas), after,
+                        int(bool(p.get("left")) and m["team"] and not p["won"]), pid))
             for w, ws in p["weapons"].items():
                 db.execute("""INSERT INTO player_weapons VALUES(?,?,?,?,?,?) ON CONFLICT(pid, weapon) DO UPDATE SET
                     kills=kills+excluded.kills, headshots=headshots+excluded.headshots,
@@ -494,6 +518,7 @@ class StatsStore:
         out = self._player_json(r, extra=False)
         out.update({"schema": "tcp-player/1", "updated": now_iso(), "firstSeen": r["first_seen"], "lastSeen": r["last_seen"],
                     "teamKills": r["team_kills"], "suicides": r["suicides"], "damage": r["damage"],
+                    "abandons": r["abandons"] or 0,
                     "peakRating": int(round(r["peak_rating"])), "ranked": r["matches"] >= self.min_matches,
                     "position": better + 1 if r["matches"] >= self.min_matches else None,
                     "weapons": [{"name": w["weapon"], "kills": w["kills"], "headshots": w["headshots"],
@@ -543,6 +568,50 @@ class StatsStore:
                 m["mvp"] = {"id": top["pid"], "name": top["name"], "kills": top["kills"]} if top and top["kills"] else None
                 matches.append(m)
         return {"schema": "tcp-recent/1", "updated": now_iso(), "matches": matches}
+
+    def netstats(self, days=30):
+        """Connection quality per server from the match reports (tcp-match/1 "net"): what players
+        actually experience, so tick rate, lag compensation and caps are tuned on data."""
+        since = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=max(1, min(365, _int(days, 1, 365))))
+                 ).isoformat().replace("+00:00", "Z")
+        agg = {}
+        with self.lock:
+            rows = self.db.execute("SELECT m.server sid, s.name, m.report FROM matches m LEFT JOIN servers s "
+                                   "ON s.id=m.server WHERE m.ended >= ?", (since,)).fetchall()
+        for r in rows:
+            try:
+                rep = json.loads(r["report"])
+            except ValueError:
+                continue
+            a = agg.setdefault(r["sid"], {"server": r["name"] or r["sid"], "matches": 0, "samples": 0, "ping": 0.0,
+                                          "jitter": 0.0, "loss": 0.0, "rewind": 0.0, "shots": 0, "capped": 0,
+                                          "pingOver150": 0, "lossOver2": 0, "leaves": 0})
+            a["matches"] += 1
+            for p in rep.get("players", []):
+                n = p.get("net")
+                a["leaves"] += int(bool(p.get("left")))
+                if not n or not n.get("ping"):
+                    continue
+                a["samples"] += 1
+                a["ping"] += n["ping"]
+                a["jitter"] += n["jitter"]
+                a["loss"] += n["loss"]
+                a["rewind"] += n["rewind"] * n["shotsRewound"]
+                a["shots"] += n["shotsRewound"]
+                a["capped"] += n["rewindCapped"]
+                a["pingOver150"] += int(n["ping"] > 150)
+                a["lossOver2"] += int(n["loss"] > 2)
+        out = []
+        for a in agg.values():
+            s = max(1, a["samples"])
+            out.append({"server": a["server"], "matches": a["matches"], "players": a["samples"],
+                        "avgPing": round(a["ping"] / s), "avgJitter": round(a["jitter"] / s, 1),
+                        "avgLoss": round(a["loss"] / s, 2), "avgRewind": round(a["rewind"] / max(1, a["shots"])),
+                        "rewindCappedPct": round(100.0 * a["capped"] / max(1, a["shots"]), 2),
+                        "highPingPct": round(100.0 * a["pingOver150"] / s, 1),
+                        "highLossPct": round(100.0 * a["lossOver2"] / s, 1), "leaves": a["leaves"]})
+        out.sort(key=lambda x: -x["matches"])
+        return {"schema": "tcp-netstats/1", "updated": now_iso(), "days": days, "servers": out}
 
     def match(self, pub):
         """One finished match for its page on the website: the result and both teams' scoreboards."""
@@ -636,6 +705,8 @@ def handle_get(store, path, query):
         return 200, store.recap(q.get("days", 7))
     if path == "/ranks.json":
         return 200, store.ranks()
+    if path == "/netstats.json":
+        return 200, store.netstats(q.get("days", 30))
     return None
 
 

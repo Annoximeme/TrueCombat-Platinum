@@ -1,6 +1,8 @@
 """French strings for the website. See i18n/__init__.py for how the three tables are used."""
 
-PAIRS = {'</span> · free</span>': '</span> · gratuit</span>',
+PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat.eu:27960">Rejoindre</a>',
+ 'join.html#truecombat.eu:27961">Join now</a>': '../join.html#truecombat.eu:27961">Rejoindre</a>',
+ '</span> · free</span>': '</span> · gratuit</span>',
  '<span class="latest">Latest</span>': '<span class="latest">Dernière version</span>',
  'Windows x64 · free': 'Windows x64 · gratuit',
  '<span data-kind="long">Windows installer</span>': '<span data-kind="long">Installeur Windows</span>',
@@ -2624,7 +2626,8 @@ TABLES = {'LABELS': {'maps': 'Maps',
              'r_c': 'Venez dire bonjour sur le <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. Vétérans et nouveaux joueurs y organisent leurs matchs.',
              'r_note': '<b>Vous découvrez TC:E ?</b> Le <a href="guide.html">guide du débutant</a> présente les commandes, les modes de jeu et les réflexes qui vous gardent en vie.'}}
 
-JS = {'months': ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
+JS = {'joinBtn': 'Rejoindre', 'verified': 'Vérifié', 'verifiedTip': "Vérifié par l'équipe TrueCombat: Platinum",
+ 'months': ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
  'latest': 'Dernière version',
  'kindSetupLong': 'Installeur Windows',
  'kindSetup': 'Installeur',
