@@ -594,8 +594,8 @@ PAGES["studio"] = [
 PAGES['index'] = [
     ('<strong>Early access</strong>',
      '<strong>Early access</strong>'),
-    ('<span>Original TC:E movement, leaning, ladders, swimming, a competitive match mode and two official EU servers are live. In testing for the next update: the new Ultra visuals with real-time sun shadows, bullet impacts, ledge climbing, and the first-person muzzle flash and sniper scope. <a href="#roadmap">See the roadmap</a></span>',
-     '<span>De originele TC:E-beweging, leunen, ladders, zwemmen, een competitieve wedstrijdmodus en twee officiële EU-servers zijn live. In de test voor de volgende update: de nieuwe Ultra-graphics met realtime zonneschaduwen, kogelinslagen, klimmen op randen, en de mondingsflits in eerste persoon en het sluipschuttersvizier. <a href="#roadmap">Bekijk de roadmap</a></span>'),
+    ('<span>The full TC:E arsenal, all seven game modes, the original movement, Ultra visuals, a competitive match mode and two official EU servers are live. In development for the next update: a gunplay pass on hits at range, spread and damage, a rebuilt movement core, and options and a server browser in the pause menu. <a href="#roadmap">See the roadmap</a></span>',
+     '<span>Het volledige TC:E-arsenaal, alle zeven spelmodi, de originele beweging, Ultra-graphics, een competitieve wedstrijdmodus en twee officiële EU-servers zijn live. In ontwikkeling voor de volgende update: een gunplay-ronde voor treffers op afstand, spreiding en schade, een herbouwde bewegingskern, en opties en een serverlijst in het pauzemenu. <a href="#roadmap">Bekijk de roadmap</a></span>'),
     ('<h3>The full arsenal</h3>',
      '<h3>Het volledige arsenaal</h3>'),
     ('<p>All 27 guns, the knife and every grenade, with original damage, recoil and spread. Rounds punch through doors, walls and crates, losing power with every surface.</p>',
