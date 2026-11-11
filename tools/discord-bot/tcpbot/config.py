@@ -94,6 +94,8 @@ DEFAULTS: dict = {
         "feed": "/var/www/truecombat/devlog.xml",
         "site_root": "/var/www/truecombat",
         "interval_minutes": 10,
+        # Optional role pinged with every new post (for example a "Devlog" opt-in role).
+        "ping_role_id": 0,
     },
     "linking": {
         "enabled": True,

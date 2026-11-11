@@ -161,3 +161,25 @@ def test_event_card(cfg):
     assert fields["Going (2/2)"] == "<@1> <@2>" and fields["Waitlist (1)"] == "<@3>"
     assert d["author"]["name"] == "Playtest"
     assert "/connect 2.24.59.195:27960" in d["description"]
+
+
+def test_devlog_card_reads_the_article(cfg):
+    from tcpbot.sources import article_meta
+    site = HERE / "fixtures" / "site"
+    # clean addresses (no .html) and old ones both resolve to the local file
+    meta = article_meta(str(site), "https://truecombat.eu/devlog-smarter-bots")
+    assert meta == article_meta(str(site), "https://truecombat.eu/devlog-smarter-bots.html")
+    assert meta["image"].endswith("og-devlog-smarter-bots.jpg") and meta["minutes"] == 3
+    assert meta["state"] == "Shipped in v0.33.0" and meta["sections"][0] == "Starting from nothing"
+    assert article_meta(str(site), "https://truecombat.eu/../etc/passwd") == {}
+    article = {"title": "Teaching bots to play like people", "url": "https://truecombat.eu/devlog-smarter-bots",
+               "summary": "Bots that never miss are no fun. " * 20, "category": "Bots",
+               "published": "2026-11-08T12:00:00Z"}
+    d = check(embeds.devlog_post(cfg, article, meta))
+    assert d["image"]["url"] == meta["image"] and d["author"]["icon_url"].endswith("icon-192.png")
+    assert "**Inside this post**" in d["description"] and "› Starting from nothing" in d["description"]
+    assert d["description"].split("\n")[0].endswith(".")          # hook cut at a sentence end
+    assert [f["name"] for f in d["fields"]] == ["Read time", "Topic", "Status"]
+    assert d["timestamp"].startswith("2026-11-08")
+    assert embeds.devlog_headline(article) == "**New on the devlog:** Teaching bots to play like people"
+    assert embeds.devlog_headline(article, 42).startswith("<@&42> ")

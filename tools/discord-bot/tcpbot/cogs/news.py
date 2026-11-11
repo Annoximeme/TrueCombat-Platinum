@@ -20,7 +20,7 @@ from discord.ext import commands, tasks
 
 from .. import embeds
 from ..bot import UserFacingError, staff_only
-from ..sources import article_image, load_devlog, release_download, release_version
+from ..sources import article_meta, load_devlog, release_download, release_version
 from ..text import split_notes
 
 log = logging.getLogger("tcpbot.news")
@@ -248,10 +248,15 @@ class News(commands.Cog):
         for entry in reversed(entries):
             if entry["id"] in seen or channel is None:
                 continue
-            image = article_image(self.cfg["devlog"]["site_root"], entry["url"])
+            meta = article_meta(self.cfg["devlog"]["site_root"], entry["url"])
+            role = int(self.cfg["devlog"].get("ping_role_id") or 0)
+            view = _link_view("Read the article", entry["url"], emoji="\N{OPEN BOOK}")
+            view.add_item(discord.ui.Button(label="All devlog posts", url=self.cfg.site + "/devlog"))
             try:
-                await channel.send(embed=embeds.devlog_post(self.cfg, entry, image),
-                                   view=_link_view("Read the article", entry["url"]))
+                await channel.send(content=embeds.devlog_headline(entry, role),
+                                   embed=embeds.devlog_post(self.cfg, entry, meta), view=view,
+                                   allowed_mentions=discord.AllowedMentions(roles=bool(role), users=False,
+                                                                            everyone=False))
             except discord.HTTPException as e:
                 log.warning("devlog post failed: %s", e)
                 return
@@ -319,9 +324,9 @@ async def _read_notes(att: discord.Attachment) -> str:
         raise UserFacingError("That file isn't UTF-8 text.") from e
 
 
-def _link_view(label: str, url: str) -> discord.ui.View:
+def _link_view(label: str, url: str, emoji: str | None = None) -> discord.ui.View:
     v = discord.ui.View()
-    v.add_item(discord.ui.Button(label=label, url=url))
+    v.add_item(discord.ui.Button(label=label, url=url, emoji=emoji))
     return v
 
 
