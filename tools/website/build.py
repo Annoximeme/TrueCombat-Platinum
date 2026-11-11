@@ -337,7 +337,7 @@ def weapons_html(lang):
     out = []
     used = set()
     for group in data["groups"]:
-        cards = []
+        cards, group_note = [], ""
         for w in group["weapons"]:
             wid = re.sub(r"[^a-z0-9]+", "-", w["name"].lower()).strip("-")
             if wid in used:
@@ -370,7 +370,7 @@ def weapons_html(lang):
                     "</dl>")
                 note = ""
                 if w.get("pellets"):
-                    note = '<p class="wnote">* %s</p>' % W["pellet_note"]
+                    group_note = '<p class="wnote">* %s</p>' % W["pellet_note"]
                 cls = "wcard"
                 cmp = htmlmod.escape(json.dumps({"dmg": w["damage"], "pel": w.get("pellets", 0), "rpm": rpm, "mag": w["clip"],
                                                  "res": w["reserve"], "rl": w["reload"], "shell": bool(w.get("shell"))}, separators=(",", ":")), quote=True)
@@ -384,7 +384,7 @@ def weapons_html(lang):
                 f'<div class="wtags">{"".join(tags)}</div>{stats}{note}<div class="wmodes">{modes}</div></article>')
         out.append(
             f'<section class="wgroup" id="{group["id"]}"><header><h2>{detail.local(lang, group, "title")}</h2><p>{detail.local(lang, group, "sub")}</p></header>'
-            f'<div class="wgrid">\n' + "\n".join(cards) + "\n</div></section>")
+            f'<div class="wgrid">\n' + "\n".join(cards) + "\n</div>" + group_note + "</section>")
     return "<!--weapons-->\n" + "\n".join(out) + "\n<!--/weapons-->"
 
 
@@ -451,8 +451,9 @@ def clusters(points, gap):
     return sorted(groups, key=len, reverse=True)
 
 
-def layout_html(lang, name):
+def layout_html(lang, name, intro=True):
     T = LO[lang]
+    intro_p = "<p>%s</p>" % T["intro"] if intro else ""
     d = json.loads((HERE / "maplayouts.json").read_text(encoding="utf-8"))[name]
     w, h = d["w"], d["h"]
     u = max(w, h) / 100
@@ -493,7 +494,7 @@ def layout_html(lang, name):
     <div class="layout" data-layout data-mode="bomb">
       <div class="layout-copy">
         <h3>{T['title']}</h3>
-        <p>{T['intro']}</p>
+        {intro_p}
         <div class="lo-controls" role="group" aria-label="{T['show']}">
           <div class="seg"><button type="button" data-lo-mode="bomb" aria-pressed="true">{T['bomb']}</button><button type="button" data-lo-mode="flag" aria-pressed="false">{T['flag']}</button></div>
           {call_btn}
@@ -696,15 +697,17 @@ def devlog_tags(lang, posts):
 
 
 def devlog_latest(lang, posts):
-    p = posts[0]
+    """The second promo card on the home page. The newest devlog post already leads the "Follow the build"
+    section just above, so this card points at the TrueCombat: Elite page instead of repeating the post."""
+    T = landing.ELITE_T[lang]
     return f"""<!--devlog-latest-->
-    <a class="promo-card" href="devlog-{p['slug']}.html">
-      <img src="{p['image'].replace('.webp', '-640.webp')}" alt="" width="640" height="360" loading="lazy">
+    <a class="promo-card" href="truecombat-elite.html">
+      <img src="img/player-models-640.webp" alt="" width="640" height="360" loading="lazy">
       <div>
-        <span class="eyebrow">Devlog · <time datetime="{p['date']}">{nice_date(lang, p['date'])}</time>{(' · ' + DL[lang]['testing'].split(' · ')[0]) if 'testing' in status_chip(lang, p) else ''}</span>
-        <h3>{htmlmod.escape(p['title'])}</h3>
-        <p>{htmlmod.escape(p['summary'])}</p>
-        <span class="more">{DL[lang]['read']}</span>
+        <span class="eyebrow">{T['c_orig']}</span>
+        <h3>{T['h1']}</h3>
+        <p>{T['og']}</p>
+        <span class="more">{T['n2']}</span>
       </div>
     </a>
 <!--/devlog-latest-->"""
@@ -1464,8 +1467,9 @@ def main():
             html = put(html, "devlog", devlog_list(lang, posts[lang]), path)
             html = put(html, "devlog-tags", devlog_tags(lang, posts[lang]), path)
         if page == "maps":
-            for name in MAPLIST:
-                html = put(html, "layout-" + name, layout_html(lang, name), path)
+            # the explanation of the plan is the same for every map, so the maps page says it once
+            for i, name in enumerate(MAPLIST):
+                html = put(html, "layout-" + name, layout_html(lang, name, intro=i == 0), path)
         if page == "studio":
             html = put(html, "studio-releases", studio_releases(lang, "v" + latest_version()), path)
             html = put(html, "studio-devlog", studio_devlog(lang, posts[lang]), path)

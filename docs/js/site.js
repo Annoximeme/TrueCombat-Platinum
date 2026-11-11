@@ -1092,13 +1092,15 @@ var TCP_API = 'https://api.truecombat.eu';
         for (var r = 0; r < 3; r++) marks.forEach(function (m) { html += '<span' + (/^[NESW]+$/.test(m) ? ' class="c"' : '') + '>' + m + '</span>'; });
         tape.innerHTML = html;
       }
-      var tx = 0, ty = 0, cx = 0, cy = 0, heading = 0, seen = true, raf = 0, last = 0, LOOP = 24 * 60;
+      var tx = 0, ty = 0, cx = 0, cy = 0, heading = 0, seen = true, raf = 0, last = 0, lastPx = '', lastPy = '', LOOP = 24 * 60;
       function frame(now) {
         raf = 0;
         var dt = Math.min(50, now - (last || now)); last = now;
         cx += (tx - cx) * 0.06; cy += (ty - cy) * 0.06;
         heading = (heading + dt * 0.006 + cx * dt * 0.05 + LOOP) % LOOP;   /* a slow turn, faster when the cursor leans */
-        hero.style.setProperty('--px', cx.toFixed(4)); hero.style.setProperty('--py', cy.toFixed(4));
+        /* written only when the value moves, so a resting cursor costs no style work */
+        var px = cx.toFixed(3), py = cy.toFixed(3);
+        if (px !== lastPx || py !== lastPy) { lastPx = px; lastPy = py; hero.style.setProperty('--px', px); hero.style.setProperty('--py', py); }
         if (tape) tape.style.transform = 'translate3d(' + (-(LOOP + heading)).toFixed(1) + 'px,0,0)';
         if (seen && !document.hidden) raf = requestAnimationFrame(frame);
       }
@@ -1136,6 +1138,8 @@ var TCP_API = 'https://api.truecombat.eu';
     }
 
     /* ghost lettering: each section's label, outlined and oversized, behind its heading */
+    /* added once the display font is in, so the lettering never jumps when the font swaps */
+    if (window.innerWidth > 1100) (document.fonts && document.fonts.load ? document.fonts.load('800 1em "Saira Condensed"').catch(function () {}) : Promise.resolve()).then(function () {
     $all('.band .section-head, .page-head .wrap').forEach(function (head) {
       if (head.closest('.post-head, .studio-hero, #maps')) return;
       var eb = head.querySelector('.eyebrow'); if (!eb) return;
@@ -1144,6 +1148,7 @@ var TCP_API = 'https://api.truecombat.eu';
       var g = document.createElement('span');
       g.className = 'ghost'; g.setAttribute('aria-hidden', 'true'); g.textContent = word;
       head.appendChild(g);
+    });
     });
 
     /* map theatre on the home page */

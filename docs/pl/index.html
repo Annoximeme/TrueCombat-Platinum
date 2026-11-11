@@ -38,7 +38,7 @@
 <link rel="alternate" type="application/atom+xml" title="Informacje o wersjach (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=3f86a9105f">
+<link rel="stylesheet" href="../style.css?v=7190e18a80">
 </head>
 <body>
 
@@ -365,13 +365,13 @@
       </div>
     </a>
 <!--devlog-latest-->
-    <a class="promo-card" href="../devlog-the-road-ahead.html">
-      <img src="../img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy">
+    <a class="promo-card" href="truecombat-elite.html">
+      <img src="../img/player-models-640.webp" alt="" width="640" height="360" loading="lazy">
       <div>
-        <span class="eyebrow">Devlog · <time datetime="2026-11-11">11 lis 2026</time></span>
-        <h3>The road ahead, in full</h3>
-        <p>The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.</p>
-        <span class="more">Czytaj wpis (po angielsku)</span>
+        <span class="eyebrow">TrueCombat: Elite</span>
+        <h3>TrueCombat: Elite, grywalne dziś</h3>
+        <p>Realistyczna strzelanka taktyczna zbudowana na Enemy Territory, grywalna dziś na Windows 10 i 11.</p>
+        <span class="more">TC:E dziś</span>
       </div>
     </a>
 <!--/devlog-latest-->
@@ -816,13 +816,13 @@
   show(0);
   if (!reduce) {
     window.addEventListener('load', function () {
-      slides.forEach(function (s) {
-        if (s.dataset.src) { s.srcset = s.dataset.srcset; s.src = s.dataset.src; }
-      });
+      /* each slide is fetched one step ahead of when it is shown, not all at once */
+      function fetchSlide(i) { var s = slides[i % slides.length]; if (s.dataset.src) { s.srcset = s.dataset.srcset; s.src = s.dataset.src; delete s.dataset.src; } }
+      setTimeout(function () { fetchSlide(1); }, 2500);
       setInterval(function () {
         var next = (cur + 1) % slides.length;
-        if (!slides[next].complete) return;
-        wrap.classList.add('started'); cur = next; show(cur);
+        if (document.hidden || slides[next].dataset.src || !slides[next].complete) return;
+        wrap.classList.add('started'); cur = next; show(cur); fetchSlide(cur + 1);
       }, 6500);
     });
   }
@@ -872,6 +872,6 @@
 })();
 </script>
 <script src="../js/lang-pl.js"></script>
-<script src="../js/site.js?v=3f8608b791"></script>
+<script src="../js/site.js?v=8b49dfc777"></script>
 </body>
 </html>
