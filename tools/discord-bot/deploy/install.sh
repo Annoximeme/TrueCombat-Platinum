@@ -71,8 +71,10 @@ find "$APP/tcpbot.new" -name '__pycache__' -prune -exec rm -rf {} +
 rm -rf "$APP/tcpbot.old"
 [ -d "$APP/tcpbot" ] && mv "$APP/tcpbot" "$APP/tcpbot.old"
 mv "$APP/tcpbot.new" "$APP/tcpbot"
-install -d -m 0755 "$APP/assets"
-install -m 0644 "$SRC/assets/avatar.png" "$APP/assets/avatar.png"
+rm -rf "$APP/assets.new"
+cp -r "$SRC/assets" "$APP/assets.new"          # avatar, fonts and the game's icons for the bot emoji
+find "$APP/assets.new" -type d -exec chmod 0755 {} + && find "$APP/assets.new" -type f -exec chmod 0644 {} +
+rm -rf "$APP/assets" && mv "$APP/assets.new" "$APP/assets"
 install -m 0644 "$SRC/requirements.lock" "$SRC/README.md" "$APP/"
 install -d -m 0755 "$APP/deploy"
 install -m 0755 "$SRC/deploy/install.sh" "$SRC/deploy/uninstall.sh" "$APP/deploy/"
