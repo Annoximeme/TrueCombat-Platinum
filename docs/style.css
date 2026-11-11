@@ -660,6 +660,13 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
 .srv-tag.ranked { color: #e8c15a; border-color: rgba(232, 193, 90, .45); }
 .srv-tag.need { color: #7fd18b; border-color: rgba(127, 209, 139, .5); }
 .srv-tag.verified { color: #7fd6a0; border-color: rgba(79, 191, 122, .45); }
+.srv-tag.eac { color: #8fc4ff; border-color: rgba(143, 196, 255, .45); }
+.srv-tag.eac::before { content: ""; display: inline-block; width: .8em; height: .9em; margin-right: 4px; vertical-align: -1px; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 18'%3E%3Cpath d='M8 0 0 3v6c0 4.6 3.4 8.1 8 9 4.6-.9 8-4.4 8-9V3z'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 18'%3E%3Cpath d='M8 0 0 3v6c0 4.6 3.4 8.1 8 9 4.6-.9 8-4.4 8-9V3z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.board h3 .srv-tag { vertical-align: 3px; }
+.official .srv-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-self: start; }
+.official .srv-tags .srv-tag { margin: 0; }
 .srv-join { margin-left: 8px; font: 600 .78rem/1 var(--f-display); letter-spacing: .08em; text-transform: uppercase; color: var(--red-hi); text-decoration: none; white-space: nowrap; }
 .srv-join:hover, .srv-join:focus-visible { text-decoration: underline; }
 .official .srv-join { margin: 0; justify-self: start; }
