@@ -1,0 +1,41 @@
+{
+ "_help": "Content of the launcher's Play page (docs/launcher-feed.txt, written by build.py). 'releases' holds the headline for each release, keyed by version without the 'v'; the newest release always leads, and a release without an entry gets a plain 'Update x.y.z is live' slide. The latest devlog post follows automatically. 'slides' and 'news' are fixed items after that. Titles use | for the line break and should stay under about 22 characters a line; texts under about 200 characters. Links may only point to truecombat.eu, github.com, youtube.com, youtu.be, discord.gg or ko-fi.com.",
+ "releases": {
+  "0.34.1": {
+   "title": "Instant replay.|Fairer teams.",
+   "text": "Press F8 to save the last 30 seconds, see who hit you after every round, and let auto-balance fix lopsided matches.",
+   "button2": "Watch the trailer",
+   "url2": "https://www.youtube.com/watch?v=pb1IvJOg7Lg"
+  }
+ },
+ "slides": [
+  {
+   "eyebrow": "Ranked",
+   "title": "Climb the|ladder.",
+   "text": "Every official ranked match counts. One full match puts you on the leaderboard.",
+   "button": "View leaderboards",
+   "url": "https://truecombat.eu/leaderboards.html"
+  },
+  {
+   "eyebrow": "Community",
+   "title": "Play|together.",
+   "text": "Find a squad, join match nights and tell us what to build next on Discord.",
+   "button": "Join Discord",
+   "url": "https://discord.gg/8kcHdg2Hch"
+  }
+ ],
+ "news": [
+  {
+   "tag": "Community",
+   "title": "Weekend ranked ladder",
+   "text": "Standings reset every Friday at 20:00 CET.",
+   "url": "https://truecombat.eu/competitive.html"
+  },
+  {
+   "tag": "Support",
+   "title": "Keep the servers running",
+   "text": "TrueCombat: Platinum is free. See where every contribution goes.",
+   "url": "https://truecombat.eu/support.html"
+  }
+ ]
+}

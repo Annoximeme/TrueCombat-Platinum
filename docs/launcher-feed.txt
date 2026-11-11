@@ -1,0 +1,43 @@
+# Launcher Play page. Written by tools/website/build.py from tools/website/launcher.json; do not edit.
+[slide]
+eyebrow=Update 0.34.1
+chip=Live now
+title=Instant replay.|Fairer teams.
+text=Press F8 to save the last 30 seconds, see who hit you after every round, and let auto-balance fix lopsided matches.
+button=Read patch notes
+url=https://truecombat.eu/news.html
+button2=Watch the trailer
+url2=https://www.youtube.com/watch?v=pb1IvJOg7Lg
+[slide]
+eyebrow=Devlog
+title=The road ahead,|in full.
+text=The next two updates are planned, and so is the work behind them.
+button=Read the devlog
+url=https://truecombat.eu/devlog-the-road-ahead.html
+[slide]
+eyebrow=Ranked
+title=Climb the|ladder.
+text=Every official ranked match counts. One full match puts you on the leaderboard.
+button=View leaderboards
+url=https://truecombat.eu/leaderboards.html
+[slide]
+eyebrow=Community
+title=Play|together.
+text=Find a squad, join match nights and tell us what to build next on Discord.
+button=Join Discord
+url=https://discord.gg/8kcHdg2Hch
+[news]
+tag=Devlog
+title=The road ahead, in full
+text=The next two updates are planned, and so is the work behind them.
+url=https://truecombat.eu/devlog-the-road-ahead.html
+[news]
+tag=Community
+title=Weekend ranked ladder
+text=Standings reset every Friday at 20:00 CET.
+url=https://truecombat.eu/competitive.html
+[news]
+tag=Support
+title=Keep the servers running
+text=TrueCombat: Platinum is free. See where every contribution goes.
+url=https://truecombat.eu/support.html
