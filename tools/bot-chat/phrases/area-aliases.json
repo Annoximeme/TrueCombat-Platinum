@@ -1,0 +1,14 @@
+{
+  "_comment": "Short names for area names too long for chat (over 22 characters). Checked 2026-11-11 with tools/area_check.py on the six maps. Key: map, then the name as the map gives it.",
+  "obj_delta": {
+    "Eastern maintenance buildings": "East maintenance",
+    "Western maintenance buildings": "West maintenance",
+    "Terrorist insertion point": "Insertion point"
+  },
+  "obj_stadtrand": {
+    "Factory Demolition Site": "Demolition site",
+    "Leyd Logistik Building": "Leyd building",
+    "Leyd Logistik Loading Bay": "Leyd loading bay",
+    "Leyd Logistik Rear Entrance": "Leyd rear entrance"
+  }
+}

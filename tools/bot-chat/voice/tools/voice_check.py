@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Ties the radio concepts in voice_map.txt to the voice lines the game really has.
 
-  python voice_check.py --dir "<game folder>" [--map voice_map.txt] [--out voice]
+  python voice_check.py --dir "<game folder>" [--only tcetest] [--map voice_map.txt] [--out voice]
   python voice_check.py --voice file1.voice file2.voice ...
 
 Reads every *.voice script (loose or inside .pk3 files), lists the voice ids with their captions, and for each
@@ -21,7 +21,7 @@ def parse_voice(text):
         out.setdefault(m.group(1), []).extend(caps)
     return out
 
-def collect(paths, root):
+def collect(paths, root, only=None):
     found = {}
     def add(name, data):
         for k, v in parse_voice(data.decode("latin-1", "replace")).items():
@@ -34,6 +34,7 @@ def collect(paths, root):
         for d, _, files in os.walk(root):
             for fn in files:
                 full = os.path.join(d, fn)
+                if only and only.lower() not in full.lower(): continue
                 if fn.lower().endswith(".voice"): add(full, open(full, "rb").read())
                 elif fn.lower().endswith(".pk3"):
                     try:
@@ -59,8 +60,9 @@ if __name__ == "__main__":
     ap.add_argument("--dir"); ap.add_argument("--voice", nargs="*", default=[])
     ap.add_argument("--map", default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "voice_map.txt"))
     ap.add_argument("--out", default="voice")
+    ap.add_argument("--only", help="only read files whose path contains this text, e.g. the mod folder name, so stock engine voice scripts are left out")
     a = ap.parse_args()
-    found = collect(a.voice, a.dir)
+    found = collect(a.voice, a.dir, a.only)
     if not found: sys.exit("no .voice scripts found: point --dir at the game folder or pass --voice files")
     used = {}
     for line in open(a.map, encoding="utf-8"):

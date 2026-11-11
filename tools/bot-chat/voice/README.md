@@ -7,19 +7,33 @@ chat situations to voice lines in two steps, because the real voice ids are only
 |---|---|
 | `voice_map.txt` | situation, TAB, concept. 146 of the 323 situations have a radio line, through 28 concepts such as `enemy_spotted`, `affirmative`, `need_backup` |
 | `tools/voice_build.py` | Rebuilds `voice_map.txt` from `phrases.txt`. The rules and the concept list live here |
+| `voice-ids.txt` | concept, TAB, real voice id, checked against the game and corrected by hand |
 | `tools/voice_check.py` | Reads the game's `.voice` scripts (loose or inside `.pk3`) and ties each concept to a real voice id |
 
-## The check that still has to run
+## Checked against the game (2026-11-11)
 
 ```
-python tools/voice_check.py --dir "<game folder>" --out voice
+python tools/voice_check.py --dir "<game folder>" --only tcetest --out voice
 ```
 
-It writes `voice-report.txt` (what was matched, other candidates, voice lines in the game that no situation
-uses yet) and `voice-ids.txt` (concept, TAB, voice id). Read the report, correct `voice-ids.txt` by hand where
-the automatic pick is wrong, and leave the id empty where the game has no such line: those situations stay
-text only. The exit code is 1 while a concept has no voice id. Tested only on a made-up script so far; it has
-not seen the real game files.
+`--only tcetest` matters: without it the stock engine voice scripts are read too and add ids and captions that
+TrueCombat players never hear. The game's own scripts have 49 voice ids. `voice-ids.txt` in this folder is the
+result, corrected by hand: 17 of the 28 concepts have a real radio line, 11 stay text only.
+
+Hand corrections to the automatic picks, and why:
+
+| Concept | Automatic pick | Decision |
+|---|---|---|
+| area_clear | ClearPath ("Clear the area.") | Empty. It is an order to clear, not a report that it is clear |
+| on_my_way | Incoming ("Incoming.") | Empty. Players read it as enemies coming |
+| sniper | FTProvideSniperCover ("How about some sniper fire?") | Empty. It asks for a friendly sniper |
+| regroup | FTReviveTeamMate (stock script only) | Empty |
+| cheer | GreatShot ("Nice shot.") | Cheer ("Alright!"), which fits round wins too |
+| defusing | none | Empty. DisarmDynamite ("Diffuse the bomb!") is an order, usable later for `who_defuses` |
+
+Captions differ from the stock ones: FireInTheHole is "Frag out.", TakingFire is "I'm taking fire.",
+Negative is "Negative.". Unused lines that could get triggers later: DefendObjective, ReinforceDefense
+("We need help on defense!"), Move ("Move it!"), CoverMe.
 
 ## Suggested runtime rules
 
