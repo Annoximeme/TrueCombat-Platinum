@@ -87,7 +87,7 @@ def nav(lang, current):
         other_href = "./"
     home = "./"
     main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news"]
-    active = {"player": "leaderboards", "devlog": "news"}.get(current, current)
+    active = {"player": "leaderboards", "match": "servers", "devlog": "news"}.get(current, current)
     if current.startswith("devlog-"):
         active = "news"
     if current.startswith("map-"):
@@ -190,7 +190,7 @@ def social(html):
 
 def crumbs(lang, page, html):
     """BreadcrumbList structured data: Home > page, or Home > Devlog > post."""
-    if page in ("index", "player"):
+    if page in ("index", "player", "match"):
         return ""
     items = [("TrueCombat: Platinum", url(lang, "index"))]
     if page.startswith("devlog-"):
@@ -1028,23 +1028,11 @@ def map_links(lang, html):
     return html
 
 
-def detail_pages(lang):
-    """(page name, html) for every map page and weapon page in one language."""
+def shell(lang, page, title, desc, og, image, body, extra=""):
+    """A whole generated page: head, nav, the given body and the footer."""
     up = "../" if lang == "nl" else ""
     e = lambda t: htmlmod.escape(t, quote=True)
-    pages = []
-    for name in MAPLIST:
-        title, desc, og = detail.map_meta(lang, name)
-        pages.append(("map-" + name, title, desc, og, "og-map-%s.jpg" % name, detail.map_body(lang, name, MAPLIST, layout_html), ""))
-    allw = detail.weapons(lang)
-    for w in allw:
-        title, desc = detail.weapon_meta(lang, w)
-        pages.append(("weapon-" + w["id"], title, desc, desc, "og-weapons.jpg", detail.weapon_body(lang, w, allw, WL[lang]["modes"]), ""))
-    out = []
-    for page, title, desc, og, image, body, extra in pages:
-        if lang == "nl":
-            body = ASSET.sub(r"../\1/", body)
-        html = f"""<!doctype html>
+    html = f"""<!doctype html>
 <html lang="{lang}">
 <head>
 <meta charset="utf-8">
@@ -1083,9 +1071,73 @@ def detail_pages(lang):
 </body>
 </html>
 """
-        html = put(html, "nav", nav(lang, page), page)
-        html = put(html, "footer", footer(lang), page)
-        html = put(html, "alt", alt(lang, page, html), page)
+    html = put(html, "nav", nav(lang, page), page)
+    html = put(html, "footer", footer(lang), page)
+    html = put(html, "alt", alt(lang, page, html), page)
+    return html
+
+
+MATCH = {
+    "en": {"title": "Match report · TrueCombat: Platinum", "desc": "A finished TrueCombat: Platinum match: the result, the MVP and the full scoreboard for both teams.",
+           "back": "Latest results", "eyebrow": "Match report", "h1": "Match report",
+           "lede": "Every finished match on a ranked server gets a page. Open one from the latest results or from a player profile.",
+           "missing": "This match could not be found."},
+    "nl": {"title": "Wedstrijdverslag · TrueCombat: Platinum", "desc": "Een afgelopen potje TrueCombat: Platinum: de uitslag, de MVP en het volledige scorebord van beide teams.",
+           "back": "Laatste uitslagen", "eyebrow": "Wedstrijdverslag", "h1": "Wedstrijdverslag",
+           "lede": "Elk afgelopen potje op een ranked server krijgt een eigen pagina. Open er een vanuit de laatste uitslagen of vanuit een spelersprofiel.",
+           "missing": "Dit potje is niet gevonden."},
+}
+
+
+def match_page(lang):
+    """match.html: an empty frame that js/site.js fills from the stats service (match.json?id=)."""
+    T = MATCH[lang]
+    up = "../" if lang == "nl" else ""
+    body = f"""<div data-match>
+<section class="page-head pf-head">
+  <div class="head-art" data-m-art style="--art: url({up}img/media-map-vote.webp); --art-s: url({up}img/media-map-vote-640.webp)" aria-hidden="true"></div>
+  <div class="wrap">
+    <a class="pf-back" href="servers.html">\u2190 {T['back']}</a>
+    <span class="eyebrow">{T['eyebrow']}</span>
+    <h1 data-m-title>{T['h1']}</h1>
+    <p class="lede" data-m-lede>{T['lede']}</p>
+  </div>
+</section>
+
+<section class="band pf-body" data-m-body hidden>
+  <div class="wrap pf-grid">
+    <div class="m-score" data-m-score></div>
+    <div class="pf-stats" data-m-facts></div>
+    <div class="m-teams" data-m-teams></div>
+    <p class="yt-note pf-foot" data-m-foot></p>
+  </div>
+</section>
+
+<section class="band" data-m-missing hidden>
+  <div class="wrap">
+    <p class="lede" data-m-missing-text>{T['missing']}</p>
+  </div>
+</section>
+</div>
+"""
+    return shell(lang, "match", T["title"], T["desc"], T["desc"], "og-leaderboards.jpg", body, '<meta name="robots" content="noindex, follow">\n')
+
+
+def detail_pages(lang):
+    """(page name, html) for every map page and weapon page in one language."""
+    pages = []
+    for name in MAPLIST:
+        title, desc, og = detail.map_meta(lang, name)
+        pages.append(("map-" + name, title, desc, og, "og-map-%s.jpg" % name, detail.map_body(lang, name, MAPLIST, layout_html), ""))
+    allw = detail.weapons(lang)
+    for w in allw:
+        title, desc = detail.weapon_meta(lang, w)
+        pages.append(("weapon-" + w["id"], title, desc, desc, "og-weapons.jpg", detail.weapon_body(lang, w, allw, WL[lang]["modes"]), ""))
+    out = []
+    for page, title, desc, og, image, body, extra in pages:
+        if lang == "nl":
+            body = ASSET.sub(r"../\1/", body)
+        html = shell(lang, page, title, desc, og, image, body, extra)
         out.append((page, html))
     return out
 
@@ -1330,6 +1382,9 @@ def main():
             (DOCS / ("nl" if lang == "nl" else "") / (page + ".html")).write_text(bust(html), encoding="utf-8")
             if lang == "en":
                 details.append(page)
+
+    for lang in ("en", "nl"):
+        (DOCS / ("nl" if lang == "nl" else "") / "match.html").write_text(bust(match_page(lang)), encoding="utf-8")
 
     template = unbust((DOCS / "devlog.html").read_text(encoding="utf-8"))
     posts = {lang: devlog_posts(lang) for lang in ("en", "nl")}
