@@ -48,8 +48,8 @@ fail=0
 check() { # url, expected status, expected Location (optional)
 	got=$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' "$1")
 	case "$got" in
-		"$2 $3"*) echo "ok   $1 -> $got" ;;
-		*) echo "FAIL $1 -> $got (wanted $2 $3)"; fail=1 ;;
+		"$2 ${3:-}"*) echo "ok   $1 -> $got" ;;
+		*) echo "FAIL $1 -> $got (wanted $2 ${3:-})"; fail=1 ;;
 	esac
 }
 S=https://truecombat.eu
