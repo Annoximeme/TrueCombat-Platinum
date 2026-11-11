@@ -102,6 +102,10 @@ Totals, rank with XP progress, rating and peak rating, leaderboard position, per
 accuracy, and the last 20 matches with their rating change. Also `GET /search.json?q=<name>`,
 `GET /recent.json` and `GET /ranks.json`.
 
+### `GET /match.json?id=<match id>` (`tcp-match-page/1`)
+
+One finished match for its page on the website (`match.html?id=`): map, mode, length, rounds, winner, the score per team, the MVP and every player's line (kills, deaths, headshots, damage, objectives, top weapon, XP, rating change). The id is the `id` field of an entry in `/recent.json` or in a profile's `recent` list. It is a hash, so it gives away neither the server id nor the server's own match id.
+
 ### `POST /api/v1/match`
 
 Headers `X-TCP-Server`, `X-TCP-Time` (unix seconds) and `X-TCP-Signature`; body is the report. Answers
