@@ -21,6 +21,50 @@
 - [Media](https://truecombat.eu/media.html): in-game screenshots from the DirectX 12 renderer
 - [Competitive](https://truecombat.eu/competitive.html): match mode for clan matches: ready-up, knife round, half-time, timeouts
 
+## Maps
+
+- [Delta](https://truecombat.eu/map-delta.html): Brick warehouses, loading bays and parked trucks line a wide industrial road under a heavy night sky.
+- [Northport](https://truecombat.eu/map-northport.html): Red sheds, loading docks and flatbed trailers spread across the harbour yard. Fog rolls in at range, so the far end of the yard fades out before you can see who's waiting there.
+- [Railhouse](https://truecombat.eu/map-railhouse.html): A brick rail yard at night. Tracks run under an arched gate, and crates and stacked pallets fill the lit back alleys and the yard behind the station.
+- [Snow](https://truecombat.eu/map-snow.html): Snow-covered yards and loading platforms above, and a concrete basement with cages, tyres and storage rooms below.
+- [Stadtrand](https://truecombat.eu/map-stadtrand.html): Narrow brick alleys on the edge of town, with bins, back doors and fire escapes. The fog keeps every corner close.
+- [Village](https://truecombat.eu/map-village.html): Barns, walled courtyards and trees in a small village. Hay bales and open sheds give cover between the houses.
+
+## Weapons
+
+- [Beretta](https://truecombat.eu/weapon-beretta.html): The Beretta is a secondary weapon for SpecOps, chambered in 9×19 mm. It deals 54 damage per hit at 600 rounds per minute, from a magazine of 15.
+- [Glock](https://truecombat.eu/weapon-glock.html): The Glock is a secondary weapon for Terrorists, chambered in 9×19 mm. It deals 54 damage per hit at 600 rounds per minute, from a magazine of 15.
+- [Desert Eagle](https://truecombat.eu/weapon-desert-eagle.html): The Desert Eagle is a secondary weapon for both teams, chambered in .50 AE. It deals 77 damage per hit at 300 rounds per minute, from a magazine of 7.
+- [Akimbo Beretta](https://truecombat.eu/weapon-akimbo-beretta.html): The Akimbo Beretta is a secondary weapon for SpecOps, chambered in 9×19 mm. It deals 54 damage per hit at 600 rounds per minute, from a magazine of 15.
+- [Akimbo Glock](https://truecombat.eu/weapon-akimbo-glock.html): The Akimbo Glock is a secondary weapon for Terrorists, chambered in 9×19 mm. It deals 54 damage per hit at 600 rounds per minute, from a magazine of 15.
+- [MAC-10](https://truecombat.eu/weapon-mac-10.html): The MAC-10 is a primary weapon for Terrorists, chambered in .45 ACP. It deals 40 damage per hit at 1200 rounds per minute, from a magazine of 30.
+- [MAC-10 SD](https://truecombat.eu/weapon-mac-10-sd.html): The MAC-10 SD is a primary weapon for Terrorists, chambered in .45 ACP. It deals 40 damage per hit at 1200 rounds per minute, from a magazine of 30.
+- [MP5/10](https://truecombat.eu/weapon-mp5-10.html): The MP5/10 is a primary weapon for SpecOps, chambered in .40 S&W. It deals 45 damage per hit at 800 rounds per minute, from a magazine of 30.
+- [MP5SD](https://truecombat.eu/weapon-mp5sd.html): The MP5SD is a primary weapon for SpecOps, chambered in 9×19 mm. It deals 45 damage per hit at 800 rounds per minute, from a magazine of 30.
+- [UMP45](https://truecombat.eu/weapon-ump45.html): The UMP45 is a primary weapon for SpecOps, chambered in .45 ACP. It deals 50 damage per hit at 600 rounds per minute, from a magazine of 25.
+- [M4](https://truecombat.eu/weapon-m4.html): The M4 is a primary weapon for SpecOps, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [M4 SOPMOD](https://truecombat.eu/weapon-m4-sopmod.html): The M4 SOPMOD is a primary weapon for SpecOps, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [M16](https://truecombat.eu/weapon-m16.html): The M16 is a primary weapon for SpecOps, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [AKS-74U](https://truecombat.eu/weapon-aks-74u.html): The AKS-74U is a primary weapon for Terrorists, chambered in 5.45×39 mm. It deals 45 damage per hit at 800 rounds per minute, from a magazine of 30.
+- [AKS-74U SD](https://truecombat.eu/weapon-aks-74u-sd.html): The AKS-74U SD is a primary weapon for Terrorists, chambered in 5.45×39 mm. It deals 45 damage per hit at 800 rounds per minute, from a magazine of 30.
+- [SIG 552](https://truecombat.eu/weapon-sig-552.html): The SIG 552 is a primary weapon for Terrorists, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [AK-74M Spetsnaz](https://truecombat.eu/weapon-ak-74m-spetsnaz.html): The AK-74M Spetsnaz is a primary weapon for Terrorists, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 30.
+- [AK-47](https://truecombat.eu/weapon-ak-47.html): The AK-47 is a primary weapon for Terrorists, chambered in 7.62×39 mm. It deals 47 damage per hit at 600 rounds per minute, from a magazine of 30.
+- [M3 Super 90](https://truecombat.eu/weapon-m3-super-90.html): The M3 Super 90 is a primary weapon for SpecOps, in 12 gauge. Each shell spreads 150 damage over 9 pellets, and it reloads one shell at a time.
+- [SPAS-12](https://truecombat.eu/weapon-spas-12.html): The SPAS-12 is a primary weapon for Terrorists, in 12 gauge. Each shell spreads 150 damage over 9 pellets, and it reloads one shell at a time.
+- [M590 Compact](https://truecombat.eu/weapon-m590-compact.html): The M590 Compact is a primary weapon for both teams, in 12 gauge. Each shell spreads 150 damage over 9 pellets, and it reloads one shell at a time.
+- [PSG-1](https://truecombat.eu/weapon-psg-1.html): The PSG-1 is a primary weapon for SpecOps, chambered in 7.62×51 mm. It deals 54 damage per hit at 400 rounds per minute, from a magazine of 10.
+- [M76](https://truecombat.eu/weapon-m76.html): The M76 is a primary weapon for Terrorists, chambered in 7.92×57 mm. It deals 54 damage per hit at 400 rounds per minute, from a magazine of 10.
+- [R93](https://truecombat.eu/weapon-r93.html): The R93 is a primary weapon for SpecOps, chambered in .338 Lapua. It deals 90 damage per hit at 120 rounds per minute, from a magazine of 5.
+- [SR-8](https://truecombat.eu/weapon-sr-8.html): The SR-8 is a primary weapon for Terrorists, chambered in .338 Lapua. It deals 90 damage per hit at 120 rounds per minute, from a magazine of 5.
+- [SPR SD](https://truecombat.eu/weapon-spr-sd.html): The SPR SD is a primary weapon for SpecOps, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 20.
+- [SIG 550 SD](https://truecombat.eu/weapon-sig-550-sd.html): The SIG 550 SD is a primary weapon for Terrorists, chambered in 5.56×45 mm. It deals 45 damage per hit at 750 rounds per minute, from a magazine of 20.
+- [Knife](https://truecombat.eu/weapon-knife.html): Combat knife, carried by both teams. Always with you. One swing every half second.
+- [Mk3A2 / M26](https://truecombat.eu/weapon-mk3a2-m26.html): Fragmentation grenade, carried by both teams. Clears rooms and corners. Throw it and take cover.
+- [M83 smoke](https://truecombat.eu/weapon-m83-smoke.html): Smoke grenade, carried by both teams. Thrown with 4, one per life. Blocks sight lines so you can cross open ground.
+- [XM84 stun](https://truecombat.eu/weapon-xm84-stun.html): Stun grenade, carried by both teams. Stuns whoever is caught near it. Throw it before you push in.
+- [Dynamite](https://truecombat.eu/weapon-dynamite.html): Demolition charge, carried by both teams. Planted on objectives in the bomb mode.
+
 ## Play
 
 - [Servers](https://truecombat.eu/servers.html): public and official servers, live scoreboards and latest results

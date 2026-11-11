@@ -32,6 +32,9 @@ PAGES = {
     "faq": ("media-deployment.webp", "Questions", "Install, online play, graphics and the project"),
     "truecombat-elite": ("map-delta.webp", "TC:E today", "TrueCombat: Elite, playable on Windows 10 and 11"),
 }
+# one per map page (map-<name>.html)
+PAGES.update({"map-" + m: ("map-%s.webp" % m, m.capitalize(), "Layout, bomb sites and location names")
+              for m in ("delta", "northport", "railhouse", "snow", "stadtrand", "village")})
 
 
 def font(name, size):
