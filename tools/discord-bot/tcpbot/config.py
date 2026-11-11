@@ -87,14 +87,14 @@ DEFAULTS: dict = {
         # "draft": new releases wait in the staff channel for a Publish click.
         # "auto": they are announced straight away (the release itself is the approval).
         "mode": "draft",
-        "ping_role_id": 0,
+        "ping_role_id": 0,   # 0 = the "Patch notes" opt-in role from /setup roles
     },
     "devlog": {
         "enabled": True,
         "feed": "/var/www/truecombat/devlog.xml",
         "site_root": "/var/www/truecombat",
         "interval_minutes": 10,
-        # Optional role pinged with every new post (for example a "Devlog" opt-in role).
+        # Role pinged with every new post. 0 = the "Devlog" opt-in role from /setup roles.
         "ping_role_id": 0,
     },
     "linking": {

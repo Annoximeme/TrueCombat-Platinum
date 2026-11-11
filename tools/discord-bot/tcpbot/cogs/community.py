@@ -24,6 +24,8 @@ OPT_IN = {
     "alerts": ("Match alerts", 0xD63B3B, "a ping when a match is filling up"),
     "playtester": ("Playtester", 0xE7A73C, "early builds and playtest sessions"),
     "events": ("Event alerts", 0x5B9BD5, "scrims, community nights and tournaments"),
+    "patchnotes": ("Patch notes", 0xC9A227, "a ping the moment a new update is out"),
+    "devlog": ("Devlog", 0x4FBF7A, "a ping when a new devlog article goes live"),
 }
 # Roles the bot assigns
 EARNED = {
@@ -38,7 +40,7 @@ EVENT_LENGTH = 2 * 3600
 
 
 # ================================================================ opt-in buttons
-class OptInButton(discord.ui.DynamicItem[discord.ui.Button], template=r"tcp:role:(?P<key>alerts|playtester|events)"):
+class OptInButton(discord.ui.DynamicItem[discord.ui.Button], template=r"tcp:role:(?P<key>alerts|playtester|events|patchnotes|devlog)"):
     def __init__(self, key: str):
         super().__init__(discord.ui.Button(label=OPT_IN[key][0], style=discord.ButtonStyle.secondary,
                                            custom_id="tcp:role:%s" % key))

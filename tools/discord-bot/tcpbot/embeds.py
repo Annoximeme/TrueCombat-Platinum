@@ -450,7 +450,9 @@ def onboarding_panel(cfg) -> discord.Embed:
         "Pick what you want to hear about. You can change this any time.\n\n"
         "**Match alerts** · a ping when a match is filling up on an official server\n"
         "**Playtester** · early builds and playtest sessions before a release\n"
-        "**Event alerts** · scrims, community nights and tournaments\n\n"
+        "**Event alerts** · scrims, community nights and tournaments\n"
+        "**Patch notes** · a ping the moment a new update is out\n"
+        "**Devlog** · a ping when a new behind-the-scenes article goes live\n\n"
         "Link your game profile with `/link` to get your rank role.")
     e.set_image(url=banner(cfg, "og"))
     return _brand(e, stamp=False)
