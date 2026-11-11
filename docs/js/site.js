@@ -65,7 +65,8 @@ var TCP_API = 'https://api.truecombat.eu';
       reads: '{n} keer gelezen', read1: '1 keer gelezen', ratingOf: '{avg} uit {n} beoordelingen', topRated: 'Best beoordeeld'
     }
   };
-  var L = DICT[lang] || DICT.en;
+  /* German, French and Polish strings arrive in js/lang-<code>.js (window.TCP_L); English fills any gap */
+  var L = Object.assign({}, DICT.en, DICT[lang] || window.TCP_L || {});
 
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function fmtDate(iso) { var d = new Date(iso); return d.getUTCDate() + ' ' + L.months[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
@@ -76,6 +77,13 @@ var TCP_API = 'https://api.truecombat.eu';
   /* mobile menu closes after a pick */
   var menu = document.getElementById('menu');
   if (menu) menu.addEventListener('click', function (e) { if (e.target.tagName === 'A') menu.open = false; });
+
+  /* language menu closes on a click elsewhere or Escape */
+  var langs = document.querySelector('.nav-langs');
+  if (langs) {
+    document.addEventListener('click', function (e) { if (langs.open && !langs.contains(e.target)) langs.open = false; });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') langs.open = false; });
+  }
 
   /* ---------- GitHub releases ---------- */
   var RELEASES = 'https://api.github.com/repos/Annoximeme/TrueCombat-Platinum/releases?per_page=30';
@@ -282,7 +290,7 @@ var TCP_API = 'https://api.truecombat.eu';
     if (upd && data.updated) { upd.textContent = L.updated + ' ' + new Date(data.updated).toLocaleTimeString(lang, { hour: '2-digit', minute: '2-digit' }); upd.hidden = false; }
   }
   /* live scoreboards for every server with someone on it (servers page) */
-  var IMG = (lang === 'nl' ? '../' : '') + 'img/';
+  var IMG = (lang === 'en' ? '' : '../') + 'img/';
   function mapArt(m) { var n = MAPS[String(m || '').toLowerCase()]; return IMG + (n ? 'map-' + n.toLowerCase() : 'media-map-vote') + '-640.webp'; }
   function shortName(s) { return String(s || '').replace(/^TrueCombat:\s*Platinum\s*\|\s*/i, ''); }
   function renderBoards(list) {
@@ -895,7 +903,7 @@ var TCP_API = 'https://api.truecombat.eu';
       var posts = d.posts || {}, best = null;
       // the best-rated post (5+ ratings, 4.0 or higher) gets a "Top rated" mark
       Object.keys(posts).forEach(function (k) { var p = posts[k]; if (p.rating >= 4 && (!best || p.rating > posts[best].rating || (p.rating === posts[best].rating && p.ratings > posts[best].ratings))) best = k; });
-      var fmt = function (n) { return Number(n).toLocaleString(lang === 'nl' ? 'nl-BE' : 'en-GB'); };
+      var fmt = function (n) { return Number(n).toLocaleString({ nl: 'nl-BE', de: 'de-DE', fr: 'fr-FR', pl: 'pl-PL' }[lang] || 'en-GB'); };
       slots.forEach(function (el) {
         var p = posts[el.dataset.postStat]; if (!p) return;
         var bits = [];
@@ -935,12 +943,12 @@ var TCP_API = 'https://api.truecombat.eu';
   /* ---------- site search (Ctrl+K, / or the magnifier in the top bar) ----------
      The index (js/search-<lang>.json, written by tools/website/build.py) is only fetched the first time search opens. */
   (function () {
-    var T = lang === 'nl'
+    var T = L.search ? L.search : lang === 'nl'
       ? { ph: 'Zoek maps, wapens, gidsen en posts', none: 'Niets gevonden voor', hint: '↑ ↓ kiezen · Enter openen · Esc sluiten', label: 'Zoeken op de site', quick: 'Snel naar', fail: 'Zoeken is nu niet beschikbaar.' }
       : { ph: 'Search maps, weapons, guides and posts', none: 'Nothing found for', hint: '↑ ↓ to move · Enter to open · Esc to close', label: 'Search the site', quick: 'Jump to', fail: 'Search is unavailable right now.' };
     var script = document.querySelector('script[src*="js/site.js"]');
     if (!script || !window.HTMLDialogElement) { $all('[data-search-open]').forEach(function (b) { b.hidden = true; }); return; }
-    var jsBase = new URL('.', script.src), root = new URL(lang === 'nl' ? '../nl/' : '../', jsBase);
+    var jsBase = new URL('.', script.src), root = new URL(lang === 'en' ? '../' : '../' + lang + '/', jsBase);
     var QUICK = ['download.html', 'servers.html', 'guide.html', 'maps.html', 'weapons.html', 'faq.html'];
     var dlg, input, list, rows = null, shown = [], sel = 0;
 
@@ -1005,7 +1013,7 @@ var TCP_API = 'https://api.truecombat.eu';
       var menu = document.getElementById('menu'); if (menu) menu.open = false;
       input.value = ''; dlg.showModal(); input.focus();
       if (rows) { draw(); return; }
-      fetch(new URL('search-' + (lang === 'nl' ? 'nl' : 'en') + '.json', jsBase), { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+      fetch(new URL('search-' + lang + '.json', jsBase), { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
         rows = d.map(function (r) { r.nt = norm(r.t); r.nd = norm(r.d); r.nk = norm(r.k); return r; });
         draw();
       }).catch(function () { list.innerHTML = '<li class="sr-empty">' + esc(T.fail) + '</li>'; });
@@ -1020,7 +1028,7 @@ var TCP_API = 'https://api.truecombat.eu';
 
   /* ---------- back to top, and the section rail on the home page ---------- */
   (function () {
-    var label = lang === 'nl' ? 'Terug naar boven' : 'Back to top';
+    var label = L.top || (lang === 'nl' ? 'Terug naar boven' : 'Back to top');
     var top = document.createElement('button');
     top.type = 'button'; top.className = 'to-top'; top.setAttribute('aria-label', label); top.title = label; top.hidden = true;
     top.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14l6-6 6 6"/></svg>';
@@ -1040,7 +1048,7 @@ var TCP_API = 'https://api.truecombat.eu';
     var secs = $all('main > section[id]').filter(function (s) { return s.querySelector('.eyebrow') && s.querySelector('h2'); });
     if (secs.length < 4) return;
     var rail = document.createElement('nav');
-    rail.className = 'rail'; rail.setAttribute('aria-label', lang === 'nl' ? 'Op deze pagina' : 'On this page');
+    rail.className = 'rail'; rail.setAttribute('aria-label', L.onPage || (lang === 'nl' ? 'Op deze pagina' : 'On this page'));
     rail.innerHTML = secs.map(function (s) { return '<a href="#' + esc(s.id) + '"><span>' + esc(s.querySelector('.eyebrow').textContent.trim()) + '</span></a>'; }).join('');
     document.body.appendChild(rail);
     var links = $all('a', rail);
@@ -1084,13 +1092,15 @@ var TCP_API = 'https://api.truecombat.eu';
         for (var r = 0; r < 3; r++) marks.forEach(function (m) { html += '<span' + (/^[NESW]+$/.test(m) ? ' class="c"' : '') + '>' + m + '</span>'; });
         tape.innerHTML = html;
       }
-      var tx = 0, ty = 0, cx = 0, cy = 0, heading = 0, seen = true, raf = 0, last = 0, LOOP = 24 * 60;
+      var tx = 0, ty = 0, cx = 0, cy = 0, heading = 0, seen = true, raf = 0, last = 0, lastPx = '', lastPy = '', LOOP = 24 * 60;
       function frame(now) {
         raf = 0;
         var dt = Math.min(50, now - (last || now)); last = now;
         cx += (tx - cx) * 0.06; cy += (ty - cy) * 0.06;
         heading = (heading + dt * 0.006 + cx * dt * 0.05 + LOOP) % LOOP;   /* a slow turn, faster when the cursor leans */
-        hero.style.setProperty('--px', cx.toFixed(4)); hero.style.setProperty('--py', cy.toFixed(4));
+        /* written only when the value moves, so a resting cursor costs no style work */
+        var px = cx.toFixed(3), py = cy.toFixed(3);
+        if (px !== lastPx || py !== lastPy) { lastPx = px; lastPy = py; hero.style.setProperty('--px', px); hero.style.setProperty('--py', py); }
         if (tape) tape.style.transform = 'translate3d(' + (-(LOOP + heading)).toFixed(1) + 'px,0,0)';
         if (seen && !document.hidden) raf = requestAnimationFrame(frame);
       }
@@ -1128,6 +1138,8 @@ var TCP_API = 'https://api.truecombat.eu';
     }
 
     /* ghost lettering: each section's label, outlined and oversized, behind its heading */
+    /* added once the display font is in, so the lettering never jumps when the font swaps */
+    if (window.innerWidth > 1100) (document.fonts && document.fonts.load ? document.fonts.load('800 1em "Saira Condensed"').catch(function () {}) : Promise.resolve()).then(function () {
     $all('.band .section-head, .page-head .wrap').forEach(function (head) {
       if (head.closest('.post-head, .studio-hero, #maps')) return;
       var eb = head.querySelector('.eyebrow'); if (!eb) return;
@@ -1136,6 +1148,7 @@ var TCP_API = 'https://api.truecombat.eu';
       var g = document.createElement('span');
       g.className = 'ghost'; g.setAttribute('aria-hidden', 'true'); g.textContent = word;
       head.appendChild(g);
+    });
     });
 
     /* map theatre on the home page */
