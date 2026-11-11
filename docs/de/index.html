@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrueCombat: Platinum · Kostenloser Taktik-Shooter, TrueCombat: Elite neu aufgebaut</title>
+<meta name="description" content="TrueCombat: Platinum ist ein kostenloser Taktik-Shooter für Windows: TrueCombat: Elite (TC:E), neu aufgebaut als natives 64-Bit-Spiel mit DirectX 12, mit den originalen Maps, Waffen und dem HUD.">
+<meta name="theme-color" content="#0d1016">
+<meta property="og:type" content="website">
+<meta property="og:title" content="TrueCombat: Platinum">
+<meta property="og:description" content="TrueCombat: Elite, neu aufgebaut als natives 64-Bit-Spiel mit DirectX 12 für Windows. Kostenloser Download.">
+<link rel="canonical" href="https://truecombat.eu/de/">
+<meta property="og:url" content="https://truecombat.eu/de/">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="de_DE">
+<meta property="og:image" content="https://truecombat.eu/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="TrueCombat: Platinum logo over the Northport map">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="TrueCombat: Platinum">
+<meta name="twitter:description" content="TrueCombat: Elite, neu aufgebaut als natives 64-Bit-Spiel mit DirectX 12 für Windows. Kostenloser Download.">
+<meta name="twitter:image" content="https://truecombat.eu/img/og.jpg">
+<link rel="preload" as="image" href="../img/logo.webp" imagesrcset="../img/logo-640.webp 640w, ../img/logo.webp 900w" imagesizes="(max-width: 600px) 88vw, 520px" fetchpriority="high">
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://truecombat.eu/#site","url":"https://truecombat.eu/","name":"TrueCombat: Platinum","alternateName":"truecombat.eu","inLanguage":["en","nl","de","fr","pl"],"publisher":{"@id":"https://truecombat.eu/#studio"}},{"@type":"Organization","@id":"https://truecombat.eu/#studio","name":"Team Terminus","url":"https://truecombat.eu/studio.html","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"},"sameAs":["https://github.com/Annoximeme/TrueCombat-Platinum","https://discord.gg/8kcHdg2Hch","https://ko-fi.com/truecombatplatinum"]},{"@type":"VideoGame","@id":"https://truecombat.eu/#game","name":"TrueCombat: Platinum","alternateName":["TC:P","TrueCombat Platinum"],"url":"https://truecombat.eu/de/","image":"https://truecombat.eu/img/og.jpg","description":"TrueCombat: Elite, der realistische Taktik-Shooter, kostenlos neu aufgebaut als natives 64-Bit-Spiel mit DirectX 12 für Windows 10 und 11.","inLanguage":["en","nl","de","fr","pl"],"genre":["Tactical shooter","First-person shooter"],"gamePlatform":"PC","operatingSystem":"Windows 10, Windows 11 (64-bit)","applicationCategory":"Game","playMode":"MultiPlayer","softwareVersion":"0.34.1","isBasedOn":{"@type":"VideoGame","name":"TrueCombat: Elite"},"screenshot":["https://truecombat.eu/img/map-northport.webp","https://truecombat.eu/img/map-railhouse.webp","https://truecombat.eu/img/map-delta.webp","https://truecombat.eu/img/map-stadtrand.webp","https://truecombat.eu/img/map-village.webp","https://truecombat.eu/img/map-snow.webp","https://truecombat.eu/img/hud-scoreboard.webp","https://truecombat.eu/img/media-deployment.webp"],"author":{"@id":"https://truecombat.eu/#studio"},"publisher":{"@id":"https://truecombat.eu/#studio"},"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR","availability":"https://schema.org/InStock","url":"https://truecombat.eu/de/download.html"},"downloadUrl":"https://truecombat.eu/de/download.html","installUrl":"https://truecombat.eu/de/download.html","sameAs":["https://github.com/Annoximeme/TrueCombat-Platinum","https://discord.gg/8kcHdg2Hch"]}]}</script>
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/">
+<link rel="alternate" hreflang="de" href="https://truecombat.eu/de/">
+<link rel="alternate" hreflang="fr" href="https://truecombat.eu/fr/">
+<link rel="alternate" hreflang="pl" href="https://truecombat.eu/pl/">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=7190e18a80">
+</head>
+<body>
+
+<!--nav-->
+<a class="skip" href="#top">Zum Inhalt</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Waffen</a></li>
+      <li><a href="media.html">Medien</a></li>
+      <li><a href="guide.html">Guide</a></li>
+      <li><a href="servers.html">Server</a></li>
+      <li><a href="leaderboards.html">Bestenlisten</a></li>
+      <li><a href="competitive.html">Kompetitiv</a></li>
+      <li><a href="../news.html">News</a></li>
+      <li><a href="../devlog.html" data-devlog-new="2026-11-11">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menü"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Bereiche">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Suche</button><a href="maps.html">Maps</a><a href="weapons.html">Waffen</a><a href="media.html">Medien</a><a href="guide.html">Guide</a><a href="servers.html">Server</a><a href="leaderboards.html">Bestenlisten</a><a href="competitive.html">Kompetitiv</a><a href="../news.html">News</a><a href="../devlog.html">Devlog</a><a href="../studio.html">Studio</a><a href="../support.html">Unterstützen</a><hr><a href="download.html">Download</a><a href="truecombat-elite.html">TrueCombat: Elite</a><a href="./#gallery">Galerie</a><a href="./#graphics">Grafik</a><a href="faq.html">FAQ</a><a href="../press.html">Pressekit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../" hreflang="en" lang="en">English</a><a href="../nl/" hreflang="nl" lang="nl">Nederlands</a><a href="../fr/" hreflang="fr" lang="fr">Français</a><a href="../pl/" hreflang="pl" lang="pl">Polski</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Suche" title="Suche (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
+    <details class="nav-langs"><summary aria-label="Sprache" title="Sprache">DE</summary><div><a href="../" hreflang="en" lang="en">English</a><a href="../nl/" hreflang="nl" lang="nl">Nederlands</a><a href="../fr/" hreflang="fr" lang="fr">Français</a><a href="../pl/" hreflang="pl" lang="pl">Polski</a></div></details>
+    <a class="nav-support" href="../support.html" title="Unterstützen"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Unterstützen</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Komm auf den Discord" title="Komm auf den Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+
+<section class="hero" aria-label="TrueCombat: Platinum">
+  <div class="slides" id="slides">
+    <img class="slide" data-name="Northport" src="../img/map-northport.webp" srcset="../img/map-northport-640.webp 640w, ../img/map-northport.webp 1280w" sizes="100vw" alt="" fetchpriority="high">
+    <img class="slide" data-name="Railhouse" data-src="../img/map-railhouse.webp" data-srcset="../img/map-railhouse-640.webp 640w, ../img/map-railhouse.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Delta" data-src="../img/map-delta.webp" data-srcset="../img/map-delta-640.webp 640w, ../img/map-delta.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Stadtrand" data-src="../img/map-stadtrand.webp" data-srcset="../img/map-stadtrand-640.webp 640w, ../img/map-stadtrand.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Village" data-src="../img/map-village.webp" data-srcset="../img/map-village-640.webp 640w, ../img/map-village.webp 1280w" sizes="100vw" alt="">
+    <img class="slide" data-name="Snow" data-src="../img/map-snow.webp" data-srcset="../img/map-snow-640.webp 640w, ../img/map-snow.webp 1280w" sizes="100vw" alt="">
+  </div>
+  <div class="hero-fx" aria-hidden="true"><i class="fog fog-a"></i><i class="fog fog-b"></i><i class="grain"></i><i class="hud hud-tl"></i><i class="hud hud-tr"></i><i class="hud hud-bl"></i><i class="hud hud-br"></i></div>
+  <div class="compass" aria-hidden="true"><div class="tape" id="tape"></div></div>
+  <div class="wrap">
+    <span class="logo-wrap"><img class="hero-logo" src="../img/logo.webp" srcset="../img/logo-640.webp 640w, ../img/logo.webp 900w" sizes="(max-width: 600px) 88vw, 520px" fetchpriority="high" decoding="async" alt="TrueCombat: Platinum" width="900" height="512"><i class="logo-sheen" aria-hidden="true"></i></span>
+    <h1><span class="nw">TrueCombat: Elite,</span> neu aufgebaut für <em>modernes Windows</em>.</h1>
+    <p class="lede">Der klassische Taktik-Shooter, neu aufgebaut als natives 64-Bit-Spiel mit DirectX-12-Renderer. Die originalen Maps, Soldaten und das HUD, dazu ein Launcher, der deine Server hostet und das Spiel aktuell hält.</p>
+    <div class="hero-cta">
+      <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.34.1-sandbox26/TrueCombat-Platinum-Setup.exe">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
+        <span class="stack"><span class="big">Download <span data-version>v0.34.1</span></span><span class="small"><span data-kind="long">Windows-Installer</span> · <span data-size>8 MB</span> · kostenlos</span></span>
+      </a>
+      <a class="btn btn-ghost" href="#patch-notes">Was ist neu</a>
+<!--devlog-hero-->
+    <a class="hero-log" href="../devlog-the-road-ahead.html"><b>Neuer Devlog</b><span>The road ahead, in full</span><time datetime="2026-11-11">11 Nov. 2026</time></a>
+<!--/devlog-hero-->
+    </div>
+    <div class="hero-meta">
+      <span class="live" data-live hidden></span>
+      <span>DirectX 12 mit OpenGL als Rückfallebene</span>
+      <span>Optional NVIDIA DLSS / DLAA</span>
+      <span>Entwickelt von RaziC* · Team Terminus</span>
+    </div>
+  </div>
+  <div class="hero-caption" aria-hidden="true"><span id="slide-name">Northport</span> · im Spiel, DX12 <span class="dots" id="dots"></span></div>
+</section>
+
+<section class="numbers" aria-label="TrueCombat: Platinum in Zahlen">
+  <div class="wrap">
+    <dl class="stats-row">
+      <div><dt>Originale Maps</dt><dd data-count>6</dd><span>Neu aufgebaut für DirectX 12</span></div>
+      <div><dt>Schusswaffen</dt><dd data-count>27</dd><span>Mit den Originalwerten</span></div>
+      <div><dt>Spielmodi</dt><dd data-count>7</dd><span>Von Elimination bis Bomb</span></div>
+      <div><dt>Offizielle Server</dt><dd data-count>2</dd><span>EU, rund um die Uhr</span></div>
+      <div><dt>Preis</dt><dd>Gratis</dd><span>Kein Shop, keine Pflichtanmeldung</span></div>
+    </dl>
+  </div>
+</section>
+
+<div class="status">
+  <div class="wrap">
+    <strong>Early Access</strong>
+    <span>Das komplette TC:E-Arsenal, alle sieben Spielmodi, die originale Bewegung, Ultra-Grafik, ein kompetitiver Match-Modus und zwei offizielle EU-Server sind live. Für das nächste Update in Arbeit: eine Überarbeitung des Gunplays bei Treffern auf Distanz, Streuung und Schaden, ein neu gebauter Bewegungskern sowie Optionen und ein Serverbrowser im Pausenmenü. <a href="#roadmap">Zur Roadmap</a></span>
+  </div>
+</div>
+
+<section class="band" id="about">
+  <div class="wrap about">
+    <div class="copy">
+      <span class="eyebrow">Das Projekt</span>
+      <h2>Das Spiel, das du kennst, auf einer Engine von heute</h2>
+      <p><a href="truecombat-elite.html"><strong>TrueCombat: Elite</strong></a> war eine realistische Total Conversion für Enemy Territory mit modernem Gefecht: ein Leben pro Runde, echte Waffen und Maps für langsames, überlegtes Spiel. Es läuft bis heute als 32-Bit-Mod auf einer Engine von 2003.</p>
+      <p><strong>TrueCombat: Platinum</strong> baut es als natives 64-Bit-Windows-Spiel neu auf. Der Renderer ist neuer DirectX-12-Code, das HUD ist Pixel für Pixel am Original ausgerichtet, und die Bewegungsgeschwindigkeiten stammen direkt aus den Originalwerten. Wenn DirectX 12 Probleme macht, startet Safe start das Spiel mit OpenGL.</p>
+      <div class="spec" role="list">
+        <div role="listitem"><b>x64</b><span>Nativer Client &amp; Server</span></div>
+        <div role="listitem"><b>DX12</b><span>Standard-Renderer</span></div>
+        <div role="listitem"><b>128 Hz</b><span>Optionale Server-Rate</span></div>
+      </div>
+    </div>
+    <div class="vf"><img src="../img/shot-dlaa.webp" srcset="../img/shot-dlaa-640.webp 640w, ../img/shot-dlaa.webp 1280w" sizes="(max-width: 900px) 100vw, 640px" alt="Hinterhof von Railhouse in DirectX 12 mit DLAA, ein Soldat steht vor einer Ziegelmauer" width="1280" height="720" loading="lazy"></div>
+  </div>
+</section>
+
+<section class="band" id="features">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Was drinsteckt</span>
+      <h2>Stück für Stück aus dem Original gebaut</h2>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M8 21h8M12 17v4"/></svg>
+        <h3>DirectX-12-Renderer</h3>
+        <p>Jedes Bild wird mit DirectX 12 im eigenen Fenster des Spiels gerendert. Kantenglättung, Umgebungsschatten, HDR, Bloom und Schärfung sind optional. Ältere PCs weichen automatisch auf OpenGL aus.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+        <h3>Das originale HUD</h3>
+        <p>Layout, Schriften, Kompass, Ausdaueranzeige, Rundenuhr und Zielzeilen aus TC:E. Die Körpersilhouette wird gelb, orange und rot, wenn du Schaden nimmst.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><path d="M12 7.5v6M8 10h8M12 13.5l-3 7M12 13.5l3 7"/></svg>
+        <h3>Sprinten, lehnen, klettern, schwimmen</h3>
+        <p>Sprinte mit <kbd>Shift</kbd>, bis deine Ausdauer aufgebraucht ist, lehne dich mit <kbd>Q</kbd> und <kbd>E</kbd> um Ecken, geh mit <kbd>C</kbd> in die Hocke und leg dich mit <kbd>X</kbd> hin. Leitern und Wasser funktionieren wie in TC:E, und jede Geschwindigkeit entspricht dem Original.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="4.5" r="2.5"/><rect x="8.5" y="8" width="7" height="7" rx="1"/><path d="M10 15v6M14 15v6"/></svg>
+        <h3>Treffer an Kopf, Körper und Beinen</h3>
+        <p>Jeder Schuss trifft eine Zone mit eigenem Schaden. Wer hockt oder liegt, bietet ein kleineres Ziel.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M10 2.5h4l1 3v15.5H9V5.5z"/><path d="M9 9h6M9 17.5h6"/></svg>
+        <h3>Das komplette Arsenal</h3>
+        <p>Alle 27 Schusswaffen, das Messer und jede Granate, mit originalem Schaden, Rückstoß und Streuung. Geschosse durchschlagen Türen, Wände und Kisten und verlieren mit jeder Fläche an Kraft.</p>
+      </article>
+      <article class="feature">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>
+        <h3>Signierte Updates</h3>
+        <p>Der Launcher prüft GitHub auf neue Versionen, zeigt Downloadtempo und Restzeit und installiert nur Updates, die von Team Terminus signiert sind. Deine Einstellungen und Server bleiben erhalten.</p>
+      </article>
+    </div>
+
+    <div class="trio">
+      <figure><img src="../img/media-deployment.webp" srcset="../img/media-deployment-640.webp 640w, ../img/media-deployment.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Das originale Deployment Menu im Warmup auf Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>Deployment Menu</b><span>Team, Rolle und Ausrüstung</span></figcaption></figure>
+      <figure><img src="../img/media-village-yard.webp" srcset="../img/media-village-yard-640.webp 640w, ../img/media-village-yard.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Ein Soldat überquert den Hof von Village mit der Voreinstellung Ultra" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Voreinstellung Ultra, HD-Texturen</span></figcaption></figure>
+      <figure><img src="../img/media-grenade.webp" srcset="../img/media-grenade-640.webp 640w, ../img/media-grenade.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Eine Splittergranate detoniert im Hinterhof von Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>Splittergranate</b><span>Hinterhof von Railhouse</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!--devlog-home-->
+<section class="band band-alt" id="devlog">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div><span class="eyebrow">In Entwicklung</span><h2>Verfolge die Entwicklung</h2><p class="lede">TrueCombat: Platinum entsteht in aller Offenheit. Zu jedem größeren Stück Arbeit gibt es einen Artikel: was sich geändert hat, warum, und was als Nächstes kommt. Die Artikel sind auf Englisch.</p></div>
+      <div class="hero-cta"><a class="btn btn-ghost" href="../devlog.html">Alle Devlog-Artikel (15)</a></div>
+    </div>
+    <div class="log-cards">
+      <a class="log-card lead" href="../devlog-the-road-ahead.html">
+        <img src="../img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy">
+        <div><span class="eyebrow">Roadmap · <time datetime="2026-11-11">11 Nov. 2026</time></span>
+        <h3>The road ahead, in full</h3>
+        <p>The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.</p></div>
+      </a>
+      <a class="log-card" href="../devlog-reads-and-ratings.html">
+        <img src="../img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy">
+        <div><span class="eyebrow">Community · <time datetime="2026-11-09">9 Nov. 2026</time></span>
+        <h3>Counting readers without tracking anyone</h3>
+        <p>Every devlog post now ends with a star rating, and we can finally see which posts people read. Here is how we built that without cookies, without analytics and without storing anything that points back to you.</p></div>
+      </a>
+      <a class="log-card" href="../devlog-whats-next.html">
+        <img src="../img/media-map-vote-640.webp" alt="" width="640" height="360" loading="lazy">
+        <div><span class="eyebrow">Roadmap · <time datetime="2026-11-09">9 Nov. 2026</time></span>
+        <h3>What we are working on next</h3>
+        <p>With 0.34.0 out, here is an open look at the work lined up behind it: better online play, Discord pickups, one-click joining, and a set of new features built on a shared match record. Plans, not promises.</p></div>
+      </a>
+    </div>
+  </div>
+</section>
+<!--/devlog-home-->
+
+<section class="band" id="trailer">
+  <div class="wrap trailer-grid">
+    <div class="vf">
+      <div class="yt" data-yt="pb1IvJOg7Lg" data-start="32" data-title="TrueCombat-Gameplayvideo">
+        <img src="../img/map-railhouse.webp" srcset="../img/map-railhouse-640.webp 640w, ../img/map-railhouse.webp 1280w" sizes="(max-width: 900px) 100vw, 720px" alt="" width="1280" height="720" loading="lazy">
+        <button type="button" aria-label="Gameplayvideo abspielen"><span><svg width="34" height="34" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5l13 7.5-13 7.5z"/></svg></span></button>
+      </div>
+    </div>
+    <div class="section-head" style="margin:0">
+      <span class="eyebrow">Ansehen</span>
+      <h2>Gameplay</h2>
+      <p class="lede">Ein Leben pro Runde, reale Waffen und Maps für geduldiges, taktisches Spiel. Das Video beginnt bei 0:32.</p>
+      <p class="yt-note">Das Video wird von YouTube im erweiterten Datenschutzmodus abgespielt. Von YouTube wird nichts geladen, bis du auf Play drückst.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="maps">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div><span class="eyebrow">Maps</span>
+      <h2>Alle sechs originalen Maps</h2></div>
+      <a class="btn btn-ghost" href="maps.html">Alle Maps ansehen</a>
+    </div>
+    <div class="map-cards">
+      <a class="map-card" href="map-delta.html"><img src="../img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Delta</b><small>Industriestraßen</small></span></a>
+      <a class="map-card" href="map-northport.html"><img src="../img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Northport</b><small>Hafenlagerhallen</small></span></a>
+      <a class="map-card" href="map-railhouse.html"><img src="../img/map-railhouse-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Railhouse</b><small>Rangierbahnhof</small></span></a>
+      <a class="map-card" href="map-snow.html"><img src="../img/map-snow-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Snow</b><small>Industrie im Winter</small></span></a>
+      <a class="map-card" href="map-stadtrand.html"><img src="../img/map-stadtrand-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Stadtrand</b><small>Stadtrand</small></span></a>
+      <a class="map-card" href="map-village.html"><img src="../img/map-village-640.webp" alt="" width="640" height="360" loading="lazy"><span><b>Village</b><small>Bauernhöfe</small></span></a>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="gallery">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div><span class="eyebrow">Galerie</span>
+      <h2>Im Spiel aufgenommen</h2>
+      <p class="lede">Jedes Bild ist eine direkte Aufnahme aus dem DirectX-12-Renderer. Nichts ist nachbearbeitet.</p></div>
+      <a class="btn btn-ghost" href="media.html">Alle Screenshots</a>
+    </div>
+    <div class="gallery" id="gallery-grid">
+      <figure class="shot wide"><img src="../img/map-northport.webp" srcset="../img/map-northport-640.webp 640w, ../img/map-northport.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Die Docks von Northport bei Tageslicht" width="1280" height="720" loading="lazy"><figcaption><b>Northport</b><span>Distanznebel, DX12</span></figcaption><button type="button" aria-label="Northport vergrößern"></button></figure>
+      <figure class="shot wide"><img src="../img/map-railhouse.webp" srcset="../img/map-railhouse-640.webp 640w, ../img/map-railhouse.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Railhouse bei Nacht, ein Torbogen über den Gleisen" width="1280" height="720" loading="lazy"><figcaption><b>Railhouse</b><span>Nacht, DX12</span></figcaption><button type="button" aria-label="Railhouse vergrößern"></button></figure>
+      <figure class="shot"><img src="../img/map-stadtrand.webp" srcset="../img/map-stadtrand-640.webp 640w, ../img/map-stadtrand.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Stadtrand, eine enge Gasse im Nebel" width="1280" height="720" loading="lazy"><figcaption><b>Stadtrand</b><span>Gasse im Nebel</span></figcaption><button type="button" aria-label="Stadtrand vergrößern"></button></figure>
+      <figure class="shot"><img src="../img/map-village.webp" srcset="../img/map-village-640.webp 640w, ../img/map-village.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Das Innere der Scheune in Village mit Heuballen" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Scheune</span></figcaption><button type="button" aria-label="Village vergrößern"></button></figure>
+      <figure class="shot"><img src="../img/map-snow.webp" srcset="../img/map-snow-640.webp 640w, ../img/map-snow.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Die Map Snow, ein überdachter Ladebereich" width="1280" height="720" loading="lazy"><figcaption><b>Snow</b><span>Verschneite Laderampe</span></figcaption><button type="button" aria-label="Snow vergrößern"></button></figure>
+      <figure class="shot"><img src="../img/shot-smoke.webp" srcset="../img/shot-smoke-640.webp 640w, ../img/shot-smoke.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Rauchwolke einer M83-Rauchgranate im Hinterhof von Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>M83-Rauch</b><span>Von der Map beleuchtet</span></figcaption><button type="button" aria-label="M83-Rauch vergrößern"></button></figure>
+      <figure class="shot"><img src="../img/shot-crouch.webp" srcset="../img/shot-crouch-640.webp 640w, ../img/shot-crouch.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Ein hockender Soldat neben einer Ziegelmauer" width="1280" height="720" loading="lazy"><figcaption><b>In der Hocke</b><span>Kleineres Ziel</span></figcaption><button type="button" aria-label="In der Hocke vergrößern"></button></figure>
+      <figure class="shot"><img src="../img/shot-hosted.webp" srcset="../img/shot-hosted-640.webp 640w, ../img/shot-hosted.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Gehostetes Match auf Northport im Warmup" width="1280" height="720" loading="lazy"><figcaption><b>Gehostetes Match</b><span>Über den Launcher gehosteter Server</span></figcaption><button type="button" aria-label="Gehostetes Match vergrößern"></button></figure>
+      <figure class="shot wide"><img src="../img/hud-scoreboard.webp" srcset="../img/hud-scoreboard-640.webp 640w, ../img/hud-scoreboard.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="HUD mit Chat, Killfeed und Scoreboard" width="1300" height="580" loading="lazy"><figcaption><b>Chat, Killfeed, Punkte</b><span>Das originale TC:E-Layout</span></figcaption><button type="button" aria-label="HUD mit Chat und Scoreboard vergrößern"></button></figure>
+      <figure class="shot wide"><img src="../img/stances.webp" srcset="../img/stances-640.webp 640w, ../img/stances.webp 1500w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Stehend, hockend und liegend" width="1500" height="450" loading="lazy"><figcaption><b>Haltungen</b><span>Stehen · Hocken · Liegen</span></figcaption><button type="button" aria-label="Haltungen vergrößern"></button></figure>
+    </div>
+  </div>
+</section>
+
+<section class="band compare-band" id="graphics">
+  <div class="wrap compare-grid">
+    <div class="compare-copy">
+      <span class="eyebrow">Graphics</span>
+      <h2>Originaler Look oder aufgewertet</h2>
+      <p>Zieh über das Bild, um den originalen Look mit den neuen Voreinstellungen zu vergleichen. Dieselbe Stelle, dasselbe Bild, Hinterhof von Railhouse in 1080p.</p>
+      <div class="tabs" role="group" aria-label="Voreinstellung für den Vergleich mit Low">
+        <button type="button" data-preset="high" aria-pressed="false">High</button>
+        <button type="button" data-preset="ultra" aria-pressed="true">Ultra</button>
+      </div>
+      <ul class="preset-list">
+        <li><b>Low</b><span>Der originale Look: Standardfilterung, keine zusätzlichen Effekte.</span></li>
+        <li><b>High</b><span>Neuer Standard. Die Effekte kosten auf einer RTX 4080 SUPER etwa 1,0 ms pro Bild.</span></li>
+        <li><b>Ultra</b><span>Zusätzlich NVIDIA DLAA auf RTX-Karten, etwa 1,2 ms pro Bild.</span></li>
+      </ul>
+      <p class="note">HD-Texturen für Welt, Modelle, HUD und Menüs sind standardmäßig installiert. Auf RTX-Karten stehen außerdem die DLSS-Qualitätsmodi bereit: Gib in der Konsole <code>r_dx12Dlss 2</code> bis <code>5</code> ein, danach <code>vid_restart</code>.</p>
+    </div>
+    <div class="vf">
+      <div class="compare" id="compare" style="--pos:50%">
+        <img id="cmp-right" src="../img/preset-ultra.webp" loading="lazy" alt="Hinterhof von Railhouse mit der Voreinstellung Ultra" width="1280" height="680">
+        <img class="top" src="../img/preset-low.webp" loading="lazy" alt="Hinterhof von Railhouse mit der Voreinstellung Low" width="1280" height="680">
+        <span class="tag l">Low</span>
+        <span class="tag r" id="cmp-tag">Ultra</span>
+        <span class="handle"></span>
+        <input type="range" id="cmp-range" min="0" max="100" value="50" aria-label="Position des Vergleichsreglers">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="launcher">
+  <div class="wrap launcher">
+    <div class="vf shot-frame"><img src="../img/launcher.webp" srcset="../img/launcher-640.webp 640w, ../img/launcher.webp 1280w" sizes="(max-width: 900px) 100vw, 640px" alt="Der Launcher von TrueCombat: Platinum mit Join a server, Display settings und dem PLAY-Button" width="1140" height="805" loading="lazy"></div>
+    <div class="section-head" style="margin:0">
+      <span class="eyebrow">Launcher</span>
+      <h2>Ein Launcher für alles</h2>
+      <ul class="checks">
+        <li><span><b>PLAY</b> startet DirectX 12 mit deinen gespeicherten Einstellungen. <b>Safe start</b> nutzt OpenGL in einem Fenster mit 1280 × 720.</span></li>
+        <li><span><b>Host a server</b> direkt im Launcher, in jedem der sieben Spielmodi, mit eigenem Namen, Spielerlimit, Map-Rotation, Bots und Port.</span></li>
+        <li><span><b>Servers-Tab</b> mit Favoriten und zuletzt besuchten Servern als Karten, mit Map, Spielern und Ping. Doppelklick zum Beitreten.</span></li>
+        <li><span><b>News-Tab</b> mit den neuesten Patchnotes und eine Update-Leiste, die neue Versionen lädt, prüft und installiert.</span></li>
+        <li><span><b>Grafikoptionen</b> für Auflösung, Fenstermodus, Filterung, Kantenglättung, Bildwiederholrate, Bildlimit und FPS-Anzeige.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band" id="servers">
+  <div class="wrap servers">
+    <div class="copy">
+      <span class="eyebrow">Servers</span>
+      <h2>Öffentliche Serverliste</h2>
+      <p>Zwei offizielle EU-Server laufen rund um die Uhr: #1 Ranked, auf dem jedes Match für die Bestenlisten zählt, und #2 Unranked, den Bots belebt halten. Jeder Server, der mit eingeschaltetem <b>List publicly</b> gehostet wird, erscheint hier und im Servers-Tab des Launchers.</p>
+      <p>Du kannst jederzeit über den Launcher hosten und deine Adresse weitergeben. Andere treten dir standardmäßig über den UDP-Port <code>27971</code> bei. Alle in einem Match brauchen dieselbe Version.</p>
+      <p class="hero-cta" style="margin:0"><a class="btn btn-ghost" href="servers.html">Alle Server</a> <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg> Finde ein Match auf Discord</a></p>
+    </div>
+    <div class="server-card" data-servers="5" aria-live="polite">
+      <header><h3>Jetzt online</h3><span class="pill">Prüfe…</span></header>
+      <table class="srv-table">
+        <thead><tr><th>Server</th><th>Map</th><th>Spieler</th><th>Modus</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p class="srv-empty">Die Live-Serverliste wird geladen. Der Servers-Tab im Launcher zeigt dieselbe Liste.</p>
+    </div>
+  </div>
+  <div class="wrap top-players" data-top hidden>
+    <header><h3>Beste Spieler</h3><span class="muted" data-top-period>Letzte 30 Tage</span><a href="leaderboards.html">Alle Bestenlisten</a></header>
+    <ol></ol>
+  </div>
+</section>
+
+<section class="band" id="more">
+  <div class="wrap promo">
+    <a class="promo-card" href="competitive.html">
+      <img src="../img/shot-hosted-640.webp" alt="" width="640" height="360" loading="lazy">
+      <div>
+        <span class="eyebrow">Competitive</span>
+        <h3>Clan-Matches, fest eingebaut</h3>
+        <p>Ready-up, eine Messerrunde um die Seitenwahl, Halbzeit und taktische Auszeiten, die das ganze Match einfrieren. Ein Befehl auf jedem Server.</p>
+        <span class="more">Match-Modus</span>
+      </div>
+    </a>
+<!--devlog-latest-->
+    <a class="promo-card" href="truecombat-elite.html">
+      <img src="../img/player-models-640.webp" alt="" width="640" height="360" loading="lazy">
+      <div>
+        <span class="eyebrow">TrueCombat: Elite</span>
+        <h3>TrueCombat: Elite, heute spielbar</h3>
+        <p>Der realistische Taktik-Shooter auf Basis von Enemy Territory, heute spielbar auf Windows 10 und 11.</p>
+        <span class="more">TC:E heute</span>
+      </div>
+    </a>
+<!--/devlog-latest-->
+  </div>
+</section>
+
+<section class="band" id="patch-notes">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Patchnotes</span>
+      <h2>Neueste Updates</h2>
+    </div>
+    <div class="notes" data-releases="5">
+<!--releases-->
+      <details class="release" id="v0.34.1" data-ver="v0.34.1" open>
+        <summary><span class="ver">v0.34.1<span class="latest">Aktuell</span></span><span class="sum">Instant replay clips, a per-life damage report, fairer teams in long matches and a fix for offline bot matches. Update through the launcher.</span><span class="meta">#56 · 0.34.1-sandbox26 · 9 Nov. 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>New</h3><ul>
+            <li>Instant replay: press F8 (or type /clip) to save the last 30 seconds of play as a clip in demos/clips. Watch it with /demo clips/&lt;name&gt;. Clip length is set with cl_replaySeconds; cl_replay 0 turns the feature off.</li>
+            <li>Damage report: when you die, a DAMAGE THIS LIFE panel under the killed-by card shows the damage you dealt to and took from each opponent. Survive a round and you get the ROUND DAMAGE summary instead. Turn it off with cg_damageReport 0; server hosts can disable it with g_damageReport 0.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Team balance during the match: in Team Deathmatch and Flag Capture, when one team is two or more players larger for 15 seconds, one player on the bigger team is moved while waiting to respawn. Each player is moved at most once every five minutes, and never during competitive matches. Server hosts: g_autoBalance and g_autoBalanceDelay.</li>
+            <li>Fill-in players: when someone leaves a match that is under way, the server now reports the open place to server lists. Players who join the short team are thanked and cannot lose rating in that match. Server hosts: g_backfill and g_backfillTime.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Fixed offline bot matches appearing to freeze after two minutes: the away-from-keyboard check moved you to spectator. It now only runs on dedicated servers.</li>
+            <li>DLSS Frame Generation: added safeguards that switch it off for the rest of the session if it starts toggling on and off or a frame takes longer than one second to appear. If the game still freezes with Frame Generation on, turn it off in Options and report it.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" id="v0.34.0" data-ver="v0.34.0">
+        <summary><span class="ver">v0.34.0</span><span class="sum">A redesigned launcher, a Custom graphics preset, weapons that feel alive, the original voice commands, ultrawide support, Discord Rich Presence and a long list of quality-of-life features. Update through the launcher; the new launcher installs itself first.</span><span class="meta">#55 · 0.34.0-sandbox25 · 9 Nov. 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Launcher 1.4.0</h3><ul>
+            <li>A complete visual redesign in the TrueCombat.eu style, with a Launcher update button.</li>
+            <li>Quick Play finds the best server for you, and the server browser gets filters.</li>
+            <li>Profile &amp; demos page with identity backup.</li>
+            <li>The Hosting dialog now fits smaller screens.</li>
+          </ul></section>
+          <section><h3>Graphics</h3><ul>
+            <li>New Custom graphics preset: pick Low, High, Ultra or Custom and turn every graphics option on or off, in the launcher and on the new in-game Graphics page.</li>
+            <li>Ultrawide support: 21:9 and 32:9 screens now get a wider field of view instead of a zoomed-in picture, and the HUD stays in a comfortable centred area (cg_hudAspect).</li>
+            <li>Fixed taking a screenshot on very high resolution screens, such as 5120x1440, disconnecting you from the game.</li>
+          </ul></section>
+          <section><h3>Weapons and movement</h3><ul>
+            <li>Weapons and movement feel alive: view and weapon bob, sway and recoil kick, sprint, crawl and ladder weapon poses, smooth stance changes, ejected shell casings, gear worn on the back, heartbeat and scope breathing.</li>
+            <li>The original fall damage is back (server option g_fallDamage).</li>
+            <li>The original ledge climbing sounds.</li>
+            <li>Original camouflage on soldier models and first-person sleeves.</li>
+            <li>Bullet impact effects can be switched off (cg_impactEffects).</li>
+          </ul></section>
+          <section><h3>Voice commands</h3><ul>
+            <li>The original TC:E voice commands return: vsay, vsay_team and vsay_buddy, with the original voices and text. Server hosts can limit them with g_voiceChatsAllowed.</li>
+          </ul></section>
+          <section><h3>Quality of life</h3><ul>
+            <li>Killed-by card and damage direction indicator.</li>
+            <li>Player votes, quick radio, mute and chat history.</li>
+            <li>Automatic demos, loadout presets and a separate scope sensitivity.</li>
+            <li>Optional hit feedback (always off on Ranked).</li>
+            <li>Accessibility options and practice tools (g_practice 1).</li>
+            <li>A modern new in-game font.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Discord Rich Presence: your Discord profile now shows the server, mode, map and live score, and friends can join your match straight from Discord. Turn it off with cl_discord 0, or hide match details with cl_discordPrivate 1.</li>
+            <li>Skill-based team balance from player ratings (g_balanceSkill), and spectators are no longer pulled into teams.</li>
+            <li>Away-from-keyboard players are moved to spectators after two minutes (g_afkTime), never in competitive matches.</li>
+            <li>/report a player from the console; reports reach the staff.</li>
+            <li>Server-side demo recording (sv_autoDemo) and a faster bot start on every map.</li>
+            <li>Bomb servers now report the correct mode name.</li>
+          </ul></section>
+          <section><h3>Servers</h3><ul>
+            <li>Server hosts: a native Linux dedicated server kit is now built for every release and attached to it on GitHub shortly after publication.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is built and nearly through testing. It ships in the next update.</li>
+            <li>Coming next: shadows from muzzle flashes and explosions, and a Discord pickup queue.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" id="v0.33.0" data-ver="v0.33.0">
+        <summary><span class="ver">v0.33.0</span><span class="sum">Our biggest visual update yet. The new Ultra preset brings modern lighting, real surface materials and real-time sun shadows to every map on DirectX 12, with NVIDIA Frame Generation for RTX 40-series cards. Gunfire now leaves its mark on the world, first-person combat has been rebuilt around the original animations, ledge climbing returns, and bots fight smarter and work as a team.</span><span class="meta">#54 · 0.33.0-sandbox24 · 8 Nov. 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Ultra visuals (directx 12)</h3><ul>
+            <li>New Ultra graphics preset in the launcher.</li>
+            <li>Real-time sun shadows from players, props, weapons and the world, with contact shadows for grounded detail.</li>
+            <li>Modern lighting: filmic tone mapping, automatic exposure and a restrained colour grade that keeps players easy to read.</li>
+            <li>Surface materials on every map. Brick, metal, wood and concrete now respond to light with depth and sheen.</li>
+            <li>Ambient occlusion and reflections tuned per map.</li>
+            <li>Anti-aliasing picks itself: NVIDIA DLAA on RTX cards with 12 GB of video memory or more, TAA everywhere else.</li>
+            <li>Materials are compressed and cached on first load, so later map loads stay quick.</li>
+            <li>Low, High and OpenGL keep the classic look, unchanged.</li>
+            <li>Server hosts can require the classic look for every player with sv_forceClassicVisuals 1.</li>
+          </ul></section>
+          <section><h3>Frame generation and reflex</h3><ul>
+            <li>NVIDIA DLSS Frame Generation is now available as an opt-in setting under Advanced graphics in the launcher, for GeForce RTX 40-series and newer cards on the Ultra preset.</li>
+            <li>NVIDIA Reflex is on in Ultra for lower input latency.</li>
+          </ul></section>
+          <section><h3>Combat</h3><ul>
+            <li>Bullet impacts are back. Every surface takes the original per-material bullet holes, on entry and exit, with dust, splinters, sparks and blood.</li>
+            <li>Original impact sounds, plus the crack of a near miss as rounds fly past.</li>
+            <li>New first-person muzzle flash for every weapon.</li>
+            <li>Sniper scope overlay when aiming down a scoped rifle.</li>
+            <li>First-person animations rebuilt from the original TC:E set: last-shot slide lock, alternating akimbo hands, separate partial and empty reloads, and shell-by-shell shotgun reloads.</li>
+            <li>Switching weapons now lowers the old weapon before raising the new one.</li>
+          </ul></section>
+          <section><h3>Movement</h3><ul>
+            <li>Ledge climbing returns. Jump at a ledge to pull yourself up, just like the original.</li>
+          </ul></section>
+          <section><h3>Bots</h3><ul>
+            <li>Sharper, more human aim: situational reactions, flicks that settle on target, and realistic tracking. Bots never fire through a teammate.</li>
+            <li>Smarter movement: bots slow down near danger, stop to shoot, strafe at close range, reload behind cover and spread out across routes.</li>
+            <li>Real teamwork: shared callouts, support pushes, trading kills, and buddy pairs in Team Deathmatch and Elimination.</li>
+            <li>Bomb and Capture the Flag objective play stays as sharp as before.</li>
+            <li>Fixed bots standing idle on Delta.</li>
+          </ul></section>
+          <section><h3>Interface and launcher</h3><ul>
+            <li>New Esc pause menu, centred and dimmed on every screen shape.</li>
+            <li>The launcher now has its own version number (Launcher 1.0.0), shown in the title bar, the update bar and the Versions dialog, and it can update itself separately from the game.</li>
+          </ul></section>
+          <section><h3>Performance</h3><ul>
+            <li>New frame-time graph: cl_drawFrameGraph 1 shows frame times, average fps, 1% lows and spikes, on DirectX 12 and OpenGL.</li>
+            <li>Detailed frame statistics for troubleshooting with cl_frameStats and cl_frameSpikeMs.</li>
+            <li>The console log is now written in the background, removing hitches on slow disks.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Fixed the black void below the water on Northport. Looking up from underwater now shows the water's colour, on DirectX 12 and OpenGL.</li>
+            <li>Fixed the console log being cut short when the game closed after an error.</li>
+            <li>The cheat detection recognises the new materials pack and the updated interface files.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is prepared but not switched on yet.</li>
+            <li>Coming next: shadows from muzzle flashes and explosions, a full launcher redesign, and voice commands.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" id="v0.32.0" data-ver="v0.32.0">
+        <summary><span class="ver">v0.32.0</span><span class="sum">A major update. Movement now runs at the original TC:E pace, and leaning, ladders, swimming and spectating are back. This release also brings a competitive match mode, smarter bots on every objective, a new-player welcome, a one-click installer, and a fix for the most common crash to desktop.</span><span class="meta">#53 · 0.32.0-sandbox23 · 7 Nov. 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Movement and gunplay</h3><ul>
+            <li>Movement speed matches the original TC:E. Running, sprinting, crouching and going prone all move at the original speeds.</li>
+            <li>Walk and run animations now switch at the original speed, so other players move the way you remember.</li>
+            <li>Stamina recovers when you walk, stand still, crouch or go prone, like the original.</li>
+            <li>Third-person animations now follow the original TC:E set: weapon-specific stances for rifles, pistols, knife and grenades, a raise animation on weapon switch, prone pistol poses, and death animations that react to how and where a player is hit.</li>
+            <li>Bullet tracer lines are gone. Muzzle flashes now show correctly on every player and light up their surroundings on DirectX 12 and OpenGL.</li>
+          </ul></section>
+          <section><h3>New original content</h3><ul>
+            <li>Lean around corners with Q and E.</li>
+            <li>Climb ladders. Bots use them too.</li>
+            <li>Swim, dive and drown. Northport's water is fully swimmable.</li>
+            <li>Glass, wood and metal now shatter into debris.</li>
+            <li>Defusing a bomb puts the pliers in your hands.</li>
+            <li>When you die, the camera follows a living teammate and shows their health and ammo.</li>
+            <li>Suppressors: the MAC-10, MP5, M4 and AKS-74U now have a Suppressor toggle in the Deployment Menu, using the original suppressed variants and their trade-offs.</li>
+          </ul></section>
+          <section><h3>Competitive match mode</h3><ul>
+            <li>Organised matches with ready-up, an optional knife round, side pick, halftime side swap, tactical timeouts and a final score screen.</li>
+            <li>Server admins run it with the match rcon commands. Players use ready, notready, timeout, stay and swap.</li>
+          </ul></section>
+          <section><h3>Bots</h3><ul>
+            <li>Bots now play the objective. They plant and defuse the bomb, carry the flag home, and take and hold the capture point, with team callouts in chat (bot_chat).</li>
+            <li>Point Capture is fairer. The point is now placed at an equal walking distance from both spawns, and it takes 30 seconds to capture (g_captureHoldMs).</li>
+            <li>Fixed: a single bomb detonation could award the round to the attackers more than once.</li>
+          </ul></section>
+          <section><h3>New players</h3><ul>
+            <li>First launch now opens a three-step welcome: the basics, your controls, and how to start playing.</li>
+            <li>New in the launcher: Practice offline with bots starts a Railhouse Team Deathmatch against bots in one click.</li>
+            <li>New players see nine short tips during their first matches. Turn them off with cg_tips 0, or bring them back with tips_reset.</li>
+          </ul></section>
+          <section><h3>Install and updates</h3><ul>
+            <li>The download is now a small installer: TrueCombat-Platinum-Setup.exe. It installs the launcher, and the launcher downloads the game.</li>
+            <li>Choose your install folder, with desktop and Start menu shortcuts and a proper uninstaller.</li>
+            <li>New Versions button in the launcher: stay on an older release, or switch back to the latest at any time.</li>
+          </ul></section>
+          <section><h3>Online</h3><ul>
+            <li>The in-game server browser now lists official Platinum servers.</li>
+            <li>Ranked hosting: server owners can enter a ranked key in the launcher's Hosting tab, so their matches count towards the leaderboards.</li>
+            <li>Team Terminus staff now carry a verified emblem and an orange name on the scoreboard.</li>
+          </ul></section>
+          <section><h3>Interface</h3><ul>
+            <li>The HUD, scoreboard, Deployment Menu, map vote and main menu now fit every screen shape, from 4:3 to 32:9 super-ultrawide. Nothing gets cut off at the edges any more.</li>
+          </ul></section>
+          <section><h3>Performance</h3><ul>
+            <li>Removed the long freezes that happened the first time a weapon or explosion appeared in a match. Weapon and effect media now load with the map.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Fixed a crash to desktop when a player was kicked or banned, or the server restarted or shut down.</li>
+            <li>Your team, class and loadout are now kept after a map restart or map change.</li>
+            <li>The cheat detection no longer flags the game's own HD and interface files.</li>
+            <li>The speed check no longer misfires after a freeze or alt-tab.</li>
+            <li>Elimination rounds now last 5 minutes, like the original (server cvar tcp_roundtime).</li>
+            <li>Restored missing crosshairs and server-browser icons.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is prepared but not switched on yet.</li>
+            <li>Still to come: the first-person muzzle flash, a sniper scope overlay, ledge climbing, and the modern Ultra visuals.</li>
+            <li>In DirectX 12, water seen from above in third person can render black.</li>
+          </ul></section>
+        </div>
+      </details>
+
+      <details class="release" id="v0.31.0" data-ver="v0.31.0">
+        <summary><span class="ver">v0.31.0</span><span class="sum">The biggest update yet. The full TC:E arsenal, real recoil and penetration, three new game modes, bots, 3D sound, the Deployment Menu, end-of-match map votes, lag compensation, player ranks and server admin tools.</span><span class="meta">#52 · 0.31.0-sandbox22 · 7 Nov. 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Weapons</h3><ul>
+            <li>The full TC:E weapon roster is in, with each team's own weapons, pistols and grenades, and semi, burst and full-auto fire modes where the original had them.</li>
+            <li>Original recoil and spread. Each weapon kicks, sways and settles like TC:E, aiming (zoom key) tightens your shots, and moving, jumping and landing throw your aim off.</li>
+            <li>Bullets go through walls, doors and crates the way they did in TC:E, losing damage with every surface. Thin cover no longer saves you.</li>
+            <li>Original damage, reload times and weapon-switch times for every weapon, including shell-by-shell shotgun reloads and the nine-pellet shotgun spread.</li>
+            <li>Knife, frag, stun and smoke grenades work again, with stun and blast effects.</li>
+            <li>Weapons now show on other players, with their own original firing and reload sounds.</li>
+          </ul></section>
+          <section><h3>Game modes</h3><ul>
+            <li>New: Team Deathmatch, Flag Capture and Bomb, alongside Practice, Elimination, Team Elimination and Point Capture. Pick them in Hosting.</li>
+            <li>Map objectives, timers, rotating doors, breakable glass and wood, and all map props and ambient sounds are back.</li>
+            <li>End-of-match map vote: when a match ends, everyone votes for the next map with the number keys. Most votes wins.</li>
+          </ul></section>
+          <section><h3>Deployment menu</h3><ul>
+            <li>The original Deployment Menu is back. Choose your team, class and loadout before you spawn, or reopen it any time with the limbo menu key.</li>
+            <li>Team balance is enforced: you cannot join the bigger team.</li>
+          </ul></section>
+          <section><h3>Bots</h3><ul>
+            <li>Practice and fill games with bots. Set the number of bots and their skill (1-5) in Hosting. Bots navigate every stock map, take cover, aim with human-like reaction time and fill empty slots on your server.</li>
+          </ul></section>
+          <section><h3>Sound</h3><ul>
+            <li>Full 3D sound: gunfire, footsteps and ambience come from where they happen and follow your view.</li>
+            <li>Walls muffle sound, rooms have their own echo, and distant gunfire carries across the map.</li>
+            <li>Original surface footsteps for stone, metal, wood, grass, snow, water and more. Walking is silent, sprinting is loud.</li>
+            <li>Optional headphone 3D sound (HRTF): set s_alHRTF 1.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Lag compensation: the server checks your shot against where players were on your screen, so hits you see are hits that count.</li>
+            <li>Recoil, spread and your own shots are now predicted on your PC, so firing feels instant even with high ping.</li>
+            <li>Fewer lost inputs on unstable connections (cl_packetdup now defaults to 2).</li>
+          </ul></section>
+          <section><h3>Ranks and stats</h3><ul>
+            <li>Your kills, deaths, accuracy, headshots and wins now count towards an XP rank and a skill rating, shown on the Leaderboards page of the website. No account needed.</li>
+          </ul></section>
+          <section><h3>Server hosts</h3><ul>
+            <li>New admin commands over rcon: kick, ban, unban, ban list, and an admin log.</li>
+            <li>Edit the map rotation live with maprotation add, remove and move. It is saved and survives a restart. Set rounds per map with g_roundlimit.</li>
+            <li>Built-in cheat detection: the server flags speed hacks, timing tricks, aim snaps and altered game files.</li>
+          </ul></section>
+          <section><h3>Performance</h3><ul>
+            <li>Smoother DirectX 12: render states are prepared while the map loads instead of in the middle of a fight, removing most first-time stutters.</li>
+          </ul></section>
+          <section><h3>Launcher</h3><ul>
+            <li>The public server list is live: hosted games that choose List publicly now show up for everyone in the Servers tab.</li>
+            <li>Hosting now offers Team Deathmatch, Flag Capture and Bomb, plus bot count and skill.</li>
+            <li>If the game crashes, the launcher offers to save a crash report you can send us, and Report a problem includes it.</li>
+          </ul></section>
+          <section><h3>Also new since 0.29.0</h3><ul>
+            <li>HD textures for the world, models, HUD and menus. Remove the zzz_hd_*.pk3 files from tcetest to get the original look back.</li>
+            <li>Low / High / Ultra graphics presets. High is the default, and Ultra adds stronger effects and NVIDIA DLAA where available.</li>
+            <li>The original TC:E chat box, kill feed, death notices and Tab scoreboard.</li>
+            <li>The M83 smoke can be thrown underhand: press the zoom key with the M83 in hand.</li>
+            <li>Updates now download only the files that changed.</li>
+            <li>The Servers tab shows the public server list. Hosts can choose List publicly in Hosting &amp; favorites.</li>
+          </ul></section>
+          <section><h3>Known issues</h3><ul>
+            <li>Easy Anti-Cheat is prepared but not switched on yet.</li>
+            <li>Leaning, ladders, swimming and the spectator mode are still to come.</li>
+            <li>Your weapon choice resets after a map restart. Pick it again in the Deployment Menu.</li>
+            <li>Tested on one PC over local connections. Separate PCs and the internet are not verified yet.</li>
+            <li>Use the separate RC8 download for complete TC:E matches.</li>
+          </ul></section>
+        </div>
+      </details>
+<!--/releases-->
+    </div>
+    <p class="all-notes">Jedes Update seit dem ersten öffentlichen Build steht auf der <a href="../news.html">News-Seite</a> (englisch), dazu gibt es einen <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">RSS-Feed</a>. Downloads liegen bei <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">GitHub Releases</a>.</p>
+  </div>
+</section>
+
+<section class="band" id="roadmap">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Roadmap</span>
+      <h2>Was als Nächstes kommt</h2>
+    </div>
+    <!--roadmap-->
+    <div class="road">
+      <div class="road-col done">
+        <h3>Jetzt spielbar <small data-version>v0.34.1</small></h3>
+        <ul>
+          <li>Killed-by-Karte, Schadensrichtung, Spielerabstimmungen und Schnellfunk</li>
+          <li>Ausrüstungs-Presets, automatische Demos und Optionen für Barrierefreiheit</li>
+          <li>Hor+-Sichtfeld und zentriertes HUD auf 21:9 und 32:9</li>
+          <li>Discord Rich Presence mit Beitritt direkt aus Discord</li>
+          <li>Teambalance nach Können, AFK-Erkennung und Meldungen im Spiel</li>
+          <li>Nativer dedizierter Linux-Server</li>
+          <li>Neu gestalteter Launcher mit Quick Play und Serverfiltern</li>
+          <li>Sprachbefehle</li>
+        </ul>
+      </div>
+      <div class="road-col next">
+        <h3>Als Nächstes <small>v0.35</small></h3>
+        <ul>
+          <li>Gunplay-Überarbeitung: Treffer auf Distanz, Zielpunkt, Streuung und Schaden</li>
+          <li>Neu gebauter Bewegungskern: originales Verhalten bei Sprung, Hocke, Leitern und Schritten</li>
+          <li>Optionsseite und Serverbrowser im Pausenmenü des Spiels</li>
+          <li>Chat-Eingabe, Teamzuordnung über Maps hinweg und farbige Namen</li>
+          <li>Granaten anzünden und funktionierende Schalldämpfer</li>
+          <li>Fehlermeldung im Spiel mit F12</li>
+          <li>Pings mit Ortsangabe</li>
+          <li>Match-Aufzeichnung auf den offiziellen Servern</li>
+          <li>Bots, die sich auf Unranked den Spielern anpassen</li>
+          <li>Diagramm der Stoßzeiten und Benachrichtigungen zur Spielerzahl</li>
+        </ul>
+      </div>
+      <div class="road-col later">
+        <h3>Danach</h3>
+        <ul>
+          <li>Easy Anti-Cheat</li>
+          <li>Schatten durch Mündungsfeuer und Explosionen</li>
+          <li>Matchmaking über eine Pickup-Warteschlange auf Discord</li>
+          <li>Map-Prüfung: unsichtbare Wände und Texturen auf jeder Map</li>
+          <li>Bots, die die Map lesen: Ecken, Deckung, Laufwege und Zielen über Kimme und Korn</li>
+          <li>Verbindungsqualität im Scoreboard und Beitritt mit einem Klick</li>
+          <li>Überarbeitetes Warmup</li>
+          <li>2D-Replays, Heatmaps und ein Coach nach dem Match</li>
+          <li>Wöchentliche Aufträge und Saisons</li>
+          <li>Freunde und Gruppen</li>
+          <li>Bots mit ehrlichen Sinnen, Persönlichkeiten und Teamplänen</li>
+          <li>Bots, die Laufwege und Zielen aus echten Matches lernen</li>
+        </ul>
+      </div>
+    </div>
+<!--/roadmap-->
+  </div>
+</section>
+
+<section class="band download" id="download">
+  <div class="wrap dl-grid">
+    <div class="dl-main">
+      <span class="eyebrow">Download</span>
+      <h2>Hol dir TrueCombat: Platinum</h2>
+      <ol class="steps">
+        <li><span><b>Lade den Installer herunter.</b> Die Datei ist klein und wächst auch mit neuen Versionen nicht.</span></li>
+        <li><span><b>Wähle den Installationsort.</b> Spiel und Launcher können zusammenbleiben oder je einen eigenen Ordner bekommen.</span></li>
+        <li><span><b>Den Rest erledigt der Launcher.</b> Er lädt das Spiel, prüft jede Datei und hält es aktuell. Updates laden nur die geänderten Dateien.</span></li>
+      </ol>
+      <div class="hero-cta">
+        <a class="btn btn-play" data-download href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/download/v0.34.1-sandbox26/TrueCombat-Platinum-Setup.exe">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="stack"><span class="big">Download <span data-version>v0.34.1</span></span><span class="small"><span data-kind="short">Installer</span> · <span data-size>8 MB</span> · <span data-date>9 Nov. 2026</span></span></span>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Alle Versionen</a>
+      </div>
+    </div>
+    <aside class="reqs">
+      <h3>Was du brauchst</h3>
+      <dl>
+        <dt>System</dt><dd>Windows 10 oder 11, 64 Bit</dd>
+        <dt>Grafik</dt><dd>Eine DirectX-12-Karte. Ältere Karten können Safe start (OpenGL) nutzen.</dd>
+        <dt>DLSS / DLAA</dt><dd>Optional, NVIDIA-RTX-Karten</dd>
+        <dt>Speicher</dt><dd>Etwa 2,3 GB freier Platz</dd>
+        <dt>Versionen</dt><dd>Bleib bei einer älteren Version, wenn die Server deiner Community sie brauchen, und kehre jederzeit zur neuesten zurück.</dd>
+        <dt>Enthält</dt><dd>Alles, was du zum Spielen brauchst. Keine separate Installation von TC:E oder Enemy Territory.</dd>
+      </dl>
+    </aside>
+  </div>
+</section>
+
+<section class="band" id="faq">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">Fragen</span>
+      <h2>Bevor du spielst</h2>
+    </div>
+    <div class="faq">
+      <div><h3>Ich bin neu. Wo fange ich an?</h3><p>Lies den <a href="guide.html">Einsteiger-Guide</a> zu Steuerung, Spielmodi und ein paar Tipps, mit denen du länger überlebst. Die <a href="weapons.html">Waffenseite</a> listet jede Waffe aus TC:E.</p></div>
+      <div><h3>Ist es kostenlos?</h3><p>Ja. Lade es bei GitHub Releases herunter und spiel los. Jede Version enthält ihren Quellcode und die Lizenzen der originalen Spieldateien.</p></div>
+      <div><h3>Ich möchte darüber berichten</h3><p>Hol dir das <a href="../press.html">Pressekit</a> mit Logos, Screenshots und einem Faktenblatt.</p></div>
+      <div><h3>Kann ich online spielen?</h3><p>Ja. Wähle im Servers-Tab des Launchers einen offiziellen EU-Server, ranked oder unranked, tritt einem anderen öffentlichen Server bei oder hoste mit wenigen Klicks dein eigenes Match.</p></div>
+      <div><h3>Ist das das komplette TC:E?</h3><p>Fast. Jede Waffe, alle sieben Spielmodi, das originale Bewegungstempo, Lehnen, Leitern und Schwimmen sind drin. Das Klettern an Kanten, das Mündungsfeuer in der Ego-Ansicht und das Scharfschützen-Zielfernrohr kommen als Nächstes, und die <a href="#roadmap">Roadmap</a> zeigt, was danach folgt.</p></div>
+      <div><h3>Wo finde ich Mitspieler?</h3><p>Komm auf den <a href="https://discord.gg/8kcHdg2Hch">Discord von TrueCombat: Platinum</a>. Dort werden Matches organisiert, Server geteilt und neue Versionen zuerst angekündigt.</p></div>
+      <div><h3>DirectX 12 startet nicht. Was nun?</h3><p>Drück im Launcher auf <b>Safe start</b>. Damit läuft das Spiel mit OpenGL in einem Fenster mit 1280 × 720, und es weicht auch von selbst auf OpenGL aus, wenn DirectX 12 scheitert.</p></div>
+    </div>
+    <p class="more-row"><a class="btn btn-ghost" href="faq.html">Alle Fragen und Antworten</a></p>
+  </div>
+</section>
+
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wird von RaziC* entwickelt.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Fußzeile" class="foot-cols">
+        <div><p class="foot-h">Spiel</p><a href="download.html">Download</a><a href="maps.html">Maps</a><a href="weapons.html">Waffen</a><a href="guide.html">Guide</a><a href="media.html">Medien</a><a href="faq.html">FAQ</a><a href="truecombat-elite.html">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spielen</p><a href="servers.html">Server</a><a href="leaderboards.html">Bestenlisten</a><a href="competitive.html">Kompetitiv</a></div>
+        <div><p class="foot-h">Studio</p><a href="../news.html">News</a><a href="../devlog.html">Devlog</a><a href="../studio.html">Studio</a><a href="../press.html">Pressekit</a><a href="../support.html">Unterstützen</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Versionen</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite wurde von Team Terminator entwickelt. Wolfenstein: Enemy Territory stammt von Splash Damage und id Software und wurde von Activision veröffentlicht. TrueCombat: Platinum ist ein Fanprojekt und steht in keiner Verbindung zu ihnen und wird von ihnen nicht unterstützt.</p>
+      <p>Der Engine-Code ist unter der GPL veröffentlicht. Originale Spieldaten und Grafiken behalten ihre ursprünglichen Bedingungen; siehe den Ordner licenses in jedem Download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="Screenshot-Ansicht">
+  <button class="lb-btn lb-close" type="button" aria-label="Schließen">✕</button>
+  <button class="lb-btn lb-prev" type="button" aria-label="Zurück">‹</button>
+  <figure><img id="lb-img" alt=""><figcaption id="lb-cap"></figcaption></figure>
+  <button class="lb-btn lb-next" type="button" aria-label="Weiter">›</button>
+</div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* hero slideshow, like the launcher header; later slides load after the page */
+  var wrap = document.getElementById('slides');
+  var slides = Array.prototype.slice.call(wrap.children);
+  var nameEl = document.getElementById('slide-name');
+  var dots = document.getElementById('dots');
+  slides.forEach(function () { dots.appendChild(document.createElement('i')); });
+  var cur = 0;
+  function show(i) {
+    slides.forEach(function (s, k) { s.classList.toggle('on', k === i); dots.children[k].classList.toggle('on', k === i); });
+    nameEl.textContent = slides[i].dataset.name;
+  }
+  show(0);
+  if (!reduce) {
+    window.addEventListener('load', function () {
+      /* each slide is fetched one step ahead of when it is shown, not all at once */
+      function fetchSlide(i) { var s = slides[i % slides.length]; if (s.dataset.src) { s.srcset = s.dataset.srcset; s.src = s.dataset.src; delete s.dataset.src; } }
+      setTimeout(function () { fetchSlide(1); }, 2500);
+      setInterval(function () {
+        var next = (cur + 1) % slides.length;
+        if (document.hidden || slides[next].dataset.src || !slides[next].complete) return;
+        wrap.classList.add('started'); cur = next; show(cur); fetchSlide(cur + 1);
+      }, 6500);
+    });
+  }
+
+  /* preset comparison */
+  var cmp = document.getElementById('compare');
+  var range = document.getElementById('cmp-range');
+  range.addEventListener('input', function () { cmp.style.setProperty('--pos', range.value + '%'); });
+  var right = document.getElementById('cmp-right');
+  var tag = document.getElementById('cmp-tag');
+  document.querySelectorAll('[data-preset]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      var p = b.dataset.preset;
+      right.src = '../img/preset-' + p + '.webp';
+      right.alt = 'Hinterhof von Railhouse mit der Voreinstellung ' + b.textContent;
+      tag.textContent = b.textContent;
+    });
+  });
+
+  /* lightbox */
+  var shots = Array.prototype.slice.call(document.querySelectorAll('#gallery-grid .shot'));
+  var lb = document.getElementById('lightbox');
+  var lbImg = document.getElementById('lb-img');
+  var lbCap = document.getElementById('lb-cap');
+  var at = 0, opener = null;
+  function open(i) {
+    at = (i + shots.length) % shots.length;
+    var img = shots[at].querySelector('img');
+    lbImg.src = img.src; lbImg.alt = img.alt;
+    lbCap.textContent = shots[at].querySelector('b').textContent + ' · ' + img.alt;
+    lb.hidden = false;
+    lb.querySelector('.lb-close').focus();
+  }
+  function close() { lb.hidden = true; if (opener) opener.focus(); }
+  shots.forEach(function (s, i) { s.querySelector('button').addEventListener('click', function (e) { opener = e.currentTarget; open(i); }); });
+  lb.querySelector('.lb-close').addEventListener('click', close);
+  lb.querySelector('.lb-prev').addEventListener('click', function () { open(at - 1); });
+  lb.querySelector('.lb-next').addEventListener('click', function () { open(at + 1); });
+  lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
+  document.addEventListener('keydown', function (e) {
+    if (lb.hidden) return;
+    if (e.key === 'Escape') close();
+    if (e.key === 'ArrowLeft') open(at - 1);
+    if (e.key === 'ArrowRight') open(at + 1);
+  });
+})();
+</script>
+<script src="../js/lang-de.js"></script>
+<script src="../js/site.js?v=8b49dfc777"></script>
+</body>
+</html>

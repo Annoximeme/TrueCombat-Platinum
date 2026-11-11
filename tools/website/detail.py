@@ -122,8 +122,24 @@ def map_rows():
 
 def map_text(lang, name):
     """(description, setting, light, comparison spot) for a map in the given language."""
+    import i18n
     m = map_rows()[name]
-    return (m[2], m[4], m[6], m[8]) if lang == "nl" else (m[1], m[3], m[5], m[7])
+    if lang == "nl":
+        return m[2], m[4], m[6], m[8]
+    return tuple(i18n.tx(lang, t) for t in (m[1], m[3], m[5], m[7]))
+
+
+def caliber(lang, cal):
+    """12 gauge is the one calibre whose name changes with the language."""
+    import i18n
+    return cal.replace("12 gauge", "kaliber 12") if lang == "nl" else i18n.tx(lang, cal)
+
+
+def local(lang, w, key, default=""):
+    """A weapon field in the language: its own _nl entry, the i18n translation of the English, or the English."""
+    import i18n
+    en = w.get(key + "_en", w.get(key, default))
+    return w.get(key + "_" + lang) or (en if lang == "nl" else i18n.tx(lang, en))
 
 
 def centroid(pts):
@@ -275,8 +291,8 @@ def weapons(lang):
             if i in used:
                 i += "-" + w["team"]
             used.add(i)
-            out.append(dict(w, id=i, group=g["id"], group_title=g["title_" + lang],
-                            label=w.get("name_" + lang, w["name"]), full_label=w.get("full_" + lang, w["full"])))
+            out.append(dict(w, id=i, group=g["id"], group_title=local(lang, g, "title"),
+                            label=local(lang, w, "name"), full_label=local(lang, w, "full")))
     return out
 
 
@@ -292,7 +308,7 @@ def num(x, lang):
 def weapon_meta(lang, w):
     T = S[lang]
     if "damage" not in w:
-        note = re.sub(r"<[^>]+>", "", w.get("note_" + lang, w.get("note_en", "")))
+        note = re.sub(r"<[^>]+>", "", local(lang, w, "note"))
         return T["w_title_eq"].format(n=w["label"], full=w["full_label"]), T["w_desc_eq"].format(n=w["label"], full=w["full_label"], note=note)
     return (T["w_title"].format(n=w["label"], full=w["full_label"]),
             T["w_desc"].format(n=w["label"], dmg=w["damage"], rpm=rpm(w), clip=w["clip"], reload=num(w["reload"] / 1000, lang)))
@@ -303,10 +319,10 @@ def weapon_lede(lang, w, html=False):
     T = S[lang]
     team = T["team_" + w["team"]]
     if "damage" not in w:
-        note = w.get("note_" + lang, w.get("note_en", ""))
+        note = local(lang, w, "note")
         return T["lede_eq"].format(full=e(w["full_label"]) if html else w["full_label"], team=team, note=note if html else re.sub(r"<[^>]+>", "", note))
     key = "lede_pellets" if w.get("pellets") else "lede"
-    cal = w["caliber"].replace("12 gauge", "kaliber 12") if lang == "nl" else w["caliber"]
+    cal = caliber(lang, w["caliber"])
     return T[key].format(n=w["label"], slot=T["slot_" + w["slot"]], team=team, cal=cal, dmg=w["damage"], rpm=rpm(w), clip=w["clip"])
 
 
@@ -321,7 +337,6 @@ def weapon_body(lang, w, allw, modes):
     rows = [(T["team"], team), (T["modes"], '<span class="wmodes">%s</span>' % mode_tags)]
     extra = ""
     if "damage" in w:
-        cal = w["caliber"].replace("12 gauge", "kaliber 12") if lang == "nl" else w["caliber"]
         reload_v = T["reload_shell"].format(s=num(w["reload"] / 1000, lang)) if w.get("shell") else "%s %s" % (num(w["reload"] / 1000, lang), T["sec"])
         rows = [
             (T["damage"], str(w["damage"]) + (" (9 × %s)" % num(w["damage"] / 9, lang) if w.get("pellets") else "")),
@@ -330,9 +345,9 @@ def weapon_body(lang, w, allw, modes):
             (T["reserve"], T["rounds"].format(n=w["reserve"])),
             (T["reload"], reload_v),
             (T["empty"], "%s %s" % (num(w["clip"] * w["cycle"] / 1000, lang), T["sec"])),
-            (T["mag_dmg"], "{:,}".format(w["damage"] * w["clip"]).replace(",", "." if lang != "en" else ",")),
+            (T["mag_dmg"], "{:,}".format(w["damage"] * w["clip"]).replace(",", {"en": ",", "nl": ".", "de": "."}.get(lang, "\u202f"))),
             (T["dps"], "%d %s" % (round(w["damage"] * 1000 / w["cycle"]), T["dps_u"])),
-            (T["caliber"], e(w["caliber"].replace(" gauge", "") if lang == "nl" else w["caliber"])),
+            (T["caliber"], e(w["caliber"].replace(" gauge", "") if lang == "nl" else caliber(lang, w["caliber"]))),
             (T["slot"], T["slot_" + w["slot"]].capitalize()),
         ] + rows
         if w.get("scope"):
