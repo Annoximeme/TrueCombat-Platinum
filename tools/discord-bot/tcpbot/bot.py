@@ -136,6 +136,9 @@ class TCPBot(commands.Bot):
             text = "The stats service isn't answering right now. Give it a minute and try again."
         elif isinstance(error, app_commands.CheckFailure):
             text = "This command is for staff."
+        elif isinstance(original, discord.Forbidden):
+            text = ("I don't have permission to do that in this channel. Give my role View Channel, "
+                    "Send Messages, Embed Links, Attach Files and Read Message History here, then try again.")
         elif isinstance(error, app_commands.CommandOnCooldown):
             text = "Easy there. Try again in %d seconds." % max(1, round(error.retry_after))
         else:
