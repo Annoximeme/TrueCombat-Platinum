@@ -406,13 +406,31 @@ class StatsStore:
             out["topWeapon"] = r["top_weapon"] or ""
         return out
 
-    def leaderboard(self, period="all", sort="rating", mode="", limit=100):
-        sort = sort if sort in ("rating", "xp", "kills", "kd", "headshots", "wins") else "rating"
+    @staticmethod
+    def _stamp(text):
+        """A since/until query value as the stored ISO form, or None when it is missing or not a time."""
+        try:
+            return parse_time(text).replace(microsecond=0).isoformat().replace("+00:00", "Z") if text else None
+        except (ValueError, TypeError):
+            return None
+
+    def leaderboard(self, period="all", sort="rating", mode="", limit=100, since="", until=""):
+        """period is all, 30d or 7d; since/until (ISO times) select any other window, e.g. a season.
+        sort "season" ranks by XP earned inside the window and "gain" by rating won inside it."""
+        sort = sort if sort in ("rating", "xp", "kills", "kd", "headshots", "wins", "season", "gain") else "rating"
         limit = max(1, min(500, _int(limit, 1, 500)))
         args, where = [], []
-        if period == "30d":
+        since, until = self._stamp(since), self._stamp(until)
+        period = period if period in ("30d", "7d") and not (since or until) else "all"
+        if period != "all":
+            since = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=int(period[:-1]))).replace(
+                microsecond=0).isoformat().replace("+00:00", "Z")
+        if since:
             where.append("mp.ended >= ?")
-            args.append((dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)).isoformat().replace("+00:00", "Z"))
+            args.append(since)
+        if until:
+            where.append("mp.ended < ?")
+            args.append(until)
         if mode:
             where.append("m.mode = ?")
             args.append(clean(mode, 32))
@@ -424,7 +442,7 @@ class StatsStore:
                 """SELECT mp.pid, p.name, COUNT(*) matches, SUM(mp.kills) kills, SUM(mp.deaths) deaths,
                    SUM(mp.headshots) headshots, SUM(mp.won) wins, SUM(mp.rounds_won) rounds_won,
                    SUM(mp.objectives) objectives, SUM(mp.time_played) time_played, p.xp xp, p.rating rating,
-                   SUM(mp.xp) period_xp,
+                   SUM(mp.xp) period_xp, SUM(mp.rating_after - mp.rating_before) rating_gain,
                    (SELECT weapon FROM player_weapons w WHERE w.pid=mp.pid AND w.kills>0 ORDER BY w.kills DESC LIMIT 1) top_weapon
                    FROM match_players mp JOIN matches m ON m.server=mp.server AND m.id=mp.match
                    JOIN players p ON p.pid=mp.pid """ + cond + " GROUP BY mp.pid HAVING COUNT(*) >= ?",
@@ -432,14 +450,16 @@ class StatsStore:
         players = [self._player_json(r) for r in rows]
         for p, r in zip(players, rows):
             p["periodXp"] = r["period_xp"] or 0
+            p["ratingGain"] = int(round(r["rating_gain"] or 0))
         key = {"rating": lambda p: (p["rating"], p["kills"]), "xp": lambda p: (p["rank"]["xp"], p["kills"]),
+               "season": lambda p: (p["periodXp"], p["kills"]), "gain": lambda p: (p["ratingGain"], p["kills"]),
                "kills": lambda p: (p["kills"], p["kd"]), "kd": lambda p: (p["kd"], p["kills"]),
                "headshots": lambda p: (p["headshots"], p["kills"]), "wins": lambda p: (p["wins"], p["kills"])}[sort]
         players.sort(key=key, reverse=True)
         for i, p in enumerate(players):
             p["position"] = i + 1
-        return {"schema": "tcp-leaderboard/1", "updated": now_iso(), "period": period if period == "30d" else "all",
-                "sort": sort, "mode": mode, "minMatches": self.min_matches, "matches": nmatches,
+        return {"schema": "tcp-leaderboard/1", "updated": now_iso(), "period": period,
+                "since": since if period == "all" else None, "until": until, "sort": sort, "mode": mode, "minMatches": self.min_matches, "matches": nmatches,
                 "players": players[:limit]}
 
     def player(self, pid):
@@ -505,12 +525,66 @@ class StatsStore:
             matches = []
             for r in rows:
                 m = {k: r[k] for k in ("ended", "map", "mode", "duration", "rounds", "winner", "players", "server")}
+                m["id"], m["serverId"] = r["mid"], r["sid"]
                 # the match MVP: most kills, then most XP
                 top = self.db.execute("SELECT pid, name, kills FROM match_players WHERE server=? AND match=? "
                                       "ORDER BY kills DESC, xp DESC LIMIT 1", (r["sid"], r["mid"])).fetchone()
                 m["mvp"] = {"id": top["pid"], "name": top["name"], "kills": top["kills"]} if top and top["kills"] else None
                 matches.append(m)
         return {"schema": "tcp-recent/1", "updated": now_iso(), "matches": matches}
+
+    def match(self, server, mid):
+        """One finished match with its scoreboard (tcp-match-result/1)."""
+        with self.lock:
+            m = self.db.execute("SELECT m.*, s.name sname FROM matches m LEFT JOIN servers s ON s.id=m.server "
+                                "WHERE m.server=? AND m.id=?", (str(server or ""), str(mid or ""))).fetchone()
+            if not m:
+                return None
+            rows = self.db.execute("SELECT * FROM match_players WHERE server=? AND match=? "
+                                   "ORDER BY kills DESC, xp DESC", (m["server"], m["id"])).fetchall()
+        try:
+            rounds = json.loads(m["report"] or "{}").get("teamRounds")
+        except ValueError:
+            rounds = None
+        return {"schema": "tcp-match-result/1", "id": m["id"], "serverId": m["server"], "server": m["sname"],
+                "ended": m["ended"], "map": m["map"], "mode": m["mode"], "duration": m["duration"],
+                "rounds": m["rounds"], "winner": m["winner"], "teamRounds": rounds if isinstance(rounds, dict) else None,
+                "players": [{"id": r["pid"], "name": r["name"], "team": r["team"], "kills": r["kills"],
+                             "deaths": r["deaths"], "headshots": r["headshots"], "damage": r["damage"],
+                             "objectives": r["objectives"], "roundsWon": r["rounds_won"], "won": bool(r["won"]),
+                             "xp": r["xp"], "topWeapon": r["top_weapon"] or "",
+                             "ratingChange": int(round(r["rating_after"] - r["rating_before"]))} for r in rows]}
+
+    def recap(self, days=7):
+        """What happened in the last N days (tcp-recap/1): totals, the busiest map and the standout players."""
+        days = max(1, min(92, _int(days, 1, 92)))
+        since = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days)).replace(
+            microsecond=0).isoformat().replace("+00:00", "Z")
+
+        def best(expr, having="1"):
+            r = self.db.execute(
+                "SELECT mp.pid, p.name, %s v, COUNT(*) n FROM match_players mp JOIN players p ON p.pid=mp.pid "
+                "WHERE mp.ended >= ? GROUP BY mp.pid HAVING %s ORDER BY v DESC, n DESC LIMIT 1" % (expr, having),
+                (since,)).fetchone()
+            return {"id": r["pid"], "name": r["name"], "value": round(r["v"], 2), "matches": r["n"]} if r and r["v"] else None
+
+        with self.lock:
+            tot = self.db.execute("SELECT COUNT(*) n, COALESCE(SUM(duration), 0) secs FROM matches WHERE ended >= ?",
+                                  (since,)).fetchone()
+            ppl = self.db.execute("SELECT COUNT(DISTINCT pid) n, COALESCE(SUM(kills), 0) kills, "
+                                  "COALESCE(SUM(headshots), 0) hs FROM match_players WHERE ended >= ?", (since,)).fetchone()
+            new = self.db.execute("SELECT COUNT(*) FROM players WHERE first_seen >= ?", (since,)).fetchone()[0]
+            maps = [{"map": r["map"], "matches": r["n"]} for r in self.db.execute(
+                "SELECT map, COUNT(*) n FROM matches WHERE ended >= ? GROUP BY map ORDER BY n DESC, map LIMIT 3", (since,))]
+            out = {"schema": "tcp-recap/1", "updated": now_iso(), "days": days, "since": since,
+                   "matches": tot["n"], "timePlayed": tot["secs"], "players": ppl["n"], "newPlayers": new,
+                   "kills": ppl["kills"], "headshots": ppl["hs"], "maps": maps,
+                   "mostKills": best("SUM(mp.kills)"), "mostWins": best("SUM(mp.won)"),
+                   "mostXp": best("SUM(mp.xp)"), "mostObjectives": best("SUM(mp.objectives)"),
+                   "biggestClimb": best("SUM(mp.rating_after - mp.rating_before)"),
+                   "bestKd": best("CAST(SUM(mp.kills) AS REAL) / MAX(1, SUM(mp.deaths))", "COUNT(*) >= 3"),
+                   "mostActive": best("COUNT(*)")}
+        return out
 
     @staticmethod
     def ranks():
@@ -525,7 +599,8 @@ def handle_get(store, path, query):
     """Returns (code, json) for GET routes, or None when the path is not a stats route."""
     q = {k: v[0] for k, v in query.items()}
     if path == "/leaderboard.json":
-        return 200, store.leaderboard(q.get("period", "all"), q.get("sort", "rating"), q.get("mode", ""), q.get("limit", 100))
+        return 200, store.leaderboard(q.get("period", "all"), q.get("sort", "rating"), q.get("mode", ""),
+                                      q.get("limit", 100), q.get("since", ""), q.get("until", ""))
     if path == "/player.json":
         p = store.player(q.get("id"))
         return (200, p) if p else (404, {"error": "unknown player"})
@@ -533,6 +608,11 @@ def handle_get(store, path, query):
         return 200, store.search(q.get("q", ""))
     if path == "/recent.json":
         return 200, store.recent()
+    if path == "/match.json":
+        m = store.match(q.get("server"), q.get("id"))
+        return (200, m) if m else (404, {"error": "unknown match"})
+    if path == "/recap.json":
+        return 200, store.recap(q.get("days", 7))
     if path == "/ranks.json":
         return 200, store.ranks()
     return None
