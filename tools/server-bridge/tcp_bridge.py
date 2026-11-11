@@ -132,6 +132,28 @@ def query_status(addr, timeout=1.5):
     return {"cvars": cvars, "players": players, "ping": ping}
 
 
+def load_verified(path):
+    """Staff-checked community servers: one "host:port [label]" per line, # comments.
+    Hostnames are resolved, so a server keeps its tag when it changes IP behind the same name."""
+    out = set()
+    if not path:
+        return out
+    try:
+        lines = pathlib.Path(path).read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return out
+    for line in lines:
+        line = line.split("#", 1)[0].strip()
+        if not line:
+            continue
+        try:
+            host, port = parse_addr(line.split()[0], 27960)
+            out.add("%s:%d" % (socket.gethostbyname(host), port))
+        except (OSError, ValueError):
+            continue
+    return out
+
+
 def server_entry(addr, status, modes):
     c = status["cvars"]
     # engine bots answer with ping 0; they fill the server but are not players
@@ -193,6 +215,9 @@ class Bridge:
                 for addr, st in zip(addrs, pool.map(query_status, addrs[: self.args.max_servers])):
                     if st:
                         servers.append(server_entry(addr, st, self.modes))
+        verified = load_verified(getattr(self.args, "verified", ""))
+        for s in servers:
+            s["verified"] = s["address"] in verified
         if self.args.stats_dir:
             self.stats.import_dir(self.args.stats_dir)
         with self.lock:
@@ -271,6 +296,7 @@ def main(argv=None):
     ap.add_argument("--stats-dir", default="", help="also import tcp-match/1 files from this local folder")
     ap.add_argument("--allow-cheats", action="store_true", help="accept matches played with cheats on (tests)")
     ap.add_argument("--min-matches", type=int, default=3)
+    ap.add_argument("--verified", default="", help="file of staff-checked community servers (host:port per line)")
     ap.add_argument("--cors", default="https://truecombat.eu,https://www.truecombat.eu",
                     help="comma-separated allowed origins, or *")
     ap.add_argument("--modes", default="", help="override g_gametype labels, e.g. 2=Elimination,3=Team elimination")
