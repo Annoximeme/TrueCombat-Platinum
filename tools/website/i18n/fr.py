@@ -2626,7 +2626,7 @@ TABLES = {'LABELS': {'maps': 'Maps',
              'r_c': 'Venez dire bonjour sur le <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. Vétérans et nouveaux joueurs y organisent leurs matchs.',
              'r_note': '<b>Vous découvrez TC:E ?</b> Le <a href="guide.html">guide du débutant</a> présente les commandes, les modes de jeu et les réflexes qui vous gardent en vie.'}}
 
-JS = {'joinBtn': 'Rejoindre', 'verified': 'Vérifié', 'verifiedTip': "Vérifié par l'équipe TrueCombat: Platinum",
+JS = {'eac': 'Anti-triche', 'eacTip': 'Protégé par Easy Anti-Cheat', 'eacReqTip': 'Protégé par Easy Anti-Cheat. Requis pour rejoindre.', 'joinBtn': 'Rejoindre', 'verified': 'Vérifié', 'verifiedTip': "Vérifié par l'équipe TrueCombat: Platinum",
  'months': ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'],
  'latest': 'Dernière version',
  'kindSetupLong': 'Installeur Windows',

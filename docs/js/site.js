@@ -22,7 +22,7 @@ var TCP_API = 'https://api.truecombat.eu';
       noServersOffline: 'The live server list is unreachable right now. The Servers tab in the launcher shows the same list.',
       moreNotes: 'Show the full notes', topAll: 'All time', top30: 'Last 30 days', cmpAdd: 'Compare', cmpOn: 'Comparing', cmpTitle: 'Compare weapons', cmpHint: 'Pick up to three weapons to compare.', cmpClear: 'Clear', cmpDmg: 'Damage per hit', cmpRpm: 'Fire rate', cmpDps: 'Damage per second', cmpMag: 'Magazine', cmpEmpty: 'Time to empty', cmpReload: 'Full reload', cmpPellets: 'pellets', cmpNote: 'Body hits before range and armour. Shotguns count every pellet.', lessNotes: 'Show less', liveNow: '{p} playing on {s} servers right now', liveIdle: '{s} servers online right now',
       noServers: 'Nobody is hosting a public server right now. Host one from the launcher with List publicly switched on.',
-      players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', need1: 'Needs 1 player', needN: 'Needs {n} players', needTip: 'A player left mid-match. Fill in now and you cannot lose rating this match.', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied', verified: 'Verified', verifiedTip: 'Checked by the TrueCombat: Platinum team', joinBtn: 'Join',
+      players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', need1: 'Needs 1 player', needN: 'Needs {n} players', needTip: 'A player left mid-match. Fill in now and you cannot lose rating this match.', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied', verified: 'Verified', verifiedTip: 'Checked by the TrueCombat: Platinum team', eac: 'Anti-cheat', eacTip: 'Protected by Easy Anti-Cheat', eacReqTip: 'Protected by Easy Anti-Cheat. Required to join.', joinBtn: 'Join',
       updated: 'Updated', join: 'In the launcher: Servers → Join by address',
       lbEmpty: 'No ranked matches yet. Leaderboards fill in once public servers report their matches.',
       lbOffline: 'The leaderboards are temporarily unavailable. Please check back in a few minutes.',
@@ -46,7 +46,7 @@ var TCP_API = 'https://api.truecombat.eu';
       noServersOffline: 'De live serverlijst is nu niet bereikbaar. Het tabblad Servers in de launcher toont dezelfde lijst.',
       moreNotes: 'Toon alle notities', topAll: 'Altijd', top30: 'Laatste 30 dagen', cmpAdd: 'Vergelijk', cmpOn: 'Vergeleken', cmpTitle: 'Wapens vergelijken', cmpHint: 'Kies tot drie wapens om te vergelijken.', cmpClear: 'Wissen', cmpDmg: 'Schade per treffer', cmpRpm: 'Vuursnelheid', cmpDps: 'Schade per seconde', cmpMag: 'Magazijn', cmpEmpty: 'Tijd tot leeg', cmpReload: 'Volledig herladen', cmpPellets: 'hagels', cmpNote: 'Rompschoten, voor afstand en bepantsering. Bij hagelgeweren telt elke hagel mee.', lessNotes: 'Minder tonen', liveNow: '{p} spelers op {s} servers op dit moment', liveIdle: '{s} servers nu online',
       noServers: 'Er host nu niemand een publieke server. Host er zelf een vanuit de launcher met Openbaar tonen aan.',
-      players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', need1: 'Zoekt 1 speler', needN: 'Zoekt {n} spelers', needTip: 'Er is iemand vertrokken tijdens het potje. Val nu in en je kunt deze match geen rating verliezen.', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd', verified: 'Geverifieerd', verifiedTip: 'Gecontroleerd door het TrueCombat: Platinum-team', joinBtn: 'Joinen',
+      players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', need1: 'Zoekt 1 speler', needN: 'Zoekt {n} spelers', needTip: 'Er is iemand vertrokken tijdens het potje. Val nu in en je kunt deze match geen rating verliezen.', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd', verified: 'Geverifieerd', verifiedTip: 'Gecontroleerd door het TrueCombat: Platinum-team', eac: 'Anti-cheat', eacTip: 'Beschermd door Easy Anti-Cheat', eacReqTip: 'Beschermd door Easy Anti-Cheat. Verplicht om te joinen.', joinBtn: 'Joinen',
       updated: 'Bijgewerkt', join: 'In de launcher: Servers → Verbinden met adres',
       lbEmpty: 'Nog geen gerankte potjes. De ranglijsten vullen zich zodra publieke servers hun potjes doorgeven.',
       lbOffline: 'De ranglijsten zijn tijdelijk niet beschikbaar. Probeer het over een paar minuten opnieuw.',
@@ -268,6 +268,8 @@ var TCP_API = 'https://api.truecombat.eu';
         '<h4 class="fund-sup-h">' + T.sup + '</h4>' + sup;
     }).catch(function () { /* keep the static report */ });
   })();
+  /* Easy Anti-Cheat badge: the bridge reports eac 0 (off), 1 (on) or 2 (required); nothing is shown while it is off */
+  function eacTag(s) { return s && s.eac > 0 ? ' <span class="srv-tag eac" title="' + (s.eac > 1 ? L.eacReqTip : L.eacTip) + '">' + L.eac + '</span>' : ''; }
   function renderServers(root, data) {
     var limit = root.dataset.servers === 'all' ? 999 : parseInt(root.dataset.servers, 10) || 5;
     var list = (data.servers || []).slice().sort(function (a, b) { return ((b.need || 0) > 0) - ((a.need || 0) > 0) || (b.players || 0) - (a.players || 0); });
@@ -283,6 +285,7 @@ var TCP_API = 'https://api.truecombat.eu';
          s.ranked === false ? ' <span class="srv-tag" title="' + L.unrankedTip + '">' + L.unranked + '</span>' : '') +
         (s.need > 0 ? ' <span class="srv-tag need" title="' + L.needTip + '">' + (s.need === 1 ? L.need1 : L.needN.replace('{n}', s.need)) + '</span>' : '') +
         (s.verified ? ' <span class="srv-tag verified" title="' + L.verifiedTip + '">' + L.verified + '</span>' : '') +
+        eacTag(s) +
         '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button>' +
         ' <a class="srv-join" href="' + (lang === 'en' ? '' : '../') + 'join#' + esc(s.address) + '">' + L.joinBtn + '</a></td>' +
         '<td>' + mapLabel(s.map) + '</td><td>' + (s.players || 0) + ' / ' + (s.maxPlayers || '?') + (s.bots ? ' <span class="srv-bots">+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</span>' : '') + '</td><td>' + esc(s.mode || '') + '</td></tr>';
@@ -306,7 +309,7 @@ var TCP_API = 'https://api.truecombat.eu';
         return '<tr><td class="pos">' + (i + 1) + '</td><td class="who">' + esc(p.name) + '</td><td>' + num(p.score) + '</td><td class="ping">' + (p.ping || 0) + '</td></tr>';
       }).join('');
       return '<article class="board"><header style="background-image:linear-gradient(90deg,rgba(13,16,22,.94) 35%,rgba(13,16,22,.55)),url(' + art + ')">' +
-        '<div><h3>' + esc(shortName(s.name)) + '</h3><p>' + mapLabel(s.map) + ' · ' + esc(s.mode || '') + '</p></div>' +
+        '<div><h3>' + esc(shortName(s.name)) + eacTag(s) + '</h3><p>' + mapLabel(s.map) + ' · ' + esc(s.mode || '') + '</p></div>' +
         '<span class="board-count"><b>' + (s.players || 0) + '</b>/' + (s.maxPlayers || '?') + (s.bots ? '<small>+' + s.bots + ' ' + (s.bots === 1 ? L.bot : L.bots) + '</small>' : '') + '</span></header>' +
         (rows ? '<table class="board-table"><thead><tr><th>#</th><th>' + L.player + '</th><th>' + L.score + '</th><th>' + L.ping + '</th></tr></thead><tbody>' + rows + '</tbody></table>'
               : '<p class="board-empty">' + L.emptyBoard + '</p>') +
@@ -384,6 +387,18 @@ var TCP_API = 'https://api.truecombat.eu';
       }, function () {});
     });
   });
+  /* official server cards are static HTML; they get the anti-cheat badge once the live list reports it on */
+  if (document.querySelector('.official .addr')) api('/servers.json').then(function (d) {
+    var list = d.servers || [];
+    $all('.official article').forEach(function (card) {
+      var b = card.querySelector('.addr'), port = b && b.dataset.addr.split(':').pop();
+      var s = list.filter(function (x) { return String(x.address).split(':').pop() === port && (x.verified || /official/i.test(x.name || '')); })[0];
+      var tag = eacTag(s), first = card.querySelector('.srv-tag');
+      if (!tag || !first || card.querySelector('.srv-tag.eac')) return;
+      var row = document.createElement('span'); row.className = 'srv-tags';
+      first.parentNode.insertBefore(row, first); row.appendChild(first); row.insertAdjacentHTML('beforeend', tag);
+    });
+  }, function () {});
   $all('[data-live]').forEach(function (el) {
     api('/servers.json').then(function (d) {
       var list = d.servers || [], p = list.reduce(function (n, x) { return n + (x.players || 0); }, 0);
