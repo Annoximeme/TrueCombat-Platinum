@@ -1,0 +1,651 @@
+# Follow-up situations (1.2.0): lines that only make sense after an earlier line or event.
+# Each description starts with "Needs:" and names the memory the game must keep to fire it.
+
+@fu_still_there | followup | team | 12 | {area} | | Needs: this bot called an enemy at {area} in the last 20 s and still sees one there.
+=e
+still {area}
+he's still {area}, come on
+still there {area}
+same guy {area}, pushing him now
+still {area}, I'm going
+=a
+Still at {area}.
+He hasn't moved. {area}.
+Same position, still {area}.
+Still holding him at {area}.
+No change. {area}.
+=l
+still {area}
+hasnt moved {area}
+same spot {area}
+still there lol
+he's glued to {area}
+=s
+he's still at {area}
+still {area}, careful
+same one, still {area}
+still there, {area}, need a nade?
+he hasn't moved from {area}
+=m
+Still {area}.
+Same spot. {area}.
+He's static, {area}. Waiting.
+No movement. Still {area}.
+Still on him, {area}.
+
+@fu_count_update | followup | team | 8 | {count} | {area} | Needs: this bot or a teammate called a count at an area in the last 15 s and the count changed.
+=e
+{count} now
+make that {count}
+no wait, {count}
+{count} actually
+it's {count}, more coming
+=a
+Correction, {count}.
+Make that {count}.
+{count} now at {area}.
+Update, {count}.
+Now {count}.
+=l
+{count} now
+actually {count}
+its {count}
+{count} now btw
+more, {count}
+=s
+it's {count} now!
+actually {count}, careful
+update, {count} at {area}
+{count} now guys
+no, {count}
+=m
+Correction. {count}.
+{count} now.
+Recount, {count}.
+{count}, {area}.
+Update. {count}.
+
+@fu_found_again | followup | team | 10 | {area} | | Needs: this bot said contact_lost in the last 30 s and has now reacquired the enemy.
+=e
+found him {area}
+there he is {area}
+got him again {area}
+he's {area} now
+found him, going
+=a
+Found him. {area}.
+He's at {area} now.
+Reacquired, {area}.
+There he is, {area}.
+Eyes on again, {area}.
+=l
+found him {area}
+there he is
+he moved to {area}
+he's {area} now
+spotted again {area}
+=s
+found him, {area}!
+he's at {area} now
+there he is, {area}
+he moved, {area}
+got eyes again {area}
+=m
+Reacquired. {area}.
+Back on him, {area}.
+He's at {area} now.
+Found. {area}.
+There. {area}.
+
+@fu_same_spot_last_round | followup | team | 0 | {area} | | Needs: per-round memory of where enemies were first seen or where this bot died; an enemy is at the same area again.
+=e
+{area} again
+he's {area} again lol
+same spot as last round
+they love {area}
+{area} again, nade it this time
+=a
+{area} again. Same as last round.
+Same spot as last round, {area}.
+He's back at {area}.
+They're repeating {area}.
+{area} once more.
+=l
+{area} again
+same corner again lol
+he's back {area}
+same spot, {area}
+they always go {area}
+=s
+{area} again, like last round
+same spot as before, {area}
+he's at {area} again, careful
+they're at {area} again
+watch {area}, same as last time
+=m
+{area}. Again.
+Same position as last round.
+He likes {area}.
+Repeat, {area}.
+{area} again. Predictable.
+
+@fu_enemy_same_plan | followup | team | 0 | {area} | | Needs: the commander's record that the enemy hit the same area in two or more rounds running.
+=e
+they're going {area} again
+{area} every round lol
+same push {area}
+again {area}? ok
+they only know {area}
+=a
+They're hitting {area} again.
+Same plan from them. {area}.
+{area} again. Stack it next round.
+Third time at {area}.
+They keep coming {area}.
+=l
+{area} again
+same plan lol
+they always {area}
+called it, {area}
+theyre predictable
+=s
+they're coming {area} again
+same as last round, {area}!
+{area} again, let's stack it
+they keep going {area}
+again {area}, be ready
+=m
+{area}. Same as before.
+Their pattern is {area}.
+Predictable. {area} again.
+{area} again. Adjust.
+Same route, {area}.
+
+@fu_called_it | followup | team | 60 | | {area} | Needs: this bot predicted something (enemy_rotating, enemy_fake, enemy_behind) and it was confirmed within 20 s.
+=e
+told you
+called it
+knew it
+see?
+told you guys
+=a
+As expected.
+That's what I thought.
+As called.
+Thought so.
+There it is.
+=l
+called it
+told you
+knew it lol
+see
+obviously
+=s
+I thought so!
+good thing we waited
+there they are, like we said
+called it
+knew it!
+=m
+As predicted.
+Expected.
+On schedule.
+As I said.
+There.
+
+@fu_my_call_wrong | followup | team | 60 | | {area} | Needs: this bot's own call (fake, rotation, area clear) turned out wrong within 20 s.
+=e
+ok I was wrong
+my bad, bad call
+oops wrong
+not a fake lol
+scratch that
+=a
+I was wrong. Sorry.
+Bad call from me.
+Correction, I misread that.
+My read was off.
+Disregard my last call.
+=l
+nvm
+wrong, my bad
+ok not a fake
+scratch that
+bad read
+=s
+sorry, I was wrong
+my call was bad, sorry guys
+oops, ignore that
+I misread it, sorry
+wrong call, my bad
+=m
+Misread. Sorry.
+Wrong call.
+Disregard that.
+My read was wrong.
+Correction. I was off.
+
+@fu_not_clear_after_all | followup | team | 30 | {area} | | Needs: this bot said area_clear for {area} in the last 30 s and now sees an enemy there.
+=e
+{area} not clear!
+wait, one {area}
+he was hiding {area}
+not clear {area}
+=a
+{area} is not clear. Correction.
+One at {area} after all.
+I missed one at {area}.
+Not clear. {area}.
+=l
+nvm one {area}
+{area} not clear lol
+he was hiding {area}
+ok one {area}
+=s
+sorry, {area} is not clear!
+wait, there's one at {area}
+I missed one, {area}
+not clear, {area}, careful
+=m
+Correction. One at {area}.
+{area} not clear.
+Missed one. {area}.
+One hidden at {area}.
+
+@fu_got_the_called_one | followup | team | 10 | | {area} {name} | Needs: this bot killed an enemy a teammate called or pinged in the last 15 s.
+=e
+got your guy
+got the one {area}
+that one's dead
+your guy's dead {name}
+got him, the {area} one
+=a
+Got the one at {area}.
+Your contact is down, {name}.
+That one's dealt with.
+The {area} one is down.
+Got him. Thanks for the call.
+=l
+got the {area} guy
+got yours {name}
+that one's done
+he's dead, the {area} one
+got him, ty
+=s
+got the one you called!
+your guy's down {name}
+got him, thanks for the call
+the one at {area} is dead
+got yours {name}!
+=m
+Your contact's down.
+The {area} one. Down.
+Got the one you called.
+Down. Good call.
+That one's finished.
+
+@fu_still_holding | followup | team | 60 | {area} | | Needs: this bot announced holding {area} more than 45 s ago and is still there.
+=e
+still {area}, bored
+still watching {area}
+I'm still {area}
+{area} still mine
+=a
+Still holding {area}.
+{area} is still covered.
+No change at {area}.
+Still here at {area}.
+Holding. {area}.
+=l
+still {area}
+still sitting {area}
+havent moved
+still here
+=s
+still on {area}
+I'm still holding {area}
+{area} still covered
+still here, {area}
+=m
+Still on {area}.
+{area}, still locked.
+Unchanged. {area}.
+Holding the line, {area}.
+
+@fu_ack_teammate_call | followup | team | 8 | | {area} {name} | Needs: another bot or human on the team made a contact call near this bot in the last 3 s. Makes chat read like a conversation; one reply per call at most.
+=e
+on my way
+coming
+I'll take him
+going {area}
+mine
+ok going
+=a
+Copy.
+Understood.
+Watching for it.
+Copy, {area}.
+Heard.
+Got it, {name}.
+=l
+k
+ok
+seen
+noted
+got it
+=s
+ok, coming!
+got it, thanks
+copy, I'm close
+on my way {name}
+thanks, watching {area}
+ok!
+=m
+Copy.
+Seen.
+On it.
+Turning to {area}.
+Heard.
+I'll take the angle.
+
+@fu_answer_need_help | followup | team | 10 | {name} | {area} | Needs: a teammate (bot or human) said need_help or pinged for help, and this bot is the one sent.
+=e
+coming {name}
+on my way {name}, hold on
+I'm there in 3
+coming, don't die
+hold {name}
+=a
+Coming, {name}. Hold.
+On my way to you, {name}.
+Hold on, {name}.
+Moving to {area}.
+I'm coming. Stay in cover.
+=l
+coming {name}
+omw
+hold on
+coming from behind them
+on my way {name}
+=s
+I'm coming {name}!
+hold on {name}, almost there
+coming, stay alive!
+on my way to {area}
+I've got you {name}, coming
+=m
+Coming, {name}.
+Moving to cover you.
+On my way. Hold.
+Turning to {area}.
+I'll get a line on them, {name}.
+
+@fu_cant_help | followup | team | 10 | {name} | | Needs: a teammate asked for help and no bot can go; the nearest says so once.
+=e
+can't {name}, fighting
+busy here {name}
+can't, sorry
+I'm stuck in a fight
+=a
+Can't, {name}. Engaged.
+Unable. Holding my own.
+I can't leave this, {name}.
+No one free, {name}. Fall back.
+=l
+cant
+too far {name}
+busy
+sorry {name}
+=s
+I can't reach you {name}, sorry
+I'm pinned too, sorry!
+can't, fall back to us {name}
+too far, sorry {name}
+=m
+Can't. No line.
+Unable, {name}.
+Engaged. Fall back, {name}.
+Too far, {name}.
+
+@fu_answer_ask_info | followup | team | 15 | | {area} | Needs: a teammate asked for info (ask_info or a human question) and this bot has nothing or something.
+=e
+nothing here
+nobody my side
+all quiet {area}
+nothing
+=a
+Nothing on my side.
+All quiet here.
+No contact at {area}.
+Nothing to report.
+=l
+nothing
+quiet here
+nobody {area}
+nope
+=s
+nothing on my side
+all clear here
+nobody at {area}
+nothing yet, sorry
+=m
+Nothing in my lines.
+No contact.
+Quiet on {area}.
+Negative.
+
+@fu_thanks_teammate | followup | team | 30 | {name} | | Needs: a teammate did what this bot asked (smoke, flash, cover, help) in the last 10 s.
+=e
+ty {name}
+nice {name}
+thanks
+perfect
+=a
+Thanks, {name}.
+Good smoke, {name}.
+Appreciated.
+Thank you.
+=l
+ty
+thx {name}
+nice
+ty {name}
+=s
+thank you {name}!
+perfect, thanks
+thanks {name}!
+that helped, ty
+=m
+Thanks.
+Good, {name}.
+Useful. Thanks.
+Thanks, {name}.
+
+@fu_there_we_go | followup | team | 60 | | | Needs: this bot said missed_shot or cold_streak earlier and has now got a kill.
+=e
+there we go
+finally
+about time
+ok I'm awake
+=a
+Better.
+That's better.
+There.
+Finally one.
+=l
+finally
+there
+ok
+better
+=s
+there we go!
+finally, phew
+that's better
+ok, back in it
+=m
+Better.
+There it is.
+Zeroed.
+Found the range.
+
+@fu_better_round | followup | team | 0 | | | Needs: the team lost the previous round (or several) and won this one.
+=e
+that's more like it
+better
+there we go
+see, we can
+=a
+Better. Keep that.
+That's the standard.
+Much better.
+That's how we play it.
+=l
+better
+finally
+that worked
+see
+=s
+that's more like it!
+much better guys
+see, we can do it
+that's the way
+=m
+Better.
+That's the way.
+Improved.
+That works.
+
+@fu_go_slower | followup | team | 0 | | | Needs: this bot died first in two rounds running; said at the next round start.
+=e
+ok I'll wait this time
+fine, slower
+not rushing this one
+I'll let you go first lol
+=a
+I'll slow down this round.
+Changing my timing.
+I'll hold back this time.
+Playing it later this round.
+=l
+different route this time
+going slower
+other way this round
+changing it up
+=s
+I'll stay with you this time
+going slower this round, sorry
+I'll wait for everyone
+together this time
+=m
+New angle this round.
+Changing position.
+Different line this time.
+I'll hold back.
+
+@fu_still_on_order | followup | team | 0 | | {area} | Needs: a human repeated an order this bot is already carrying out.
+=e
+I am
+already going
+yeah yeah going
+on it already
+=a
+Already on it.
+I'm doing that.
+On it already.
+Yes. In progress.
+=l
+already
+i am
+on it
+doing it
+=s
+already on it!
+I'm doing it
+yes, on my way
+going going
+=m
+In progress.
+Already on it.
+Doing it.
+Yes.
+
+@fu_order_result | followup | team | 0 | | {area} {name} | Needs: an order from a human led to a kill or a won fight within 15 s.
+=e
+that worked
+good call {name}
+nice order
+worked lol
+=a
+Good order, {name}.
+That worked.
+Right call.
+Worked as planned.
+=l
+worked
+nice call
+good plan
+that worked lol
+=s
+that worked great {name}
+good plan!
+nice call {name}
+it worked!
+=m
+Good call.
+Effective.
+That worked, {name}.
+Right decision.
+
+@fu_plan_change | followup | team | 0 | | {area} | Needs: the commander picked a different plan from last round after a loss.
+=e
+other side this time
+let's try {area}
+something else, go {area}
+switch it, {area}
+=a
+We change it up. {area}.
+Different approach this round.
+Let's try {area} instead.
+New plan. {area}.
+=l
+other way this time
+try {area}
+switch
+lets do {area}
+=s
+let's try {area} this time
+different plan guys, {area}
+let's switch it up
+other side this round?
+=m
+Different lines this round.
+Try {area}.
+New setup.
+Change. {area}.
+
+@fu_plan_repeat | followup | team | 0 | | {area} | Needs: the commander picked the same plan again after a win.
+=e
+same again
+that worked, again
+{area} again
+don't change it
+=a
+Same plan.
+Same again. It worked.
+Repeat it. {area}.
+No reason to change.
+=l
+same
+again
+same plan
+{area} again
+=s
+same as last round!
+that worked, same again
+same plan guys
+{area} again, together
+=m
+Same setup.
+Repeat.
+Same lines.
+Again. {area}.

@@ -1,0 +1,1319 @@
+# Fill pass (1.2.0). Part C: match flow and pass 3 situations.
+
+@first_round
+=a
+Good luck everyone.
+gl hf
+=l
+gl all
+have fun
+=s
+glhf all!
+have a good game
+=m
+gl
+Good game ahead.
+
+@match_point_us
+=a
+One round from the win.
+Finish it properly.
+=l
+one to go
+almost there
+=s
+one more, stay calm
+match point, together
+=m
+One round.
+Finish clean.
+
+@match_point_them
+=a
+Everything on this round.
+We hold here or it's over.
+=l
+last chance
+no mistakes
+=s
+last chance, we can do it
+don't give up guys
+=m
+No room for error.
+This round or nothing.
+
+@last_round
+=e
+winner takes it
+everything now
+=a
+Last one. Play it right.
+One round for the match.
+=l
+final round
+winner takes all
+=s
+final round, good luck all
+last one, together
+=m
+Last round. Clean shots.
+One round. Focus.
+
+@score_tied
+=e
+level, lets go
+tied up
+=a
+Even game.
+Score's level. Reset.
+=l
+level
+tie
+=s
+all even, come on
+tied, next one's ours
+=m
+All even.
+Level game.
+
+@comeback
+=a
+We've turned it.
+They're on the back foot.
+=l
+turning it around
+they're tilting
+=s
+we're back in it!
+momentum, let's go
+=m
+Turned it.
+They're rattled.
+
+@big_lead
+=e
+keep the pressure
+no slacking
+=a
+Keep the standard up.
+Good lead. Same discipline.
+=l
+keep going
+nice lead
+=s
+nice lead, keep playing together
+don't relax yet
+=m
+Hold the standard.
+Good lead. Same lines.
+
+@far_behind
+=e
+get one, then another
+come on, not done
+=a
+We're not out yet.
+Take it one at a time.
+=l
+long way back
+get one first
+=s
+heads up guys, still playable
+one round, then the next
+=m
+Long way. Start with one.
+Not done.
+
+@flawless_round
+=a
+Nobody lost. Good.
+Full team alive. Excellent.
+=l
+all alive
+perfect
+=s
+all alive, great round
+perfect teamwork!
+=m
+Zero losses.
+Perfect execution.
+
+@close_round_won
+=a
+Close, but ours.
+Held on. Good.
+=l
+just about
+scraped it
+=s
+that was scary, nice
+just made it!
+=m
+By a margin.
+Held. Just.
+
+@round_won_time
+=e
+time's up ez
+they were too slow
+=a
+They ran out of clock.
+Won on time.
+=l
+out of time lol
+clock win
+=s
+clock ran out, well held
+won on time!
+=m
+Won on the clock.
+Time expired.
+
+@round_lost_time
+=e
+no time left
+gotta go faster
+=a
+Too slow that round.
+Clock ran out on us.
+=l
+ran out
+slow
+=s
+time got us
+out of time, unlucky
+=m
+Ran out of clock.
+Too patient.
+
+@round_won_bomb
+=a
+Bomb won it.
+Objective secured.
+=l
+bomb win
+kaboom
+=s
+objective done!
+bomb round, gj
+=m
+Bomb round.
+Objective secured.
+
+@side_switch
+=e
+swap
+defence now lol
+=a
+Sides change.
+Half time. Switch.
+=l
+half
+swap
+=s
+half time!
+switch, gl all
+=m
+Half.
+Changing sides.
+
+@overtime
+=e
+OT baby
+extra time
+=a
+We go again. Overtime.
+Extra time.
+=l
+OT
+extra time
+=s
+extra rounds, good luck
+overtime, here we go
+=m
+OT.
+Overtime. Focus.
+
+@teammate_joined
+=e
+{name} joined us
+welcome
+=a
+{name} is with us.
+Glad you're here, {name}.
+=l
+welcome {name}
+hey
+=s
+hi {name}, glad you're here
+{name} is with us!
+=m
+{name}, welcome.
+Good, {name}'s here.
+
+@teammate_left
+=e
+lost a guy
+we're short
+=a
+One short now.
+We lost a player.
+=l
+we're short
+someone left
+=s
+someone left, we're short
+one down, stay close
+=m
+Short handed.
+One less gun.
+
+@enemy_left
+=e
+they're short now
+uneven lol
+=a
+They are a player down.
+One of theirs left.
+=l
+they lost one
+one gone
+=s
+one of them left
+they're short a player
+=m
+They're short.
+One fewer for them.
+
+@auto_balanced
+=e
+other team now
+swapped me
+=a
+I've been moved. Hello.
+New side.
+=l
+new team
+got moved
+=s
+I got moved, hi!
+switched teams, glhf
+=m
+New side. Hello.
+Rebalanced.
+
+@bot_replaced
+=e
+bye, gl
+I'm out, have fun
+=a
+Leaving the slot. Bye.
+Have a good game.
+=l
+leaving
+slot's free
+=s
+slot's yours, gl!
+bye all
+=m
+Slot's free.
+Leaving. gl
+
+@vote_called
+=e
+vote guys
+voting
+=a
+Vote is open.
+Please vote.
+=l
+voting
+vote pls
+=s
+vote's up, guys
+don't forget to vote
+=m
+Vote open.
+Voting.
+
+@map_voted_good
+=e
+nice, this one
+this map is fun
+=a
+Good choice.
+Good one.
+=l
+I like it
+fine by me
+=s
+love this map
+good choice all
+=m
+Nice sightlines here.
+Good pick.
+
+@map_start
+=e
+new map, gl
+ok this one
+=a
+New map.
+Fresh start. gl
+=l
+gl
+new one
+=s
+gl hf on the new map
+new map, have fun
+=m
+Fresh map. gl
+Good luck.
+
+@afk_teammate
+=e
+{name}? hello
+{name} move
+=a
+{name}, are you back?
+Checking in, {name}.
+=l
+{name} hello?
+afk
+=s
+{name}, are you afk?
+hello {name}?
+=m
+{name}, are you there?
+Checking, {name}.
+
+@waiting_for_players
+=e
+come on people join
+just us
+=a
+Waiting for a few more.
+Not enough yet.
+=l
+just bots lol
+quiet server
+=s
+more players soon hopefully
+waiting for people to join
+=m
+More players needed.
+Quiet.
+
+@human_first_blood
+=e
+{name} opened it
+nice pick {name}
+=a
+Good start, {name}.
+Opening kill. Well done.
+=l
+nice opener
+{name} first
+=s
+great start {name}
+opening kill, nice {name}
+=m
+Good opener, {name}.
+First pick. Clean.
+
+@human_multi_kill
+=a
+Outstanding, {name}.
+That was the round, {name}.
+=l
+{name} wow
+ok {name} calm down lol
+=s
+{name}!! what a round
+you're amazing {name}
+=m
+Fine shooting, {name}.
+Excellent, {name}.
+
+@human_plant
+=e
+bomb's down, nice
+good one {name}
+=a
+Good plant.
+Planted. Hold it now.
+=l
+planted
+gj {name}
+=s
+planted, gj {name}
+great plant!
+=m
+Plant's good.
+Planted. Holding.
+
+@human_defuse
+=e
+defused, nice
+{name} got it
+=a
+Good defuse.
+Defused. Round.
+=l
+nice defuse {name}
+gj
+=s
+defused, gj!
+you did it {name}!
+=m
+Defuse. Good.
+Well timed, {name}.
+
+@human_capture
+=e
+capped!
+good run {name}
+=a
+Good capture.
+Captured. Point.
+=l
+gj {name}
+cap
+=s
+nice run {name}!
+captured, gj
+=m
+Capture. Good.
+Good run.
+
+@human_died_unlucky
+=e
+unlucky that
+nothing you could do
+=a
+Bad luck, {name}.
+Not your fault, {name}.
+=l
+rip
+unlucky that
+=s
+unlucky {name}!
+not your fault {name}
+=m
+Bad luck.
+No play there, {name}.
+
+@top_fragger_bot
+=e
+gg
+good game all
+=a
+Well played, team.
+Good game, all.
+=l
+gg all
+ok game
+=s
+well played everyone
+gg team!
+=m
+gg
+Well played, all.
+
+@top_fragger_human
+=e
+{name} too good
+gg {name}
+=a
+{name} led the way.
+Top of the board, {name}.
+=l
+gg {name}
+{name} top
+=s
+great game {name}
+{name} was on fire
+=m
+{name}, top of the board.
+Fine game, {name}.
+
+@close_match_end
+=e
+so close
+good game that
+=a
+Close one. gg.
+Tight game.
+=l
+tight
+gg close
+=s
+that was tight, gg
+close one, well played
+=m
+Tight.
+Narrow game. gg.
+
+@rematch
+=e
+go again?
+another one
+=a
+Another game?
+Go again?
+=l
+go again
+1 more
+=s
+another game?
+one more?
+=m
+Go again?
+Another?
+
+@numbers_advantage
+=a
+We're up on players. Stay tight.
+More of us. No risks.
+=l
+we're up
+dont throw it
+=s
+we're up, stick together
+we have more, no risks
+=m
+Up on numbers.
+Advantage. Hold angles.
+
+@numbers_disadvantage
+=e
+fewer of us, so what
+need two picks
+=a
+We're short. Hold tight.
+Outnumbered. Stay together.
+=l
+short on players
+sneaky round
+=s
+fewer of us, play together
+we're down, don't peek alone
+=m
+Short on numbers.
+Fewer of us. Long fights only.
+
+@time_60
+=e
+minute left
+1 minute, move
+=a
+Sixty seconds.
+One minute remaining.
+=l
+one min
+60s
+=s
+a minute left
+1 min left guys
+=m
+A minute.
+One minute left.
+
+@time_30
+=e
+half a minute
+30 left
+=a
+Half a minute.
+30 seconds. Decide.
+=l
+30
+half a min
+=s
+half a minute left
+30 left!
+=m
+Half a minute.
+30 seconds.
+
+@time_10
+=e
+10
+ten!
+=a
+Ten.
+10 seconds left.
+Final seconds.
+=l
+10
+ten
+10 sec
+=s
+ten seconds
+10!
+last seconds!
+=m
+10 left.
+Final ten.
+
+@site_taken
+=e
+site clear
+{area} clear, bomb here
+=a
+{area} is clear.
+We hold {area}.
+=l
+{area} is ours
+we have {area}
+=s
+{area} clear, plant!
+site taken, nice
+=m
+{area} is ours.
+{area} clear. Plant.
+
+@site_lost
+=e
+{area} is gone
+they took {area}
+=a
+We lost {area}.
+{area} has fallen.
+=l
+lost {area}
+{area} fell
+=s
+{area} is gone, fall back
+lost {area}, come together
+=m
+{area} has fallen.
+Lost {area}. Resetting.
+
+@retake_start
+=e
+going in {area}
+retake {area} lets go
+=a
+Retake {area}. On me.
+Starting the retake.
+=l
+retake {area}
+going in quiet
+=s
+retaking {area}, with me
+retake {area}, I flash
+=m
+Retake {area}. Covering.
+I hold long for the retake.
+
+@retake_done
+=e
+got the site back
+{area} clear, defuse
+=a
+We have the site.
+Site retaken. Defuse.
+=l
+site clear
+got it back
+retaken
+=s
+retake done, defuse!
+we got it back
+=m
+Retake done.
+Site's ours. Defuse.
+
+@enemy_reload_heard
+=e
+reload! go
+=a
+Reload heard. Push.
+He's reloading at {area}.
+=l
+reload, go
+he's empty
+=s
+he's reloading, now!
+reload at {area}, go
+=m
+Reload. Peek now.
+He's reloading, {area}.
+
+@enemy_jiggling
+=e
+he's peeking in and out {area}
+jiggle {area}, swing him
+=a
+He's baiting at {area}.
+Shoulder peeks at {area}. Hold fire.
+=l
+he keeps peeking {area}
+bait peeks {area}
+=s
+jiggle peeks at {area}
+he's baiting {area}, don't shoot early
+=m
+He's jiggling {area}.
+Bait peeks, {area}. Patience.
+
+@enemy_on_ladder
+=e
+he's climbing {area}
+ladder {area}, shoot him
+=a
+Ladder at {area}. One climbing.
+One climbing at {area}.
+Enemy on the ladder at {area}.
+=l
+on the ladder {area}
+climbing {area}
+ladder guy {area}
+=s
+ladder at {area}, one climbing
+he's on the ladder {area}
+one climbing at {area}!
+=m
+Climbing, {area}.
+One on the ladder, {area}.
+
+@enemy_in_water
+=e
+water {area}
+he's swimming {area}
+=a
+Swimmer at {area}.
+Enemy in the water at {area}.
+One wading at {area}.
+=l
+in the water {area}
+swimmer {area}
+=s
+swimmer at {area}
+in the water, {area}!
+he's swimming at {area}
+=m
+Water, {area}.
+One swimming at {area}.
+
+@enemy_lone
+=e
+solo guy {area}
+one alone {area} go
+=a
+Lone enemy at {area}.
+He's on his own at {area}.
+=l
+solo {area}
+he's by himself {area}
+=s
+one alone at {area}
+solo guy {area}, together
+=m
+Lone target, {area}.
+He's on his own, {area}.
+
+@nobody_coming
+=e
+{area} is dead
+no one {area}
+=a
+No pressure at {area}.
+Nobody has come to {area}.
+=l
+{area} empty all round
+nothing {area}
+=s
+{area} quiet, I can move
+nobody at {area}
+=m
+{area} is empty.
+Nothing on {area} all round.
+
+@rotating_self
+=e
+on my way {area}
+going {area} fast
+=a
+On my way to {area}.
+Shifting to {area}.
+=l
+going {area}
+on my way {area}
+=s
+coming to {area}!
+on my way {area}
+=m
+Moving to {area}.
+On my way, {area}.
+
+@arriving
+=e
+nearly there
+=a
+Almost with you.
+Seconds away.
+=l
+nearly
+here
+=s
+nearly there!
+I'm here
+=m
+Arriving.
+Almost set.
+
+@friendly_smoke_block
+=e
+smoke's in my face
+who smoked that
+=a
+That smoke blocks us.
+Our smoke. Can't see.
+=l
+our smoke
+smoke in the way
+blind here
+=s
+our smoke's in the way
+that smoke blocks me
+can't see through it
+=m
+Our smoke. No line.
+Smoke blocks the shot.
+
+@out_of_breath
+=e
+need a sec
+can't sprint
+=a
+Winded.
+No stamina left.
+Catching my breath.
+=l
+no stamina
+winded
+out of breath
+=s
+no stamina
+I'm winded
+need a second
+=m
+Out of breath.
+Can't hold steady. Winded.
+
+@stuck
+=e
+can't move
+stuck here
+=a
+I can't move.
+Stuck here.
+=l
+cant move
+im stuck
+=s
+I can't move!
+stuck, go without me
+=m
+Can't move.
+Stuck here.
+
+@weapon_choice_sniper
+=e
+got the sniper
+scope this round
+trying the sniper
+=a
+Taking the sniper.
+Scoped rifle this round.
+Sniper for me.
+=l
+sniper round
+sniping
+scope this time
+=s
+I'll snipe this round
+taking the sniper
+sniper for me
+=m
+Sniping.
+
+@weapon_choice_shotgun
+=e
+shotgun this time
+close range only lol
+=a
+Taking the shotgun.
+Shotgun this round.
+Shotgun for the tight spots.
+=l
+shotgun
+shotty round
+got the shotgun
+=s
+I've got the shotgun
+shotgun for me
+taking the shotgun
+=m
+Shotgun this round.
+Trying the shotgun.
+Close range today.
+
+@weapon_choice_mg
+=e
+mg this round
+big gun lets go
+=a
+Taking the MG.
+MG this round.
+Machine gun for me.
+=l
+mg round
+got the mg
+big gun
+=s
+MG for me
+taking the MG
+I'll bring the MG
+=m
+MG this round.
+Taking the MG.
+Heavy gun today.
+
+@respawned
+=e
+back in
+=a
+Respawned.
+I'm back.
+=l
+im back
+back in
+again
+=s
+back in!
+respawned
+=m
+Back up.
+Back in.
+
+@spawn_killed
+=e
+on spawn lol
+again on spawn
+=a
+Spawn's covered by them.
+Died on spawn.
+Careful at spawn.
+=l
+spawn kill
+on spawn
+spawn's watched
+=s
+spawn's being watched
+killed on spawn
+careful spawning
+=m
+On spawn.
+Died at spawn.
+They watch spawn.
+
+@lead_taken
+=e
+ahead now
+we're up
+=a
+We're in front.
+Lead taken.
+=l
+ahead
+in front
+we're up
+=s
+we lead!
+we're in front
+in front now, nice
+=m
+We lead.
+In front.
+
+@lead_lost
+=e
+behind now
+they're up
+=a
+They lead.
+We're behind.
+=l
+they lead
+lost the lead
+we're down
+=s
+we're behind now
+lost the lead
+they're in front
+=m
+They lead.
+We're behind.
+
+@humans_arguing
+=e
+forget it, play
+next one guys
+=a
+Leave it. Play.
+Forget it. Focus.
+=l
+next
+play
+relax
+=s
+let's just play, all good
+no stress guys
+=m
+Focus.
+Play the round.
+
+@human_tk_seen
+=e
+careful guys
+easy
+=a
+Mind your fire.
+Easy.
+Accidents happen.
+=l
+oops
+tk lol
+careful
+=s
+careful guys
+oops, it's ok
+accident, all good
+=m
+Careful.
+Mind the fire.
+Easy.
+
+@vote_kick_bot
+=e
+bye
+fine lol
+cya
+=a
+Bye.
+Leaving.
+Good luck.
+=l
+cya
+ok
+leaving
+=s
+bye!
+ok bye
+gl all
+=m
+Leaving.
+Understood.
+gl
+
+@late_join_round
+=e
+watching this one
+in next round
+joining next
+=a
+Next round.
+Joining next round.
+Watching this one.
+=l
+watching
+in next
+joining next
+=s
+next round!
+watching this round
+in from next
+=m
+In next round.
+Watching.
+Joining next.
+
+@carrier_needs_escort
+=e
+don't leave me with the bomb
+stay with me
+=a
+Carrier's alone.
+I'm carrying. Stay close.
+=l
+got it, alone
+need one with me
+carrying solo
+=s
+please stay with me
+carrier needs help
+=m
+I'm carrying alone.
+Need cover on the carrier.
+
+@bomb_site_empty
+=e
+nobody {area}, plant
+{area} is free
+=a
+{area} is empty.
+No one at {area}. Planting.
+Open site, {area}.
+=l
+{area} free
+nobody {area}
+free plant {area}
+=s
+{area} is free, planting
+nobody at {area}!
+open site {area}
+=m
+{area} empty.
+No defenders, {area}.
+
+@bomb_guard
+=e
+on the bomb {area}
+guarding it {area}
+bomb's watched {area}
+=a
+Bomb at {area} is covered.
+Holding the bomb, {area}.
+=l
+watching bomb {area}
+bomb {area}, hidden
+guarding {area}
+=s
+guarding the bomb {area}
+I've got the bomb covered
+bomb's watched, {area}
+=m
+Bomb, {area}. Watching.
+Scoped on the bomb.
+
+@heard_plant
+=e
+plant sound
+they're planting
+=a
+Planting. I can hear it.
+They're planting.
+=l
+plant sound
+planting {area}
+they plant
+=s
+plant sound!
+they're planting {area}
+planting, go!
+=m
+Hear the plant.
+Planting, {area}.
+
+@heard_defuse
+=e
+he's defusing
+defuse, go
+=a
+Defuse sound.
+They're defusing.
+He's on the bomb.
+=l
+defusing
+he's on it
+hear the defuse
+=s
+defuse sound!
+he's defusing
+on the bomb, go!
+=m
+He's defusing.
+Defuse, by ear.
+On the bomb.
+
+@smoke_fading
+=e
+smoke's almost gone
+go before it clears
+=a
+Smoke won't last.
+Smoke's clearing.
+=l
+smoke going
+smoke's clearing
+almost gone
+=s
+smoke's going away
+smoke's nearly gone
+move, smoke's clearing
+=m
+Smoke's clearing.
+Line opens soon.
+
+@second_smoke
+=e
+smoke again
+re-smoke
+one more smoke
+=a
+Another smoke out.
+Re-smoking.
+Smoke again, {area}.
+=l
+second smoke
+re-smoke
+another smoke
+=s
+re-smoking
+another smoke!
+=m
+Another smoke.
+Smoke again.
+
+@nade_missed
+=e
+nade did nothing
+missed the nade
+=a
+Bad throw.
+Nade did nothing.
+Wasted grenade.
+=l
+missed
+wasted nade
+nade whiff
+=s
+nade missed
+that did nothing
+wasted it, sorry
+=m
+Missed the throw.
+No effect.
+
+@enemy_flash_dodged
+=e
+flash missed
+I can see
+=a
+Dodged the flash.
+Not blind.
+I can see.
+=l
+not blind
+flash missed
+can see
+=s
+dodged it!
+flash missed me
+I can see
+=m
+Flash missed.
+Not blind.

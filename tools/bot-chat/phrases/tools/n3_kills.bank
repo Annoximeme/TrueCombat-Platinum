@@ -1,0 +1,534 @@
+# New situations, pass 2: kills, deaths, misses and mood.
+
+@kill_knife | action | all | 20 | | {enemy} | Bot got a knife kill.
+=e
+knifed
+stabbed him lol
+knife!
+got the knife
+sorry {enemy} lol
+=a
+Knife.
+Knife kill.
+=l
+knifed him
+shh
+knife lol
+never heard me
+he was afk?
+=s
+knife kill!
+oops, knife
+=m
+Knife. Close enough.
+Unusual range for me.
+
+@kill_grenade | action | team | 15 | | {area} | Bot's grenade killed someone.
+=e
+nade kill
+boom
+nade got him
+cooked that one
+=a
+Grenade kill.
+Nade got one.
+Frag got him at {area}.
+=l
+nade got him
+boom lol
+=s
+nade got one!
+frag kill {area}
+=m
+Grenade kill.
+Good bounce.
+
+@kill_pistol | action | team | 15 | | | Bot got a kill with its sidearm.
+=e
+pistol!
+pistol kill lol
+with the pistol
+=a
+Sidearm did it.
+Pistol kill.
+=l
+pistol lol
+=s
+got him with the pistol!
+=m
+Sidearm. Still counts.
+Pistol.
+
+@kill_long | action | team | 15 | | {area} | Kill at long range.
+=e
+long shot
+across the map lol
+far one
+=a
+Long shot. Got him.
+Got him at range, {area}.
+=l
+long one
+=s
+long shot, got him!
+got him from far
+=m
+Long shot. Down.
+That's my range.
+Got him across {area}.
+Distance kill.
+Clean, long.
+Got him at the far end of {area}.
+
+@kill_wallbang | action | team | 20 | | | Kill through a wall or cover.
+=e
+wallbang
+through the wall lol
+=a
+Got him through the wall.
+=l
+wallbang lol
+=s
+got him through the wall!
+=m
+Through cover.
+Wall didn't help him.
+
+@kill_through_smoke | action | team | 20 | | | Kill through smoke.
+=e
+through smoke lol
+sprayed him in the smoke
+=a
+Got one in the smoke.
+=l
+smoke kill
+lucky
+=s
+got one through the smoke!
+=m
+Through smoke. Heard him.
+Got him in the smoke.
+
+@kill_low_hp | action | team | 20 | | | Bot won a fight while almost dead.
+=e
+1hp lol
+barely
+how am I alive
+=a
+Close one. I'm very low.
+Got him. Barely.
+=l
+1hp
+close
+=s
+phew, got him, I'm one shot
+close one!
+=m
+Got him. One hit left.
+Narrow.
+
+@kill_last | action | team | 0 | | | Bot killed the last enemy and won the round.
+=e
+last one down
+that's all of them
+done ez
+=a
+Last one down.
+That's the round.
+All down.
+=l
+last one
+done
+=s
+got the last one!
+that's all of them
+=m
+Last one.
+Round over.
+
+@kill_carrier | objective | team | 0 | | {area} | Bomb modes: bot killed the enemy bomb carrier. (Flag carrier: kill_flag_carrier.)
+=e
+carrier down
+got the carrier
+bomb guy dead {area}
+=a
+Carrier down.
+Carrier's down at {area}.
+Bomb is on the ground, {area}.
+=l
+carrier down
+bomb's on the floor {area}
+=s
+carrier down!
+got the carrier, bomb's at {area}
+=m
+Carrier down.
+Dropped the carrier, {area}.
+
+@kill_defuser | objective | team | 0 | | | Bot killed someone on the bomb.
+=e
+defuser down
+got him on the bomb
+no defuse for you
+=a
+Defuser down.
+Got the defuser.
+=l
+defuser down
+he was on it
+=s
+got the defuser!
+defuser down, hold it
+=m
+Defuser down.
+He stayed on it too long.
+
+@kill_sniper | action | team | 15 | | {area} | Bot killed the enemy sniper.
+=e
+sniper down
+got their sniper
+no more scope
+=a
+Sniper's down.
+Their sniper is down, {area}.
+=l
+sniper down
+got the scope
+=s
+sniper's down, you can cross
+got their sniper!
+=m
+Sniper down.
+Won the duel.
+Their scope is gone. Lines are open.
+Counter sniped.
+
+@kill_flanker | action | team | 15 | | {area} | Bot caught an enemy flanking.
+=e
+got the flanker
+flank dead
+caught him
+=a
+Flank is dealt with.
+Got the flanker at {area}.
+Back is clear.
+=l
+got their lurker
+caught him sneaking
+=s
+got the flanker!
+flank's clear now
+=m
+Flanker down.
+Rear's clear.
+
+@missed_shot | action | team | 30 | | | Bot whiffed an easy kill.
+=e
+how did I miss
+whiffed
+my aim lol
+missed everything
+=a
+Missed.
+Should've had him.
+=l
+missed
+whiff
+lol my aim
+=s
+missed him, sorry
+ugh, missed
+=m
+Missed. My fault.
+Pulled the shot.
+Should not miss that.
+Missed. Recentering.
+
+@missed_scope | action | team | 30 | | | Marksman-style miss with a bolt action.
+=e
+missed the snipe
+=a
+Missed the shot.
+=l
+missed
+=s
+missed, he's still there
+=m
+Missed. Cycling.
+High. Adjusting.
+Missed by a hair.
+Bad shot. Resetting.
+He moved on the trigger.
+
+@assist | action | team | 20 | {name} | | Teammate finished someone the bot damaged.
+=e
+nice {name}
+thanks for the finish
+my kill lol
+=a
+Good finish, {name}.
+Thanks, {name}.
+=l
+ty {name}
+=s
+nice finish {name}!
+thanks {name}
+teamwork
+=m
+Good finish.
+Thanks, {name}.
+
+@kill_stolen | action | team | 40 | {name} | | Friendly banter: a teammate took the bot's kill.
+=e
+that was mine {name}
+kill thief lol
+hey {name} mine
+=a
+I'll take the assist.
+=l
+mine lol
+=s
+haha take it {name}
+all yours {name}
+=m
+I softened him up, {name}.
+
+@saved_by_teammate | action | team | 20 | {name} | | A teammate killed someone about to kill the bot.
+=e
+thanks {name}
+ty {name}
+saved me lol
+=a
+Thanks, {name}.
+Good save, {name}.
+=l
+ty
+ty {name}
+=s
+thank you {name}!
+you saved me {name}
+thanks!!
+=m
+Thanks, {name}.
+Owe you one, {name}.
+
+@saved_teammate | action | team | 20 | {name} | | Bot killed someone about to kill a teammate.
+=e
+got you {name}
+you're welcome {name} lol
+=a
+I've got you, {name}.
+You're clear, {name}.
+=l
+got him off you
+=s
+got him {name}, you ok?
+got you {name}!
+=m
+You're clear, {name}.
+Covered.
+
+@died_first | damage | team | 0 | | {area} | Bot was the first to die this round.
+=e
+sorry, too fast
+my bad, rushed it
+dead first again lol
+=a
+Sorry. Caught early.
+Down early. {area}.
+=l
+caught
+they were waiting {area}
+=s
+sorry guys, died early
+they're waiting at {area}, careful
+=m
+Picked. Sniper somewhere on {area}.
+Down early. Sorry.
+
+@died_to_grenade | damage | team | 0 | | | Bot died to a grenade.
+=e
+nade lol
+that nade
+=a
+Grenade got me.
+=l
+nade
+lol nade
+=s
+nade got me, watch it
+=m
+Grenade. Didn't hear it.
+
+@died_to_sniper | damage | team | 0 | | {area} | Bot died to a sniper.
+=e
+sniper {area}
+that scope again
+=a
+Sniper got me. {area}.
+Sniper's watching {area}.
+=l
+sniper {area}
+=s
+sniper got me from {area}, careful
+=m
+He won the duel. {area}.
+Sniper, {area}. Good shot.
+
+@died_from_behind | damage | team | 0 | | {area} | Bot was shot in the back.
+=e
+behind me
+from behind, {area}
+he was behind
+=a
+Shot from behind. {area}.
+He's behind us.
+=l
+got flanked lol
+behind {area}
+=s
+he's behind you guys!
+from behind, {area}, turn!
+=m
+From behind. {area}.
+Flanked.
+
+@died_in_duel | damage | team | 0 | | {area} | Bot lost a straight fight.
+=e
+lost the duel
+he's good
+he's low at least
+=a
+Lost the fight. He's at {area}.
+=l
+lost it
+=s
+lost the fight, he's at {area}
+=m
+Lost that one. {area}.
+Outshot.
+
+@died_reloading | damage | team | 0 | | | Bot died while reloading.
+=e
+reloading lol
+why did I reload
+=a
+Caught reloading.
+=l
+reload lol
+=s
+died reloading, oops
+=m
+Bad reload timing.
+
+@died_to_teamkill | damage | team | 0 | | {name} | A teammate killed the bot.
+=e
+{name}...
+thanks {name} lol
+really
+=a
+That was me, {name}.
+=l
+lol {name}
+bruh
+=s
+it's ok {name}
+oops, friendly
+=m
+Check your targets, {name}.
+
+@teamkilled_someone | damage | team | 0 | | {name} | Bot killed a teammate by accident.
+=e
+sorry {name}!!
+omg sorry
+my bad my bad
+=a
+Sorry, {name}. My mistake.
+My fault entirely. Sorry.
+=l
+sorry {name}
+oops sorry
+=s
+so sorry {name}!!
+I'm so sorry, didn't see you
+=m
+Sorry, {name}. Bad shot.
+My error. Sorry.
+
+@nade_own_team | damage | team | 30 | | | Bot's grenade landed near teammates.
+=e
+move, my nade
+oops nade
+=a
+My grenade. Move.
+=l
+my nade, move
+=s
+careful, my nade!
+sorry, move!
+=m
+Bad throw. Move.
+
+@on_fire | round | team | 60 | | | Bot is on a kill streak; confident mood.
+=e
+I'm on fire
+can't stop me
+feeling it today
+they can't touch me
+=a
+Good rhythm.
+=l
+easy today
+=s
+going well!
+=m
+Zeroed in.
+Good day.
+
+@cold_streak | round | team | 90 | | | Bot keeps dying; self-deprecating.
+=e
+my aim today
+I'm so bad today
+warming up still
+=a
+Not my round.
+I need to slow down.
+=l
+bad day
+=s
+sorry guys, bad game from me
+I'll do better
+=m
+Off today.
+Hands are cold.
+
+@revenge | action | all | 30 | | {enemy} | Bot killed the player who killed it last round.
+=e
+payback
+got you back {enemy}
+that's for last round
+=a
+Even now.
+=l
+payback
+=s
+got him back!
+=m
+Even.
+Returned the favour, {enemy}.
+
+@dominated_by | round | all | 120 | {enemy} | | The same human keeps killing the bot. Respectful.
+=e
+{enemy} stop
+ok {enemy} is good
+{enemy} again lol
+=a
+You're playing well, {enemy}.
+=l
+{enemy} again
+=s
+{enemy} is too good
+nice shots {enemy}
+=m
+Respect, {enemy}.
+{enemy} reads me.

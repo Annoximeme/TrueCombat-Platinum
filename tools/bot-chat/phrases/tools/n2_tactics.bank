@@ -1,0 +1,730 @@
+# New situations, pass 2: teamwork, timing and the bot's own tactics.
+
+@execute_ready | action | team | 15 | | {area} | Bot is at the gather point, waiting for the go.
+=e
+ready
+I'm ready go
+ready {area}
+waiting on you
+come on I'm ready
+set
+=a
+Ready.
+In position.
+Ready at {area}.
+Set. On your call.
+=l
+ready
+in position
+set {area}
+=s
+ready!
+I'm ready at {area}
+ready when you are
+utility ready
+=m
+Ready.
+Set at {area}.
+Scoped. Ready.
+In position, covering.
+
+@execute_wait | action | team | 15 | | | Bot asks the team to wait (teammates not in position, utility not out).
+=e
+wait
+wait for me
+hold up
+one sec
+=a
+Wait.
+Hold. Not yet.
+Wait for everyone.
+Hold the push.
+=l
+wait
+not yet
+5 sec
+=s
+wait for me!
+hold on, smoke first
+wait, not ready
+one sec guys
+=m
+Wait.
+Hold. Not set.
+Give me five seconds.
+
+@execute_go | action | team | 0 | | {area} | The synchronised push starts.
+=e
+go go go
+go
+now!
+in in in
+go {area}
+lets go now
+hit it
+=a
+Go.
+Go now.
+Move.
+Execute.
+Go {area}.
+=l
+go
+now
+going
+=s
+go go!
+now, together!
+go, I'm behind you
+all in, go
+=m
+Go.
+Now.
+Go. I've got the long line.
+
+@entry_going | action | team | 10 | | {area} | Bot is the first through a door or chokepoint.
+=e
+going in
+I'm first
+entry, follow me
+in {area}
+swinging
+peeking now
+I go, trade me
+first in
+=a
+Going in.
+I'll go first.
+Entering {area}.
+=l
+going in
+im in
+=s
+I'll go first, trade me
+going in, follow
+entering {area}
+=m
+Going in. Not my job, but fine.
+Entering.
+
+@trade_ready | action | team | 12 | {name} | | Bot is right behind a teammate ready to trade.
+=e
+behind you {name}
+I'll trade you {name}
+go {name}, I'm there
+=a
+Right behind you, {name}.
+I'll trade, {name}.
+Go, {name}. I have you.
+=l
+behind you
+I trade
+=s
+I'm behind you {name}!
+go {name}, I'll trade
+right with you {name}
+got your back {name}
+=m
+Covering you, {name}.
+Go. I have the angle.
+
+@traded | action | team | 6 | {name} | {enemy} | Bot killed the enemy who just killed a teammate.
+=e
+traded {name}
+got him for {name}
+traded
+revenge lol
+=a
+Traded {name}.
+Got the trade.
+Trade done.
+=l
+traded
+got the guy who got {name}
+=s
+traded for {name}!
+got him back for you {name}
+traded!
+=m
+Traded.
+Trade. Even.
+Got the one who got {name}.
+
+@covering | action | team | 12 | | {name} {area} | Bot is covering a teammate or an angle so others can move.
+=e
+covering
+I got you
+go I cover
+=a
+Covering.
+Covering you, {name}.
+I'm covering {area}. Move.
+Go, I've got it.
+=l
+covering
+got the back
+=s
+covering you!
+I got you {name}, go
+covering {area}, cross
+go, I'm watching
+=m
+Covering.
+Covering {area}. Cross.
+I have the angle. Move.
+Go. Long is mine.
+
+@crossing | action | team | 12 | | {area} | Bot is about to cross an open line.
+=e
+crossing
+crossing {area}
+going across
+jumping across
+=a
+Crossing.
+Crossing {area}. Cover.
+Moving across.
+=l
+crossing
+crossing quiet
+=s
+crossing, cover me
+crossing {area}!
+=m
+Crossing.
+Crossing. Watch the line.
+
+@peeking | action | team | 10 | | {area} | Bot is about to peek a held angle.
+=e
+peeking
+swinging
+peeking {area}
+jiggling him
+wide peek
+=a
+Peeking.
+Peeking {area}.
+Shoulder peek.
+=l
+peeking
+quick peek
+=s
+peeking, be ready
+peeking {area}
+=m
+Peeking.
+Peeking {area}. One shot.
+
+@watching_back | action | team | 25 | | {area} | Bot watches the flank or rear.
+=e
+I got flank
+watching back
+=a
+Watching our back.
+I've got the flank.
+Rear is covered.
+Watching flank at {area}.
+I'll hold the back. Go.
+=l
+watching flank
+I got back
+on flank {area}
+=s
+I'll watch the flank
+watching our back
+got flank, go ahead
+=m
+Watching the back.
+Flank's covered.
+I have the rear line.
+
+@post_plant_pos | objective | team | 0 | {area} | | Bot says where it holds after the plant.
+=e
+I'm {area}
+playing {area}
+watching bomb from {area}
+=a
+Holding from {area}.
+I'm at {area}, watching the bomb.
+Post-plant, {area}.
+I have the bomb from {area}.
+=l
+im {area}
+hiding {area}
+off site, {area}
+=s
+I'm {area}, call if they tap
+holding from {area}
+watching bomb from {area}
+=m
+On the bomb from {area}.
+{area}. Line on the bomb.
+Watching the defuse from {area}.
+
+@play_time | objective | team | 30 | | | Bot's team is ahead on the clock and should not peek.
+=e
+play time
+don't peek
+ok ok slow
+=a
+Play time.
+Don't peek. Clock's ours.
+Time is on our side. Hold.
+Let them come.
+=l
+play time
+let them come
+=s
+play time guys
+don't peek, let them come
+time's on our side
+=m
+Play time.
+Clock's ours. Hold.
+No peeks. Let them walk in.
+
+@save_call | objective | team | 0 | | | Bomb modes: the bomb can no longer be defused in time; bot tells the team to get clear instead of dying to it.
+=e
+no point
+it's lost
+=a
+Round's gone. Stay alive.
+No time. Leave it.
+Can't defuse. Get out.
+=l
+its gone
+leave it
+no time
+=s
+no time, get out
+it's lost, stay alive
+don't go, no time
+=m
+No time. Leave it.
+Lost. Get clear.
+
+@bomb_ticking | objective | team | 20 | | | Bomb timer is nearly out.
+=e
+hurry
+no time go
+it's about to blow
+=a
+Bomb's about to go.
+Seconds left.
+=l
+hurry
+seconds left
+=s
+hurry, bomb!
+it's about to blow!
+=m
+Seconds.
+It's close.
+
+@need_defuser_cover | objective | team | 0 | | | Bot wants to defuse and needs cover first.
+=e
+I'll defuse cover me
+cover I'm going bomb
+=a
+I'll defuse. Cover me.
+Cover the bomb, I'm going on it.
+=l
+I'll defuse
+cover
+=s
+I'll defuse, cover me please
+someone cover, I'm defusing
+=m
+I'll defuse. Watch my back.
+Cover. Going on the bomb.
+
+@who_defuses | objective | team | 0 | {name} | | Bot tells a teammate to defuse while it covers.
+=e
+{name} defuse I cover
+defuse {name}
+=a
+{name}, defuse. I'll cover.
+Get on it, {name}.
+=l
+{name} defuse
+=s
+{name} defuse, I've got you
+go on it {name}, I cover
+=m
+{name}, defuse. I have the angle.
+
+@bomb_take_offer | objective | team | 0 | | | Bot offers to pick up or carry the bomb.
+=e
+I'll get it
+I take bomb
+=a
+I'll take the bomb.
+I'll get it.
+=l
+I'll grab it
+=s
+I'll grab the bomb
+I can carry it
+=m
+I'll take it.
+
+@bomb_site_choice | objective | team | 0 | {area} | | Carrier announces which site.
+=e
+going {area} with bomb
+bomb {area}
+planting {area}
+=a
+Bomb is going {area}.
+Taking the bomb to {area}.
+=l
+bomb going {area}
+=s
+bringing the bomb {area}
+bomb's going {area}, come
+=m
+Bomb to {area}.
+
+@flag_carrier_escort | objective | team | 15 | {name} | | Bot escorts a teammate with the flag.
+=e
+with you {name}
+run {name} I got you
+=a
+Escorting you, {name}.
+Go, {name}. I'm behind you.
+=l
+covering {name}
+=s
+I'm with you {name}!
+run {name}, I've got your back
+=m
+Covering your run, {name}.
+
+@flag_returned | objective | team | 0 | | | Our flag was returned.
+=e
+flag back
+got it back
+=a
+Flag's back.
+Flag returned.
+=l
+flag back
+=s
+flag's back!
+got our flag back
+=m
+Flag returned.
+
+@flag_dropped | objective | team | 8 | | {area} | A flag is on the ground.
+=e
+flag dropped {area}
+flag on the floor
+=a
+Flag's on the ground, {area}.
+Flag dropped.
+=l
+flag dropped
+flag {area}
+=s
+flag dropped at {area}!
+grab the flag
+=m
+Flag down, {area}.
+
+@point_capturing | objective | team | 20 | | {area} | Point Capture mode: bot is on the point.
+=e
+on the point
+capping
+I'm on it
+=a
+On the point.
+Capturing.
+Holding the point.
+=l
+capping
+on point
+=s
+I'm on the point!
+capping, cover me
+=m
+On the point.
+Capturing. Cover.
+
+@point_contested | objective | team | 15 | | {count} | Enemies are contesting or taking the point.
+=e
+they're on the point
+get on the point
+point!
+=a
+They're on the point.
+Point's contested.
+{count} on the point.
+=l
+theyre on point
+point's taken
+=s
+they're on the point, go!
+everyone on the point
+{count} on the point!
+=m
+Point's contested.
+{count} on the point. Shooting.
+
+@low_ammo | action | team | 30 | | | Bot is low on ammunition.
+=e
+low ammo
+last mag
+almost out
+=a
+Low ammo.
+Last magazine.
+Running low.
+=l
+low ammo
+last mag
+=s
+low on ammo
+last mag guys
+=m
+Low ammo.
+Few rounds left.
+
+@out_of_ammo | action | team | 30 | | | Bot's primary is empty; switching to sidearm.
+=e
+out, pistol
+I'm empty
+pistol time lol
+=a
+Out of ammo. On my sidearm.
+Empty. Pistol.
+=l
+empty
+pistol only
+=s
+I'm out, pistol only
+empty, cover me
+=m
+Empty. Sidearm.
+Out. Pistol.
+
+@weapon_pickup | action | team | 30 | | | Bot picked up a dropped weapon.
+=e
+new gun
+took his gun
+=a
+Picked up a weapon.
+=l
+got a gun
+thanks for the gun lol
+=s
+grabbed a gun
+=m
+Picked up a rifle.
+New weapon.
+
+@no_utility | action | team | 30 | | | Bot has no grenades left for what's needed.
+=e
+no nades
+I'm out of nades
+=a
+No grenades left.
+I'm out of utility.
+=l
+no nades
+=s
+I'm out of smokes
+no nades left, sorry
+=m
+No utility.
+Nothing left to throw.
+
+@ask_smoke | action | team | 20 | {area} | | Bot asks a teammate to smoke an area.
+=e
+smoke {area}
+someone smoke {area}
+=a
+Smoke {area}, please.
+Need smoke on {area}.
+=l
+smoke {area}?
+=s
+can someone smoke {area}?
+need a smoke {area}
+=m
+Smoke {area}. I can't cross.
+Need smoke, {area}.
+
+@ask_flash | action | team | 20 | | {area} | Bot asks for a flash before peeking.
+=e
+flash me
+flash me in
+flash {area} I go
+=a
+Flash for me.
+Flash {area}, then I move.
+=l
+flash?
+=s
+anyone have a flash?
+flash {area} please
+=m
+Flash him for me.
+Flash, then I peek.
+
+@going_quiet | action | team | 30 | | | Bot starts sneaking (walking, crouching).
+=e
+ok quiet
+walking
+=a
+Going quiet.
+Walk from here.
+=l
+quiet now
+walk
+shh
+no running
+=s
+walking now, quiet
+let's go quiet
+=m
+Quiet.
+Walk.
+
+@door_open | action | team | 30 | | {area} | Bot is about to open a door (noise warning).
+=e
+opening
+door
+=a
+Opening the door.
+Door, {area}.
+=l
+door
+opening quiet
+=s
+opening the door, ready?
+door, careful
+=m
+Door.
+Opening.
+
+@ladder | action | team | 40 | | | Bot is climbing; exposed for a moment.
+=e
+going up
+ladder
+=a
+On the ladder. Cover.
+=l
+climbing
+=s
+on the ladder, cover me
+=m
+Going up for the angle.
+Climbing.
+
+@blocked_by_teammate | action | team | 20 | | {name} | A teammate is blocking the bot's path or line of fire.
+=e
+move
+move {name}
+out the way
+=a
+Move, please.
+You're in my line, {name}.
+=l
+move
+=s
+excuse me {name}
+you're in my way, sorry
+=m
+You're in my line.
+Clear the angle, {name}.
+
+@in_the_way_sorry | action | team | 20 | | | Bot was blocking a teammate.
+=e
+sry
+moving
+=a
+Sorry. Moving.
+=l
+sry
+=s
+sorry, moving!
+oops, my bad
+=m
+Moving.
+Sorry.
+
+@stay_together | action | team | 40 | | | Bot suggests grouping up.
+=e
+with me
+come with me
+=a
+Stay together.
+Group up.
+Nobody goes alone.
+=l
+group up I guess
+=s
+let's stay together
+stick with me
+group up guys
+=m
+Stay grouped.
+Keep spacing but stay close.
+
+@spread_out | action | team | 40 | | | Team is clumped; grenade risk.
+=e
+spread
+not all one spot
+=a
+Spread out.
+Too close together. Spread.
+=l
+spread
+=s
+spread out a bit
+don't bunch up, nades
+=m
+Spread out.
+One grenade gets us all. Spread.
+
+@quiet_round | action | team | 45 | | | Long silence, no contact so far.
+=e
+where are they
+boring
+come on where
+they're hiding?
+=a
+Quiet.
+No contact yet.
+Too quiet.
+=l
+quiet
+too quiet
+nobody anywhere
+=s
+anyone see anything?
+nothing yet
+it's quiet
+=m
+Nothing.
+No movement.
+Quiet. They're slow this round.
+
+@ask_info | action | team | 30 | | {area} | Bot asks teammates what they saw.
+=e
+where
+where are they
+anyone?
+=a
+Any info?
+What do you see at {area}?
+Report.
+=l
+info?
+where
+=s
+anyone see them?
+where did he go?
+how many {area}?
+=m
+Info?
+Positions?

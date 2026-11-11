@@ -1,0 +1,604 @@
+# New situations, pass 2: what the enemy is doing.
+# Header: @key | group | channel | cooldown | always | maybe | description
+# Blocks: =e entry, =a anchor, =l lurker, =s support, =m marksman
+
+@enemy_behind | contact | team | 8 | | {area} | An enemy appeared behind the team (flank detected).
+=e
+behind us
+behind!
+flank, behind
+they're behind us {area}
+one behind, turning
+behind behind
+he's in our back
+flank {area}, I got him
+=a
+Behind us.
+Flank, behind us.
+One behind, {area}.
+They're in our back, {area}.
+Watch the back.
+Contact rear.
+Flank coming from {area}.
+Turn around, behind.
+=l
+behind us
+flank {area}
+someone's behind you guys
+one in your back
+they sent a lurker {area}
+behind, careful
+=s
+behind us!
+flank, turn around!
+one behind you guys
+careful, behind, {area}
+they're flanking {area}
+watch the back!
+behind, I'll cover it
+=m
+Behind us.
+Flank, {area}.
+One in our back.
+Rear, {area}.
+Flanker at {area}.
+Check behind.
+
+@enemy_above | contact | team | 10 | {area} | | Enemy is on a roof, balcony, window or upper floor.
+=e
+up top {area}
+one above {area}
+he's on the roof {area}
+window {area}
+upstairs {area}
+look up {area}
+top {area} one
+=a
+One up high, {area}.
+Above us, {area}.
+Upper floor, {area}.
+Window at {area}.
+One on top of {area}.
+Watch the high ground, {area}.
+=l
+one up top {area}
+window {area}
+he's above {area}
+roof {area} btw
+upstairs {area}
+=s
+look up, {area}!
+one above at {area}
+window {area}, careful
+he's upstairs {area}
+high ground {area}, watch it
+one on top {area}
+=m
+High, {area}.
+Window, {area}.
+One elevated at {area}.
+Roof line, {area}.
+Upper window {area}, mine.
+He's up top, {area}.
+
+@enemy_below | contact | team | 10 | {area} | | Enemy is under the bot (lower floor, pit, stairs).
+=e
+below {area}
+he's under us {area}
+downstairs {area}
+one down low {area}
+bottom {area}
+=a
+One below, {area}.
+Lower level, {area}.
+Under us at {area}.
+Downstairs, {area}.
+=l
+one below {area}
+downstairs {area}
+he's under me {area}
+=s
+one below at {area}
+downstairs {area}, careful
+he's under us, {area}
+=m
+Below, {area}.
+Low, {area}.
+One beneath, {area}.
+Lower floor, {area}.
+
+@enemy_prone | contact | team | 12 | {area} | | Enemy lying prone, easy to miss.
+=e
+prone guy {area}
+he's lying down {area}
+one on the floor {area}
+prone {area} lol
+=a
+One prone at {area}.
+He's lying down, {area}.
+Prone, {area}. Look low.
+=l
+one prone {area}
+lying in {area}
+prone {area} sneaky
+=s
+careful, prone at {area}
+one lying down {area}
+look low at {area}
+=m
+Prone, {area}.
+One on the ground, {area}.
+Low profile at {area}.
+He's flat at {area}.
+
+@enemy_camping | contact | team | 20 | {area} | | Enemy has been holding the same spot for a long time.
+=e
+camper {area}
+he's still {area}
+same guy {area} again
+he's camping {area}, nade him
+he never leaves {area}
+=a
+He's still holding {area}.
+Same spot, {area}.
+He hasn't moved from {area}.
+Someone's dug in at {area}.
+=l
+he's still {area}
+camper {area}
+same corner {area}
+he lives in {area} lol
+=s
+he's still at {area}, careful
+same spot again, {area}
+someone's camping {area}
+nade {area}, he's still there
+=m
+Still at {area}.
+He's static at {area}.
+Same position, {area}.
+He hasn't moved. {area}.
+
+@enemy_pushing | contact | team | 8 | {area} | {count} | Enemies are actively rushing an area.
+=e
+they're pushing {area}
+rush {area}
+they're coming {area} fight
+push {area}!
+they rush {area}
+all in {area}
+=a
+They're pushing {area}.
+Push coming through {area}.
+Rush at {area}. Hold.
+They're committing to {area}.
+Full push {area}.
+{count} rushing {area}.
+=l
+they're pushing {area}
+rush {area}
+full push {area} btw
+theyre all in {area}
+=s
+they're pushing {area}!
+rush at {area}, help!
+push {area}, everyone here
+they're coming {area}, hold together
+{count} rushing {area}!
+=m
+Push, {area}.
+They're rushing {area}.
+Full commit at {area}.
+Rush through {area}.
+
+@enemy_fake | contact | team | 20 | {area} | | The bot believes the noise at an area is a fake.
+=e
+fake {area}
+it's a fake
+they're faking {area}
+fake, don't rotate
+=a
+That's a fake at {area}.
+Fake. Stay in position.
+Don't rotate, {area} is a fake.
+Looks like a fake, {area}.
+=l
+fake {area}
+its a fake
+just one making noise {area}
+fake, only one there
+=s
+fake at {area}, stay!
+don't rotate, fake
+I think {area} is a fake
+only utility at {area}, fake
+=m
+Fake, {area}.
+Noise only at {area}.
+Fake. Hold.
+No bodies at {area}. Fake.
+
+@enemy_saving | contact | team | 30 | | {area} | Remaining enemies are hiding to run the clock.
+=e
+they're hiding
+he's hiding somewhere
+find him
+he's playing time
+come out lol
+=a
+They're playing for time.
+He's hiding. Check corners.
+They're running the clock.
+He's hiding near {area}.
+=l
+he's hiding
+hiding {area} maybe
+he's playing time
+=s
+he's hiding, check together
+they're playing time
+check {area}, he's hiding
+=m
+He's hiding.
+Playing the clock.
+Hiding near {area}.
+
+@enemy_in_spawn | contact | team | 15 | | | Enemy reached the bot team's spawn.
+=e
+they're in our spawn
+one in spawn
+spawn!
+=a
+Enemy in our spawn.
+One in spawn.
+They're in our spawn. Turn.
+=l
+one in our spawn
+spawn btw
+=s
+one in our spawn!
+they're in spawn, careful
+watch spawn!
+=m
+One in our spawn.
+Spawn. Behind.
+
+@enemy_spawn_reached | action | team | 30 | | | Bot reached the enemy spawn area.
+=e
+in their spawn
+their spawn lol
+behind them all
+=a
+I'm in their spawn.
+Behind their lines.
+=l
+in their spawn
+behind them now
+their spawn's empty
+im in their spawn lol
+they left spawn open
+=s
+I'm in their spawn
+behind them, push now
+=m
+In their spawn.
+Behind them. New angle.
+
+@enemy_bomb_carrier | objective | team | 10 | {area} | | Bot spots the enemy carrying the bomb.
+=e
+bomb {area}
+carrier {area}
+bomb guy {area}
+he has the bomb {area}
+kill the carrier {area}
+=a
+Bomb carrier at {area}.
+Bomb's at {area}.
+Carrier, {area}.
+The bomb is going {area}.
+=l
+bomb {area}
+carrier {area}
+bomb's going {area}
+=s
+bomb carrier at {area}!
+bomb {area}, rotate
+he has the bomb, {area}
+=m
+Carrier, {area}.
+Bomb at {area}.
+Bomb's on him, {area}.
+
+@enemy_planting | objective | team | 0 | | {area} | Enemy is planting right now.
+=e
+he's planting
+planting {area} go
+he's on the plant
+stop the plant
+=a
+He's planting.
+Planting at {area}.
+They're planting. Push now.
+=l
+he's planting
+planting {area}
+=s
+he's planting, go!
+planting {area}, stop him
+they're planting!
+=m
+Planting.
+He's planting, {area}.
+On the plant. Taking the shot.
+
+@enemy_defusing | objective | team | 0 | | | Enemy is on the bomb defusing.
+=e
+he's defusing
+on the bomb!
+defuser, kill him
+he's on it go
+=a
+He's defusing.
+Someone's on the bomb.
+Defuser on the bomb. Peek now.
+=l
+he's defusing
+he's on the bomb
+tapping it maybe
+=s
+he's defusing!
+on the bomb, peek!
+he's on it, go go
+=m
+Defusing.
+He's on the bomb.
+Defuser. Shooting.
+
+@enemy_defuse_fake | objective | team | 0 | | | Enemy tapped the bomb and got off (fake defuse).
+=e
+fake defuse
+he's faking
+he tapped it
+=a
+Fake defuse. Hold.
+He tapped. Don't peek.
+=l
+fake
+he tapped it
+=s
+fake defuse, wait!
+he's faking, don't peek
+=m
+Fake. Hold.
+Tap. Wait for the real one.
+
+@enemy_flag_carrier | objective | team | 8 | {area} | | Bot sees the enemy carrying our flag.
+=e
+flag {area}
+carrier {area} get him
+flag guy {area}
+he's running {area}
+=a
+Flag carrier at {area}.
+Carrier going through {area}.
+Our flag is at {area}.
+=l
+flag {area}
+carrier {area}
+=s
+flag carrier {area}!
+he's at {area} with our flag
+stop him, {area}
+=m
+Carrier, {area}.
+Flag at {area}. Tracking.
+
+@enemy_grenade_seen | contact | team | 15 | {area} | | Enemy used a frag or flash at an area (info, not danger).
+=e
+nades {area}
+they're nading {area}
+flash {area}
+=a
+Grenades at {area}.
+They're using utility at {area}.
+Flash at {area}.
+=l
+nades {area}
+utility {area}
+=s
+they're nading {area}, careful
+flash at {area}
+=m
+Utility at {area}.
+Nades, {area}.
+
+@enemy_through_smoke | contact | team | 10 | {area} | | Enemies are coming through smoke.
+=e
+through smoke {area}
+they're in the smoke
+coming through {area}
+spray the smoke
+=a
+They're coming through the smoke.
+In the smoke at {area}.
+Through smoke, {area}.
+=l
+in the smoke {area}
+crossing in smoke
+=s
+they're in the smoke!
+through the smoke at {area}
+=m
+In the smoke, {area}.
+Crossing in smoke.
+Movement in the smoke.
+
+@contact_close | contact | team | 6 | | {area} | Enemy is very close (same room, around the corner).
+=e
+close
+he's right here
+close close
+right corner
+he's on me
+close {area}
+=a
+Close.
+He's close. Very close.
+Right around the corner.
+Close contact, {area}.
+=l
+close
+right here
+next to me lol
+=s
+close, careful!
+he's right there
+very close, {area}
+=m
+Close.
+Too close. Backing up.
+He's on top of me.
+Close, {area}.
+
+@contact_far | contact | team | 10 | {area} | | Enemy seen at long range.
+=e
+far {area}
+one long {area}
+way back {area}
+=a
+Long range, {area}.
+One far out at {area}.
+Distance, {area}.
+=l
+one far {area}
+long {area}
+=s
+one far away at {area}
+long range {area}
+=m
+Long, {area}.
+One at range, {area}. Mine.
+Far side {area}.
+Long line, {area}. Got him.
+Distance shot, {area}.
+
+@enemy_weapon_info | contact | team | 20 | {area} | | Enemy has a notable weapon (shotgun or machine gun) at an area.
+=e
+shotgun {area}
+he's got a shotty {area}
+mg {area}
+big gun {area}
+=a
+Shotgun at {area}. Keep distance.
+Machine gun at {area}.
+Heavy weapon at {area}.
+=l
+shotgun {area}
+mg {area}
+=s
+shotgun at {area}, stay back
+careful, mg {area}
+=m
+Shotgun, {area}. Keep range.
+MG at {area}.
+
+@suppressed | damage | team | 12 | | {area} | Bot is being suppressed and can't peek.
+=e
+pinned
+can't peek
+they're spraying me
+pinned {area}
+=a
+Pinned down.
+I'm suppressed. Can't peek.
+Pinned from {area}.
+Heavy fire. Staying down.
+=l
+pinned
+cant move
+=s
+I'm pinned!
+pinned from {area}, help
+can't peek, need a flash
+=m
+Pinned.
+Suppressed. No shot.
+Can't hold the angle.
+
+@flashed | damage | team | 8 | | | Bot is blinded by a flash or stun.
+=e
+blind
+flashed
+can't see
+I'm blind lol
+=a
+Flashed.
+I'm blind.
+Blind. Cover me.
+=l
+blind
+flashed
+=s
+I'm blind!
+flashed, cover me
+can't see!
+=m
+Blind.
+Flashed. No eyes.
+
+@team_flashed | damage | team | 15 | | {name} | A teammate's flash blinded the bot.
+=e
+dude
+nice flash lol
+you flashed me
+my eyes
+=a
+That one got me.
+Call your flashes.
+You flashed me, {name}.
+=l
+lol
+thanks for the flash
+=s
+that got me too
+careful with the flash {name}
+I'm blind, wait
+=m
+Call it first.
+Flashed by my own team.
+
+@hit_through_wall | damage | team | 15 | | {area} | Bot was hit through a wall or thin cover.
+=e
+through the wall
+he's wallbanging
+he's shooting through {area}
+=a
+Taking fire through the wall.
+He's shooting through cover.
+Wallbang from {area}.
+=l
+wallbang
+through the wall lol
+=s
+he's shooting through the wall!
+careful, bullets go through
+=m
+Through the wall.
+This cover's thin.
+
+@fall_damage | damage | team | 30 | | | Bot took fall damage or a bad jump.
+=e
+ow my legs
+oops
+bad jump
+=a
+Bad landing.
+=l
+ow
+lol
+=s
+ouch, bad jump
+oops
+=m
+Misjudged that.
+Ow.

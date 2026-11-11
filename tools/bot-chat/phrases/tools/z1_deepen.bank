@@ -1,0 +1,694 @@
+# Deepening pass: more variants for situations added in pass 2 (gameplay).
+
+@enemy_in_spawn
+=e
+they're behind in spawn
+spawn, turn around
+=a
+They got into our spawn.
+=l
+theyre in spawn lol
+someone in our spawn
+=s
+spawn, behind us!
+=m
+Enemy in spawn. Turning.
+Spawn's compromised.
+
+@enemy_planting
+=e
+planting, push him
+he's planting go go
+=a
+Plant in progress. Go.
+=l
+planting now
+on the plant {area}
+=s
+stop the plant!
+=m
+He's planting. I have a line.
+
+@enemy_defuse_fake
+=e
+fake, wait
+don't bite
+=a
+He's baiting. Hold.
+Fake. Wait for the stick.
+=l
+tap, wait
+baiting
+=s
+he tapped, stay hidden!
+wait for the real defuse
+=m
+Bait. Stay.
+He's off it. Hold.
+
+@enemy_flag_carrier
+=e
+flag runner {area}
+=a
+Carrier at {area}. Cut him off.
+=l
+he's running {area} with it
+flag going {area}
+=s
+carrier at {area}, cut him off!
+=m
+Flag runner, {area}.
+Carrier crossing {area}.
+
+@enemy_grenade_seen
+=e
+they used nades {area}
+=a
+They burned utility at {area}.
+=l
+they nade {area}
+flash {area}
+=s
+utility at {area}, they're coming
+nades at {area}
+=m
+Flash, {area}.
+They're spending utility at {area}.
+
+@enemy_through_smoke
+=e
+they're walking through the smoke
+=a
+Movement in the smoke. Fire.
+=l
+they're in the smoke
+someone in smoke {area}
+=s
+coming through the smoke {area}!
+shoot the smoke
+=m
+Shapes in the smoke, {area}.
+
+@contact_far
+=e
+one far {area}, can't hit him
+=a
+One at range, {area}.
+=l
+far away {area}
+one way back {area}
+=s
+one long at {area}, careful crossing
+far one {area}
+=m
+Long, {area}. Taking it.
+
+@enemy_weapon_info
+=e
+shotgun guy {area} stay back
+=a
+Shotgun at {area}. Don't go close.
+=l
+shotty {area} careful
+big gun {area}
+=s
+shotgun {area}, don't push close
+mg {area}, stay in cover
+=m
+Shotgun at {area}. Fight him far.
+MG, {area}. Wait for the reload.
+
+@suppressed
+=e
+they're spraying me down
+can't get out
+=a
+Under fire. Can't move.
+=l
+pinned {area}
+stuck
+=s
+pinned, someone flash them
+=m
+Pinned from {area}.
+No angle. Suppressed.
+
+@flashed
+=e
+full blind
+white screen lol
+=a
+Full flash. Hold for me.
+=l
+cant see
+full blind
+=s
+blind, don't go without me
+=m
+Blind. Holding fire.
+
+@team_flashed
+=e
+thanks for that lol
+=a
+Flash got us too.
+=l
+blind, ty
+=s
+you got me too {name}
+=m
+That was ours. Blind.
+
+@hit_through_wall
+=e
+he's spamming the wall
+=a
+Wall's not stopping it. Moving.
+=l
+he's spamming {area}
+=s
+move off the wall, he's spamming
+=m
+He's spamming {area}.
+Wallbang, {area}.
+
+@fall_damage
+=e
+fell lol
+=a
+Took a fall.
+Fell. Fine.
+=l
+fell
+=s
+fell, I'm ok
+=m
+Fell.
+
+@execute_ready
+=e
+ready ready
+say when
+=a
+Ready. Waiting on the call.
+=l
+ready when you are
+=s
+I'm set, call it
+=m
+Ready. Angle's set.
+
+@execute_wait
+=e
+wait wait
+not yet
+=a
+Not yet. Wait for utility.
+=l
+wait for me
+=s
+wait, flash first
+=m
+Wait. I'm not on the angle.
+
+@execute_go
+=e
+go go
+all in
+=a
+Now. Go.
+Push.
+=l
+go go
+=s
+go, now!
+=m
+Go. Covering.
+
+@entry_going
+=e
+I'm in
+going, follow
+=a
+I'm going in. Follow close.
+=l
+in quiet
+first, I guess
+=s
+I'm in, come!
+=m
+In.
+Going first.
+
+@trade_ready
+=e
+right behind {name}
+=a
+On your shoulder, {name}.
+=l
+got you {name}
+on you
+=s
+I'm on your shoulder {name}
+=m
+Behind you, {name}.
+I'll trade.
+
+@traded
+=e
+got the trade
+=a
+Traded for {name}.
+=l
+traded {name}
+even
+=s
+got the trade!
+=m
+Trade's done.
+
+@covering
+=e
+got you covered
+covering {area}
+=a
+You're covered.
+=l
+covering {area}
+I got it
+=s
+covered, go!
+=m
+Covered. Move.
+
+@crossing
+=e
+crossing now
+=a
+Crossing now.
+=l
+crossing {area}
+going over
+=s
+crossing now
+I'm crossing, watch {area}
+=m
+Crossing {area}.
+Moving across.
+
+@peeking
+=e
+peeking him
+=a
+Peeking now.
+=l
+peeking {area}
+peek
+=s
+I'm peeking
+peek with me
+=m
+Quick peek.
+Peeking. Hold.
+
+@watching_back
+=e
+watching flank {area}
+got the back
+=a
+Back's covered.
+=l
+watching back
+=s
+I'm on flank {area}
+=m
+On the flank, {area}.
+
+@post_plant_pos
+=e
+on {area}, come at me
+=a
+Playing {area}.
+=l
+{area}, hidden
+=s
+I'm on {area} for the retake
+=m
+Covering bomb from {area}.
+
+@play_time
+=e
+let them come
+=a
+No need to peek.
+=l
+dont peek
+wait them out
+=s
+just hold, time
+=m
+Wait them out.
+
+@save_call
+=e
+leave it
+get out
+no time, run
+=a
+It's gone. Back off.
+=l
+get out
+=s
+leave it, run!
+=m
+Out of time.
+Get out.
+
+@bomb_ticking
+=e
+few seconds
+=a
+Almost out of time.
+Bomb's nearly done.
+=l
+almost
+no time
+=s
+seconds left!
+=m
+Nearly out.
+Tick's fast.
+
+@need_defuser_cover
+=e
+going bomb, cover
+=a
+Going on the bomb.
+=l
+going on it
+=s
+I'm going on it, watch me
+=m
+On the bomb. Cover.
+
+@who_defuses
+=e
+you defuse {name}
+=a
+{name}, you're closest. Defuse.
+=l
+{name} go on it
+you defuse {name}
+=s
+you take it {name}, I'll watch
+=m
+{name}, go on it.
+Defuse, {name}. Covered.
+
+@bomb_take_offer
+=e
+I got the bomb
+=a
+I'll pick it up.
+=l
+I'll take it
+mine
+=s
+I'll take it, cover me
+=m
+I'll grab it.
+I'll carry it in.
+
+@bomb_site_choice
+=e
+bomb to {area}
+=a
+Planting {area}.
+=l
+taking it {area}
+bomb {area} quiet
+=s
+I'm planting {area}
+=m
+Planting {area}.
+Bomb goes {area}.
+
+@flag_carrier_escort
+=e
+go go {name}
+=a
+Covering your run, {name}.
+=l
+behind you {name}
+run {name}
+=s
+keep running {name}!
+=m
+Run, {name}. Covered.
+I have your back, {name}.
+
+@flag_returned
+=e
+flag's home
+=a
+Flag is home.
+=l
+returned
+flag home
+=s
+flag's home!
+=m
+Flag's back.
+Returned.
+
+@flag_dropped
+=e
+flag down {area}
+=a
+Flag dropped at {area}.
+=l
+flag on the floor {area}
+=s
+flag's on the ground {area}
+=m
+Flag dropped.
+Flag on the ground.
+
+@point_capturing
+=e
+capping come
+=a
+On the point. Need bodies.
+=l
+on it
+=s
+on the point, come!
+=m
+On it.
+
+@point_contested
+=e
+contested, clear it
+=a
+Clear the point.
+=l
+contested
+=s
+clear the point!
+=m
+Contested.
+
+@low_ammo
+=e
+few bullets left
+=a
+Ammo's low.
+=l
+low
+few left
+=s
+running low on ammo
+=m
+Low. Making them count.
+
+@out_of_ammo
+=e
+no ammo lol
+=a
+Out. Sidearm only.
+=l
+out
+no ammo
+=s
+out of ammo!
+=m
+Rifle's dry.
+
+@weapon_pickup
+=e
+picked up a gun
+=a
+Took a weapon.
+New weapon.
+=l
+new gun
+=s
+got a new gun
+picked one up
+=m
+Took his rifle.
+
+@no_utility
+=e
+no smokes
+=a
+Nothing left to throw.
+=l
+out of nades
+nothing left
+=s
+no flashes left
+=m
+Out of utility.
+
+@ask_smoke
+=e
+need smoke {area}
+=a
+Can someone smoke {area}?
+=l
+smoke {area} pls
+need smoke {area}
+=s
+smoke {area} please!
+=m
+Smoke {area}, please.
+
+@ask_flash
+=e
+someone flash
+=a
+Need a flash.
+=l
+flash pls
+need a flash
+=s
+flash for me?
+=m
+Need a flash.
+
+@going_quiet
+=e
+shh walking
+=a
+Quiet from here.
+=l
+walking only
+=s
+shh, walk
+=m
+Slow and quiet.
+
+@door_open
+=e
+door {area}
+=a
+Going through the door.
+=l
+door {area}
+=s
+door {area}, I open
+=m
+Door, {area}.
+
+@ladder
+=e
+climbing
+=a
+Climbing.
+Going up.
+=l
+ladder
+going up
+=s
+climbing, watch me
+going up
+=m
+Ladder.
+
+@blocked_by_teammate
+=e
+let me through
+=a
+Let me through.
+=l
+excuse me
+move pls
+=s
+can I get past?
+=m
+Move, please.
+
+@in_the_way_sorry
+=e
+my bad
+=a
+My bad.
+Out of your way.
+=l
+moving
+mb
+=s
+sorry!
+=m
+My bad.
+
+@stay_together
+=e
+together this time
+=a
+Together.
+=l
+together
+stay close
+=s
+together!
+=m
+Together.
+
+@spread_out
+=e
+too close guys
+=a
+Space out.
+=l
+too close
+space
+=s
+space out!
+=m
+Space out.
+
+@ask_info
+=e
+info?
+=a
+Anyone have eyes?
+=l
+anyone see them
+=s
+any info guys?
+=m
+Any eyes?
+
+@quiet_round
+=e
+hello? anyone
+=a
+Nothing so far.
+=l
+weird
+=s
+so quiet...
+=m
+No contact.

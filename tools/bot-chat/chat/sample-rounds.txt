@@ -1,0 +1,426 @@
+Chat simulation, seed 5, 8 rounds, bank of 8829 lines, 32 bots in the roster. Fights are dice rolls; area and player names are made up.
+
+=== Round 1: bomb, attacking Site B. Team: Cobra (entry), Mamba (lurker), Raven (marksman), Tango (support), Rook (anchor) + RaziC (human) ===
+[0:00] (Raven): Site B for the plant.
+[0:02] (Cobra): first in Tower
+        > Rook sees 3 enemies at Tower
+[0:24] (Rook): 3 at Tower. Calm. Hold your spots.
+        > Rook is hit (35 hp)
+[0:26] (Rook): took one. line holds
+        > Rook is killed at Tower (dead_info)
+[0:28] (Raven): Rook died at Tower
+[0:31] (RaziC): Cobra smoke Market pls
+        > understood as: smoke, area Market, for one bot
+[0:32] (Cobra): smoke going
+        > Mamba sees 2 enemies at Market
+[0:37] (Mamba): theyre all in Market
+        > Tango throws a smoke
+        > Mamba loses sight of the enemy at Market
+[0:40] (Mamba): lost track Market
+        > Mamba kills [x] Varga at Market, 4 enemies left
+        > Mamba still sees one at Market
+        > Raven reaches Site B and plants
+[0:55] (Raven): Planting, watch my back.
+[1:00] (Cobra): planted
+[1:04] (Raven): No peeks. Let them walk in.
+        > Cobra sees an enemy on the bomb
+[1:13] (Cobra): defuser, kill him
+        > Cobra kills the defuser, 3 enemies left
+        --- round WON (4 of 5 bots alive, 3 enemies left, bomb planted) ---
+[1:21] (Tango): wp team
+[1:22] (Rook): Nice work.
+
+=== Round 2: bomb, defending both sites. Team: Talon (marksman), Puma (support), Blaze (entry), Kodiak (anchor), Onyx (lurker) + RaziC (human) ===
+[0:00] (Puma): Site A, i'll help
+[0:02] (Kodiak): Site B is mine
+[0:11] (Puma): i got Site A covered
+        > Talon has seen nobody at Site B for 20 s
+        > Kodiak sees 1 enemy at Bridge
+        > Kodiak kills Kestrel at Bridge, 4 enemies left
+[0:30] (Kodiak): tapped him
+        > Kodiak still sees one at Bridge
+        > Talon sees enemies leaving towards Site A
+[0:36] (Talon): Rotation, Site A. Eyes up.
+        > Puma decides the team should rotate to Site A
+[0:37] (Puma): everyone Site A!
+[0:41] (RaziC): where are they
+        > understood as: ask_other, nobody addressed
+[0:42] [ALL] (Kodiak): Not sure.
+        > Talon sees 3 enemies at Site A
+[0:46] (Talon): Full commit at Site A.
+        > Talon is hit (58 hp)
+        > Talon kills [x] Varga at Site A, 3 enemies left
+[0:49] (Talon): that's my range
+        > Talon kills [x] Varga at Site A, 2 enemies left
+        > Talon still sees one at Site A
+        > Puma joins the fight at Site A
+[0:54] (Talon): He's static, Site A. Waiting.
+        > Puma is killed at Site A (died_to_sniper)
+[0:56] (Puma): their sniper got me, don't cross
+        > Kodiak sees an enemy planting at Site A
+[0:58] (Kodiak): he's planting, go
+        > bomb is planted at Site A
+[1:03] (Kodiak): Bomb's down at Site A. Retake together.
+[1:06] (Blaze): retake Site A lets go
+        > Blaze sees 1 enemy at Site A
+[1:09] (Blaze): he's running Site A, on him
+        > Blaze loses sight of the enemy at Site A
+[1:11] (Blaze): lost him Site A
+        > Blaze sees him again at Site A
+        > Onyx says the timer is getting short
+[1:16] (Onyx): no time
+        > Onyx starts defusing
+[1:18] (Onyx): on the bomb
+        > Onyx is killed at Site A (dead_info)
+[1:23] (Onyx): Site A
+[1:24] (Blaze): lost Onyx
+        --- round LOST (3 of 5 bots alive, 2 enemies left, bomb went off) ---
+[1:28] (Puma): nice try
+[1:30] (Talon): Wrong line. My fault.
+
+=== Round 3: capture the flag, 4 minutes shown. Team: Vandal (entry), Talon (marksman), Tango (support), Warden (anchor), Ghost (lurker) + RaziC (human) ===
+[0:00] [ALL] (Warden): Good luck all.
+[0:02] [ALL] (Tango): hi again all, glhf
+[0:09] (Warden): Moving to Tower, slow.
+        > Warden sees 2 enemies at Tower
+[0:20] (Warden): They're pushing Tower.
+        > Warden is killed at Tower (died_to_grenade)
+[0:21] (Warden): Frag. Should've moved.
+        > Tango picks up the enemy flag
+[0:26] (Tango): i have it, escort me
+        > Warden moves to escort Tango
+[0:28] (Warden): Covering your run, Tango.
+        > Tango kills ^1Dutch at Bridge
+        > Tango captures the flag, 1-0
+[0:34] (Tango): got him guys
+        > Talon sees 2 enemies at Tunnel
+[0:52] (Talon): 2, Tunnel.
+        > Talon is killed at Tunnel (died_reloading)
+[0:54] (Warden): Talon is down. Stay calm.
+        > Warden picks up the enemy flag
+[0:59] (Warden): Flag is on me.
+        > Talon moves to escort Warden
+[1:01] (Talon): i have your back, Warden
+        > Warden kills ^1Dutch at Alley
+        > Warden captures the flag, 2-0
+[1:07] (Warden): Head.
+        > Warden sees 1 enemy at Bridge
+[1:26] (Warden): one moving fast at Bridge
+        > Warden kills [x] Varga at Bridge
+        > Ghost joins the fight at Bridge
+        > Ghost kills Pim at Bridge
+        > Ghost picks up the enemy flag
+[1:33] (Ghost): took it lol
+        > Vandal moves to escort Ghost
+[1:35] (Vandal): I'm your shield Ghost
+[1:39] (RaziC): Vandal cover me
+        > understood as: cover, for one bot
+[1:40] (Vandal): too far away
+        > Ghost kills Kestrel at Market
+        > Ghost captures the flag, 3-0
+[1:41] (Ghost): nice cap
+        > one minute left
+[1:53] (Tango): 1 min left guys
+        > Warden sees 1 enemy at Market
+[2:03] (Warden): Watch the line from Market, sniper.
+        > Warden kills Pim at Market
+        > Ghost joins the fight at Market
+        > Ghost kills ^1Dutch at Market
+[2:05] (Warden): got one, moving
+        > the enemy takes our flag
+[2:09] (Ghost): our flag is gone
+        > Vandal sees their carrier at Garage
+[2:12] (Vandal): flag guy Garage
+        > the enemy captures, 3-1
+[2:14] (Tango): they capped, let's get one back
+        --- round WON (flags 3-1) ---
+[2:23] [ALL] (Tango): gg
+[2:25] [ALL] (Ghost): gg all
+
+=== Round 4: team deathmatch, 3 minutes shown. Team: Onyx (lurker), Sierra (anchor), Cobra (entry), Hunter (marksman), Saber (support) + RaziC (human) ===
+[0:01] [ALL] (Hunter): new map. good luck
+        > Cobra sees 1 enemy at Warehouse
+[0:12] (Cobra): one Warehouse, watch this
+        > Cobra is hit (31 hp)
+[0:14] (Cobra): ouch
+        > Cobra still sees one at Warehouse
+[0:17] (Cobra): still Warehouse
+        > Onyx sees 2 enemies at Tunnel
+[0:28] (Onyx): 2 at Tunnel, hitting the last one
+        > Onyx kills Kestrel at Tunnel
+[0:30] (Onyx): got him btw
+        > Onyx kills Kestrel at Tunnel
+        > score is 2-0
+[0:35] (Saber): we're ahead!
+        > Cobra sees 1 enemy at Garage
+[0:40] (Cobra): one at Garage, I'm taking him
+        > Cobra kills ^1Dutch at Garage
+        > Saber joins the fight at Garage
+        > Saber kills Pim at Garage
+[0:42] (Cobra): too easy, back turned
+[0:44] (Saber): got Pim
+[0:47] (RaziC): are you bots?
+        > understood as: ask_bot, for the team
+[0:47] [ALL] (Saber): yes, bot here!
+        > Hunter sees 2 enemies at Warehouse
+[0:53] (Hunter): 2 at Warehouse. Clean lines on two.
+        > Hunter kills [x] Varga at Warehouse
+[0:55] (Onyx): got it
+        > Hunter loses sight of the enemy at Warehouse
+[0:56] (Hunter): Last position Warehouse.
+        > Hunter sees him again at Warehouse
+        > Hunter still sees one at Warehouse
+        > Cobra sees 1 enemy at Tower
+[1:12] (Cobra): got the drop on one Tower
+        > Saber throws a smoke
+        > Cobra kills Kestrel at Tower
+[1:14] (Cobra): next
+        > Cobra still sees one at Tower
+        > one minute left, 6-0
+[1:24] (Sierra): One minute remaining.
+        > Hunter sees 2 enemies at Courtyard
+        > Saber throws a smoke
+[1:32] (Hunter): 2 at Courtyard, taking the first.
+        > Hunter is hit (35 hp)
+[1:34] (Saber): smoke for you
+[1:35] (Hunter): took one
+        > Hunter loses sight of the enemy at Courtyard
+[1:37] (Hunter): he left my line at Courtyard
+        > Hunter still sees one at Courtyard
+        > the team needs 3 more kills to win
+        --- round WON (kills 6-0) ---
+[1:49] [ALL] (Saber): ggs, well played
+[1:55] (RaziC): gg
+        > understood as: gg, nobody addressed
+[1:55] [ALL] (Cobra): gg wp
+
+=== Round 5: bomb, attacking Site B. Team: Kodiak (anchor), Talon (marksman), Yankee (support), Lynx (lurker), Storm (entry) + RaziC (human) ===
+[0:00] (Lynx): bomb going Site B
+[0:02] (Talon): Going Bridge for the long angle.
+[0:03] (Storm): going Bridge with or without you
+        > Talon sees 3 enemies at Bridge
+[0:19] (Talon): Rush through Bridge.
+        > Talon kills ^1Dutch at Bridge, 4 enemies left
+        > Talon is hit (63 hp)
+        > Talon backs off
+        > Kodiak joins the fight at Bridge
+[0:25] (Talon): out
+        > Kodiak kills Pim at Bridge, 3 enemies left
+[0:28] (Kodiak): Dropped him.
+[0:30] (RaziC): Talon follow me
+        > understood as: follow, for one bot
+[0:31] (Talon): On you.
+        > Storm sees 2 enemies at Tunnel
+[0:36] (Storm): 2 Tunnel lets fight
+        > Storm kills ^1Dutch at Tunnel, 2 enemies left
+[0:38] (Storm): he's down
+        > Storm kills [x] Varga at Tunnel, 1 enemies left
+[0:40] (Storm): two down push
+[0:41] (Lynx): one left, he's hiding
+        > Storm still sees one at Tunnel
+        > Lynx reaches Site B and plants
+[0:51] (Lynx): planting, quiet
+[0:56] (Yankee): planted, spread out
+[0:59] (Lynx): dont peek
+        > Storm sees an enemy on the bomb
+[1:10] (Storm): they're on the bomb, go
+        > Storm is killed at Site B (dead_info)
+[1:11] (Storm): sorry, wide swing
+[1:13] (Yankee): lost Storm, trade him
+        --- round WON (4 of 5 bots alive, 1 enemies left, bomb planted) ---
+[1:18] (Talon): good round
+[1:19] (Yankee): great round guys
+
+=== Round 6: bomb, defending both sites. Team: Mako (marksman), Shadow (lurker), Vandal (entry), Puma (support), Rook (anchor) + RaziC (human) ===
+[0:00] (Puma): holding Site B with you
+[0:02] (Vandal): pushing Site B for info
+[0:03] (Shadow): hiding Site A
+        > Puma has seen nobody at Site A for 20 s
+[0:20] (Puma): nobody at Site A
+        > Puma hears footsteps at Market
+[0:24] (Puma): steps Market, watch it
+        > Shadow sees 2 enemies at Market
+[0:27] (Shadow): they're pushing Market
+        > Shadow kills [x] Varga at Market, 4 enemies left
+[0:28] (Rook): Got it, Shadow.
+        > Shadow is killed at Market (died_in_duel)
+[0:30] (Shadow): lost the 1v1
+[0:31] (Vandal): Shadow down, i'm going
+        > Rook sees the bomb carrier at Warehouse
+[0:33] (Rook): Bomb carrier at Warehouse.
+        > Puma decides the team should rotate to Site B
+[0:38] (RaziC): Rook watch Warehouse
+        > understood as: watch, area Warehouse, for one bot
+[0:39] (Rook): Watching Warehouse.
+        > Mako sees 1 enemy at Site B
+[0:43] (Mako): One, Site B.
+        > Mako kills ^1Dutch at Site B, 3 enemies left
+[0:44] (Rook): Copy.
+[0:46] (Mako): one shot. down
+        > Puma sees 1 enemy at Tunnel
+[0:54] (Puma): one Tunnel, I'll help
+        > Puma is hit (31 hp)
+[0:56] (Puma): hit, but okay
+        > Puma backs off
+[0:58] (Puma): back off guys
+        > Vandal sees 2 enemies at Tower
+[1:07] (Vandal): they're 2 at Tower
+[1:08] (Rook): Heard.
+        > Vandal is killed at Tower (died_from_behind)
+[1:10] (Vandal): he was behind
+[1:11] (Mako): Vandal is down. Watching Tower.
+        > Rook sees 1 enemy at Warehouse
+[1:16] (Rook): sniper at Warehouse. use smoke to cross
+        > Puma throws a flash
+[1:17] (Puma): flashing, turn away
+        > Rook is killed at Warehouse (died_reloading)
+        > Puma joins the fight at Warehouse
+[1:19] (Rook): Reloading. My mistake.
+        > Puma kills Kestrel at Warehouse, 2 enemies left
+[1:20] (Mako): Lost Rook at Warehouse.
+[1:22] (Mako): They're down to 2.
+        > 30 seconds left, no bomb planted
+[1:26] (Mako): 30 seconds
+        > Puma sees 1 enemy at Alley
+[1:29] (Puma): one at Alley, careful he's holding
+        > Puma is killed at Alley (died_to_grenade)
+        > Mako is the last one alive, 2 enemies left
+[1:31] (Puma): grenade, didn't see it
+[1:32] (Mako): Just me. Slow.
+        > Mako sees 1 enemy at Warehouse
+[1:36] (Mako): One creeping, Warehouse.
+        > Mako kills ^1Dutch at Warehouse, 1 enemies left
+        > Mako sees 1 enemy at Garage
+        > Mako is hit (45 hp)
+        > Mako backs off
+[1:48] (Mako): Giving up the angle.
+        > Mako sees 1 enemy at Site B
+[1:57] (Mako): One, Site B. Inside my range.
+        > Mako kills Pim at Site B, 0 enemies left
+[1:59] (Mako): last. down
+        --- round WON (1 of 5 bots alive, 0 enemies left) ---
+[2:04] (Shadow): ez
+[2:05] (Mako): Patience pays.
+
+=== Round 7: capture the flag, 4 minutes shown. Team: Hunter (marksman), Lynx (lurker), Rook (anchor), Yankee (support), Havoc (entry) + RaziC (human) ===
+[0:00] [ALL] (Rook): New map.
+        > Yankee sees 1 enemy at Bridge
+[0:17] (Yankee): one Bridge, I'm right there
+        > Yankee kills Kestrel at Bridge
+        > Lynx joins the fight at Bridge
+        > Lynx is hit (62 hp)
+[0:21] (Yankee): got him, he didn't see me
+[0:22] (Lynx): he hit me, going
+        > Lynx picks up the enemy flag
+[0:26] (Lynx): got the flag
+        > Hunter moves to escort Lynx
+[0:27] (Hunter): Covering your run, Lynx.
+        > Lynx loses sight of the enemy at Bridge
+[0:33] (Lynx): he hid Bridge
+        > Lynx sees him again at Bridge
+        > Lynx captures the flag, 1-0
+[0:37] (Lynx): point
+[0:39] (Yankee): in front now, nice
+[0:49] (Yankee): heading Market, utility ready
+        > Hunter sees 1 enemy at Market
+[0:59] (Hunter): one crossing Market
+        > Hunter loses sight of the enemy at Market
+[1:00] (Hunter): Lost the angle, Market.
+        > Hunter sees him again at Market
+[1:05] (Hunter): Back on him, Market.
+        > Hunter still sees one at Market
+        > the enemy takes our flag
+[1:12] (Rook): Our flag's gone.
+        > Yankee sees their carrier at Courtyard
+[1:14] (Yankee): flag carrier Courtyard!
+        > the enemy captures, 1-1
+[1:17] (Hunter): they scored. watch the flag room
+[1:18] (Rook): level score
+        > Yankee sees 2 enemies at Tunnel
+[1:33] (Yankee): they're pushing Tunnel!
+        > Yankee is hit (37 hp)
+        > Yankee backs off
+[1:35] (Yankee): I'm hit, still good
+        > Yankee picks up the enemy flag
+[1:40] (Yankee): flag on me, help
+        > Havoc moves to escort Yankee
+[1:42] (Havoc): go go Yankee
+        > Yankee loses sight of the enemy at Warehouse
+[1:48] (Yankee): He's out of sight at Warehouse.
+        > Yankee sees him again at Warehouse
+        > Yankee captures the flag, 2-1
+[1:50] (Yankee): There he is, Warehouse.
+[1:52] (Havoc): we lead
+        > one minute left
+[2:01] (Havoc): 1 min left
+        > Rook sees 2 enemies at Warehouse
+[2:10] (Rook): 2 at Warehouse. Ready.
+        > Rook kills mole at Warehouse
+[2:11] (Rook): Got the head.
+        > Rook is killed at Warehouse (dead_info)
+[2:13] (Rook): Sorry. He's at Warehouse.
+        > Hunter picks up the enemy flag
+[2:17] (Hunter): Flag on me.
+        > Havoc moves to escort Hunter
+[2:18] (Havoc): with you Hunter
+        > Hunter is hit (59 hp)
+        > Hunter captures the flag, 3-1
+[2:26] (Hunter): hit. changing angle
+        --- round WON (flags 3-1) ---
+[2:33] [ALL] (Hunter): gg wp
+
+=== Round 8: team deathmatch, 3 minutes shown. Team: Warden (anchor), Tango (support), Raven (marksman), Mamba (lurker), Havoc (entry) + RaziC (human) ===
+[0:00] [ALL] (Warden): glhf on this one.
+        > Warden sees 1 enemy at Courtyard
+[0:11] (Warden): One Courtyard. I'm staying on the angle.
+        > Warden kills ^1Dutch at Courtyard
+[0:14] (Warden): He's down. Easy.
+        > score is 1-0
+        > Raven sees 1 enemy at Warehouse
+[0:26] (Raven): Fast mover at Warehouse.
+        > Raven loses sight of the enemy at Warehouse
+[0:29] (Raven): lost him, pushing Warehouse
+        > Raven sees him again at Warehouse
+        > Raven still sees one at Warehouse
+        > Havoc joins the fight at Warehouse
+        > Havoc is killed at Warehouse (died_to_sniper)
+[0:36] (Havoc): sniper got me
+[0:37] (Raven): Same spot. Warehouse.
+        > Tango sees 1 enemy at Market
+[0:48] (Tango): one sneaking at Market, careful
+        > Tango kills mole at Market
+[0:50] (Tango): got one!
+        > Tango still sees one at Market
+        > Havoc joins the fight at Market
+        > Havoc kills [x] Varga at Market
+[0:58] (RaziC): team regroup
+        > understood as: regroup, for the team
+[0:59] (Raven): Coming.
+[1:00] (Mamba): k
+        > Raven sees 2 enemies at Warehouse
+[1:04] (Raven): 2 at Warehouse, keep the angle tight.
+[1:06] (Havoc): ok going
+        > Raven loses sight of the enemy at Warehouse
+[1:07] (Raven): where'd he go
+        > Raven sees him again at Warehouse
+[1:11] (Raven): He's at Warehouse now.
+        > Raven is killed at Warehouse (died_to_sniper)
+        > Havoc sees 1 enemy at Courtyard
+[1:25] (Havoc): he's scoped Courtyard, swing fast
+        > Havoc loses sight of the enemy at Courtyard
+[1:26] (Havoc): lost him
+        > one minute left, 3-2
+[1:36] (Raven): One minute.
+        > Mamba sees 1 enemy at Courtyard
+[1:44] (Mamba): one Courtyard, back turned lol
+        > Mamba is killed at Courtyard (died_in_duel)
+        > Raven joins the fight at Courtyard
+[1:45] (Mamba): lost it
+        > Raven is hit (40 hp)
+        > Raven backs off
+        --- match DRAWN (kills 3-3) ---
+[1:58] (RaziC): gg
+        > understood as: gg, nobody addressed
+[1:59] [ALL] (Tango): good game!
+
+193 bot lines in 8 rounds (24.1 per round, one every 5 s on average). 74 requests held back: 8 still typing, 58 stayed quiet, 4 bot cap, 1 cooldown, 3 stale, 0 no fitting line.

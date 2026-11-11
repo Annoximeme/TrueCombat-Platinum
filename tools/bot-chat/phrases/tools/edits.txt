@@ -1,0 +1,44 @@
+# Applied by build.py after all sources load. "move SRC DST REGEX" or "drop SRC REGEX" (regex is case-insensitive).
+# Purpose: a generic line must not claim what the game has not checked. Specific claims live in specific situations.
+move contact_one contact_unaware hasnt seen|hasn't seen|doesn't know|looking away|other way|at a wall|back turned|behind him|right behind|backwards|walked past|thinks he's alone|till he turns|can't see me
+move contact_many contact_unaware backs to me|back is open|behind them|I'm behind|hit the back|going behind|looking front|watching their flank|flank is empty|not checking
+move contact_one contact_running sprinting|coming my way|^one coming
+move contact_many enemy_pushing rushing|coming fast
+move contact_one contact_sneaking slow walking|crouched|slow mover|he's slow|checking corners|he's careful
+move contact_many contact_sneaking slow(?! them)|careful\.$
+move contact_one contact_static sitting|standing still|camping|he's bored|careful he's holding
+move contact_many contact_static waiting\.?$
+move contact_one enemy_reload_heard reloading
+move contact_one enemy_lone he's alone
+move enemy_heard enemy_reload_heard reload
+move enemy_heard enemy_heard_door door
+move kill_confirm kill_unaware from behind|never turned|didnt see me|still hidden|quiet
+drop contact_one window|the box|jumping around|careless|exposed|predictable|wants to cross|looking for a gap|head's showing|for the head|behind cover|behind the edge|he's turning|peeking me|looking at us
+drop contact_many loud
+drop contact_sniper distracted|back turned|sitting
+drop contact_lost scared
+drop enemy_heard crouch walking|slow walking
+drop kill_multi from the back|from behind|hidden|unseen
+# "keep SRC REGEX" drops every line that does NOT match. An enemy action must never read like the bot's own.
+keep enemy_defusing \b(he|he's|they|they're|someone|defuser|him|stop)\b|in progress
+keep enemy_planting \b(he|he's|they|they're|someone|him|stop)\b|in progress
+keep heard_defuse \b(he|he's|they|they're|sound|hear|ear)\b
+keep heard_plant \b(he|he's|they|they're|theyre|sound|hear|ear)\b
+move round_won_bomb round_won_detonated boom
+move round_won_bomb round_won_defused defus
+move dead_info dead_enemy_low low|one shot|hurt
+move died_in_duel dead_enemy_low low
+drop died_first Sniper somewhere
+drop fu_ack_teammate_call I'll take him
+drop enemy_heard sneaking too
+# 1.4.0 game-mode pass. Time calls must work for both sides: who has to hurry depends on the mode (see time_low and time_hold).
+drop time_60 move|lets go|let's go
+drop time_30 \bgo\b|hurry|decide
+drop time_10 go go
+# A flag carrier is not a bomb carrier: kill_carrier is bomb only since 1.4.0 (flag: kill_flag_carrier).
+# Round-start lines that only fit one side or only fit round modes.
+drop round_start_generic nobody passes|hold your spots
+# The game knows "above", not what he is standing on. No map features the game has not named.
+drop enemy_above window|roof|upstairs|upper floor
+drop contact_sniper watching mid
+drop contact_one watching mid

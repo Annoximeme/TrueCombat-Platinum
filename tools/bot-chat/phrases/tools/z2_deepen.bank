@@ -1,0 +1,1468 @@
+# Deepening pass: kills, deaths, order replies and match flow.
+
+@kill_knife
+=e
+knife kill lol
+=a
+Got him with the knife.
+Close work.
+=s
+knifed him!
+sneaky knife
+=m
+Knife kill.
+Blade.
+
+@kill_grenade
+=e
+nade kill lol
+=a
+Grenade got him.
+=l
+nade kill
+got one with the nade
+=s
+grenade kill!
+=m
+Frag got one.
+Nade kill, {area}.
+
+@kill_pistol
+=e
+pistol only lol
+=a
+Got him with the sidearm.
+=l
+pistol kill
+sidearm
+=s
+pistol kill!
+with the sidearm, phew
+=m
+Pistol kill.
+
+@kill_long
+=e
+got him from far
+=a
+Long one. Down.
+=l
+got him from far
+far shot
+=s
+long one!
+=m
+Long. Down.
+
+@kill_wallbang
+=e
+got him through the wall
+=a
+Wallbang. Down.
+Through cover.
+=l
+through the wall
+got him through
+=s
+wallbang!
+through the wall lol
+=m
+Wallbang.
+
+@kill_through_smoke
+=e
+smoke kill
+=a
+Got him in the smoke.
+Smoke kill.
+=l
+through smoke
+=s
+smoke kill!
+got him in the smoke
+=m
+Smoke kill.
+
+@kill_low_hp
+=e
+won that on 1hp
+=a
+Won it. Barely alive.
+=l
+barely
+=s
+got him, barely alive
+=m
+Close. Still up.
+
+@kill_last
+=e
+last one dead
+=a
+Last one. Done.
+=l
+that's all
+=s
+last one down!
+=m
+All down.
+
+@kill_carrier
+=e
+carrier dead {area}
+=a
+Got the carrier.
+=l
+got the carrier
+=s
+carrier's dead!
+=m
+Got the carrier.
+
+@kill_defuser
+=e
+he's off the bomb lol
+=a
+He's off the bomb.
+=l
+got the defuser
+=s
+defuser's dead!
+=m
+Got him on the bomb.
+
+@kill_sniper
+=e
+scope's dead {area}
+=a
+Got their sniper.
+=l
+their sniper's dead
+=s
+their sniper's gone!
+=m
+Their sniper's down, {area}.
+
+@kill_flanker
+=e
+flanker dead {area}
+=a
+Flanker down.
+=l
+flanker down
+=s
+flanker's dead!
+=m
+Got the flanker.
+
+@missed_shot
+=e
+missed lol
+=a
+Missed him.
+=l
+how
+=s
+I missed!
+=m
+Missed.
+
+@missed_scope
+=e
+missed lol
+whiffed the scope
+=a
+Missed. Cycling the bolt.
+Shot went wide.
+=l
+missed the shot
+scope whiff
+=s
+missed the shot!
+I missed, careful
+=m
+Low. Adjusting.
+Wide. Again.
+
+@assist
+=e
+ty {name}
+=a
+Nice finish, {name}.
+=l
+nice {name}
+thx
+=s
+ty {name}!
+=m
+Nice finish.
+
+@kill_stolen
+=e
+stealing my kills {name} lol
+=a
+Yours, {name}.
+You can have that one, {name}.
+=l
+thief lol
+{name} stole it
+=s
+teamwork {name}!
+=m
+Yours, {name}.
+Take it, {name}.
+
+@saved_by_teammate
+=e
+nice save {name}
+=a
+You saved me, {name}.
+=l
+thx {name}
+=s
+ty {name}!
+=m
+Good save, {name}.
+
+@saved_teammate
+=e
+he was on you {name}
+=a
+Got him off you, {name}.
+=l
+got you {name}
+you're good
+=s
+you're safe {name}
+=m
+Got him, {name}.
+
+@died_first
+=e
+died first lol sorry
+=a
+Sorry, went down early.
+=l
+died early
+sry
+=s
+sorry, down early
+=m
+Early pick on me. Sorry.
+
+@died_to_grenade
+=e
+didn't see the nade
+=a
+Nade. Didn't see it.
+Killed by a grenade.
+=l
+didnt hear it
+=s
+grenade, didn't see it
+nade lol
+=m
+Nade got me.
+Frag. Unlucky.
+
+@died_to_sniper
+=e
+sniped from {area}
+=a
+Sniped.
+=l
+sniped
+sniped from {area}
+=s
+sniped! careful
+sniper, watch {area}
+=m
+Sniped from {area}.
+
+@died_from_behind
+=e
+shot in the back
+=a
+Behind. Watch {area}.
+=l
+from behind
+=s
+behind us!
+=m
+Shot in the back.
+
+@died_in_duel
+=e
+he won that
+=a
+He won that one.
+Lost the duel.
+=l
+he got me
+lost the duel
+=s
+he got me, sorry
+lost the duel
+=m
+He was faster.
+
+@died_reloading
+=e
+reload got me killed
+=a
+Reloading. My mistake.
+Bad time to reload.
+=l
+reloading...
+died reloading
+=s
+reloading, bad timing
+caught me reloading
+=m
+Caught reloading.
+Reloaded too early.
+
+@died_to_teamkill
+=e
+{name} why
+=a
+Friendly fire.
+It happens, {name}.
+=l
+tk lol
+=s
+no worries {name}
+=m
+Friendly fire.
+That was friendly.
+
+@teamkilled_someone
+=e
+sorry sorry {name}
+=a
+Sorry. That was on me.
+=l
+my bad {name}
+=s
+sorry {name}, my fault
+=m
+Sorry. My mistake.
+
+@nade_own_team
+=e
+nade's mine, move
+=a
+That's mine. Clear out.
+Bad throw. Sorry.
+=l
+oops nade
+bad throw
+=s
+my nade, sorry!
+=m
+My nade.
+Mine. Clear.
+
+@on_fire
+=e
+on a roll
+=a
+Going well.
+Feeling good.
+=l
+on a roll
+feeling good
+=s
+on a roll!
+feeling good today
+=m
+Shots are landing.
+
+@cold_streak
+=e
+can't hit anything
+=a
+Rough game for me.
+=l
+cant hit anything
+rough
+=s
+rough game, sorry
+=m
+Not hitting today.
+
+@revenge
+=e
+revenge
+=a
+Payback.
+That's one back.
+=l
+got you back
+revenge
+=s
+revenge!
+payback, {enemy}
+=m
+Payback.
+
+@dominated_by
+=e
+{enemy} is everywhere
+=a
+{enemy} is having a game.
+Hard to beat, {enemy}.
+=l
+{enemy} is good
+{enemy} everywhere
+=s
+wp {enemy}
+=m
+{enemy} is sharp today.
+
+@order_cover_me
+=e
+I got your back
+=a
+Go. Covered.
+=l
+got you
+=s
+covering!
+=m
+Covered.
+
+@order_watch
+=e
+I got {area}
+=a
+{area}, on it.
+=l
+ok {area}
+=s
+I'll watch {area}
+=m
+{area}. Watching.
+
+@order_smoke
+=e
+smoke going
+=a
+Smoke out.
+=l
+smoking
+smoke {area}
+=s
+smoke out!
+=m
+Smoke out.
+
+@order_flash
+=e
+flash out
+=a
+Flashing.
+Flash out.
+=l
+flashing
+flash
+=s
+flash out!
+=m
+Flashing.
+Flash out.
+
+@order_frag
+=e
+nade out
+=a
+Nade going.
+=l
+nading
+frag {area}
+=s
+frag out!
+nade out
+=m
+Nade going.
+Grenade out.
+
+@order_no_utility
+=e
+none left
+=a
+Out of grenades.
+=l
+out
+no nades
+=s
+none left, sorry
+=m
+No utility left.
+
+@order_drop_bomb
+=e
+bomb's down, take it
+=a
+Dropped. Take it.
+=l
+here
+take it
+=s
+dropped it!
+=m
+Take it.
+
+@order_take_bomb
+=e
+bomb's mine
+=a
+Got it.
+=l
+got it
+I carry
+=s
+got it!
+=m
+Got it.
+Picking it up.
+
+@order_plant
+=e
+on it
+=a
+Planting now.
+=l
+on it
+ok planting
+=s
+ok planting!
+on it
+=m
+On it.
+Planting now.
+
+@order_defuse
+=e
+going on it
+=a
+On the bomb.
+Defusing now.
+=l
+defusing
+going on it
+=s
+defusing!
+going on it
+=m
+On it.
+Defusing now.
+
+@order_spread
+=e
+spreading
+k
+=a
+Spacing out.
+Copy, spreading.
+=l
+ok
+spreading
+=s
+ok, spreading
+got it
+=m
+Spacing out.
+Copy.
+
+@order_quiet
+=e
+shh ok
+=a
+Quiet. Copy.
+=l
+quiet
+=s
+shh, ok
+=m
+Slow walk.
+
+@order_flank
+=e
+ok flanking
+=a
+Going around.
+=l
+going round
+=s
+ok, flanking
+=m
+Taking the flank.
+
+@order_wait
+=e
+waiting
+=a
+Holding.
+=l
+ok
+=s
+ok, waiting
+=m
+Holding.
+
+@order_fallback
+=e
+falling back
+=a
+Coming back.
+=l
+ok back
+=s
+ok, back
+=m
+Pulling back.
+Backing off.
+
+@order_lead
+=e
+follow me
+=a
+On point.
+=l
+going first
+=s
+going first!
+I'll lead
+=m
+Leading.
+
+@order_stack
+=e
+going {area}
+=a
+All {area}. Copy.
+=l
+stacking {area}
+going {area}
+=s
+ok, all {area}
+=m
+Moving to {area}.
+{area}. Copy.
+
+@order_declined_role
+=e
+can't, bomb
+=a
+Can't. Objective first.
+=l
+on the bomb
+cant
+=s
+can't, bomb first
+=m
+On the bomb.
+
+@order_too_far
+=e
+too far away
+=a
+I'm too far.
+=l
+far away
+=s
+too far, sorry!
+=m
+Out of range.
+
+@order_dead
+=e
+dead, sorry
+=a
+Dead.
+=l
+im dead
+dead lol
+=s
+dead!
+=m
+I'm dead.
+
+@ask_status_reply
+=e
+{area}, fighting
+=a
+{area}. All quiet.
+=l
+{area}, hidden
+=s
+{area}, I can come
+=m
+{area}. On the angle.
+
+@ask_count_reply
+=e
+{count} I think
+=a
+{count}, as far as I know.
+=l
+{count} left
+=s
+{count}!
+=m
+{count} that I've seen.
+
+@ask_unknown_reply
+=e
+haven't seen them
+=a
+Unknown.
+=l
+no idea
+=s
+no idea, sorry
+=m
+Nothing seen.
+
+@reply_are_you_bot
+=e
+yes bot
+=a
+I am. Bot.
+=l
+bot
+im a bot yeah
+=s
+yes, bot here!
+=m
+Bot. Yes.
+
+@reply_compliment
+=e
+thx
+=a
+Thanks.
+=l
+thx
+thanks
+=s
+thank you!
+=m
+Thank you.
+
+@reply_insult
+=e
+ok ok
+=a
+Understood.
+=l
+fair
+=s
+I'll do better next round
+=m
+Understood.
+
+@reply_blame
+=e
+that's on me
+=a
+That's on me.
+=l
+sry
+=s
+sorry everyone
+=m
+On me.
+
+@reply_gg
+=e
+gg all
+=a
+gg wp
+=l
+ggs
+gg wp
+=s
+ggs!
+=m
+ggs
+
+@reply_glhf
+=e
+hf
+=a
+You too.
+=l
+glhf
+=s
+gl all!
+=m
+gl
+
+@reply_bye
+=e
+bb
+=a
+Take care.
+=l
+bye
+=s
+bye bye!
+=m
+Later.
+
+@reply_laugh
+=e
+xd
+=a
+Ha.
+lol
+=l
+haha
+=s
+hehe
+=m
+Ha.
+
+@reply_nice_try
+=e
+thx
+=a
+Next one.
+Close.
+=l
+thx
+almost
+=s
+thanks guys
+=m
+Close.
+Next round.
+
+@reply_question_generic
+=e
+dunno
+=a
+No idea, sorry.
+=l
+no idea
+=s
+I don't know, sorry
+=m
+No idea.
+
+@ping_go_here_ack
+=e
+on my way
+=a
+Going.
+On my way.
+=l
+ok
+=s
+going!
+=m
+Going.
+Copy.
+
+@ping_watch_ack
+=e
+got it
+on {area}
+=a
+Watching {area}.
+On it.
+=l
+k
+ok {area}
+=s
+got it
+I'll watch it
+=m
+On {area}.
+Watching.
+
+@ping_danger_ack
+=e
+careful then
+=a
+Noted.
+Copy. Careful at {area}.
+=l
+noted
+=s
+got it, careful
+noted, thanks
+=m
+Copy.
+Avoiding.
+
+@ping_bomb_ack
+=e
+bomb, ok
+=a
+Going for the bomb.
+On it.
+=l
+ok
+on it
+=s
+on it!
+bomb, going
+=m
+Going.
+Copy.
+
+@human_call_thanks
+=e
+good call
+=a
+Good info.
+=l
+nice info
+=s
+good info!
+=m
+Good info, {name}.
+
+@human_wrong_call
+=e
+{area} empty
+=a
+No one at {area}.
+=l
+{area} empty
+=s
+{area} is empty
+no one at {area}
+=m
+Nothing at {area}.
+
+@round_start_generic
+=e
+same again
+=a
+Let's go.
+=l
+gl hf
+quiet start
+lets see
+=s
+come on team
+=m
+Let's go.
+Slow start.
+Same lines.
+
+@first_round
+=e
+have fun
+=a
+Have a good one.
+=l
+hf
+=s
+have fun all!
+=m
+Have fun.
+
+@match_point_us
+=e
+finish it
+=a
+Close it out.
+=l
+close it out
+=s
+let's close it out!
+=m
+Close it out.
+
+@match_point_them
+=e
+all or nothing
+=a
+Must win round.
+=l
+must win
+do or die
+=s
+must win, together!
+=m
+Do or die.
+
+@last_round
+=e
+last one
+=a
+This one decides it.
+=l
+this is it
+decider
+=s
+decider!
+=m
+Decider.
+
+@score_tied
+=e
+all tied up
+=a
+Level score.
+=l
+even
+all tied
+=s
+all tied!
+tied, come on
+=m
+Even.
+
+@comeback
+=e
+don't stop
+=a
+Momentum. Keep going.
+=l
+we're back
+keep going
+=s
+don't stop now!
+=m
+Keep it going.
+
+@big_lead
+=e
+stay sharp
+=a
+Don't relax.
+=l
+dont throw
+going well
+=s
+going great, stay focused
+keep it going!
+=m
+Don't relax.
+Stay sharp.
+
+@far_behind
+=e
+we can still win
+=a
+Still time.
+=l
+not over
+one at a time
+=s
+not over yet!
+=m
+Not over.
+
+@flawless_round
+=e
+perfect
+=a
+Flawless.
+=l
+flawless
+no deaths lol
+=s
+flawless!
+=m
+No losses.
+
+@close_round_won
+=e
+that was close
+=a
+That was close.
+=l
+phew
+barely
+=s
+so close!
+=m
+Tight one.
+
+@round_won_time
+=e
+clock
+=a
+Time's up. Ours.
+=l
+ran the clock
+time
+=s
+they ran out of time
+time, nice
+=m
+Clock ran out.
+
+@round_lost_time
+=e
+ran out of time
+=a
+Out of time.
+=l
+no time
+time
+=s
+ran out of time
+we need to move faster
+=m
+Out of time.
+
+@round_won_bomb
+=e
+objective ez
+=a
+Bomb round.
+=l
+objective
+bomb, nice
+=s
+bomb round, nice!
+=m
+Objective round.
+
+@side_switch
+=e
+switch sides
+=a
+Other side now.
+=l
+other side
+sides
+=s
+other side now!
+=m
+Switch.
+
+@overtime
+=e
+more rounds lol
+=a
+Going to overtime.
+=l
+overtime
+more rounds
+=s
+OT, let's go!
+overtime, gl all
+=m
+Extra rounds.
+
+@teammate_joined
+=e
+yo {name}
+=a
+Good to have you, {name}.
+=l
+hey {name}
+yo
+=s
+hey {name}, welcome
+=m
+Hi, {name}.
+Hello, {name}.
+
+@teammate_left
+=e
+one less
+=a
+Down a player.
+=l
+one less
+down one
+=s
+we lost {name}
+=m
+Down a player.
+
+@enemy_left
+=e
+they're down one
+one of them left
+=a
+They lost a player.
+Uneven teams now.
+=l
+one left the server
+uneven
+=s
+they're down a player
+uneven teams
+=m
+They lost one.
+Uneven.
+
+@auto_balanced
+=e
+hi new team
+=a
+Switched sides. Hello.
+Balanced over.
+=l
+switched
+moved lol
+=s
+hello new team
+=m
+Moved teams.
+Switched.
+
+@bot_replaced
+=e
+have fun
+=a
+Making room. Bye.
+Good luck, {name}.
+=l
+cya
+making room
+=s
+making room, bye!
+=m
+Making room.
+Bye.
+
+@vote_called
+=e
+vote up
+=a
+Vote. Check it.
+There's a vote.
+=l
+f1 or f2
+vote up
+=s
+there's a vote
+vote please
+=m
+Vote's up.
+Vote. F1 or F2.
+
+@map_voted_good
+=e
+good map
+=a
+I like this one.
+Solid map.
+=l
+good one
+ok map
+=s
+I like this map
+nice choice
+=m
+Good map.
+
+@map_start
+=e
+gl on this one
+=a
+New map. glhf.
+Good luck all.
+=l
+glhf
+new map
+=s
+new map, glhf!
+hi all
+=m
+New map. Good luck.
+gl all
+
+@afk_teammate
+=e
+{name} afk?
+=a
+{name}, you with us?
+{name}?
+=l
+{name}?
+{name} there?
+=s
+{name}? you there?
+=m
+{name}?
+{name}, you there?
+
+@waiting_for_players
+=e
+waiting for players
+=a
+Need a few more.
+Waiting on more players.
+=l
+waiting
+need more
+=s
+need a few more players
+=m
+Waiting for players.
+Need more.
+
+@human_first_blood
+=e
+first blood {name}
+=a
+First pick, {name}. Good.
+Nice opener, {name}.
+=l
+first blood
+opener {name}
+=s
+first blood {name}!
+nice start {name}
+=m
+First blood, {name}.
+Opening pick. Good.
+
+@human_multi_kill
+=e
+{name} going off
+=a
+Excellent, {name}.
+=l
+wow {name}
+{name} lol
+=s
+{name} on fire!
+=m
+Well shot, {name}.
+
+@human_plant
+=e
+planted, nice {name}
+good plant
+=a
+Bomb's down. Nice, {name}.
+Planted. Good work.
+=l
+nice plant {name}
+good plant
+=s
+good plant {name}
+planted, nice one!
+=m
+Planted. Good, {name}.
+Good plant, {name}.
+
+@human_defuse
+=e
+nice defuse {name}
+defused!
+=a
+Defused. Well done, {name}.
+Nice defuse.
+=l
+defused
+nice {name}
+=s
+defused!! nice {name}
+nice defuse {name}!
+=m
+Defused. Good.
+Good defuse.
+
+@human_capture
+=e
+nice cap {name}
+capped lets go
+=a
+Captured. Well done, {name}.
+Nice capture.
+=l
+capped
+nice cap
+=s
+capped, great run {name}
+great cap!
+=m
+Captured. Good.
+Clean capture, {name}.
+
+@human_died_unlucky
+=e
+unlucky
+nt {name}
+=a
+Nothing you could do, {name}.
+Unlucky.
+=l
+unlucky {name}
+nt
+=s
+nt {name}
+unlucky, nothing you could do
+=m
+Unlucky, {name}.
+Nothing to do there.
+
+@top_fragger_bot
+=e
+good game me lol
+not bad
+=a
+Thanks, all.
+Good game, team.
+=l
+gg
+not bad
+=s
+gg, great team!
+thanks team
+=m
+Good game.
+Solid game.
+
+@top_fragger_human
+=e
+wp {name}
+{name} mvp
+=a
+Great game, {name}.
+MVP, {name}.
+=l
+{name} mvp
+{name} carried
+=s
+wp {name}!
+{name} mvp!
+=m
+Well played, {name}.
+MVP {name}.
+
+@close_match_end
+=e
+close game
+=a
+Good match. Close.
+That was close.
+=l
+close game
+good one
+=s
+so close, gg
+great game all
+=m
+Close one.
+Good match.
+
+@rematch
+=e
+one more game?
+=a
+One more?
+Again, if you like.
+=l
+one more?
+another?
+=s
+again?
+=m
+One more?
+Another round?
