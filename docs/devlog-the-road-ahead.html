@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The road ahead, in full · TrueCombat: Platinum</title>
+<meta name="description" content="The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-the-road-ahead.html">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-the-road-ahead.html">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="The road ahead, in full">
+<meta property="og:description" content="The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-the-road-ahead.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-the-road-ahead.jpg">
+<meta property="article:published_time" content="2026-11-11">
+<meta property="article:section" content="Roadmap">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"The road ahead, in full","description":"The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.","datePublished":"2026-11-11","dateModified":"2026-11-11","inLanguage":"en","articleSection":"Roadmap","timeRequired":"PT17M","image":"https://truecombat.eu/img/og-devlog-the-road-ahead.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-the-road-ahead.html","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio.html"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="twitter:title" content="The road ahead, in full">
+<meta name="twitter:description" content="The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog.html"},{"@type":"ListItem","position":3,"name":"The road ahead, in full","item":"https://truecombat.eu/devlog-the-road-ahead.html"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-the-road-ahead.html">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-the-road-ahead.html">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-the-road-ahead.html">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=be2a4cd32c">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps.html">Maps</a></li>
+      <li><a href="weapons.html">Weapons</a></li>
+      <li><a href="media.html">Media</a></li>
+      <li><a href="guide.html">Guide</a></li>
+      <li><a href="servers.html">Servers</a></li>
+      <li><a href="leaderboards.html">Leaderboards</a></li>
+      <li><a href="competitive.html">Competitive</a></li>
+      <li><a href="news.html" aria-current="page">News</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Sections">
+        <a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="media.html">Media</a><a href="guide.html">Guide</a><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a><a href="news.html">News</a><a href="studio.html">Studio</a><a href="support.html">Support</a><hr><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="./#faq">FAQ</a><a href="press.html">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="nl/devlog-the-road-ahead.html" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <a class="nav-lang" href="nl/devlog-the-road-ahead.html" hreflang="nl" lang="nl" title="Nederlands">NL</a>
+    <a class="nav-support" href="support.html" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Support</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="./#download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="the-road-ahead" data-min="17">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(img/map-delta.webp); --art-s: url(img/map-delta-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog.html">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-11">11 Nov 2026</time><span>17 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="the-road-ahead" hidden></span></p>
+      <h1>The road ahead, in full</h1>
+      <p class="lede">The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#how-the-work-is-organised">How the work is organised</a></li>
+          <li><a href="#update-0-35-what-the-investigation-found">Update 0.35: what the investigation found</a></li>
+          <li><a href="#the-match-record">The match record</a></li>
+          <li><a href="#also-new-in-0-35">Also new in 0.35</a></li>
+          <li><a href="#bots-rebuilt-from-the-senses-up">Bots, rebuilt from the senses up</a></li>
+          <li><a href="#online-play-and-launcher-1-5-0">Online play and launcher 1.5.0</a></li>
+          <li><a href="#discord-pickup-games-and-reports">Discord: pickup games and reports</a></li>
+          <li><a href="#easy-anti-cheat">Easy Anti-Cheat</a></li>
+          <li><a href="#dlss-5">DLSS 5</a></li>
+          <li><a href="#after-that">After that</a></li>
+          <li><a href="#what-you-can-do">What you can do</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Two days ago we published <a href="devlog-whats-next.html">What we are working on next</a> and <a href="devlog-playtest-fixes.html">What the playtests told us</a>. Since then the plan has gone from a list to an order of work: we know what goes into the next update, what goes into the one after it, and what the larger projects behind them look like.</p>
+<p>This post is the long version. It does not repeat the two earlier lists. It explains how the main pieces work, because several of them are things a game of this age was never designed to do, and a bullet point does not do them justice. It is a long read, so use the contents list to jump to what interests you.</p>
+<aside class="callout"><p>Nothing in this post has a date. An update ships when every part of it passes the full test run on the game, the server, both renderers and the launcher. Where something depends on a party outside our team, we say so.</p></aside>
+<h2 id="how-the-work-is-organised">How the work is organised</h2>
+<p>There are two updates in the plan, and they are deliberately different in character.</p>
+<p><strong>Update 0.35</strong> is about how the game plays. It carries the core fixes from the playtests, and the first of the new features that do not need any collected data to work.</p>
+<p><strong>Update 0.36</strong> is about bots, maps and the warm-up, plus the features that read from recorded matches. Those features need real matches to exist first, which is why they come second: the recording starts with 0.35, and 0.36 builds on what it has gathered.</p>
+<p>Inside 0.35 the fixes are built first. If the update has to be cut smaller to get the fixes out sooner, it is the new features that move, never the fixes.</p>
+<h2 id="update-0-35-what-the-investigation-found">Update 0.35: what the investigation found</h2>
+<p>When we went through the playtest reports line by line in the source, one finding explained more than any other.</p>
+<p>Platinum's game code is not the original TC:E code with changes on top. It is a new, native implementation, written to behave like the original. That is what makes the DirectX 12 renderer, the lag compensation and the bots possible at all. It also means that some things players reported as bugs are not broken features. They are features that have not been rebuilt yet, or that were rebuilt as a first approximation and never replaced.</p>
+<h3>Movement has one root cause</h3>
+<p>Jump distance, crouch speed, ladder speed, footsteps and head bob were reported as separate problems. They are one problem. The part of the code that moves a player through the world each frame, applying friction, acceleration, steps and slopes, is still the provisional version from early development. Everything that depends on your speed inherits its small errors: when a footstep plays, how much the view bobs, how far a jump carries.</p>
+<p>We also found a specific fault in the jump itself. A jump taken while moving loses a large part of its height compared with a standing jump, which is the reason the container jump on Delta is currently impossible.</p>
+<p>So we are not going to tune these numbers one by one. The provisional movement core is being replaced with a faithful one, and then each value is measured against the original game: jump height, jump length while running and sprinting, crouch and crouch-walk speeds, ladder speed, how high a ledge you can climb. We have a test rig that runs the same inputs through the original and through Platinum and compares the results, so "feels right" becomes a number we can check after every change.</p>
+<p>Weapon accuracy depends on this too. The accuracy penalty for moving is calculated from your speed, so every weapon gets re-checked once the new movement is in.</p>
+<h3>Gunplay, measured</h3>
+<p>For hits at range and shots landing off the aim point, we are building a firing range that runs by itself: fixed targets at 10, 25, 50 and 100 metres, every weapon in the roster, aimed and from the hip, on a perfect connection and on a delayed one. It records where each round lands relative to the crosshair and compares it with the original. Whatever that data shows is what gets fixed, across the whole roster and not only the weapons that were named in reports.</p>
+<p>The same pass covers damage per body region for every weapon, the pace of the bolt-action rifle, and weapon sounds, including the sounds you hear while spectating.</p>
+<h3>Causes we have already confirmed</h3>
+<ul>
+  <li><strong>A grenade throw firing your gun.</strong> After your last grenade the game switched straight back to your weapon without the normal switch delay, so a mouse button that was still held down fired immediately. The fix adds the delay and requires a fresh trigger pull.</li>
+  <li><strong>Suppressors.</strong> A suppressor can be selected in the Deployment Menu, but nothing in the firing or sound code reads it yet. It will get a suppressed sound, no muzzle flash, and a shorter distance at which bots can hear it.</li>
+  <li><strong>Grenade cooking.</strong> Grenades are currently thrown the moment you press the button. The original behaviour returns: hold to prime, release to throw, with the fuse running while you hold.</li>
+  <li><strong>Your team between maps.</strong> The game did not remember which team you were on when the map changed. It will, and it will also keep your team and score if you drop out and rejoin within a few minutes.</li>
+</ul>
+<h3>Everything else in the 0.35 fix batch</h3>
+<ul>
+  <li>Chat and team chat input, with history.</li>
+  <li>Team selection that registers on the first click.</li>
+  <li>A server browser inside the game, in the Esc menu, so you can change server without going back to the launcher.</li>
+  <li>The voice command menu.</li>
+  <li>Coloured player names that survive a restart and display the same everywhere.</li>
+  <li>Key binding for extra mouse buttons, and toggle options for walk and sprint.</li>
+  <li>An Options page in the Esc menu: mouse and aim sensitivity with typed values, field of view, audio volumes and HUD options, all applied live.</li>
+  <li>A hit marker setting. It is a player choice on Unranked and always off on Ranked.</li>
+  <li>A longer, adjustable kill feed with names in team colour.</li>
+  <li>Doors that follow each map's own settings as in the original, with an on-screen prompt.</li>
+  <li>Flashbangs that blind and deafen bots for as long as they would a player.</li>
+  <li>Fall damage applied to the legs, as in the original.</li>
+  <li>Missing weapons in the Deployment Menu, dark red dot sights and wrongly coloured weapon parts.</li>
+</ul>
+<h3>A bug reporter built into the game</h3>
+<p>Press F12, or pick "Report a bug" in the Esc menu, and a text box opens. No console, no command to remember. The report is sent with what we need to reproduce it: the map, your position, the server, the build, the renderer, a screenshot and the last lines of the game log. Details about your hardware are included only if you leave the tick box on, and you can see exactly what is sent.</p>
+<p>We want this in 0.35 for a selfish reason: the next round of playtest feedback should arrive through it, with a position and a screenshot attached to every report.</p>
+<h2 id="the-match-record">The match record</h2>
+<p>This is the piece most of the new features stand on, so it is worth explaining properly.</p>
+<p>From 0.35, the official servers write down what happens in each match: every kill, every point of damage, every objective, the start and end of each round, and where each player is, sampled several times a second. It is a compact log of gameplay, a few hundred kilobytes per match, kept for a limited time and then deleted. It records what happens in the match and nothing about you outside it.</p>
+<p>Older games treated a match as something that is over when the scoreboard closes. With a record like this, a match becomes something you can study afterwards. One recording feeds many features:</p>
+<ul>
+  <li><strong>2D replays.</strong> Watch any match from above on the map layout, round by round, with a timeline and the kill feed.</li>
+  <li><strong>Automatic highlights.</strong> The server recognises an ace, a clutch, several kills within seconds or a defuse with almost no time left, and picks out the best moments.</li>
+  <li><strong>Heatmaps.</strong> Where fights happen and where players die on each map, per team and mode.</li>
+  <li><strong>A public balance view.</strong> How each weapon performs over time: time to kill, headshot rate, how often it is picked. Balance changes can then be argued from data everyone can see.</li>
+  <li><strong>A post-match coach.</strong> A few numbers from your last match and one practical tip, such as the area where you died most and whether it was from the front or the flank. The tips are written by us, one by one. No generated text.</li>
+  <li><strong>Weekly contracts and seasons.</strong> Small weekly challenges and an eight-week season with its own leaderboard. Nothing to buy and nothing that affects gameplay.</li>
+  <li><strong>Bots that learn.</strong> More on that below.</li>
+</ul>
+<p>We build the record once and let every feature read from it, instead of each feature collecting its own data in its own way. The recording arrives in 0.35. The features that read from it follow in 0.36, when there are enough matches to make them meaningful.</p>
+<h2 id="also-new-in-0-35">Also new in 0.35</h2>
+<p>Three features that need no collected data come with the first update.</p>
+<h3>Location pings</h3>
+<p>Aim at something, press the ping key, and your team sees a marker in the world and a line in chat with the area name, such as "[Market] Enemy spotted". A double tap means "enemy here", and a small wheel offers the rest: need help, going here, defending, bomb or flag.</p>
+<p>Two details matter. First, the server checks that you can actually see an enemy before it accepts an enemy ping, so pings can never be used to reveal someone through a wall, on Ranked or anywhere else. Second, most of the original maps carry no area names at all, so we work them out from the map's layout and name them by hand, starting with Village.</p>
+<h3>Bots that adapt to the server</h3>
+<p>On Unranked, the server compares every minute how the human players are doing against the bots, and nudges the bots' aim and reaction time slightly up or down. The steps are small and smoothed, so you should never notice it happening. You should only notice that a server of newcomers is not being farmed and a server of veterans is not bored. Ranked has no bots, so none of this applies there.</p>
+<h3>When people play</h3>
+<p>The servers already know how many players are online. They will start keeping that history and turn it into a "busiest times" chart on the website. The launcher and Discord get an optional notification: tell it a number, and it lets you know when that many players are on. For a small community, knowing when to show up is half of having a full server.</p>
+<h2 id="bots-rebuilt-from-the-senses-up">Bots, rebuilt from the senses up</h2>
+<p>Platinum's bots can move, shoot, play the objective and work in pairs. The playtests were clear about what they cannot do: they take the same routes, they rarely aim down sights, they lean at the wrong moments, and their reactions swing between slow and instant. We could patch those four things. Instead we have designed a new bot brain in four layers, and the first layer is being built now for 0.36.</p>
+<h3>1. A bot that understands the map</h3>
+<p>The original maps contain no information for bots. Platinum already works out where a bot can walk. The next step is working out what a place <em>means</em>.</p>
+<p>When a map loads, the game divides it into a few hundred small areas and calculates which areas can see which. From that one table a great deal follows without anyone marking up a map by hand:</p>
+<ul>
+  <li><strong>Exposure.</strong> An area that many others can see is dangerous to stand in. An area few can see is a place to hold.</li>
+  <li><strong>Cover.</strong> For each spot, which directions are protected, and whether you have to crouch for it.</li>
+  <li><strong>Chokepoints.</strong> The areas every route between a spawn and an objective has to pass through.</li>
+  <li><strong>Corners.</strong> The places where one step sideways suddenly reveals a lot of the map. These are where a player slows down, raises the sights and leans, so that is where bots will do it too: aiming at head height at the edge before they come round it, and leaning out toward the open side when they hold it.</li>
+  <li><strong>Lanes.</strong> Up to four clearly different routes between each spawn and each objective. Bots are spread over the lanes at the start of a round, with a limit per lane, so they stop arriving at the same door in one group. Narrow doorways get a queue instead of a traffic jam.</li>
+</ul>
+<p>Because it is calculated from the geometry, it works on every map, including community maps we have never seen.</p>
+<h3>2. A bot that has to look and listen</h3>
+<p>This is the layer that changes how bots feel most.</p>
+<p>Today, a bot becomes aware of you the moment nothing stands between you. That is why their reactions feel unfair one moment and blind the next. In the new design a bot perceives the world roughly the way you do:</p>
+<ul>
+  <li><strong>Noticing takes time.</strong> Awareness builds up. Fast if you are close, in front of the bot and in the open. Slowly if you are far away, at the edge of its view, standing still or in shadow. A bot can fail to notice you, and you can see it happen.</li>
+  <li><strong>Hearing.</strong> Footsteps, reloads and doors tell a bot roughly where something is, not exactly where. Walking quietly becomes a real tactic against bots, as it is against people.</li>
+  <li><strong>Belief, not knowledge.</strong> Each team of bots keeps a shared picture of where the enemy <em>might</em> be, built only from what its members have seen and heard. It fades and spreads with time. A bot checks the corner where it last saw you, not the corner where you really are.</li>
+  <li><strong>Decisions by weighing options.</strong> Instead of a fixed script, a bot scores a small set of actions, such as push, hold, flank, fall back, support a teammate or go for the objective, against the situation it believes it is in.</li>
+  <li><strong>Personalities.</strong> Each bot name gets its own temperament: patient or aggressive, a preferred range, how readily it takes a risk. The same name will play recognisably the same way from match to match.</li>
+  <li><strong>Nerves.</strong> A bot left alone against three plays differently from a bot on a winning team, and bots make the occasional believable mistake.</li>
+</ul>
+<h3>3. A team that makes a plan</h3>
+<p>At the start of a round a team of bots picks a plan from a small playbook: which lanes to take, who holds and who pushes. The team keeps track of which plans have worked on this map against these opponents and gradually favours them, while still trying the others now and then so it does not become predictable.</p>
+<p>Bots will call out what they see through the same voice commands and pings players use, with area names, and react to calls from teammates. That works in both directions: you will be able to give a bot a simple order, such as follow me or hold here.</p>
+<h3>4. Bots that learn from real matches</h3>
+<p>This is where the match record comes back in. Once enough matches have been recorded on a map, bots can start to use them:</p>
+<ul>
+  <li><strong>Routes.</strong> Bots favour the paths real players actually take on each map, mixed with their own lane, so they flank and hold where people do.</li>
+  <li><strong>Positions and timing.</strong> Where players tend to hold, and how long after the start of a round fights usually break out in each area.</li>
+  <li><strong>Aim.</strong> How a human hand really moves a crosshair onto a target: the speed, the overshoot, the settling. Bot aim is shaped to follow those curves instead of an invented formula.</li>
+</ul>
+<p>We are also designing an optional mode for later in which a bot can play in the style of a specific player who has agreed to it.</p>
+<p>There is no chatbot inside any of this. A bot's decisions are made by game logic that runs on the server and can be tested and measured, not by a language model.</p>
+<h3>How we will know it worked</h3>
+<p>Every bot change is already tested by running full matches on all six maps, old version against new, and comparing the numbers. For this work we are adding a measure of how human the bots look: how often they use the sights, how many different routes a team takes per round, how their reaction times are distributed.</p>
+<p>And once the later layers are in, we want to run an announced test night on the official servers where players guess who in the match was a bot. If you cannot tell, we are done.</p>
+<p>The first layer, map understanding with corners and lanes, is in development for 0.36. The other three follow one at a time, each after the one before it has proven itself.</p>
+<h2 id="online-play-and-launcher-1-5-0">Online play and launcher 1.5.0</h2>
+<p>This work is built and has been brought up to date with the current version. What it still needs is its test with real players on real connections, and it joins an update once it has passed.</p>
+<ul>
+  <li><strong>A connection you can read.</strong> Four-bar connection icons next to every ping on the scoreboard, coloured by quality, and a network graph you can switch on under the round clock: ping, packet loss and jitter, or a rolling six-second graph with loss spikes in red. When a fight feels wrong you can see whether it was your connection, theirs or the server.</li>
+  <li><strong>One-click join.</strong> A join link on the website or in Discord opens the launcher and puts you in the server, on the right team if the link says so. If the server is full, the launcher waits for a slot and joins by itself. Before connecting it runs a short connection check and turns on extra packet protection if your route is losing packets.</li>
+  <li><strong>IPv6.</strong> The launcher, the game, the server list and the dedicated server all handle IPv6 addresses. For players whose provider no longer gives them a full IPv4 address, that can be the difference between being able to host and not.</li>
+  <li><strong>A Verified tag.</strong> Community servers that run the official build are marked in the server browser and on the website.</li>
+  <li><strong>Hover tips.</strong> The launcher explains its own options: hold the pointer over a graphics setting and it tells you what it does and what it costs.</li>
+  <li><strong>Fairer Ranked.</strong> A ping limit on Official #1, timed bans that apply across the official servers, and a full rating loss for quitting a team match you are losing.</li>
+</ul>
+<h2 id="discord-pickup-games-and-reports">Discord: pickup games and reports</h2>
+<p>Our own Discord bot is built and tested. It is not switched on yet, because that step involves the live servers and waits for its own go-ahead.</p>
+<ul>
+  <li><strong>Pickup games.</strong> Press Join queue. When two full teams are waiting, everyone gets a 60-second ready check. The bot then balances the teams on skill rating by trying every possible split, claims a free match server, sets a fresh password, turns on competitive match mode and sends each player a join link that lands them on the right team. When the match ends it posts the result with each player's rating change and starts the next group. For a community our size, this is matchmaking that works with twelve people online.</li>
+  <li><strong>Reports with evidence.</strong> An in-game <code>/report</code> reaches the staff channel with the reported player's stats for that map and a pointer to the exact minute in the server's own recording of the match. A person always makes the decision.</li>
+  <li><strong>Your account, linked.</strong> One code typed in game connects your Discord account to your player profile. No password and no sign-up. From then on <code>/profile</code> shows your rank, rating and last matches, and Discord roles follow your rank.</li>
+  <li><strong>Live server cards, events and playtests.</strong> A card per official server that updates every minute, and event sign-ups with reminders in your own time zone.</li>
+</ul>
+<h2 id="easy-anti-cheat">Easy Anti-Cheat</h2>
+<p>The Easy Anti-Cheat integration is in the engine and switched off. One check remains: a real client confirmed as protected when it is started through the real anti-cheat launcher. We will not announce it on the strength of a build that only looks right. It ships when that check passes, and it will get its own post explaining what it does and does not see on your PC.</p>
+<h2 id="dlss-5">DLSS 5</h2>
+<p>We get asked about this, so here is the honest state of it.</p>
+<p>Platinum already supports DLSS upscaling, DLAA, Frame Generation and Reflex. DLSS 5 is a different kind of technology: instead of sharpening or adding frames, it uses a neural network to re-light and refine the finished image. On a game with lighting from this era, that is potentially the largest visual step available.</p>
+<p>Our plan is to build it into the DirectX 12 renderer as a proper, native feature. The renderer already produces the motion and depth information this kind of technique needs, so nothing has to be bolted on from outside the game.</p>
+<p>Three things are decided:</p>
+<ul>
+  <li>It will be <strong>optional and off by default</strong>.</li>
+  <li>It will be <strong>off on Ranked</strong>, and enemy players are excluded from the effect everywhere. A technique that repaints the image must never change how visible an opponent is.</li>
+  <li>It will only ship with <strong>software NVIDIA has released for developers to distribute</strong>. That is not yet available for a project like ours, and the timing is not in our hands.</li>
+</ul>
+<p>So: planned, researched, and not available. It also needs a graphics card that supports it. We will not put a date on something that depends on a release we do not control.</p>
+<h2 id="after-that">After that</h2>
+<p>Further out, each with its own decision still to be made: more maps from TC:E's history, additional weapons and player skins from other TrueCombat releases, custom maps on community servers with a safe way to download them, and friends and parties in the launcher.</p>
+<h2 id="what-you-can-do">What you can do</h2>
+<p>The order above came directly from what players told us after the playtests, and it can change the same way. If something here matters more to you than the rest, or something is missing, tell us on <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. The <a href="index.html#roadmap">roadmap</a> follows this plan, and each piece gets its own devlog post when it lands.</p>
+      </div>
+      <div class="post-rate" data-rate="the-road-ahead" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-reads-and-ratings.html"><small>Older post</small>Counting readers without tracking anyone</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Roadmap">
+        <a class="post-art" href="devlog-whats-next.html" tabindex="-1" aria-hidden="true"><img src="img/media-map-vote-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>4 min read</span><span class="post-stat" data-post-stat="whats-next" hidden></span></p>
+          <h2><a href="devlog-whats-next.html">What we are working on next</a></h2>
+          <p>With 0.34.0 out, here is an open look at the work lined up behind it: better online play, Discord pickups, one-click joining, and a set of new features built on a shared match record. Plans, not promises.</p>
+          <a class="more" href="devlog-whats-next.html">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Roadmap">
+        <a class="post-art" href="devlog-playtest-fixes.html" tabindex="-1" aria-hidden="true"><img src="img/media-grenade-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>5 min read</span><span class="post-stat" data-post-stat="playtest-fixes" hidden></span></p>
+          <h2><a href="devlog-playtest-fixes.html">What the playtests told us</a></h2>
+          <p>Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.</p>
+          <a class="more" href="devlog-playtest-fixes.html">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="maps.html">Maps</a><a href="weapons.html">Weapons</a><a href="guide.html">Guide</a><a href="media.html">Media</a><a href="./#download">Download</a></div>
+        <div><p class="foot-h">Play</p><a href="servers.html">Servers</a><a href="leaderboards.html">Leaderboards</a><a href="competitive.html">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news.html">News</a><a href="devlog.html">Devlog</a><a href="studio.html">Studio</a><a href="press.html">Press kit</a><a href="support.html">Support</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=06640c485f"></script>
+</body>
+</html>
