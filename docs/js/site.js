@@ -1086,6 +1086,7 @@ var TCP_API = 'https://api.truecombat.eu';
 
     /* hero: the backdrop, fog and copy shift a few pixels against the cursor, and the compass tape turns with it */
     var hero = document.querySelector('.hero'), tape = document.getElementById('tape');
+    var heroSlides = hero && hero.querySelector('.slides'), heroWrap = hero && hero.querySelector('.wrap');
     if (hero) {
       if (tape) {
         var marks = ['N', '15', '30', 'NE', '60', '75', 'E', '105', '120', 'SE', '150', '165', 'S', '195', '210', 'SW', '240', '255', 'W', '285', '300', 'NW', '330', '345'], html = '';
@@ -1100,7 +1101,11 @@ var TCP_API = 'https://api.truecombat.eu';
         heading = (heading + dt * 0.006 + cx * dt * 0.05 + LOOP) % LOOP;   /* a slow turn, faster when the cursor leans */
         /* written only when the value moves, so a resting cursor costs no style work */
         var px = cx.toFixed(3), py = cy.toFixed(3);
-        if (px !== lastPx || py !== lastPy) { lastPx = px; lastPy = py; hero.style.setProperty('--px', px); hero.style.setProperty('--py', py); }
+        if (px !== lastPx || py !== lastPy) {
+          lastPx = px; lastPy = py;
+          if (heroSlides) heroSlides.style.transform = 'translate3d(' + (cx * -16).toFixed(2) + 'px,' + (cy * -12).toFixed(2) + 'px,0)';
+          if (heroWrap) heroWrap.style.transform = 'translate3d(' + (cx * 6).toFixed(2) + 'px,' + (cy * 4).toFixed(2) + 'px,0)';
+        }
         if (tape) tape.style.transform = 'translate3d(' + (-(LOOP + heading)).toFixed(1) + 'px,0,0)';
         if (seen && !document.hidden) raf = requestAnimationFrame(frame);
       }

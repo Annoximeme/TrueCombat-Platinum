@@ -1426,26 +1426,29 @@ html { scrollbar-color: #2e3747 var(--bg); }
 body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59,.10), transparent 65%), linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px); background-size: auto, 72px 72px, 72px 72px; background-attachment: scroll, fixed, fixed; }
 
 /* hero */
-.hero { --px: 0; --py: 0; min-height: min(calc(100svh - 60px), 1040px); display: grid; align-items: center; }
-.hero .slides { inset: -24px; transform: translate3d(calc(var(--px) * -16px), calc(var(--py) * -12px), 0); will-change: transform; }
-.hero .slide { filter: saturate(1.08) contrast(1.06); }
+.hero { min-height: min(calc(100svh - 60px), 1040px); display: grid; align-items: center; }
+/* the cursor parallax is written straight to .slides and .wrap by site.js: no custom property on .hero, so a cursor move never restyles the whole hero */
+.hero .slides { inset: -24px; will-change: transform; }
 .hero::before { background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .028 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
     radial-gradient(120% 90% at 70% 40%, rgba(13,16,22,0) 35%, rgba(8,10,14,.72) 100%),
     linear-gradient(90deg, rgba(13,16,22,.95) 0%, rgba(13,16,22,.80) 34%, rgba(13,16,22,.18) 72%, rgba(13,16,22,.30) 100%),
     linear-gradient(0deg, var(--bg) 0%, rgba(13,16,22,0) 34%),
     linear-gradient(180deg, rgba(13,16,22,.55) 0%, rgba(13,16,22,0) 18%); }
-.hero .wrap { width: 100%; position: relative; z-index: 2; transform: translate3d(calc(var(--px) * 6px), calc(var(--py) * 4px), 0); }
+.hero .wrap { width: 100%; position: relative; z-index: 2; }
 .hero-fx { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .fog { position: absolute; left: -30%; width: 160%; height: 70%; bottom: -18%; background:
-    radial-gradient(38% 55% at 22% 60%, rgba(190,205,225,.13), transparent 70%),
-    radial-gradient(30% 45% at 58% 70%, rgba(190,205,225,.10), transparent 70%),
-    radial-gradient(34% 50% at 86% 55%, rgba(190,205,225,.12), transparent 70%);
-  filter: blur(18px); animation: fog 48s linear infinite alternate; transform: translate3d(calc(var(--px) * -28px), 0, 0); }
-.fog-b { bottom: auto; top: -22%; height: 60%; opacity: .6; animation-duration: 70s; animation-direction: alternate-reverse; }
+    radial-gradient(42% 60% at 22% 60%, rgba(190,205,225,.12), rgba(190,205,225,.05) 45%, transparent 78%),
+    radial-gradient(34% 50% at 58% 70%, rgba(190,205,225,.09), rgba(190,205,225,.04) 45%, transparent 78%),
+    radial-gradient(38% 55% at 86% 55%, rgba(190,205,225,.11), rgba(190,205,225,.05) 45%, transparent 78%);
+  /* soft by its gradients alone: a CSS blur on a layer this size had to be redrawn on every frame */
+  animation: fog 48s linear infinite alternate; will-change: translate; }
+/* one fog bank: each extra full-width moving layer is composited again on every frame */
+.fog-b { display: none; }
 /* moved with translate, not margin, so the drifting fog never triggers layout or repaints its blur */
 @keyframes fog { from { translate: -5% 0; } to { translate: 5% 0; } }
-.grain { position: absolute; inset: -60px; background-image: var(--grain); opacity: .11; mix-blend-mode: overlay; animation: grain 1.1s steps(5) infinite; }
-@keyframes grain { 0% { transform: translate(0, 0); } 20% { transform: translate(-22px, 14px); } 40% { transform: translate(16px, -26px); } 60% { transform: translate(-30px, -10px); } 80% { transform: translate(24px, 22px); } 100% { transform: translate(0, 0); } }
+/* the grain is drawn as part of the hero's shading layer (.hero::before) rather than as its own animated full-screen layer */
+.grain { display: none; }
 .hud { position: absolute; width: 26px; height: 26px; border: 2px solid rgba(232,234,239,.38); opacity: 0; animation: hud-in .7s .5s cubic-bezier(.2,.8,.2,1) forwards; }
 .hud-tl { left: 22px; top: 22px; border-right: 0; border-bottom: 0; --hx: 14px; --hy: 14px; }
 .hud-tr { right: 22px; top: 22px; border-left: 0; border-bottom: 0; --hx: -14px; --hy: 14px; }
@@ -1472,23 +1475,29 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
 .hero h1 { animation-delay: .18s; } .hero .lede { animation-delay: .3s; } .hero .hero-cta { animation-delay: .42s; } .hero .hero-meta { animation-delay: .54s; }
 @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
 .hero h1 { font-size: clamp(2.1rem, min(5.2vw, 7.6vh), 4.1rem); line-height: .98; text-shadow: 0 2px 30px rgba(0,0,0,.55); }
-.hero h1 em { background: linear-gradient(100deg, #ff6a5c 0%, var(--red-hi) 45%, #ff9a7a 60%, var(--red-hi) 75%); -webkit-background-clip: text; background-clip: text; color: transparent; background-size: 220% 100%; animation: ember 7s linear infinite; }
+.hero h1 em { background: linear-gradient(100deg, #ff6a5c 0%, var(--red-hi) 45%, #ff9a7a 60%, var(--red-hi) 75%); -webkit-background-clip: text; background-clip: text; color: transparent; background-size: 220% 100%; background-position: 30% 0; }
 @keyframes ember { from { background-position: 120% 0; } to { background-position: -100% 0; } }
 
 /* a band of light crossing the platinum logo */
 .logo-wrap { position: relative; display: block; width: min(520px, 88%, 62vh); margin-bottom: -6px; }
 .logo-wrap .hero-logo { width: 100%; margin: 0; display: block; }
-.logo-sheen { position: absolute; inset: 0; pointer-events: none; -webkit-mask: url(img/logo.webp) center / 100% 100% no-repeat; mask: url(img/logo.webp) center / 100% 100% no-repeat;
-  background: linear-gradient(105deg, rgba(255,255,255,0) 42%, rgba(255,255,255,.75) 50%, rgba(255,255,255,0) 58%) no-repeat; background-size: 260% 100%; background-position: 160% 0; mix-blend-mode: overlay; animation: sheen 6.5s 1.2s ease-in-out infinite; }
-@keyframes sheen { 0% { background-position: 160% 0; } 28%, 100% { background-position: -60% 0; } }
+.logo-sheen { position: absolute; inset: 0; pointer-events: none; overflow: hidden; -webkit-mask: url(img/logo.webp) center / 100% 100% no-repeat; mask: url(img/logo.webp) center / 100% 100% no-repeat; }
+/* the band of light is moved with transform, which the GPU does without repainting the logo */
+.logo-sheen::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%; background: linear-gradient(105deg, rgba(255,255,255,0) 20%, rgba(255,255,255,.32) 50%, rgba(255,255,255,0) 80%); transform: translateX(-120%); animation: sheen 6.5s 1.2s ease-in-out infinite; will-change: transform; }
+@keyframes sheen { 0% { transform: translateX(-120%); } 28%, 100% { transform: translateX(300%); } }
 .hero .wrap { gap: clamp(16px, 2.6vh, 28px); padding-block: clamp(56px, 8vh, 110px) clamp(64px, 9vh, 110px); }
 
 /* primary button: a slow breathing glow, and a glint on hover */
 .btn-play { position: relative; overflow: hidden; }
 .btn-play::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.35) 50%, transparent 65%); transform: translateX(-120%); transition: transform .7s ease; pointer-events: none; }
 .btn-play:hover::after { transform: translateX(120%); }
-.hero .btn-play { animation: rise .8s .42s cubic-bezier(.2,.8,.2,1) both, breathe 3.6s 1.6s ease-in-out infinite; }
-@keyframes breathe { 0%, 100% { box-shadow: 0 8px 28px -10px rgba(214,59,59,.7); } 50% { box-shadow: 0 10px 44px -6px rgba(239,80,80,.95); } }
+.hero .btn-play { animation: rise .8s .42s cubic-bezier(.2,.8,.2,1) both; overflow: visible; }
+/* the breathing glow is a fixed shadow on a pseudo-element whose opacity pulses: no shadow is repainted per frame */
+.hero .btn-play::before { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 10px 44px -6px rgba(239,80,80,.95); opacity: 0; pointer-events: none; animation: breathe 3.6s 1.6s ease-in-out infinite; will-change: opacity; }
+/* the hero button lets its glow spill outside, so its hover shine sweeps as a background inside the button instead of a band parked off to the left */
+.hero .btn-play::after { border-radius: inherit; transform: none; background-size: 300% 100%; background-position: 100% 0; transition: background-position .7s ease; }
+.hero .btn-play:hover::after { transform: none; background-position: 0 0; }
+@keyframes breathe { 50% { opacity: 1; } }
 
 /* as the page scrolls, the hero sinks back and dims (browsers with scroll-driven animations) */
 @supports (animation-timeline: scroll()) {
@@ -1693,4 +1702,8 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
 #patch-notes, #roadmap, #faq { content-visibility: auto; contain-intrinsic-size: auto 900px; }
 .wgroup > .wnote { margin: 14px 0 0; color: var(--dim); font-size: .82rem; }
 /* the hero's looping effects stop while it is scrolled out of view */
-.hero.offscreen .fog, .hero.offscreen .grain, .hero.offscreen .logo-sheen, .hero.offscreen h1 em, .hero.offscreen .btn-play, .hero.offscreen .slide { animation-play-state: paused; }
+.hero.offscreen .fog, .hero.offscreen .logo-sheen::before, .hero.offscreen .btn-play::before, .hero.offscreen .slide { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .hero .btn-play::before, .logo-sheen::before { animation: none; } }
+/* nothing over the hero blurs what is behind it: a backdrop blur over moving images is recalculated on every frame */
+.nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(13, 16, 22, .93); }
+.hero .btn-ghost, .hero-log { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(13, 16, 22, .78); }
