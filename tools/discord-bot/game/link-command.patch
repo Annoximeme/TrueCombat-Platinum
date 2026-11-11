@@ -1,0 +1,98 @@
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index fd079fe..3f78c0e 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -629,6 +629,7 @@ static void setRoundPhase(int phase, int duration, int winner)
+ }
+ #include "tcp_mapvote.h"
+ #include "tcp_staff.h"
++#include "tcp_link.h"
+ 
+ /* HUD feed events, formatted by the cgame like TC:E's CG_Obituary and popups.
+  * tcp_obit <victim> <killer|-1 world> <weapon>; tcp_join <slot> <team>. */
+@@ -671,6 +672,8 @@ static void say(int n,int team)
+     }
+     for(char *c=text;*c;c++)if(*c=='"'||(unsigned char)*c<32)*c='\'';
+     if(!text[0])return;
++    /* "!link CODE" links a Discord account (tcp_link.h); the code is never broadcast */
++    if((text[0]=='!')&&(text[1]=='l'||text[1]=='L')&&(text[2]=='i'||text[2]=='I')&&(text[3]=='n'||text[3]=='N')&&(text[4]=='k'||text[4]=='K')&&(text[5]==' '||!text[5])){TCP_LinkRequest(n,text+5);return;}
+     SystemCall(G_GET_CONFIGSTRING,CS_PLAYERS+n,info,sizeof(info));
+     TCP_InfoValue(info,"n",name,sizeof(name));
+     if(team&&teamMode)snprintf(line,sizeof(line),"tchat \"(%s^7): ^5%s\" %d 0",name,text,n);
+@@ -1606,7 +1609,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+         TCP_StatsBind(n);spawn(n);TCP_MapVoteJoin(n);TCP_MatchJoin(n);SystemCall(G_SEND_SERVER_COMMAND,n,"print \"Welcome to TrueCombat: Platinum.\\n\"");return 0;
+     case GAME_CLIENT_USERINFO_CHANGED:userinfo(n);if(clients[n].begun)TCP_StatsBind(n);return 0;
+     case GAME_CLIENT_DISCONNECT:casterSession[n]=0;TCP_StaffClear(n);TCP_MapVoteDrop(n);TCP_MatchDrop(n);TCP_StatsLeave(n);if(!bots[n].active)botLastFill=levelTime-1000;botDisconnect(n);if(ctfMode)dropFlags(n);if(bombMode)dropBomb(n);SystemCall(G_UNLINKENTITY,&ents[n]);if(targets[n].active)SystemCall(G_UNLINKENTITY,&ents[targetBase+n]);memset(&targets[n],0,sizeof(targets[n]));memset(&clients[n],0,sizeof(clients[n]));lagClear(n);if(lagTest.on&&(lagTest.target==n||lagTest.shooter==n))lagTest.on=0;SystemCall(G_SET_CONFIGSTRING,CS_PLAYERS+n,"");disconnects++;return 0;
+-    case GAME_CLIENT_COMMAND:{char cmd[64];SystemCall(G_ARGV,0,cmd,sizeof(cmd));if(TCP_StaffCommand(n,cmd))return 0;if(!strcmp(cmd,"mapvote")){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));TCP_MapVoteCast(n,arg);return 0;}if(TCP_MatchClientCommand(n,cmd))return 0;if(!strcmp(cmd,"score")){sendScores(n);return 0;}if(botClientCommand(n,cmd))return 0;if(!strcmp(cmd,"say")||!strcmp(cmd,"say_team")){if(clients[n].begun)say(n,cmd[3]=='_');return 0;}if(!roundPhase&&!strcmp(cmd,"tcp_reset")&&clients[n].begun&&clients[n].health.health>0)spawn(n);else if(!strcmp(cmd,"tcp_reload")&&canFight(&clients[n])&&clients[n].begun&&clients[n].health.health>0){int started=TCP_GunReload(GUN(&clients[n]),levelTime);char msg[160];snprintf(msg,sizeof(msg),"TCP_NATIVE_RELOAD slot=%d started=%d now=%d end=%d\n",n,started,levelTime,GUN(&clients[n])->reload_end);print(msg);}else if(!strcmp(cmd,"tcp_select")&&clients[n].begun){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));int w=atoi(arg);int was=clients[n].selected;if(w==TCP_DYNAMITE_ID&&bombMode&&bombState==0&&bombCarrier==n){clients[n].selected=w;clients[n].attackHeld=1;clients[n].aim.aimed=0;}else if(w==TCP_KNIFE_WEAPON){clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;clients[n].aim.aimed=0;}else if((w==TCP_SMOKE_WEAPON||w==TCP_FRAG_WEAPON||w==TCP_STUN_WEAPON)&&*grenadeCount(&clients[n],w)>0){clients[n].aim.aimed=0;clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;}else selectWeapon(n,w);
++    case GAME_CLIENT_COMMAND:{char cmd[64];SystemCall(G_ARGV,0,cmd,sizeof(cmd));if(TCP_StaffCommand(n,cmd))return 0;if(!strcmp(cmd,"mapvote")){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));TCP_MapVoteCast(n,arg);return 0;}if(TCP_MatchClientCommand(n,cmd))return 0;if(!strcmp(cmd,"score")){sendScores(n);return 0;}if(botClientCommand(n,cmd))return 0;if(!strcmp(cmd,"link")){char arg[32];SystemCall(G_ARGV,1,arg,sizeof(arg));TCP_LinkRequest(n,arg);return 0;}if(!strcmp(cmd,"say")||!strcmp(cmd,"say_team")){if(clients[n].begun)say(n,cmd[3]=='_');return 0;}if(!roundPhase&&!strcmp(cmd,"tcp_reset")&&clients[n].begun&&clients[n].health.health>0)spawn(n);else if(!strcmp(cmd,"tcp_reload")&&canFight(&clients[n])&&clients[n].begun&&clients[n].health.health>0){int started=TCP_GunReload(GUN(&clients[n]),levelTime);char msg[160];snprintf(msg,sizeof(msg),"TCP_NATIVE_RELOAD slot=%d started=%d now=%d end=%d\n",n,started,levelTime,GUN(&clients[n])->reload_end);print(msg);}else if(!strcmp(cmd,"tcp_select")&&clients[n].begun){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));int w=atoi(arg);int was=clients[n].selected;if(w==TCP_DYNAMITE_ID&&bombMode&&bombState==0&&bombCarrier==n){clients[n].selected=w;clients[n].attackHeld=1;clients[n].aim.aimed=0;}else if(w==TCP_KNIFE_WEAPON){clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;clients[n].aim.aimed=0;}else if((w==TCP_SMOKE_WEAPON||w==TCP_FRAG_WEAPON||w==TCP_STUN_WEAPON)&&*grenadeCount(&clients[n],w)>0){clients[n].aim.aimed=0;clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;}else selectWeapon(n,w);
+             /* PM_BeginWeaponChange (cgame 0x30008e90) +250 ms drop, PM_FinishWeaponChange (0x30012bd0) +250 ms raise. */
+             if(clients[n].selected!=was){clients[n].switchUntil=levelTime+500;char m[96];snprintf(m,sizeof(m),"TCP_NATIVE_SWITCH slot=%d from=%d to=%d ready=%d\n",n,was,clients[n].selected,clients[n].switchUntil);print(m);}
+             syncStats(n);}
+diff --git a/b/game_src/native/tcp_link.h b/game_src/native/tcp_link.h
+new file mode 100644
+index 0000000..a04c905
+--- /dev/null
++++ b/game_src/native/tcp_link.h
+@@ -0,0 +1,62 @@
++/* TrueCombat: Platinum - Discord account linking (server side).
++ *
++ * A player gets a one-time code from the Discord bot (/link) and enters it in
++ * game, either as the console command "link CODE" or as "!link CODE" in chat
++ * (never shown to other players). The server writes
++ *   <fs_homepath>/<fs_game>/links/CODE.json   {"code","guid","name","time"}
++ * The bot runs on the same machine, reads the file, turns the guid into the
++ * public player id the leaderboards use and deletes the file. Nothing is sent
++ * over the network and the guid never leaves the server.
++ */
++#ifndef TCP_LINK_H
++#define TCP_LINK_H
++
++static int linkLastRequest[MAX_CLIENTS];
++
++static void linkTell(int n,const char *text)
++{
++    char line[200];snprintf(line,sizeof(line),"print \"%s\n\"",text);
++    SystemCall(G_SEND_SERVER_COMMAND,n,line);
++}
++
++/* Codes are 6 characters from the bot's alphabet; dashes and spaces are ignored. */
++static int linkCode(const char *in,char *out)
++{
++    int len=0;
++    for(const char *c=in;*c;c++){
++        char ch=*c;
++        if(ch=='-'||ch==' ')continue;
++        if(ch>='a'&&ch<='z')ch=(char)(ch-32);
++        if(!((ch>='A'&&ch<='Z')||(ch>='0'&&ch<='9'))||len>=6)return 0;
++        out[len++]=ch;
++    }
++    out[len]=0;return len==6;
++}
++
++static void TCP_LinkRequest(int n,const char *arg)
++{
++    char code[8],info[MAX_INFO_STRING],guid[40],name[48],safe[48],body[256],path[64];
++    if(n<0||n>=maxClients||!clients[n].connected)return;
++    if(!linkCode(arg?arg:"",code)){linkTell(n,"Usage: link <code>. Get your code with /link in the TrueCombat Discord.");return;}
++    if(linkLastRequest[n]&&levelTime-linkLastRequest[n]<5000){linkTell(n,"Please wait a few seconds before trying again.");return;}
++    linkLastRequest[n]=levelTime;
++    SystemCall(G_GET_USERINFO,n,info,sizeof(info));
++    TCP_InfoValue(info,"cl_guid",guid,sizeof(guid));
++    int ok=(int)strlen(guid)==32;
++    for(int i=0;ok&&guid[i];i++){char g=guid[i];ok=(g>='0'&&g<='9')||(g>='a'&&g<='f')||(g>='A'&&g<='F');}
++    if(!ok){linkTell(n,"Linking needs a game profile key. Restart the game from the launcher and try again.");return;}
++    SystemCall(G_GET_CONFIGSTRING,CS_PLAYERS+n,info,sizeof(info));
++    TCP_InfoValue(info,"n",name,sizeof(name));
++    int j=0;for(int i=0;name[i]&&j<(int)sizeof(safe)-1;i++){unsigned char ch=(unsigned char)name[i];if(ch>=32&&ch<127&&ch!='"'&&ch!='\\')safe[j++]=(char)ch;}
++    safe[j]=0;
++    snprintf(body,sizeof(body),"{\"schema\":\"tcp-link/1\",\"code\":\"%s\",\"guid\":\"%s\",\"name\":\"%s\",\"time\":%d}\n",
++             code,guid,safe,levelTime);
++    snprintf(path,sizeof(path),"links/%s.json",code);
++    fileHandle_t f;
++    if(SystemCall(G_FS_FOPEN_FILE,path,&f,FS_WRITE)<0||!f){linkTell(n,"Linking is not available on this server.");return;}
++    SystemCall(G_FS_WRITE,body,(int)strlen(body),f);SystemCall(G_FS_FCLOSE_FILE,f);
++    linkTell(n,"^2Link request sent.^7 Head back to Discord, it will confirm in a few seconds.");
++    char log[96];snprintf(log,sizeof(log),"TCP_NATIVE_LINK slot=%d\n",n);print(log);
++}
++
++#endif
