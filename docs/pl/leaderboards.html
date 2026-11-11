@@ -36,7 +36,7 @@
 <link rel="alternate" type="application/atom+xml" title="Informacje o wersjach (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=f31321805c">
+<link rel="stylesheet" href="../style.css?v=2d1a1c7ae7">
 </head>
 <body>
 <!--nav-->
@@ -76,7 +76,7 @@
   <div class="wrap">
     <span class="eyebrow">Rankingi</span>
     <h1>Najlepsi gracze</h1>
-    <p class="lede">Stopień, rating umiejętności i bilans walk z każdego meczu na serwerze rankingowym. Konto nie jest potrzebne: pojawiasz się tutaj automatycznie po pierwszym ukończonym meczu.</p>
+    <p class="lede">Stopień, rating umiejętności i pełny bilans walk z każdego zweryfikowanego meczu, rankingowego i nierankingowego. Konto nie jest potrzebne: pojawiasz się tutaj automatycznie po pierwszym ukończonym meczu.</p>
   </div>
 </section>
 
@@ -112,6 +112,12 @@
   </div>
 </section>
 
+<section class="band sb-band">
+  <div class="wrap">
+    <div class="server-card full" data-statboard aria-live="polite"></div>
+  </div>
+</section>
+
 <section class="band">
   <div class="wrap">
     <div class="section-head">
@@ -121,16 +127,16 @@
     <div class="stat-cards">
       <div><b>Stopień</b><span>Zdobywany doświadczeniem: zabójstwa, headshoty, wygrane rundy, cele, wygrane mecze i czas w polu. 21 stopni, od Recruit do General. Zabójstwa sojuszników kosztują doświadczenie.</span></div>
       <div><b>Rating umiejętności</b><span>Każdy zaczyna od 1000. Pokonaj silniejszą stronę, a zyskasz więcej; przegraj ze słabszą, a stracisz więcej. Twój udział zależy od tego, jak długo grałeś.</span></div>
-      <div><b>Bilans walk</b><span>Zabójstwa, śmierci i headshoty w starciach z wrogiem. Zabójstwa sojuszników i samobójstwa są liczone osobno.</span></div>
-      <div><b>Zwycięstwa</b><span>Mecze wygrane przez twoją drużynę. W profilu znajdziesz też swoją broń, celność i 20 ostatnich meczów.</span></div>
+      <div><b>Bilans walk</b><span>Liczą się tylko starcia z prawdziwymi graczami, nawet gdy na serwerze są boty. Zabójstwa sojuszników i samobójstwa są liczone osobno.</span></div>
+      <div><b>Zwycięstwa</b><span>Mecze wygrane przez twoją drużynę. Profil rozkłada na części każdą broń, mapę, rywala i clutch.</span></div>
     </div>
-    <p class="yt-note" style="margin-top:20px">Mecze zgłaszają tylko serwery rankingowe, a każde zgłoszenie jest podpisane własnym kluczem serwera. Mecze treningowe, mecze z włączonymi cheatami i boty nigdy się nie liczą. Gra rozpoznaje cię po kluczu, który tworzy na twoim komputerze przy pierwszym uruchomieniu, więc nie trzeba się nigdzie rejestrować. Publikowany jest wyłącznie zaszyfrowany identyfikator, nigdy ten klucz ani twój adres IP. Przy reinstalacji zachowaj plik <code>etkey</code>, a twój stopień zostanie z tobą.</p>
+    <p class="yt-note" style="margin-top:20px">Liczą się mecze z serwerów oficjalnych i zatwierdzonych, rankingowych i nierankingowych, z Easy Anti-Cheat włączonym od pierwszej do ostatniej sekundy. Każdy raport jest podpisany własnym kluczem serwera. Zabójstwa botów, rozgrzewka, bezczynność, mecze treningowe i mecze z włączonymi cheatami nigdy się nie liczą, a rating umiejętności zmienia się tylko na serwerach rankingowych. Gra rozpoznaje cię po kluczu, który tworzy na twoim PC przy pierwszym uruchomieniu, więc nie musisz nigdzie się rejestrować. Publikowany jest tylko zaszyfrowany identyfikator, nigdy ten klucz ani twój adres IP. Zachowaj plik <code>etkey</code> przy ponownej instalacji, a twój stopień przejdzie razem z nim.</p>
   </div>
 </section>
 </main>
 
 <!--footer-->
-<aside class="log-strip" aria-label="Z devloga"><div class="wrap"><a class="log-strip-h" href="../devlog">Z devloga</a><div class="log-strip-posts"><a href="../devlog-the-road-ahead"><time datetime="2026-11-11">11 lis 2026</time><span>The road ahead, in full</span></a><a href="../devlog-reads-and-ratings"><time datetime="2026-11-09">9 lis 2026</time><span>Counting readers without tracking anyone</span></a></div><a class="log-strip-all" href="../devlog">Wszystkie wpisy devloga</a></div></aside>
+<aside class="log-strip" aria-label="Z devloga"><div class="wrap"><a class="log-strip-h" href="../devlog">Z devloga</a><div class="log-strip-posts"><a href="../devlog-every-fight-counts"><time datetime="2026-11-11">11 lis 2026</time><span>Every fight on the record</span></a><a href="../devlog-the-road-ahead"><time datetime="2026-11-11">11 lis 2026</time><span>The road ahead, in full</span></a></div><a class="log-strip-all" href="../devlog">Wszystkie wpisy devloga</a></div></aside>
 <footer>
   <div class="wrap">
     <div class="foot">
@@ -162,6 +168,6 @@
 <!--/footer-->
 
 <script src="../js/lang-pl.js"></script>
-<script src="../js/site.js?v=f631d645f0"></script>
+<script src="../js/site.js?v=36fa7c6143"></script>
 </body>
 </html>

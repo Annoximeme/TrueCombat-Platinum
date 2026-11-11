@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/devlog</id>
   <updated>2026-11-11T12:00:00Z</updated>
   <entry>
+    <title>Every fight on the record</title>
+    <link href="https://truecombat.eu/devlog-every-fight-counts"/>
+    <id>https://truecombat.eu/devlog-every-fight-counts</id>
+    <published>2026-11-11T12:00:00Z</published>
+    <updated>2026-11-11T12:00:00Z</updated>
+    <category term="Competitive"/>
+    <summary>Player profiles are about to get a lot deeper, and unranked servers count too. Here is what we track, and the rules that keep every number honest.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>The road ahead, in full</title>
     <link href="https://truecombat.eu/devlog-the-road-ahead"/>
     <id>https://truecombat.eu/devlog-the-road-ahead</id>

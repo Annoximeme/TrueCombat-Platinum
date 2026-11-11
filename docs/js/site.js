@@ -38,7 +38,26 @@ var TCP_API = 'https://api.truecombat.eu';
       emptyBoard: 'Only bots on the server right now. Join in and take their place.', justNow: 'just now', minAgo: '{n} min ago', hAgo: '{n} h ago', dAgo: '{n} d ago',
       rounds: 'rounds', noResults: 'No completed matches yet. Results appear here the moment a ranked match ends.', resultsOffline: 'Match results are unavailable right now.',
       matchReport: 'Match report', matchOn: '{mode} on {map}', matchCopy: 'Copy match link', topWeapon: 'Top weapon', map: 'Map', mode: 'Mode', length: 'Length', server: 'Server', unknownMatch: 'This match could not be found.', viewMatch: 'Match report', noTeam: 'Players', version: 'Version',
-      reads: '{n} reads', read1: '1 read', ratingOf: '{avg} from {n} ratings', topRated: 'Top rated'
+      reads: '{n} reads', read1: '1 read', ratingOf: '{avg} from {n} ratings', topRated: 'Top rated',
+      statLeaders: 'Stat leaders', statNote: 'Verified matches with anti-cheat on, against real players only.', scopeAll: 'All verified', scopeRanked: 'Ranked only',
+      allMaps: 'All maps', allModes: 'All modes', allWeapons: 'All weapons', p7: '7 days', p30: '30 days', pAll: 'All time', statPick: 'Stat',
+      minSample: 'Shows players with at least {n} {what}.', boardEmpty: 'No verified matches for this selection yet.', value: 'Value',
+      secCombat: 'Combat', secPlay: 'Playstyle', secObj: 'Objectives and rounds', secHits: 'Where the hits land', secMaps: 'Maps', secModes: 'Modes',
+      secRivals: 'Rivals', secActivity: 'Activity', nemesis: 'Nemesis', nemesisTip: 'Killed this player the most', victim: 'Favourite target',
+      victimTip: 'This player killed them the most', h2h: 'Head to head', compareWith: 'Compare with another player', h2hKills: 'Kills on each other',
+      h2hAgainst: 'Matches as opponents', h2hTogether: 'Matches as teammates', h2hWins: 'Wins against each other', head: 'Head', body: 'Body', legs: 'Legs',
+      accNote: 'Accuracy counts matches without bots only. Hit locations count every hit on a real player.', detailEmpty: 'Detailed stats start with version 0.35.0.',
+      detailNote: 'Counted from verified matches with anti-cheat on, against real players only. Bots, warm-up and idle time never count.',
+      kills_on: '{n} kills', perDay: '{n} matches', less: 'Less', more: 'More', matchesN: '{n} matches', m: 'm',
+      s_kills: 'Kills', s_deaths: 'Deaths', s_assists: 'Assists', s_headshots: 'Headshot kills', s_damage: 'Damage dealt', s_damageTaken: 'Damage taken',
+      s_kd: 'K/D', s_headshotRate: 'Headshot rate', s_accuracy: 'Accuracy', s_headHitRate: 'Head hits', s_adr: 'Damage per round', s_winRate: 'Win rate',
+      s_kpm: 'Kills per minute', s_avgKillDistance: 'Average kill distance', s_longestKill: 'Longest kill', s_bestStreak: 'Best streak',
+      s_doubleKills: 'Double kills', s_tripleKills: 'Triple kills', s_quadKills: 'Quad kills', s_openingKills: 'Opening kills', s_openingDeaths: 'Opening deaths',
+      s_clutches: 'Clutches won', s_bestClutch: 'Best clutch', s_trades: 'Trade kills', s_revenges: 'Revenge kills', s_knifeKills: 'Knife kills',
+      s_grenadeKills: 'Grenade kills', s_aimedKills: 'Aimed kills', s_hipKills: 'Hip-fire kills', s_standKills: 'Standing kills', s_crouchKills: 'Crouching kills',
+      s_proneKills: 'Prone kills', s_leanKills: 'Leaning kills', s_airKills: 'Airborne kills', s_objectives: 'Objectives', s_captures: 'Flag captures',
+      s_plants: 'Bomb plants', s_defuses: 'Bomb defuses', s_returns: 'Flag returns', s_roundsWon: 'Rounds won', s_roundMvps: 'Round MVPs', s_wins: 'Match wins',
+      s_matches: 'Matches', s_timePlayed: 'Time played', s_xp: 'Experience', s_shots: 'Shots', s_hitsAll: 'Hits'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -62,7 +81,26 @@ var TCP_API = 'https://api.truecombat.eu';
       emptyBoard: 'Alleen bots op de server. Doe mee en neem hun plek in.', justNow: 'zojuist', minAgo: '{n} min geleden', hAgo: '{n} u geleden', dAgo: '{n} d geleden',
       rounds: 'rondes', noResults: 'Nog geen voltooide potjes. Uitslagen verschijnen hier zodra een gerankt potje eindigt.', resultsOffline: 'Uitslagen zijn nu niet beschikbaar.',
       matchReport: 'Wedstrijdverslag', matchOn: '{mode} op {map}', matchCopy: 'Link naar dit potje kopiëren', topWeapon: 'Beste wapen', map: 'Map', mode: 'Modus', length: 'Duur', server: 'Server', unknownMatch: 'Dit potje is niet gevonden.', viewMatch: 'Wedstrijdverslag', noTeam: 'Spelers', version: 'Versie',
-      reads: '{n} keer gelezen', read1: '1 keer gelezen', ratingOf: '{avg} uit {n} beoordelingen', topRated: 'Best beoordeeld'
+      reads: '{n} keer gelezen', read1: '1 keer gelezen', ratingOf: '{avg} uit {n} beoordelingen', topRated: 'Best beoordeeld',
+      statLeaders: 'Toppers per stat', statNote: 'Geverifieerde potjes met anti-cheat aan, alleen tegen echte spelers.', scopeAll: 'Alle geverifieerde', scopeRanked: 'Alleen ranked',
+      allMaps: 'Alle maps', allModes: 'Alle modi', allWeapons: 'Alle wapens', p7: '7 dagen', p30: '30 dagen', pAll: 'Altijd', statPick: 'Stat',
+      minSample: 'Toont spelers met minstens {n} {what}.', boardEmpty: 'Nog geen geverifieerde potjes voor deze keuze.', value: 'Waarde',
+      secCombat: 'Gevecht', secPlay: 'Speelstijl', secObj: 'Doelen en rondes', secHits: 'Waar de treffers landen', secMaps: 'Maps', secModes: 'Modi',
+      secRivals: 'Rivalen', secActivity: 'Activiteit', nemesis: 'Aartsvijand', nemesisTip: 'Schakelde deze speler het vaakst uit', victim: 'Favoriete doelwit',
+      victimTip: 'Werd het vaakst door deze speler uitgeschakeld', h2h: 'Onderling', compareWith: 'Vergelijk met een andere speler', h2hKills: 'Kills op elkaar',
+      h2hAgainst: 'Potjes als tegenstanders', h2hTogether: 'Potjes als teamgenoten', h2hWins: 'Winst tegen elkaar', head: 'Hoofd', body: 'Romp', legs: 'Benen',
+      accNote: 'Trefzekerheid telt alleen potjes zonder bots. Trefferzones tellen elke treffer op een echte speler.', detailEmpty: 'Gedetailleerde statistieken starten met versie 0.35.0.',
+      detailNote: 'Geteld uit geverifieerde potjes met anti-cheat aan, alleen tegen echte spelers. Bots, opwarmen en stilstaan tellen nooit mee.',
+      kills_on: '{n} kills', perDay: '{n} potjes', less: 'Minder', more: 'Meer', matchesN: '{n} potjes', m: 'm',
+      s_kills: 'Kills', s_deaths: 'Doden', s_assists: 'Assists', s_headshots: 'Headshotkills', s_damage: 'Schade gedaan', s_damageTaken: 'Schade opgelopen',
+      s_kd: 'K/D', s_headshotRate: 'Headshotpercentage', s_accuracy: 'Trefzekerheid', s_headHitRate: 'Hoofdtreffers', s_adr: 'Schade per ronde', s_winRate: 'Winstpercentage',
+      s_kpm: 'Kills per minuut', s_avgKillDistance: 'Gemiddelde killafstand', s_longestKill: 'Langste kill', s_bestStreak: 'Beste reeks',
+      s_doubleKills: 'Dubbele kills', s_tripleKills: 'Driedubbele kills', s_quadKills: 'Viervoudige kills', s_openingKills: 'Openingskills', s_openingDeaths: 'Eerste gesneuveld',
+      s_clutches: 'Clutches gewonnen', s_bestClutch: 'Beste clutch', s_trades: 'Tradekills', s_revenges: 'Wraakkills', s_knifeKills: 'Meskills',
+      s_grenadeKills: 'Granaatkills', s_aimedKills: 'Kills met richten', s_hipKills: 'Kills vanuit de heup', s_standKills: 'Staand', s_crouchKills: 'Gehurkt',
+      s_proneKills: 'Liggend', s_leanKills: 'Leunend', s_airKills: 'In de lucht', s_objectives: 'Doelen', s_captures: 'Vlaggen veroverd',
+      s_plants: 'Bommen geplaatst', s_defuses: 'Bommen ontmanteld', s_returns: 'Vlaggen teruggebracht', s_roundsWon: 'Rondes gewonnen', s_roundMvps: 'Ronde-MVP', s_wins: 'Potjes gewonnen',
+      s_matches: 'Potjes', s_timePlayed: 'Speeltijd', s_xp: 'Ervaring', s_shots: 'Schoten', s_hitsAll: 'Treffers'
     }
   };
   /* German, French and Polish strings arrive in js/lang-<code>.js (window.TCP_L); English fills any gap */
@@ -670,6 +708,167 @@ var TCP_API = 'https://api.truecombat.eu';
       });
       q('[data-pf-body]').hidden = false;
     }, function () { missing(L.unknownPlayer); });
+  });
+
+  /* ---------- detailed stats (tcp-match/2): stat leaders and the full profile ---------- */
+  var STAT_ORDER = ['kills', 'kd', 'headshotRate', 'accuracy', 'adr', 'assists', 'damage', 'wins', 'winRate', 'kpm', 'longestKill', 'avgKillDistance',
+    'bestStreak', 'openingKills', 'clutches', 'trades', 'revenges', 'doubleKills', 'tripleKills', 'quadKills', 'knifeKills', 'grenadeKills', 'aimedKills',
+    'hipKills', 'crouchKills', 'proneKills', 'leanKills', 'airKills', 'objectives', 'plants', 'defuses', 'captures', 'returns', 'roundMvps', 'roundsWon',
+    'headshots', 'matches', 'timePlayed', 'xp'];
+  var PCT = { headshotRate: 1, accuracy: 1, headHitRate: 1, winRate: 1 };
+  var DIST = { longestKill: 1, avgKillDistance: 1 };
+  function sLabel(k) { return L['s_' + k] || k; }
+  function sVal(k, v) {
+    if (v == null) return '–';
+    if (PCT[k]) return (Math.round(v * 10) / 10).toLocaleString(lang) + '%';
+    if (DIST[k]) return Math.round(v).toLocaleString(lang) + ' ' + L.m;
+    if (k === 'timePlayed') return dur(v);
+    if (k === 'kd' || k === 'kpm') return (+v).toFixed(2);
+    if (k === 'adr') return Math.round(v).toLocaleString(lang);
+    if (k === 'bestClutch') return '1v' + v;
+    return num(v);
+  }
+  function seg(name, opts, cur) {
+    return '<div class="tabs" role="group" aria-label="' + esc(name) + '">' + opts.map(function (o) {
+      return '<button type="button" data-v="' + esc(o[0]) + '" aria-pressed="' + (o[0] === cur) + '">' + esc(o[1]) + '</button>';
+    }).join('') + '</div>';
+  }
+
+  $all('[data-statboard]').forEach(function (root) {
+    var st = { stat: 'kills', period: 'all', scope: 'all', map: '', mode: '', weapon: '' };
+    function sel(key, first, list, label) {
+      return '<label class="sb-sel"><span class="sr-only">' + esc(label) + '</span><select data-k="' + key + '"><option value="">' + esc(first) + '</option>' +
+        list.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (st[key] === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select></label>';
+    }
+    root.innerHTML = '<header><h2>' + L.statLeaders + '</h2><span class="pill">' + L.loading + '</span></header>' +
+      '<div class="lb-tools sb-tools">' +
+      sel('stat', sLabel('kills'), STAT_ORDER.slice(1).map(function (k) { return [k, sLabel(k)]; }), L.statPick) +
+      '<div data-seg="scope">' + seg(L.scopeAll, [['all', L.scopeAll], ['ranked', L.scopeRanked]], 'all') + '</div>' +
+      '<div data-seg="period">' + seg(L.played, [['all', L.pAll], ['30d', L.p30], ['7d', L.p7]], 'all') + '</div>' +
+      '<span class="sb-meta"></span></div><div class="table-scroll"><table class="srv-table lb-table"><thead><tr><th>#</th><th>' + L.player + '</th><th data-sb-head>' + sLabel('kills') +
+      '</th></tr></thead><tbody></tbody></table></div><p class="srv-empty" hidden></p><p class="yt-note sb-note"></p>';
+    var tbody = root.querySelector('tbody'), empty = root.querySelector('.srv-empty'), note = root.querySelector('.sb-note');
+    root.querySelector('select[data-k="stat"] option').value = 'kills';
+    api('/statmeta.json').then(function (m) {
+      root.querySelector('.sb-meta').outerHTML =
+        ((m.maps || []).length > 1 ? sel('map', L.allMaps, m.maps.map(function (x) { return [x, MAPS[String(x).toLowerCase()] || x]; }), L.map) : '') +
+        ((m.modes || []).length > 1 ? sel('mode', L.allModes, m.modes.map(function (x) { return [x, x]; }), L.mode) : '') +
+        ((m.weapons || []).length ? sel('weapon', L.allWeapons, m.weapons.map(function (x) { return [x, x]; }), L.weapons) : '');
+    }, function () {});
+    function load() {
+      var qs = '/statboard.json?limit=100&stat=' + st.stat + '&period=' + st.period + '&scope=' + st.scope +
+        (st.map ? '&map=' + encodeURIComponent(st.map) : '') + (st.mode ? '&mode=' + encodeURIComponent(st.mode) : '') + (st.weapon ? '&weapon=' + encodeURIComponent(st.weapon) : '');
+      root.querySelector('[data-sb-head]').textContent = sLabel(st.stat);
+      api(qs).then(function (d) {
+        setPill(root, true, L.statNote);
+        root.querySelector('[data-sb-head]').textContent = sLabel(d.stat || st.stat);
+        var rows = d.players || [];
+        note.textContent = d.minimum ? L.minSample.replace('{n}', num(d.minimum.value)).replace('{what}', (d.minimum.stat === 'timePlayed' ? L.minutes : sLabel(d.minimum.stat)).toLowerCase()) : '';
+        if (d.minimum && d.minimum.stat === 'timePlayed') note.textContent = L.minSample.replace('{n}', num(d.minimum.value / 60)).replace('{what}', L.minutes);
+        empty.textContent = L.boardEmpty; empty.hidden = rows.length > 0;
+        tbody.innerHTML = rows.map(function (p) {
+          return '<tr><td class="rank">' + p.position + '</td><td><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a></td><td>' + sVal(d.stat || st.stat, p.value) + '</td></tr>';
+        }).join('');
+      }, function () { setPill(root, false, TCP_API ? L.offline : L.soon); empty.textContent = L.lbOffline; empty.hidden = false; tbody.innerHTML = ''; });
+    }
+    root.addEventListener('change', function (e) { var k = e.target.dataset && e.target.dataset.k; if (k) { st[k] = e.target.value || (k === 'stat' ? 'kills' : ''); load(); } });
+    root.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-seg] button'); if (!b) return;
+      var g = b.closest('[data-seg]'); $all('button', g).forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      st[g.dataset.seg] = b.dataset.v; load();
+    });
+    load();
+  });
+
+  $all('[data-pf-detail]').forEach(function (box) {
+    var id = (new URLSearchParams(location.search).get('id') || '').toLowerCase();
+    if (!PID.test(id) || !TCP_API) return;
+    var scope = 'all';
+    function tiles(t, keys) {
+      return '<div class="pf-stats sd-tiles">' + keys.map(function (k) {
+        var sub = k === 'kd' ? num(t.kills) + ' / ' + num(t.deaths) : k === 'accuracy' ? num(t.hits) + ' / ' + num(t.shots) : k === 'bestClutch' && t.clutches ? sVal('clutches', t.clutches) + ' ' + sLabel('clutches').toLowerCase() : '';
+        return '<div><span>' + sLabel(k) + '</span><b>' + sVal(k, t[k]) + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
+    function card(title, inner, cls) { return '<div class="server-card full sd-card ' + (cls || '') + '"><header><h2>' + title + '</h2></header>' + inner + '</div>'; }
+    function bars(t, keys) {
+      var total = keys.reduce(function (s, k) { return s + (t[k] || 0); }, 0) || 1;
+      return '<ul class="sd-bars">' + keys.map(function (k) {
+        var v = t[k] || 0;
+        return '<li><span>' + (L[k] || sLabel(k)) + '</span><b>' + num(v) + '</b><i style="--w:' + (v / total * 100).toFixed(1) + '%"></i><em>' + Math.round(v / total * 100) + '%</em></li>';
+      }).join('') + '</ul>';
+    }
+    function table(rows, head) {
+      return '<div class="table-scroll"><table class="srv-table"><thead><tr><th>' + head + '</th><th>' + L.matches.charAt(0).toUpperCase() + L.matches.slice(1) + '</th><th>' + L.winRate +
+        '</th><th>' + L.kd + '</th><th>' + L.played + '</th></tr></thead><tbody>' + (rows.map(function (r) {
+          return '<tr><td><b>' + (head === L.map ? mapLabel(r.name) : esc(r.name || '–')) + '</b></td><td>' + num(r.matches) + '</td><td>' + sVal('winRate', r.winRate) + '</td><td>' +
+            (+r.kd).toFixed(2) + '</td><td>' + dur(r.timePlayed) + '</td></tr>';
+        }).join('') || '<tr><td colspan="5">–</td></tr>') + '</tbody></table></div>';
+    }
+    function rival(r, label, tip) {
+      if (!r) return '<div class="sd-rival"><span>' + label + '</span><b>–</b></div>';
+      return '<div class="sd-rival" title="' + esc(tip) + '"><span>' + label + '</span><b><a href="' + esc(profileHref(r.id)) + '">' + esc(r.name) + '</a></b><small>' +
+        L.kills_on.replace('{n}', num(r.kills)) + ' · <a href="#h2h" data-h2h="' + esc(r.id) + '">' + L.h2h + '</a></small></div>';
+    }
+    function calendar(days) {
+      var map = {}; (days || []).forEach(function (d) { map[d.day] = d.matches; });
+      var today = new Date(), start = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - 364));
+      start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+      var cells = '';
+      for (var d = new Date(start); d <= today; d.setUTCDate(d.getUTCDate() + 1)) {
+        var k = d.toISOString().slice(0, 10), n = map[k] || 0, lvl = n ? Math.min(4, Math.ceil(n / 2)) : 0;
+        cells += '<i class="l' + lvl + '" title="' + esc(fmtDate(k) + ' · ' + L.perDay.replace('{n}', n)) + '"></i>';
+      }
+      return '<div class="table-scroll"><div class="sd-cal" role="img" aria-label="' + esc(L.secActivity) + '">' + cells + '</div></div>' +
+        '<p class="sd-legend"><span>' + L.less + '</span><i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i><span>' + L.more + '</span></p>';
+    }
+    function h2hPanel() {
+      return '<div class="server-card full sd-card" id="h2h"><header><h2>' + L.h2h + '</h2></header><form class="lb-search sd-h2h-find" role="search"><input type="search" name="q" minlength="2" maxlength="36" placeholder="' +
+        esc(L.compareWith) + '" aria-label="' + esc(L.compareWith) + '"></form><ul class="sd-h2h-list"></ul><div class="sd-h2h-out"></div></div>';
+    }
+    function showH2h(other) {
+      var out = box.querySelector('.sd-h2h-out');
+      api('/h2h.json?a=' + id + '&b=' + other + '&scope=' + scope).then(function (h) {
+        function side(p) { return '<div><a href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a><b>' + num(p.kills) + '</b><small>' + num(p.wins) + ' ' + L.wins.toLowerCase() + '</small></div>'; }
+        out.innerHTML = '<div class="sd-vs">' + side(h.a) + '<span>' + L.h2hKills + '</span>' + side(h.b) + '</div><p class="muted">' + L.h2hAgainst + ': ' + num(h.matchesAgainst) +
+          ' · ' + L.h2hTogether + ': ' + num(h.matchesTogether) + '</p>' + (h.recent || []).map(function (m) {
+            return '<a class="sd-h2h-m" href="' + matchHref(m.id) + '">' + fmtDate(m.ended) + ' · ' + mapLabel(m.map) + ' · ' + esc(m.mode || '') + '</a>';
+          }).join('');
+      }, function () { out.innerHTML = '<p class="muted">' + L.unknownPlayer + '</p>'; });
+    }
+    function draw(d) {
+      var t = d.totals || {};
+      if (d.removed) { box.innerHTML = ''; return; }
+      if (!t.matches) { box.innerHTML = '<p class="yt-note">' + L.detailEmpty + '</p>'; return; }
+      box.innerHTML =
+        '<div class="sd-top"><div data-seg="scope">' + seg(L.scopeAll, [['all', L.scopeAll], ['ranked', L.scopeRanked]], scope) + '</div><p class="yt-note">' + L.detailNote + '</p></div>' +
+        card(L.secCombat, tiles(t, ['kd', 'adr', 'headshotRate', 'accuracy', 'assists', 'kpm', 'longestKill', 'avgKillDistance', 'bestStreak', 'openingKills', 'clutches', 'bestClutch',
+          'trades', 'revenges', 'doubleKills', 'tripleKills', 'quadKills', 'damageTaken'])) +
+        card(L.secHits, bars({ head: t.hitsHead, body: t.hitsBody, legs: t.hitsLegs }, ['head', 'body', 'legs']) + '<p class="yt-note">' + L.accNote + '</p>', 'sd-half') +
+        card(L.secPlay, bars(t, ['aimedKills', 'hipKills']) + bars(t, ['standKills', 'crouchKills', 'proneKills']) +
+          tiles(t, ['leanKills', 'airKills', 'knifeKills', 'grenadeKills']), 'sd-half') +
+        card(L.secObj, tiles(t, ['objectives', 'plants', 'defuses', 'captures', 'returns', 'roundsWon', 'roundMvps', 'openingDeaths'])) +
+        card(L.secMaps, table(d.maps || [], L.map), 'sd-half') + card(L.secModes, table(d.modes || [], L.mode), 'sd-half') +
+        card(L.secRivals, '<div class="sd-rivals">' + rival(d.nemesis, L.nemesis, L.nemesisTip) + rival(d.favouriteVictim, L.victim, L.victimTip) + '</div>', 'sd-half') +
+        card(L.secActivity, calendar(d.activity), 'sd-half') + h2hPanel();
+      var form = box.querySelector('.sd-h2h-find'), list = box.querySelector('.sd-h2h-list'), timer = null;
+      function find() {
+        var term = form.q.value.trim(); if (term.length < 2) { list.innerHTML = ''; return; }
+        api('/search.json?q=' + encodeURIComponent(term)).then(function (r) {
+          list.innerHTML = (r.players || []).filter(function (p) { return p.id !== id; }).slice(0, 6).map(function (p) {
+            return '<li><button type="button" data-h2h="' + esc(p.id) + '">' + esc(p.name) + '</button></li>'; }).join('');
+        }, function () {});
+      }
+      form.addEventListener('submit', function (e) { e.preventDefault(); find(); });
+      form.q.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(find, 300); });
+    }
+    function load() { api('/stats.json?id=' + id + '&scope=' + scope).then(draw, function () { box.innerHTML = ''; }); }
+    box.addEventListener('click', function (e) {
+      var h = e.target.closest('[data-h2h]');
+      if (h) { e.preventDefault(); box.querySelector('.sd-h2h-list').innerHTML = ''; showH2h(h.dataset.h2h); box.querySelector('#h2h').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+      var b = e.target.closest('[data-seg] button'); if (b && b.dataset.v !== scope) { scope = b.dataset.v; load(); }
+    });
+    load();
   });
 
   /* ---------- devlog: a dot on the nav link while the newest post is recent and unread ---------- */
