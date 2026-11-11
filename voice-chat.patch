@@ -315,10 +315,10 @@ index da01ccd..63cfaed 100644
  endif()
 diff --git a/reference/etlegacy/libs/opus/sources.txt b/reference/etlegacy/libs/opus/sources.txt
 new file mode 100644
-index 0000000..a7cb2c6
+index 0000000..74f4e19
 --- /dev/null
 +++ b/reference/etlegacy/libs/opus/sources.txt
-@@ -0,0 +1,160 @@
+@@ -0,0 +1,137 @@
 +src/opus_multistream.c
 +src/opus_projection_encoder.c
 +src/analysis.c
@@ -378,29 +378,6 @@ index 0000000..a7cb2c6
 +silk/control_SNR.c
 +silk/decode_parameters.c
 +silk/pitch_est_tables.c
-+silk/fixed/warped_autocorrelation_FIX.c
-+silk/fixed/apply_sine_window_FIX.c
-+silk/fixed/residual_energy16_FIX.c
-+silk/fixed/schur64_FIX.c
-+silk/fixed/residual_energy_FIX.c
-+silk/fixed/noise_shape_analysis_FIX.c
-+silk/fixed/encode_frame_FIX.c
-+silk/fixed/schur_FIX.c
-+silk/fixed/autocorr_FIX.c
-+silk/fixed/burg_modified_FIX.c
-+silk/fixed/pitch_analysis_core_FIX.c
-+silk/fixed/find_LTP_FIX.c
-+silk/fixed/find_LPC_FIX.c
-+silk/fixed/corrMatrix_FIX.c
-+silk/fixed/k2a_FIX.c
-+silk/fixed/LTP_scale_ctrl_FIX.c
-+silk/fixed/process_gains_FIX.c
-+silk/fixed/k2a_Q16_FIX.c
-+silk/fixed/regularize_correlations_FIX.c
-+silk/fixed/LTP_analysis_filter_FIX.c
-+silk/fixed/vector_ops_FIX.c
-+silk/fixed/find_pitch_lags_FIX.c
-+silk/fixed/find_pred_coefs_FIX.c
 +silk/control_audio_bandwidth.c
 +silk/decoder_set_fs.c
 +silk/NLSF_unpack.c
@@ -610,10 +587,10 @@ index 11026fc..b52de64 100644
  
 diff --git a/reference/etlegacy/src/client/cl_voip.c b/reference/etlegacy/src/client/cl_voip.c
 new file mode 100644
-index 0000000..614c953
+index 0000000..5657aa8
 --- /dev/null
 +++ b/reference/etlegacy/src/client/cl_voip.c
-@@ -0,0 +1,733 @@
+@@ -0,0 +1,732 @@
 +/*
 + * TrueCombat: Platinum - native voice chat, client side.
 + *
@@ -653,7 +630,6 @@ index 0000000..614c953
 +static cvar_t *cl_voipUseVAD;
 +static cvar_t *cl_voipVADThreshold;
 +static cvar_t *cl_voipCaptureDevice;
-+static cvar_t *cl_voipMuteEnemies;
 +static cvar_t *cl_voipTestTone;
 +static cvar_t *cl_voipDebug;
 +static int    voipToneAt;                        ///< test tone: realtime covered so far
@@ -1257,7 +1233,7 @@ index 0000000..614c953
 +	cl_voipUseVAD        = Cvar_Get("cl_voipUseVAD", "0", CVAR_ARCHIVE);
 +	cl_voipVADThreshold  = Cvar_Get("cl_voipVADThreshold", "0.08", CVAR_ARCHIVE);
 +	cl_voipCaptureDevice = Cvar_Get("cl_voipCaptureDevice", "", CVAR_ARCHIVE);
-+	cl_voipMuteEnemies   = Cvar_Get("cl_voipMuteEnemies", "0", CVAR_ARCHIVE | CVAR_USERINFO);
++	Cvar_Get("cl_voipMuteEnemies", "0", CVAR_ARCHIVE | CVAR_USERINFO); // read by the server from the userinfo
 +	cl_voipTestTone      = Cvar_Get("cl_voipTestTone", "0", CVAR_TEMP);
 +	cl_voipDebug         = Cvar_Get("cl_voipDebug", "0", CVAR_TEMP);
 +	cl_voipCaptureDevice->modified = qfalse;
@@ -1368,7 +1344,7 @@ index 505e88d..215a356 100644
  
  void CL_ServerInfoPacket(const netadr_t *from, msg_t *msg);
 diff --git a/reference/etlegacy/src/game/g_public.h b/reference/etlegacy/src/game/g_public.h
-index a7e6aa1..3d20e2b 100644
+index 439034a..143d515 100644
 --- a/reference/etlegacy/src/game/g_public.h
 +++ b/reference/etlegacy/src/game/g_public.h
 @@ -232,7 +232,8 @@ typedef enum
@@ -1382,7 +1358,7 @@ index a7e6aa1..3d20e2b 100644
  } gameImport_t;
  
 diff --git a/reference/etlegacy/src/qcommon/qcommon.h b/reference/etlegacy/src/qcommon/qcommon.h
-index c1a22fd..53530c9 100644
+index c12fade..b26e16b 100644
 --- a/reference/etlegacy/src/qcommon/qcommon.h
 +++ b/reference/etlegacy/src/qcommon/qcommon.h
 @@ -436,7 +436,8 @@ enum svc_ops_e
@@ -1448,7 +1424,7 @@ index 0000000..3249ead
 +
 +#endif
 diff --git a/reference/etlegacy/src/server/server.h b/reference/etlegacy/src/server/server.h
-index 2cc0f89..321a2e0 100644
+index e456b31..f39d58d 100644
 --- a/reference/etlegacy/src/server/server.h
 +++ b/reference/etlegacy/src/server/server.h
 @@ -510,6 +510,16 @@ void SV_UpdateUserinfo_f(client_t *cl);
@@ -1504,7 +1480,7 @@ index e7c7ceb..52a8389 100644
  		{
  			break;
 diff --git a/reference/etlegacy/src/server/sv_game.c b/reference/etlegacy/src/server/sv_game.c
-index e06b809..baaa072 100644
+index 2dfd8b1..63ef634 100644
 --- a/reference/etlegacy/src/server/sv_game.c
 +++ b/reference/etlegacy/src/server/sv_game.c
 @@ -52,6 +52,7 @@ static ext_trap_keys_t g_extensionTraps[] =

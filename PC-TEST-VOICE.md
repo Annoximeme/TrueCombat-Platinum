@@ -84,7 +84,7 @@
   - It is BSD-3-Clause, so the licence is no problem.
 - Unpack it so that `reference/etlegacy/libs/opus/include/opus.h`, `celt/`, `silk/` and `src/` exist.
   - Keep the patch's `tcp_opus.cmake` and `sources.txt` in that folder.
-  - sources.txt lists 160 plain-C files from the 1.5.2 tree. It has no SIMD, no DNN, and leaves out opus_compare.c.
+  - sources.txt lists 137 plain-C files from the 1.5.2 tree (float build). It has no SIMD, no DNN, no silk/fixed, and leaves out opus_compare.c. After editing sources.txt, reconfigure CMake.
 - Add libopus's COPYING to the third-party licences that ship with the release.
 
 ## Build (private copy only)
@@ -105,7 +105,7 @@
 
 **Setup**
 - Wait while suite.lock exists, then create it with this thread's name and the start time. Delete it afterwards.
-- Run one local server on UDP **28150**, with sv_voip 1.
+- Run one local server on UDP **28150**, with sv_voip 1 and g_balanceSkill 0 (otherwise the round-start balancer moves players).
 - Run two clients, A and B.
   - A: `cl_voipTestTone 1` and `cl_voipDebug 1`. Holds `+voip` (for example `+voip` from an exec'd cfg, then `-voip` later).
   - B: `cl_voipDebug 2`.
@@ -129,3 +129,13 @@
 - Screenshots: B's HUD with the talking list, B's scoreboard with the speaker icon, and A's own microphone bar.
 - Write the results to C:\TrueCombatWork\voice\PC-TEST-RESULTS.md.
 - A real-microphone check needs Gianni at the PC, so it is optional.
+
+## PC test result (2026-11-11, Gianni-PC): 11/11 PASS
+
+- Cases a to k all pass. The 440 Hz tone was checked in B's recorded sound output, together with the recv lines.
+- The two problems found are fixed in this patch (sha256 190dbd79…):
+  - four files had LF hunks;
+  - sources.txt listed the silk/fixed files.
+- libopus 1.5.2 matched xiph's SHA256SUMS (65c1d2f7…7ce1).
+- Not tested yet: a real microphone. That needs Gianni at the PC.
+- Report: C:\TrueCombatWork\voice\PC-TEST-RESULTS.md. Screenshots: C:\TrueCombatWork\voice\shots.
