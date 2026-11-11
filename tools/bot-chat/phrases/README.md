@@ -142,7 +142,21 @@ Run `python tools/area_check.py --dir <game folder>` (or `--pk3`, `--bsp`, `--na
 location names from the maps, clean them, flag names that need a short alias and list which lines to skip.
 Two runtime rules come out of it: skip a line when a word of the area name already appears in the line
 ("he's on the roof Roof"), and skip a line whose filled text is over 64 characters.
-Not yet run on the six official maps (needs the game folder).
+
+Run on the six official maps on 2026-11-11 (71 names):
+
+| Map | Names | Result |
+|---|---|---|
+| obj_snow | 18 | All fine |
+| obj_railhouse | 17 | All fine |
+| obj_northport | 15 | All fine. "Back entry" skips 36 lines that already contain the word "back" |
+| obj_stadtrand | 14 | 3 too long, short names in `area-aliases.json` |
+| obj_delta | 7 | 3 too long, short names in `area-aliases.json` |
+| obj_village | 0 | The map has no location names at all. The map brain has to name its areas |
+
+No name had colour codes, a leading article or a duplicate. `area-aliases.json` (map, then original name, then
+the short name to use in chat) is the only fix needed. Apply it where the area name is looked up, before
+`botChatSay`.
 
 ## Tone
 

@@ -1,0 +1,30 @@
+# concept<TAB>voice id. Checked 2026-11-11 against the game's own voice scripts (specops and terror chat).
+# Empty = the game has no fitting radio line, those situations are text only. Captions are what players hear.
+affirmative	Affirmative
+area_clear	
+bomb_planted	
+cheer	Cheer
+defusing	
+enemy_down	EnemyDown
+enemy_spotted	Contact
+fall_back	FTFallBack
+fire_in_hole	FireInTheHole
+flank	
+follow_me	FollowMe
+go	LetsGo
+good_game	GoodGame
+goodbye	Bye
+greeting	Hi
+in_position	
+man_down	ManDown
+need_backup	NeedBackup
+negative	Negative
+on_my_way	
+quiet	
+regroup	
+sniper	
+sorry	Sorry
+spread_out	
+taking_fire	TakingFire
+thanks	Thanks
+wait	
