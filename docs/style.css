@@ -1633,3 +1633,43 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
 .pf-matches td a { color: inherit; }
 .m-team .srv-table th:first-child { width: 24%; }
 @media (max-width: 560px) { .m-side { flex-direction: column; align-items: flex-end; gap: 6px; } .m-side.terrorists { flex-direction: column-reverse; align-items: flex-start; } .m-side span { font-size: .78rem; letter-spacing: .08em; } }
+
+/* ------------------------------------------------------------------ devlog reach: nav, hero line, home section, strip above the footer */
+.nav a[data-devlog-new].fresh { position: relative; }
+.nav a[data-devlog-new].fresh::before { content: ""; position: absolute; top: 2px; right: -9px; width: 6px; height: 6px; border-radius: 50%; background: var(--red-hi); box-shadow: 0 0 0 3px rgba(239, 80, 80, .18); }
+.hero-log { display: inline-flex; align-items: center; gap: 12px; max-width: 100%; padding: 8px 14px 8px 8px; border: 1px solid rgba(232, 234, 239, .16); border-radius: 999px; background: rgba(13, 16, 22, .55); backdrop-filter: blur(6px); color: var(--fg); text-decoration: none; font-size: .92rem; transition: border-color .2s, background .2s; }
+.hero-log:hover { border-color: var(--red-hi); background: rgba(13, 16, 22, .75); }
+.hero-log b { flex: none; padding: 5px 10px; border-radius: 999px; background: var(--red); color: #fff; font: 700 .72rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; }
+.hero-log span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hero-log span::after { content: "  \2192"; color: var(--red-hi); }
+.hero-log time { flex: none; color: var(--muted); font-size: .82rem; }
+@media (max-width: 560px) { .hero-log time { display: none; } }
+.log-cards { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: clamp(24px, 4vw, 40px); }
+.log-card { position: relative; isolation: isolate; display: grid; align-content: end; min-height: 340px; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; text-decoration: none; background: var(--panel); transition: border-color .2s, transform .2s; }
+.log-card:hover { border-color: #3a4456; transform: translateY(-2px); }
+.log-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform .6s ease; }
+.log-card:hover img { transform: scale(1.04); }
+.log-card::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(13,16,22,.1) 0%, rgba(13,16,22,.7) 45%, rgba(13,16,22,.97) 100%); }
+.log-card > div { padding: 22px; display: grid; gap: 10px; }
+.log-card .eyebrow { color: var(--red-hi); }
+.log-card h3 { font-size: var(--step-1); line-height: 1.12; }
+.log-card.lead h3 { font-size: var(--step-2); }
+.log-card p { margin: 0; color: #c9ced8; font-size: .93rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 1000px) { .log-cards { grid-template-columns: 1fr 1fr; } .log-card.lead { grid-column: 1 / -1; } }
+@media (max-width: 620px) { .log-cards { grid-template-columns: 1fr; } .log-card { min-height: 260px; } }
+.log-strip { border-top: 1px solid var(--line); background: linear-gradient(90deg, rgba(214, 59, 59, .08), rgba(214, 59, 59, 0) 55%), var(--bg); }
+.log-strip .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding-block: 18px; }
+.log-strip-h, .log-strip-all { flex: none; font: 700 .8rem/1 var(--f-display); letter-spacing: .14em; text-transform: uppercase; text-decoration: none; }
+.log-strip-h { color: var(--red-hi); }
+.log-strip-all { color: var(--muted); margin-left: auto; }
+.log-strip-all::after { content: "  \2192"; }
+.log-strip-all:hover { color: var(--fg); }
+.log-strip-posts { display: flex; flex-wrap: wrap; gap: 8px 28px; min-width: 0; }
+.log-strip-posts a { display: inline-flex; gap: 10px; align-items: baseline; min-width: 0; color: var(--fg); text-decoration: none; font-size: .94rem; }
+.log-strip-posts a:hover span { text-decoration: underline; text-decoration-color: var(--red-hi); text-underline-offset: 4px; }
+.log-strip-posts time { flex: none; color: var(--dim); font-size: .8rem; }
+@media (max-width: 700px) { .log-strip-all { margin-left: 0; } }
+/* nine links in the top bar: the Support button drops to its heart until the bar has room for the word */
+@media (min-width: 1240px) and (max-width: 1559px) { .nav-support span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } .nav-support { padding: 0 12px; } }
+.hero-log { justify-self: start; }
+.hero-cta .hero-log { align-self: center; }
