@@ -647,6 +647,17 @@ var TCP_API = 'https://api.truecombat.eu';
     }, function () { missing(L.unknownPlayer); });
   });
 
+  /* ---------- devlog: a dot on the nav link while the newest post is recent and unread ---------- */
+  $all('a[data-devlog-new]').forEach(function (a) {
+    var newest = a.dataset.devlogNew, seen = '';
+    try {
+      if (/(^|\/)devlog(-[^/]*)?\.html$|\/devlog(-[^/]*)?$/.test(location.pathname)) localStorage.setItem('tcp-devlog-seen', newest);
+      seen = localStorage.getItem('tcp-devlog-seen') || '';
+    } catch (e) {}
+    var age = (Date.now() - new Date(newest + 'T00:00:00Z').getTime()) / 86400000;
+    if (age < 14 && seen < newest) a.classList.add('fresh');
+  });
+
   /* ---------- match report (match.html?id=<match id>) ---------- */
   $all('[data-match]').forEach(function (root) {
     function q(sel) { return root.querySelector(sel); }

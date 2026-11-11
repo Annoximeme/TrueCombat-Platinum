@@ -86,16 +86,17 @@ def nav(lang, current):
     if other_href == "":
         other_href = "./"
     home = "./"
-    main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news"]
-    active = {"player": "leaderboards", "match": "servers", "devlog": "news"}.get(current, current)
+    main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news", "devlog"]
+    active = {"player": "leaderboards", "match": "servers"}.get(current, current)
     if current.startswith("devlog-"):
-        active = "news"
+        active = "devlog"
     if current.startswith("map-"):
         active = "maps"
     if current.startswith("weapon-"):
         active = "weapons"
     links = "\n".join(
-        '      <li><a href="%s"%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "", L[p])
+        '      <li><a href="%s"%s%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "",
+                                               ' data-devlog-new="%s"' % devlog_posts(lang)[0]["date"] if p == "devlog" else "", L[p])
         for p in main)
     menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
     menu += '<a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"])
@@ -131,7 +132,7 @@ GITHUB_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor
 RSS_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg>'
 
 
-def footer(lang):
+def footer(lang, page=""):
     L = LABELS[lang]
     up = "../" if lang == "nl" else ""
     cols = [
@@ -143,8 +144,9 @@ def footer(lang):
     nav_html = "\n".join(
         '        <div><p class="foot-h">%s</p>%s</div>' % (h, "".join('<a href="%s">%s</a>' % (u, x) for u, x in items))
         for h, items in cols)
+    strip = "" if page == "index" or page.startswith("devlog") else devlog_strip(lang)
     return f"""<!--footer-->
-<footer>
+{strip}<footer>
   <div class="wrap">
     <div class="foot">
       <div class="foot-brand">
@@ -674,6 +676,57 @@ def devlog_latest(lang, posts):
 <!--/devlog-latest-->"""
 
 
+DEVREACH = {
+    "en": {"new": "New devlog", "eyebrow": "In development", "h2": "Follow the build", "all": "All devlog posts",
+           "lede": "TrueCombat: Platinum is built in the open. Every significant piece of work gets an article: what changed, why, and what comes next.",
+           "strip": "From the devlog"},
+    "nl": {"new": "Nieuwe devlog", "eyebrow": "In ontwikkeling", "h2": "Volg de bouw", "all": "Alle devlogartikelen",
+           "lede": "TrueCombat: Platinum wordt in het openbaar gebouwd. Elk belangrijk stuk werk krijgt een artikel: wat er veranderde, waarom, en wat er volgt.",
+           "strip": "Uit de devlog"},
+}
+
+
+def devlog_hero(lang, posts):
+    """Home page hero: one line that leads to the newest devlog post."""
+    p = posts[0]
+    return (f'<!--devlog-hero-->\n    <a class="hero-log" href="devlog-{p["slug"]}.html"><b>{DEVREACH[lang]["new"]}</b>'
+            f'<span>{htmlmod.escape(p["title"])}</span><time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time></a>\n<!--/devlog-hero-->')
+
+
+def devlog_home(lang, posts):
+    """Home page: the three newest devlog posts, high on the page."""
+    T = DEVREACH[lang]
+    cards = "\n".join(
+        f"""      <a class="log-card{' lead' if i == 0 else ''}" href="devlog-{p['slug']}.html">
+        <img src="{p['image'].replace('.webp', '-640.webp')}" alt="" width="640" height="360" loading="lazy">
+        <div><span class="eyebrow">{htmlmod.escape(p['tag'])} · <time datetime="{p['date']}">{nice_date(lang, p['date'])}</time></span>
+        <h3>{htmlmod.escape(p['title'])}</h3>
+        <p>{htmlmod.escape(p['summary'])}</p></div>
+      </a>""" for i, p in enumerate(posts[:3]))
+    return f"""<!--devlog-home-->
+<section class="band band-alt" id="devlog">
+  <div class="wrap">
+    <div class="section-head head-row">
+      <div><span class="eyebrow">{T['eyebrow']}</span><h2>{T['h2']}</h2><p class="lede">{T['lede']}</p></div>
+      <div class="hero-cta"><a class="btn btn-ghost" href="devlog.html">{T['all']} ({len(posts)})</a></div>
+    </div>
+    <div class="log-cards">
+{cards}
+    </div>
+  </div>
+</section>
+<!--/devlog-home-->"""
+
+
+def devlog_strip(lang):
+    """Above the footer of every page outside the devlog: the two newest posts."""
+    T = DEVREACH[lang]
+    posts = devlog_posts(lang)[:2]
+    links = "".join(f'<a href="devlog-{p["slug"]}.html"><time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time><span>{htmlmod.escape(p["title"])}</span></a>' for p in posts)
+    return (f'<aside class="log-strip" aria-label="{T["strip"]}"><div class="wrap"><a class="log-strip-h" href="devlog.html">{T["strip"]}</a>'
+            f'<div class="log-strip-posts">{links}</div><a class="log-strip-all" href="devlog.html">{T["all"]}</a></div></aside>\n')
+
+
 def devlog_feed(lang, posts):
     base = SITE + ("nl/" if lang == "nl" else "")
     esc = lambda s: htmlmod.escape(s, quote=False)
@@ -809,7 +862,7 @@ def devlog_page(lang, post, posts, template):
     if lang == "nl":
         html = ASSET.sub(r"../\1/", html).replace('href="style.css"', 'href="../style.css"')
     html = put(html, "nav", nav(lang, page), page)
-    html = put(html, "footer", footer(lang), page)
+    html = put(html, "footer", footer(lang, page), page)
     html = put(html, "alt", alt(lang, page, html), page)
     return html
 
@@ -1010,7 +1063,7 @@ def landing_page(lang, page):
 </html>
 """
     html = put(html, "nav", nav(lang, page), page)
-    html = put(html, "footer", footer(lang), page)
+    html = put(html, "footer", footer(lang, page), page)
     html = put(html, "alt", alt(lang, page, html), page)
     return html
 
@@ -1072,7 +1125,7 @@ def shell(lang, page, title, desc, og, image, body, extra=""):
 </html>
 """
     html = put(html, "nav", nav(lang, page), page)
-    html = put(html, "footer", footer(lang), page)
+    html = put(html, "footer", footer(lang, page), page)
     html = put(html, "alt", alt(lang, page, html), page)
     return html
 
@@ -1326,6 +1379,8 @@ def main():
             latest = m.group(1) if m else "v0.0.0"
             en = put(en, "roadmap", roadmap_html("en", latest), path)
             en = put(en, "devlog-latest", devlog_latest("en", devlog_posts("en")), path)
+            en = put(en, "devlog-hero", devlog_hero("en", devlog_posts("en")), path)
+            en = put(en, "devlog-home", devlog_home("en", devlog_posts("en")), path)
         if page == "devlog":
             en = put(en, "devlog", devlog_list("en", devlog_posts("en")), path)
             en = put(en, "devlog-tags", devlog_tags("en", devlog_posts("en")), path)
@@ -1342,7 +1397,7 @@ def main():
         if page == "maps":
             en = map_links("en", en)
         en = put(en, "nav", nav("en", page), path)
-        en = put(en, "footer", footer("en"), path)
+        en = put(en, "footer", footer("en", page), path)
         en = put(en, "alt", alt("en", page, en), path)
         path.write_text(bust(en), encoding="utf-8")
 
@@ -1350,6 +1405,8 @@ def main():
         if page == "index":
             du = put(du, "roadmap", roadmap_html("nl", latest), path)
             du = put(du, "devlog-latest", devlog_latest("nl", devlog_posts("nl")), path)
+            du = put(du, "devlog-hero", devlog_hero("nl", devlog_posts("nl")), path)
+            du = put(du, "devlog-home", devlog_home("nl", devlog_posts("nl")), path)
         if page == "weapons":
             du = put(du, "weapons", weapons_html("nl"), path)
         if page == "devlog":
@@ -1368,7 +1425,7 @@ def main():
         if page == "maps":
             du = map_links("nl", du)
         du = put(du, "nav", nav("nl", page), path)
-        du = put(du, "footer", footer("nl"), path)
+        du = put(du, "footer", footer("nl", page), path)
         du = put(du, "alt", alt("nl", page, du), path)
         (DOCS / "nl" / (page + ".html")).write_text(bust(du), encoding="utf-8")
 
