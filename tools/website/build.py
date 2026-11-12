@@ -1716,6 +1716,13 @@ def main():
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n'
         + clean("\n".join(rows)) + "\n</urlset>\n", encoding="utf-8")
+    # hand-written pages (join, devlog-stats, 404, ...) get the same script policy as built ones
+    for path in sorted(DOCS.rglob("*.html")):
+        html = path.read_text(encoding="utf-8")
+        if INLINE_SCRIPT.search(html) and '<meta charset="utf-8">\n' in html:
+            done = script_policy(html)
+            if done != html:
+                path.write_text(done, encoding="utf-8")
     left = {lang: len(v) for lang, v in UNTRANSLATED.items()}
     print("built %d pages in %s%s" % (len(PAGES) + len(LANDING) + len(details) + 1, ", ".join(LANGS),
                                       "; still in English: %s" % left if left else ""))
