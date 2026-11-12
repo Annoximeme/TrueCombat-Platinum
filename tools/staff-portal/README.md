@@ -128,7 +128,7 @@ after `staff_key_idle_days` (default 60, 0 = never) without signing in to the po
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 33 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 34 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 

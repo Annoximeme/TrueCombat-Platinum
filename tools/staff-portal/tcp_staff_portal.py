@@ -290,10 +290,13 @@ def bug_fields(j: dict) -> tuple:
             return None
         return f if lo <= f <= hi and f == f else None
     d = {"format": "tcp-bugreport/1", "category": bug_category(j.get("category")), "text": clean_text(j.get("text"), 16 * 1024)}
-    for k, n in (("map", 64), ("build", 64), ("renderer", 120), ("name", 64), ("match", 64), ("puid", 64)):
+    for k, n in (("map", 64), ("build", 64), ("renderer", 120), ("name", 64), ("match", 64), ("puid", 64),
+                 ("server_name", 64), ("protocol", 64)):
         v = clean_text(j.get(k), n).strip()
+        if k in ("name", "server_name"):
+            v = re.sub(r"\^[^^]", "", v).strip()          # game colour codes
         if v:
-            d[k] = v
+            d[k if k != "server_name" else "server_label"] = v
     server = str(j.get("server") or "").strip()
     if re.fullmatch(r"[0-9A-Za-z.:\[\]-]{1,64}", server):
         d["server"] = server
@@ -307,7 +310,7 @@ def bug_fields(j: dict) -> tuple:
     hw = j.get("hw")
     if isinstance(hw, dict):
         d["hw"] = {clean_text(str(k), 40): clean_text(str(v), 200) for k, v in list(hw.items())[:24]}
-    console = clean_text(j.get("console"), 64 * 1024)
+    console = re.sub(r"\^[^^\n]", "", clean_text(j.get("console"), 64 * 1024))
     if console:
         d["console"] = console
     guid = clean_text(j.get("guid"), 64).strip()
@@ -2905,7 +2908,17 @@ def make_handler(portal: Portal):
                 n = int(self.headers.get("Content-Length") or 0)
             except ValueError as e:
                 raise ApiError(400, "Bad request.") from e
-            if n < 0 or n > limit:               # a negative length would read until the client stops sending
+            if n < 0:                            # a negative length would read until the client stops sending
+                raise ApiError(400, "Bad request.")
+            if n > limit:
+                if n <= 4 * 1024 * 1024:         # read a moderate overshoot away, so the client gets the answer
+                    left = n                     # instead of a reset connection; anything bigger is just cut off
+                    while left > 0:
+                        chunk = self.rfile.read(min(left, 65536))
+                        if not chunk:
+                            break
+                        left -= len(chunk)
+                    self._body_read = True
                 raise ApiError(413, "Too much data.")
             self._body_read = True
             return self.rfile.read(n) if n else b""

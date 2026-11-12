@@ -1039,5 +1039,22 @@ class PortalTest(unittest.TestCase):
             for row in saved:
                 self.portal.store.x("INSERT INTO sessions(%s) VALUES(%s)" % (",".join(row.keys()), ",".join("?" * len(row))), tuple(row))
 
+    def test_34_game_sample_report(self):
+        """The exact sample the 0.36.0 game sends (tools/bugreport/sample.json on the game branch)."""
+        body = (Path(__file__).resolve().parent / "test_bugreport_sample.json").read_bytes()
+        self.portal.rate.pop("bug:127.0.0.1", None)
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("POST", "/api/bugreport", body=body, headers={"Content-Type": "application/json; charset=utf-8",
+                                                               "User-Agent": "TrueCombat-Platinum-BugReport/1"})
+        r = c.getresponse()
+        out = json.loads(r.read())
+        c.close()
+        self.assertEqual(r.status, 201)
+        d = json.loads(self.portal.store.one("SELECT data FROM reports WHERE file=?", (out["id"],))["data"])
+        self.assertEqual(d["name"], "Example")                                   # colour codes gone
+        self.assertEqual(d["server_label"], "TrueCombat Platinum | Example")    # not ours: kept as reported
+        self.assertTrue(d["shot"] and d["console"] and d["hw"] and d["match"] and d["puid"])
+        self.assertNotIn("^3", d["console"])
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
