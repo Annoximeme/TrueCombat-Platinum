@@ -287,6 +287,7 @@ async function refreshReportCount() {
 }
 
 function route() {
+  closeModal();                 // a dialog belongs to the page it was opened on
   S.timers.forEach(clearInterval);
   S.timers = [];
   const parts = (location.hash || "#/servers").slice(2).split("/");
@@ -599,8 +600,8 @@ function reportCard(r) {
     const who = d.name ? (r.target_pid ? `<a href="#/player/${esc(r.target_pid)}">${esc(d.name)}</a>` : esc(d.name)) : "";
     const facts = [
       d.map ? ["Map", esc(d.map) + (d.pos ? ` <span class="dim">at ${d.pos.map((n) => esc(n)).join(", ")}</span>` : "")] : null,
-      d.server ? ["Server", esc(d.server)] : (d.format ? ["Server", "Not on a server"] : null),
-      d.build ? ["Build", esc(d.build) + (d.renderer ? ` <span class="dim">· ${esc(d.renderer)}</span>` : "")] : null,
+      d.server ? ["Server", esc(d.server) + (d.server_name ? "" : d.server_label ? ` <span class="dim">· ${esc(d.server_label)} (not one of ours)</span>` : "")] : (d.format ? ["Server", "Not on a server"] : null),
+      d.build ? ["Build", esc(d.build) + (d.renderer ? ` <span class="dim">· ${esc(d.renderer)}</span>` : "") + (d.protocol ? ` <span class="dim">· ${esc(d.protocol)}</span>` : "")] : null,
       d.ping != null || d.fps != null ? ["Ping, fps", `${d.ping ?? "–"} ms · ${d.fps ?? "–"} fps`] : null,
       d.time ? ["Taken", when(d.time)] : null,
       d.match ? ["Match", esc(d.match)] : null,
