@@ -271,7 +271,13 @@ def bug_category(v) -> str:
 def clean_text(v, limit: int) -> str:
     """Report text as sent, minus NULs and other control characters (tabs and line breaks kept), cut to limit."""
     v = v if isinstance(v, str) else ""
-    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", v)[:limit]
+    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]", "", v)[:limit]
+
+
+def discord_plain(v: str) -> str:
+    """Player-written text for a Discord embed: no markdown, masked links, auto-links or mentions; reads as typed."""
+    v = re.sub(r"(?i)\b(https?|discord)(?=:)", lambda m: m.group(1) + "\u200b", str(v or ""))   # breaks auto-links
+    return re.sub(r"([\\*_~`|>\[\]()#<@-])", r"\\\1", v)
 
 
 def bug_fields(j: dict) -> tuple:
@@ -2594,6 +2600,12 @@ class Portal(Moderation, Watchers, Operations):
         self._ip_cache = cache
         return ips
 
+    def bugshots_bytes(self) -> int:
+        try:
+            return sum(f.stat().st_size for f in self.bugshots.glob("*.jpg")) if self.bugshots.is_dir() else 0
+        except OSError:
+            return 0
+
     def bugshot_path(self, key: str) -> Path:
         return self.bugshots / (re.sub(r"[^A-Za-z0-9_-]", "_", key) + ".jpg")
 
@@ -2628,11 +2640,12 @@ class Portal(Moderation, Watchers, Operations):
             if not path:
                 continue
             try:
-                if not path.exists() or path.read_text(encoding="utf-8") != text:
-                    tmp = path.with_name(".%s.%s.tmp" % (path.name, secrets.token_hex(4)))
-                    tmp.write_text(text, encoding="utf-8")
-                    os.chmod(tmp, 0o644)
-                    os.replace(tmp, path)
+                if path.exists() and path.read_text(encoding="utf-8") == text:
+                    continue                     # unchanged: the server already has it
+                tmp = path.with_name(".%s.%s.tmp" % (path.name, secrets.token_hex(4)))
+                tmp.write_text(text, encoding="utf-8")
+                os.chmod(tmp, 0o644)
+                os.replace(tmp, path)
             except OSError as e:
                 problems.append("%s: %s" % (srv.name, e))
                 log.warning("staff key list for %s not written: %s", srv.name, e)
@@ -2658,6 +2671,7 @@ class Portal(Moderation, Watchers, Operations):
         n = self.store.one("SELECT COUNT(*) n FROM staff_keys WHERE discord_id=? AND revoked=0", (discord_id,))["n"]
         if n:
             self.store.x("UPDATE staff_keys SET revoked=?, revoked_by=? WHERE discord_id=? AND revoked=0", (now(), by, discord_id))
+            self.store.audit({"discord_id": "", "name": "Staff keys"}, "staff key revoked", target=discord_id, detail=by)
             self.publish_staff_keys()
         return n
 
@@ -3114,6 +3128,9 @@ def make_handler(portal: Portal):
                 raise ApiError(400, "The report is empty.")
             data["summary"] = next((ln for ln in text.splitlines() if ln.strip()), "")[:120]
             data["from"] = portal.ip_tag(ip)
+            if shot and portal.bugshots_bytes() + len(shot) > int(cfg.get("bugshot_max_mb", 500)) * 1024 * 1024:
+                shot = b""                       # disk guard: the report still arrives, without its picture
+                data["shot_dropped"] = True
             if shot:
                 path = portal.bugshot_path(key)
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -3129,8 +3146,9 @@ def make_handler(portal: Portal):
                            (key, data.get("server_name", ""), now(), json.dumps(data), pid, data.get("name", ""), now()))
             where = " on %s" % data["map"] if data.get("map") else ""
             by = " from %s" % data["name"] if data.get("name") else ""
-            portal.alert("bugreport", "%s report%s%s" % (data["category"], by, where),
-                         data["summary"] + ("\nBuild %s" % data["build"] if data.get("build") else ""), key=key, pid=pid)
+            portal.alert("bugreport", discord_plain("%s report%s%s" % (data["category"], by, where)),
+                         discord_plain(data["summary"]) + ("\nBuild %s" % discord_plain(data["build"]) if data.get("build") else ""),
+                         key=key, pid=pid)
             self.json({"ok": True, "id": key}, 201)
 
         # -- API
@@ -3235,7 +3253,7 @@ def make_handler(portal: Portal):
                 path = portal.bugshot_path(r["file"]) if r else None
                 if not path or not path.is_file():
                     raise ApiError(404, "No screenshot.")
-                return self.send_file(path, path.name, "image/jpeg")
+                return self.send_file(path, path.name, "image/jpeg", cache="private, max-age=86400")
             if route == "reports/update" and method == "POST":
                 who = self.need(s, "reports")
                 d = self.body_json()
@@ -3639,7 +3657,7 @@ def make_handler(portal: Portal):
                 return self.json({"ok": True})
             raise ApiError(404, "Not found.")
 
-        def send_file(self, path: Path, name: str, ctype: str = "") -> None:
+        def send_file(self, path: Path, name: str, ctype: str = "", cache: str = "no-store") -> None:
             try:
                 f = path.open("rb")
             except OSError as e:
@@ -3651,7 +3669,7 @@ def make_handler(portal: Portal):
                 self.send_header("Content-Length", str(size))
                 self.send_header("Content-Disposition", '%s; filename="%s"' % ("inline" if ctype else "attachment",
                                                                                re.sub(r'[^A-Za-z0-9_.-]', "_", name)))
-                self.send_header("Cache-Control", "no-store")
+                self.send_header("Cache-Control", cache)
                 for k, v in SECURITY_HEADERS.items():
                     self.send_header(k, v)
                 self.end_headers()

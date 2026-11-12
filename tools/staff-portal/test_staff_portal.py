@@ -378,7 +378,7 @@ class PortalTest(unittest.TestCase):
     def test_10_chat_feed(self):
         with self.chatlog.open("a") as f:
             f.write("  1000 TCP_NATIVE_SAY slot=0 team=1 enemy at the gate\n")
-        time.sleep(1.2)
+        wait_for(lambda: any(l["text"] == "enemy at the gate" for l in self.call("moderator", "GET", "/api/chat?server=one")[1]["lines"]))
         st, d = self.call("moderator", "GET", "/api/chat?server=one")
         texts = [(l["name"], l["text"], l["kind"]) for l in d["lines"]]
         self.assertIn(("Viper", "enemy at the gate", "team"), texts)
@@ -521,7 +521,7 @@ class PortalTest(unittest.TestCase):
         self.portal.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_id,by_name,active) VALUES(?,?,?,?,?,?,?,?,?,?,1)",
                             ("aaaaaaaaaaaaaaaa", "G2", "198.51.100.1", "0002aabbccddeeff00112233445566778", "OldViper", "aimbot", 1, 0, "1", "t"))
         self.portal.watch_cache.clear()
-        time.sleep(1.5)
+        wait_for(lambda: self.portal.store.one("SELECT 1 x FROM flags WHERE pid=? AND kind='ban dodger'", (PID,)))
         f = self.portal.store.one("SELECT * FROM flags WHERE pid=? AND kind='ban dodger'", (PID,))
         self.assertIn("OldViper", f["detail"])
         st, p = self.call("moderator", "GET", "/api/player/" + PID)
@@ -915,9 +915,25 @@ class PortalTest(unittest.TestCase):
         c.request("GET", "/api/reports/bugshot?id=%d" % r["id"], headers={"Cookie": self.sessions["moderator"]["cookie"]})
         resp = c.getresponse()
         self.assertEqual((resp.status, resp.getheader("Content-Type"), resp.read()), (200, "image/jpeg", jpg))
+        self.assertIn("max-age", resp.getheader("Cache-Control"))          # the inbox refresh doesn't fetch it again
         c.close()
         self.assertEqual(self.call(None, "GET", "/api/reports/bugshot?id=%d" % r["id"])[0], 401)
         self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='bugreport' AND key=?", (d["id"],)))
+        # player text can't smuggle links or mentions into the staff Discord
+        st, d4 = post(json.dumps(dict(sample, text="[free skins](https://evil.example) @everyone", screenshot_jpg="")))
+        a = self.portal.store.one("SELECT title, text FROM alerts WHERE key=?", (d4["id"],))
+        self.assertNotIn("](", a["text"])
+        self.assertNotIn("https://", a["text"])
+        self.assertIn("\\@everyone", a["text"])
+        # screenshot storage has a ceiling; past it the report still arrives without its picture
+        self.portal.cfg["bugshot_max_mb"] = 0
+        try:
+            st, d5 = post(json.dumps(sample))
+            self.assertEqual(st, 201)
+            r5 = json.loads(self.portal.store.one("SELECT data FROM reports WHERE file=?", (d5["id"],))["data"])
+            self.assertTrue(r5.get("shot_dropped") and not r5.get("shot"))
+        finally:
+            self.portal.cfg.pop("bugshot_max_mb", None)
         # a non-JPEG screenshot is dropped, the report still arrives; junk is refused
         st, d2 = post(json.dumps(dict(sample, screenshot_jpg=base64.b64encode(b"<svg/>").decode(), server="evil host")))
         self.assertEqual(st, 201)
