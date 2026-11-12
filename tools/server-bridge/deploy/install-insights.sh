@@ -36,13 +36,13 @@ install -d -m 0750 -o tcpsvc -g tcpsvc /var/lib/tcp-insights
 systemctl enable --now tcp-insights.service tcp-insights-geoip.timer
 systemctl restart tcp-insights.service
 sleep 1
-curl -fsS http://127.0.0.1:8093/insights/health && echo
+curl -fsS http://127.0.0.1:8094/insights/health && echo
 cat <<'TXT'
 
 Add inside the api.truecombat.eu site block in /etc/caddy/Caddyfile, above the bridge proxy:
 
 	handle /insights/* {
-		reverse_proxy 127.0.0.1:8093
+		reverse_proxy 127.0.0.1:8094
 	}
 
 then: sudo caddy validate --config /etc/caddy/Caddyfile && sudo systemctl reload caddy

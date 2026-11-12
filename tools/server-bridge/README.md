@@ -277,6 +277,6 @@ Routes: `POST /insights/hit`, `POST /insights/event` (download), `GET /insights/
 (Bearer key from `/etc/tcp-insights/key`, used by the staff portal's Insights page), `GET /insights/health`.
 
 Install on the VPS: `sudo sh tools/server-bridge/deploy/install-insights.sh` (undo with `--undo`), then add
-`handle /insights/* { reverse_proxy 127.0.0.1:8093 }` to the api.truecombat.eu block. Short campaign links
+`handle /insights/* { reverse_proxy 127.0.0.1:8094 }` to the api.truecombat.eu block. Short campaign links
 (`truecombat.eu/go/<name>`) come from `tools/website/golinks.json` and are written by `build.py`.
 Tests: `python3 test_insights.py`.
