@@ -430,6 +430,11 @@
    "en": "Bots that learn routes and aim from real matches",
    "nl": "Bots die routes en richten leren uit echte matches",
    "version": null
+  },
+  {
+   "en": "Optional performance and crash data from the launcher",
+   "nl": "Optionele prestatie- en crashgegevens vanuit de launcher",
+   "version": null
   }
  ]
 }

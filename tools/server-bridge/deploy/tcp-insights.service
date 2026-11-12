@@ -1,0 +1,23 @@
+[Unit]
+Description=TrueCombat: Platinum website insights (no cookies, no visitor tracking)
+After=network-online.target
+
+[Service]
+User=tcpsvc
+Group=tcpsvc
+ExecStart=/usr/bin/python3 /opt/tcp/server-bridge/tcp_insights.py --db /var/lib/tcp-insights/insights.db --key-file ${CREDENTIALS_DIRECTORY}/key --site-root /var/www/truecombat --geoip /var/lib/tcp-insights/geo.csv.gz --github-repo Annoximeme/TrueCombat-Platinum --listen 127.0.0.1:8093
+LoadCredential=key:/etc/tcp-insights/key
+Restart=on-failure
+RestartSec=5
+StateDirectory=tcp-insights
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/var/lib/tcp-insights
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryMax=160M
+
+[Install]
+WantedBy=multi-user.target
