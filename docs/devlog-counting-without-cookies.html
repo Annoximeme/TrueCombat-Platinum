@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finding new players without tracking anyone · TrueCombat: Platinum</title>
+<meta name="description" content="TrueCombat: Platinum is about to go public on more platforms than ever. To learn which of them actually bring players, the site now counts visits and…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-counting-without-cookies">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-counting-without-cookies">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Finding new players without tracking anyone">
+<meta property="og:description" content="TrueCombat: Platinum is about to go public on more platforms than ever. To learn which of them actually bring players, the site now counts visits and…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-counting-without-cookies.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-counting-without-cookies.jpg">
+<meta property="article:published_time" content="2026-11-12">
+<meta property="article:section" content="Community">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Finding new players without tracking anyone","description":"TrueCombat: Platinum is about to go public on more platforms than ever. To learn which of them actually bring players, the site now counts visits and downloads the same way it counts devlog readers: no cookies, no outside companies, and nothing that leads back to you.","datePublished":"2026-11-12","dateModified":"2026-11-12","inLanguage":"en","articleSection":"Community","timeRequired":"PT2M","image":"https://truecombat.eu/img/og-devlog-counting-without-cookies.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-counting-without-cookies","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Finding new players without tracking anyone">
+<meta name="twitter:description" content="TrueCombat: Platinum is about to go public on more platforms than ever. To learn which of them actually bring players, the site now counts visits and…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Finding new players without tracking anyone","item":"https://truecombat.eu/devlog-counting-without-cookies"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-counting-without-cookies">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-counting-without-cookies">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-counting-without-cookies">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=6bf7a5af62">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news">News</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-12">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-counting-without-cookies" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-counting-without-cookies" hreflang="nl" lang="nl">Nederlands</a></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Support</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="counting-without-cookies" data-min="2">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(img/map-stadtrand.webp); --art-s: url(img/map-stadtrand-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-12">12 Nov 2026</time><span>2 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="counting-without-cookies" hidden></span></p>
+      <h1>Finding new players without tracking anyone</h1>
+      <p class="lede">TrueCombat: Platinum is about to go public on more platforms than ever. To learn which of them actually bring players, the site now counts visits and downloads the same way it counts devlog readers: no cookies, no outside companies, and nothing that leads back to you.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#what-changes">What changes</a></li>
+          <li><a href="#what-does-not-change">What does not change</a></li>
+          <li><a href="#where-to-read-the-details">Where to read the details</a></li>
+          <li><a href="#what-is-next">What is next</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>With 0.36.0 we start telling a much bigger audience about TrueCombat: Platinum. ModDB, itch.io, Reddit, creators, the old TC:E crowd. Some of those places will bring players. Some will not. With a small team and limited time, we need to know which is which, so the effort goes where it works.</p>
+<p>Earlier this month we explained how the devlog <a href="devlog-reads-and-ratings">counts readers without tracking anyone</a>. The site now uses the same approach for the whole website.</p>
+<h2 id="what-changes">What changes</h2>
+<p>Every page now tells our own server, once, that someone opened it: the page, the name of the site that linked there, the campaign tag in the link if there is one, the page language, and whether the screen is phone, tablet or desktop size. A click on a download button tells it that a download started.</p>
+<p>Links we post on other platforms now go through short addresses such as <code>truecombat.eu/go/moddb</code>. They open the normal page with a small campaign tag, which the site reads once and then removes from the address bar, so a link you copy and share stays clean.</p>
+<h2 id="what-does-not-change">What does not change</h2>
+<ul>
+  <li>No cookies. Nothing is stored in your browser for counting.</li>
+  <li>No Google Analytics, no Meta pixel, no analytics company of any kind.</li>
+  <li>No IP addresses kept. The server uses your connection for one moment to count you once per day, then the daily secret behind that count is deleted at midnight, together with everything made with it.</li>
+  <li>Global Privacy Control and Do Not Track are respected. With either switched on, you are not counted at all.</li>
+</ul>
+<p>What remains is a set of daily totals: this many people opened the maps page, this many came from ModDB, this many of them downloaded the game. That is enough to make good decisions and not enough to say anything about any one of you.</p>
+<h2 id="where-to-read-the-details">Where to read the details</h2>
+<p>Everything we count, on the website and in the game, is now listed in one place: the new <a href="privacy">privacy page</a>, in all five site languages. If we ever count something new, that page changes first and the devlog says so.</p>
+<h2 id="what-is-next">What is next</h2>
+<p>The launcher will get an optional switch to share anonymous performance and crash data, so we can see which graphics cards and drivers need attention before a playtest tells us. It will be off unless you turn it on, and it is planned for the update after 0.36.0. We will post the full list of what it sends before it ships.</p>
+<p>The code that does the counting is in the public repository, next to the stats service. As always, you never have to take our word for it.</p>
+      </div>
+      <div class="post-rate" data-rate="counting-without-cookies" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-inside-035"><small>Older post</small>Inside 0.35.0, our biggest update yet</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Community">
+        <a class="post-art" href="devlog-reads-and-ratings" tabindex="-1" aria-hidden="true"><img src="img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-09">9 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="reads-and-ratings" hidden></span></p>
+          <h2><a href="devlog-reads-and-ratings">Counting readers without tracking anyone</a></h2>
+          <p>Every devlog post now ends with a star rating, and we can finally see which posts people read. Here is how we built that without cookies, without analytics and without storing anything that points back to you.</p>
+          <a class="more" href="devlog-reads-and-ratings">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Community">
+        <a class="post-art" href="devlog-support" tabindex="-1" aria-hidden="true"><img src="img/map-snow-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-09">9 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="support" hidden></span></p>
+          <h2><a href="devlog-support">Free means free: how support works</a></h2>
+          <p>TrueCombat: Platinum now has a support page and a Ko-fi. Why we added it, where the money goes, and the rules we set for ourselves so that supporting never changes how the game plays.</p>
+          <a class="more" href="devlog-support">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=7a70d66b62"></script>
+</body>
+</html>

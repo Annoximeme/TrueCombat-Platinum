@@ -39,13 +39,13 @@ FEED = GITHUB + "/releases.atom"
 
 MAPLIST = ["delta", "northport", "railhouse", "snow", "stadtrand", "village"]
 # written out in full by this script from landing.py (the other pages are hand-edited)
-LANDING = ["download", "faq", "truecombat-elite"]
+LANDING = ["download", "faq", "truecombat-elite", "privacy"]
 PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio", "support"]
 
 LABELS = {
     "en": {
         "maps": "Maps", "weapons": "Weapons", "guide": "Guide", "servers": "Servers",
-        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support",
+        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support", "privacy": "Privacy",
         "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About", "truecombat-elite": "TrueCombat: Elite", "search": "Search", "top": "Back to top",
         "download": "Download", "menu": "Menu", "sections": "Sections", "discord": "Join the Discord", "language": "Language",
         "other": "Nederlands", "other_short": "NL", "skip": "Skip to content", "footer": "Footer", "releases": "Releases",
@@ -55,7 +55,7 @@ LABELS = {
     },
     "nl": {
         "maps": "Maps", "weapons": "Wapens", "guide": "Gids", "servers": "Servers",
-        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons",
+        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons", "privacy": "Privacy",
         "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over", "truecombat-elite": "TrueCombat: Elite", "search": "Zoeken", "top": "Terug naar boven",
         "download": "Download", "menu": "Menu", "sections": "Onderdelen", "discord": "Word lid van de Discord", "language": "Taal",
         "other": "English", "other_short": "EN", "skip": "Naar de inhoud", "footer": "Voettekst", "releases": "Releases",
@@ -173,7 +173,7 @@ def footer(lang, page=""):
     cols = [
         (L["col_game"], [(href(p), L[p]) for p in ("download", "maps", "weapons", "guide", "media", "faq", "truecombat-elite")]),
         (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "competitive")]),
-        (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press", "support")]),
+        (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press", "support", "privacy")]),
         (L["col_community"], [(DISCORD, "Discord"), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]),
     ]
     nav_html = "\n".join(
@@ -1400,7 +1400,7 @@ def extend_tables():
     for code in XLANGS:
         ROAD[code] = tuple(i18n.tx(code, t) for t in ROAD["en"])
         OGLOCALE[code] = i18n.OGLOCALE[code]
-    for name in ("DOWNLOAD_T", "FAQ", "ELITE_T"):
+    for name in ("DOWNLOAD_T", "FAQ", "ELITE_T", "PRIVACY_T"):
         i18n.extend(getattr(landing, name), name)
     i18n.extend(detail.S, "S")
 
@@ -1548,6 +1548,51 @@ def launcher_feed(posts):
     return "\n".join(out) + "\n"
 
 
+GO_NAME = re.compile(r"^[a-z0-9][a-z0-9-]{0,39}$")
+GO_PAGE = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>TrueCombat: Platinum</title>
+<link rel="canonical" href="{canon}">
+<meta http-equiv="refresh" content="0; url={target}">
+</head>
+<body style="background:#0d1016;color:#e8eaef;font:16px system-ui,sans-serif">
+<p><a href="{target}" style="color:#e8eaef">TrueCombat: Platinum</a></p>
+</body>
+</html>
+"""
+
+
+def go_links():
+    """truecombat.eu/go/<name>: short campaign links for posts and creators, from golinks.json."""
+    from urllib.parse import urlencode
+    links = json.loads((HERE / "golinks.json").read_text(encoding="utf-8"))["links"]
+    root = DOCS / "go"
+    if root.exists():
+        for old in root.iterdir():
+            if old.is_dir() and old.name not in links:
+                for f in old.iterdir():
+                    f.unlink()
+                old.rmdir()
+    for name, ln in sorted(links.items()):
+        if not GO_NAME.match(name):
+            sys.exit("golinks.json: bad link name %r" % name)
+        tags = {"utm_source": ln["source"], "utm_medium": ln.get("medium", ""), "utm_campaign": ln.get("campaign", ""), "utm_content": ln.get("content", "")}
+        for k, v in tags.items():
+            if v and not re.match(r"^[a-z0-9][a-z0-9._-]{0,39}$", v):
+                sys.exit("golinks.json: %s for %r must be lower-case letters, digits, dots, dashes" % (k, name))
+        to = ln.get("to", "")
+        to = to[:-5] if to.endswith(".html") else to  # the site serves clean addresses (deploy/clean-urls.caddy)
+        target = "/" + to + "?" + urlencode({k: v for k, v in tags.items() if v})
+        out = root / name
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "index.html").write_text(GO_PAGE.format(target=htmlmod.escape(target, quote=True), canon=SITE + to), encoding="utf-8")
+    return len(links)
+
+
 def main():
     extend_tables()
     posts = {lang: devlog_posts(lang) for lang in LANGS}
@@ -1605,6 +1650,7 @@ def main():
             tr = put(tr, "alt", alt(lang, page, tr), path)
             write(lang, page, tr)
 
+    go_links()
     for lang in LANGS:
         for page in LANDING:
             write(lang, page, landing_page(lang, page))

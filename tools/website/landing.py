@@ -1,4 +1,4 @@
-"""The download, FAQ and TrueCombat: Elite pages, in English and Dutch.
+"""The download, FAQ, TrueCombat: Elite and privacy pages, in English and Dutch.
 
 Unlike the hand-edited pages, these three are written out in full by build.py:
 the markup lives once in the templates below and the copy in the EN and NL
@@ -10,7 +10,7 @@ Placeholders: [[key]] is copy from the language table, {{name}} is a value
 build.py fills in (version, link, asset prefix).
 """
 
-ART = {"download": "map-northport", "faq": "media-deployment", "truecombat-elite": "map-delta"}
+ART = {"download": "map-northport", "faq": "media-deployment", "truecombat-elite": "map-delta", "privacy": "map-stadtrand"}
 
 DOWNLOAD_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
@@ -422,6 +422,165 @@ ELITE_T = {
 }
 
 
+# ---------------------------------------------------------------- privacy
+PRIVACY = """<section class="page-head">
+  <div class="head-art" style="--art: url({{up}}img/map-stadtrand.webp); --art-s: url({{up}}img/map-stadtrand-640.webp)" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="eyebrow">[[eyebrow]]</span>
+    <h1>[[h1]]</h1>
+    <p class="lede">[[lede]]</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap doc">
+    <nav class="doc-toc" aria-label="[[toc]]">
+      <a href="#short">[[n1]]</a><a href="#website">[[n2]]</a><a href="#game">[[n3]]</a><a href="#choices">[[n4]]</a><a href="#changes">[[n5]]</a>
+    </nav>
+    <div class="doc-body">
+      <section id="short">
+        <span class="eyebrow">01</span>
+        <h2>[[s_h]]</h2>
+        <ul>
+          <li>[[s_a]]</li>
+          <li>[[s_b]]</li>
+          <li>[[s_c]]</li>
+          <li>[[s_d]]</li>
+        </ul>
+      </section>
+
+      <section id="website">
+        <span class="eyebrow">02</span>
+        <h2>[[w_h]]</h2>
+        <p>[[w1]]</p>
+        <p>[[w2]]</p>
+        <p>[[w3]]</p>
+        <h3>[[w_keep_h]]</h3>
+        <p>[[w_keep]]</p>
+        <h3>[[w_never_h]]</h3>
+        <ul>
+          <li>[[w_n1]]</li>
+          <li>[[w_n2]]</li>
+          <li>[[w_n3]]</li>
+          <li>[[w_n4]]</li>
+        </ul>
+        <p>[[w4]]</p>
+        <p>[[w5]]</p>
+      </section>
+
+      <section id="game">
+        <span class="eyebrow">03</span>
+        <h2>[[g_h]]</h2>
+        <ul>
+          <li>[[g_a]]</li>
+          <li>[[g_b]]</li>
+          <li>[[g_c]]</li>
+          <li>[[g_d]]</li>
+          <li>[[g_e]]</li>
+        </ul>
+        <p class="callout">[[g_note]]</p>
+      </section>
+
+      <section id="choices">
+        <span class="eyebrow">04</span>
+        <h2>[[c_h]]</h2>
+        <p>[[c1]]</p>
+        <p>[[c2]]</p>
+      </section>
+
+      <section id="changes">
+        <span class="eyebrow">05</span>
+        <h2>[[x_h]]</h2>
+        <p>[[x1]]</p>
+        <p class="yt-note">[[credit]]</p>
+      </section>
+    </div>
+  </div>
+</section>
+"""
+
+PRIVACY_T = {
+    "en": {
+        "title": "Privacy · TrueCombat: Platinum",
+        "desc": "What the TrueCombat: Platinum website, launcher and servers collect, what they never collect, and how to opt out. No cookies, no ad trackers, no analytics companies.",
+        "og": "No cookies, no ad trackers, no analytics companies. Here is exactly what we count.",
+        "eyebrow": "Privacy", "h1": "What we count, and what we never will",
+        "lede": "We want to know which pages are worth reading and where new players hear about the game. We do not need to know who you are to find that out, so we never ask.",
+        "toc": "On this page", "n1": "The short version", "n2": "This website", "n3": "The game", "n4": "Your choices", "n5": "Changes",
+        "s_h": "The short version",
+        "s_a": "<b>No cookies, no ad trackers, no analytics companies.</b> Nothing from Google, Meta or anyone else is loaded on this site.",
+        "s_b": "<b>We count visits, not visitors.</b> The website keeps daily totals and nothing that points back to a person.",
+        "s_c": "<b>Your browser says no, we listen.</b> With Global Privacy Control or Do Not Track switched on, you are not counted at all.",
+        "s_d": "<b>The game sends usage data only if you ask it to.</b> That switch is off until you turn it on.",
+        "w_h": "This website",
+        "w1": "When a page opens, your browser sends one short message to our own server: the page, the site that linked you here (the site name only, never the full address), the campaign tag in the link if there is one, the page language, and whether the screen is a phone, tablet or desktop size. A click on a download button sends one more message saying a download started.",
+        "w2": "To count you once per day instead of on every page, the server makes a one-way fingerprint from your connection address and browser, mixed with a random secret that only exists for that day. The same fingerprint lets a download count toward the site that brought you here that day. At midnight UTC the secret and every fingerprint are deleted. After that, nobody can connect one day to the next, including us.",
+        "w3": "The server looks up the country of your connection address in a list it keeps on the box itself, keeps the two-letter country code and forgets the address. No outside service is asked.",
+        "w_keep_h": "What we keep",
+        "w_keep": "Daily totals per page, linking site, campaign, country, screen size and language, and how many of those visits led to a download. Devlog posts also keep how many people read and finished them, and their star ratings. These totals are kept for as long as the site exists.",
+        "w_never_h": "What we never keep",
+        "w_n1": "Connection (IP) addresses, browser details or device information",
+        "w_n2": "Cookies, or anything else stored in your browser for counting",
+        "w_n3": "Full addresses of the pages that sent you here",
+        "w_n4": "Anything that links one visit, rating or download to a person",
+        "w4": "Your devlog star ratings are remembered in your own browser, so the stars stay filled in when you come back. That note never leaves your computer and is not used for counting.",
+        "w5": "Some pages fetch live data from <code>api.truecombat.eu</code> (servers, leaderboards) and patch notes from the GitHub API. The trailer comes from YouTube only after you click play. As with any website, these servers see your connection address while they answer.",
+        "g_h": "The game and the launcher",
+        "g_a": "<b>Online play.</b> Game servers see your connection address, as every online game does. Our moderation tools keep it for up to 90 days to deal with cheating and abuse.",
+        "g_b": "<b>Leaderboards.</b> Ranked matches on official and verified servers record your in-game name, a player ID made from your game key, and your match statistics. That is what fills the leaderboards and your public profile.",
+        "g_c": "<b>Anti-cheat.</b> Official servers use Easy Anti-Cheat, which runs under the <a href=\"https://www.epicgames.com/site/privacypolicy\">Epic Games privacy policy</a>.",
+        "g_d": "<b>Crash reports</b> stay on your PC. They only reach us if you attach them to a bug report yourself.",
+        "g_e": "<b>Bug reports</b> you send from the game include what you write, a screenshot and technical details such as the map, frame rate and graphics card, so we can reproduce the problem.",
+        "g_note": "<b>Coming soon: optional usage data.</b> A future update adds a switch in the launcher that shares anonymous performance and crash data to help us fix problems on the hardware you actually play on. It is off unless you switch it on, and this page will list exactly what it sends before it ships.",
+        "c_h": "Your choices",
+        "c1": "To stop being counted on this website, switch on Global Privacy Control or Do Not Track in your browser. Blocking <code>api.truecombat.eu/insights</code> works too, and the site keeps working exactly the same.",
+        "c2": "Questions, or want something removed? Ask us on <a href=\"https://discord.gg/8kcHdg2Hch\">Discord</a> or open an issue on <a href=\"https://github.com/Annoximeme/TrueCombat-Platinum\">GitHub</a>. All of the counting code is in the public repository, so you never have to take our word for it.",
+        "x_h": "Changes to this page",
+        "x1": "If what we collect changes, this page changes first, and the devlog says so. Last updated 12 November 2026.",
+        "credit": "Country lookup uses IP to Country Lite by <a href=\"https://db-ip.com\">DB-IP</a>, licensed under CC BY 4.0.",
+    },
+    "nl": {
+        "title": "Privacy · TrueCombat: Platinum",
+        "desc": "Wat de website, de launcher en de servers van TrueCombat: Platinum verzamelen, wat ze nooit verzamelen en hoe je je afmeldt. Geen cookies, geen advertentietrackers, geen analysebedrijven.",
+        "og": "Geen cookies, geen advertentietrackers, geen analysebedrijven. Dit is precies wat we tellen.",
+        "eyebrow": "Privacy", "h1": "Wat we tellen, en wat we nooit zullen tellen",
+        "lede": "We willen weten welke pagina's het lezen waard zijn en waar nieuwe spelers over de game horen. Daarvoor hoeven we niet te weten wie je bent, dus vragen we het ook nooit.",
+        "toc": "Op deze pagina", "n1": "Kort samengevat", "n2": "Deze website", "n3": "De game", "n4": "Jouw keuzes", "n5": "Wijzigingen",
+        "s_h": "Kort samengevat",
+        "s_a": "<b>Geen cookies, geen advertentietrackers, geen analysebedrijven.</b> Er wordt niets van Google, Meta of iemand anders op deze site geladen.",
+        "s_b": "<b>We tellen bezoeken, geen bezoekers.</b> De website bewaart dagtotalen en niets dat naar een persoon terugleidt.",
+        "s_c": "<b>Zegt je browser nee, dan luisteren we.</b> Met Global Privacy Control of Do Not Track aan word je helemaal niet geteld.",
+        "s_d": "<b>De game stuurt alleen gebruiksgegevens als jij dat wilt.</b> Die schakelaar staat uit tot je hem aanzet.",
+        "w_h": "Deze website",
+        "w1": "Wanneer een pagina opent, stuurt je browser één kort bericht naar onze eigen server: de pagina, de site die naar ons linkte (alleen de naam van de site, nooit het volledige adres), de campagnetag in de link als die er is, de taal van de pagina, en of het scherm de grootte van een telefoon, tablet of desktop heeft. Een klik op een downloadknop stuurt nog één bericht dat er een download is gestart.",
+        "w2": "Om je één keer per dag te tellen in plaats van op elke pagina, maakt de server een eenrichtingsvingerafdruk van je verbindingsadres en browser, gemengd met een willekeurig geheim dat alleen die dag bestaat. Met dezelfde vingerafdruk telt een download mee voor de site die je die dag naar ons bracht. Om middernacht UTC worden het geheim en alle vingerafdrukken gewist. Daarna kan niemand de ene dag nog aan de volgende koppelen, ook wij niet.",
+        "w3": "De server zoekt het land van je verbindingsadres op in een lijst die op de server zelf staat, bewaart de landcode van twee letters en vergeet het adres. Er wordt geen externe dienst geraadpleegd.",
+        "w_keep_h": "Wat we bewaren",
+        "w_keep": "Dagtotalen per pagina, verwijzende site, campagne, land, schermgrootte en taal, en hoeveel van die bezoeken tot een download leidden. Voor devlogberichten bewaren we ook hoeveel mensen ze lazen en uitlazen, en hun sterrenbeoordelingen. Deze totalen blijven bewaard zolang de site bestaat.",
+        "w_never_h": "Wat we nooit bewaren",
+        "w_n1": "Verbindingsadressen (IP), browsergegevens of apparaatinformatie",
+        "w_n2": "Cookies, of iets anders dat voor het tellen in je browser wordt opgeslagen",
+        "w_n3": "Volledige adressen van de pagina's die je naar ons stuurden",
+        "w_n4": "Iets dat een bezoek, beoordeling of download aan een persoon koppelt",
+        "w4": "Je sterrenbeoordelingen bij devlogberichten worden in je eigen browser onthouden, zodat de sterren gevuld blijven als je terugkomt. Die notitie verlaat je computer nooit en wordt niet gebruikt om te tellen.",
+        "w5": "Sommige pagina's halen live gegevens op bij <code>api.truecombat.eu</code> (servers, ranglijsten) en patchnotes via de GitHub API. De trailer komt pas van YouTube nadat je op afspelen klikt. Zoals bij elke website zien deze servers je verbindingsadres terwijl ze antwoorden.",
+        "g_h": "De game en de launcher",
+        "g_a": "<b>Online spelen.</b> Gameservers zien je verbindingsadres, zoals bij elke online game. Onze moderatietools bewaren het tot 90 dagen om valsspelen en misbruik aan te pakken.",
+        "g_b": "<b>Ranglijsten.</b> Ranked potjes op officiële en geverifieerde servers leggen je spelnaam vast, een speler-ID afgeleid van je gamesleutel en je wedstrijdstatistieken. Daarmee worden de ranglijsten en je openbare profiel gevuld.",
+        "g_c": "<b>Anti-cheat.</b> Officiële servers gebruiken Easy Anti-Cheat, dat valt onder het <a href=\"https://www.epicgames.com/site/privacypolicy\">privacybeleid van Epic Games</a>.",
+        "g_d": "<b>Crashrapporten</b> blijven op je pc. Ze komen alleen bij ons als je ze zelf bij een bugmelding voegt.",
+        "g_e": "<b>Bugmeldingen</b> die je vanuit de game verstuurt bevatten wat je schrijft, een screenshot en technische details zoals de map, framerate en grafische kaart, zodat we het probleem kunnen nabootsen.",
+        "g_note": "<b>Binnenkort: optionele gebruiksgegevens.</b> Een toekomstige update voegt een schakelaar in de launcher toe die anonieme prestatie- en crashgegevens deelt, zodat we problemen kunnen oplossen op de hardware waarop je echt speelt. Hij staat uit tenzij je hem aanzet, en deze pagina vermeldt precies wat hij verstuurt voordat hij verschijnt.",
+        "c_h": "Jouw keuzes",
+        "c1": "Wil je niet geteld worden op deze website, zet dan Global Privacy Control of Do Not Track aan in je browser. Ook <code>api.truecombat.eu/insights</code> blokkeren werkt, en de site blijft precies hetzelfde werken.",
+        "c2": "Vragen, of wil je iets laten verwijderen? Vraag het ons op <a href=\"https://discord.gg/8kcHdg2Hch\">Discord</a> of open een issue op <a href=\"https://github.com/Annoximeme/TrueCombat-Platinum\">GitHub</a>. Alle telcode staat in de openbare repository, dus je hoeft ons nooit op ons woord te geloven.",
+        "x_h": "Wijzigingen aan deze pagina",
+        "x1": "Als er verandert wat we verzamelen, verandert eerst deze pagina, en de devlog meldt het. Laatst bijgewerkt op 12 november 2026.",
+        "credit": "Het opzoeken van landen gebruikt IP to Country Lite van <a href=\"https://db-ip.com\">DB-IP</a>, onder licentie CC BY 4.0.",
+    },
+}
+
+
 def fill(template, table, values):
     out = template
     for k, v in values.items():
@@ -480,11 +639,13 @@ def body(page, lang, values):
         return fill(DOWNLOAD, DOWNLOAD_T[lang], values)
     if page == "faq":
         return faq_body(lang, values)
+    if page == "privacy":
+        return fill(PRIVACY, PRIVACY_T[lang], values)
     return elite_body(lang, values)
 
 
 def meta(page, lang):
-    T = {"download": DOWNLOAD_T, "faq": FAQ, "truecombat-elite": ELITE_T}[page][lang]
+    T = {"download": DOWNLOAD_T, "faq": FAQ, "truecombat-elite": ELITE_T, "privacy": PRIVACY_T}[page][lang]
     return T["title"], T["desc"], T["og"]
 
 
