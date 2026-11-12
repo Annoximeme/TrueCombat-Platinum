@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tien stukken werk, één update · TrueCombat: Platinum</title>
-<meta name="description" content="De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste testpoort eruitzag.">
+<meta name="description" content="De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste…">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/nl/devlog-one-update">
 <meta property="og:type" content="article">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="nl_NL">
 <meta property="og:title" content="Tien stukken werk, één update">
-<meta property="og:description" content="De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste testpoort eruitzag.">
+<meta property="og:description" content="De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste…">
 <meta property="og:image" content="https://truecombat.eu/img/og-devlog-one-update.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
 <link rel="manifest" href="../site.webmanifest">
 <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="Tien stukken werk, één update">
-<meta name="twitter:description" content="De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste testpoort eruitzag.">
+<meta name="twitter:description" content="De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste…">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Tien stukken werk, één update","item":"https://truecombat.eu/nl/devlog-one-update"}]}</script>
 <link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-one-update">
@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=2d1a1c7ae7">
+<link rel="stylesheet" href="../style.css?v=6bf7a5af62">
 </head>
 <body>
 <!--nav-->
@@ -102,7 +102,7 @@
 <h2 id="samenvoegen-in-vaste-volgorde">Samenvoegen in vaste volgorde</h2>
 <p>De patches worden in een vaste volgorde toegepast, de grootste en meest ingrijpende eerst, en elke stap wordt gecontroleerd voordat de volgende begint. Wanneer twee stukken dezelfde regels wijzigen, wordt het samenvoegen met de hand gedaan, regel voor regel, en vastgelegd. Dat gebeurde deze keer acht keer. Het meest delicate geval was de hand in eerste persoon: het camouflagewerk geeft die een nieuwe mouw, en het animatiewerk beweegt hem mee met het wapen. De oplossing was beide toe te passen, in de juiste volgorde, en te bevestigen dat het resultaat zonder één waarschuwing compileert en nog steeds de bewegings-, gevechts-, voorspellings- en entiteitstests doorstaat die elke build draait.</p>
 <p>De menu's in het spel waren een apart geval. Twee stukken bouwen het menupakket opnieuw, één voor de nieuwe Graphics-pagina en één voor het nieuwe lettertype, en de valsspeeldetectie op servers controleert dat pakket op controlesom. Dus worden eerst de menubronnen van beide samengevoegd, wordt het pakket één keer uit dat resultaat gegenereerd, en wordt de controlesom daarvan berekend. Het pakket van een van beide stukken overnemen had een client opgeleverd die elke officiële server markeert.</p>
-<aside class="callout"><p>Niets in deze update wijzigt het netwerkprotocol. Een 0.33-client kan een 0.34-server nog steeds zien en erop meespelen. De upgrade hoeft alleen geïnstalleerd te worden om de nieuwe functies te krijgen.</p></aside>
+<div class="callout"><p>Niets in deze update wijzigt het netwerkprotocol. Een 0.33-client kan een 0.34-server nog steeds zien en erop meespelen. De upgrade hoeft alleen geïnstalleerd te worden om de nieuwe functies te krijgen.</p></div>
 <h2 id="wat-het-niet-heeft-gehaald">Wat het niet heeft gehaald</h2>
 <p>Easy Anti-Cheat stond gepland voor deze update. De code bouwt en de meeste controles slagen, maar de controle die ertoe doet, een echte client die via de echte anti-cheatbootstrapper als beschermd wordt gemeld, is niet op tijd bevestigd. Die wordt vastgehouden tot de volgende update in plaats van op gedeeltelijk bewijs uitgebracht. Dezelfde regel gold ongeveer een uur lang voor Discord Rich Presence: de eerste volledige test faalde bij de stap Discord Join, er is een fix gemaakt en opnieuw getest op beide renderers, en pas toen ging het er weer in.</p>
 <h2 id="de-poort">De poort</h2>
@@ -195,6 +195,6 @@
 </footer>
 <!--/footer-->
 
-<script src="../js/site.js?v=36fa7c6143"></script>
+<script src="../js/site.js?v=5cffcf206a"></script>
 </body>
 </html>

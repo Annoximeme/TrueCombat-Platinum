@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>What keeps the official servers running · TrueCombat: Platinum</title>
-<meta name="description" content="Two official servers, a master list, live leaderboards and this website all run around the clock. Here is what happens behind the scenes when nobody is watching.">
+<meta name="description" content="Two official servers, a master list, live leaderboards and this website all run around the clock.">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/devlog-official-servers">
 <meta property="og:type" content="article">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="What keeps the official servers running">
-<meta property="og:description" content="Two official servers, a master list, live leaderboards and this website all run around the clock. Here is what happens behind the scenes when nobody is watching.">
+<meta property="og:description" content="Two official servers, a master list, live leaderboards and this website all run around the clock.">
 <meta property="og:image" content="https://truecombat.eu/img/og-devlog-official-servers.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
 <link rel="manifest" href="site.webmanifest">
 <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="What keeps the official servers running">
-<meta name="twitter:description" content="Two official servers, a master list, live leaderboards and this website all run around the clock. Here is what happens behind the scenes when nobody is watching.">
+<meta name="twitter:description" content="Two official servers, a master list, live leaderboards and this website all run around the clock.">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"What keeps the official servers running","item":"https://truecombat.eu/devlog-official-servers"}]}</script>
 <link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-official-servers">
@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=2d1a1c7ae7">
+<link rel="stylesheet" href="style.css?v=6bf7a5af62">
 </head>
 <body>
 <!--nav-->
@@ -113,7 +113,7 @@
 <p>Every night the system does a short round of its own. It checks that every map in the rotation is actually installed, posts a short health report to the team, and restarts a game server for a clean start, but only when no human players are on it. Nobody gets kicked out of a match for maintenance.</p>
 <h2 id="backups-that-leave-the-building">Backups that leave the building</h2>
 <p>A backup on the same machine is not a backup. Every night, the server configuration, the match records and the statistics database are copied to a private, off-site repository. Anything sensitive, such as passwords and signing keys, is encrypted before it leaves the server. A copy is only made when something actually changed, so the history stays readable.</p>
-<aside class="callout"><p>A backup only counts once you know you can get it back. We tested decrypting the off-site copy before calling the job done.</p></aside>
+<div class="callout"><p>A backup only counts once you know you can get it back. We tested decrypting the off-site copy before calling the job done.</p></div>
 <h2 id="why-it-matters">Why it matters</h2>
 <p>Ranks, ratings and match history are yours. You earned them, and they should not disappear because a disk failed or a setting went wrong. And an official server that is down at nine in the evening is a clan night that does not happen. None of this is glamorous, but it is the part of the game that has to work every single day.</p>
       </div>
@@ -201,6 +201,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=36fa7c6143"></script>
+<script src="js/site.js?v=5cffcf206a"></script>
 </body>
 </html>

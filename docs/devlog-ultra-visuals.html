@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>New light for old maps · TrueCombat: Platinum</title>
-<meta name="description" content="The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.">
+<meta name="description" content="The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12.">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/devlog-ultra-visuals">
 <meta property="og:type" content="article">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="New light for old maps">
-<meta property="og:description" content="The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.">
+<meta property="og:description" content="The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12.">
 <meta property="og:image" content="https://truecombat.eu/img/og-devlog-ultra-visuals.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
 <link rel="manifest" href="site.webmanifest">
 <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="New light for old maps">
-<meta name="twitter:description" content="The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.">
+<meta name="twitter:description" content="The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12.">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"New light for old maps","item":"https://truecombat.eu/devlog-ultra-visuals"}]}</script>
 <link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-ultra-visuals">
@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=2d1a1c7ae7">
+<link rel="stylesheet" href="style.css?v=6bf7a5af62">
 </head>
 <body>
 <!--nav-->
@@ -128,7 +128,7 @@
 <h2 id="phase-three-light-and-shadow">Phase three: light and shadow</h2>
 <p>The last phase added what most players will notice first: real-time shadows from the sun. Players, props, weapons and the world itself now cast them, sharp up close and softer in the distance. Small contact shadows ground objects where they touch the floor, and light shafts through fog are available as an option.</p>
 <p>That raised a real design question. On Ultra, other players cast sun shadows too, which means a shadow can give away someone standing just around a corner. We decided to keep it. It is how light works, it rewards awareness, and both sides get the same information. Server owners who want a strictly classic match can force the classic look for everyone with <code>sv_forceClassicVisuals 1</code>.</p>
-<aside class="callout"><p>Shadows from muzzle flashes and explosions are next on the list. They did not make this update, because we were not yet happy with how they perform.</p></aside>
+<div class="callout"><p>Shadows from muzzle flashes and explosions are next on the list. They did not make this update, because we were not yet happy with how they perform.</p></div>
 <h2 id="fair-by-design">Fair by design</h2>
 <p>Every phase went through the same checks before it was allowed near a release:</p>
 <ul>
@@ -225,6 +225,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=36fa7c6143"></script>
+<script src="js/site.js?v=5cffcf206a"></script>
 </body>
 </html>
