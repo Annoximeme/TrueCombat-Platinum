@@ -103,7 +103,8 @@ The body may be up to 1.6 MB. Answers: `201 {"ok": true, "id": …}`, `400` bad 
 Reports land under Reports › Bug reports with the screenshot, the context, and a button for the console
 and hardware; a short alert goes to the staff Discord (kind `bugreport`) linking to the inbox, without the
 screenshot. Screenshots live in `<data_dir>/bugshots` and go with their report when closed reports are
-pruned. Plain-text posts with `X-Report-Category` still work for older tools.
+pruned, and stop being kept once they fill `bugshot_max_mb` (500). Player text in the Discord alert is
+escaped, so it can't carry links or mentions. Plain-text posts with `X-Report-Category` still work for older tools.
 
 ## Staff badge keys
 
