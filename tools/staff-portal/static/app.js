@@ -748,7 +748,7 @@ function pageStaff(main) {
   main.innerHTML = `<div class="head"><div><p class="eyebrow">Access</p><h1>Staff</h1>
     <p class="muted">Discord roles grant access automatically. Use this list to add someone without the role, raise them to admin, or shut someone out.</p></div>
     <div class="actions"><button class="btn btn-primary" id="s-add">Add or change</button></div></div><div class="panel table-wrap" id="s-list"></div>
-    <div class="head"><div><h2>Staff keys in game</h2><p class="muted">Each staff member gets their own key under their name, top left. A key stops working when it is revoked, when someone loses staff access, or after a long time without signing in to the portal.</p></div></div>
+    <div class="head"><div><h2>Staff keys in game</h2><p class="muted">Each staff member gets their own key under their name, bottom left. A key stops working when it is revoked, when someone loses staff access, or after a long time without signing in to the portal.</p></div></div>
     <div class="panel table-wrap" id="s-keys"></div>`;
   const edit = (row = {}) => modal({ title: row.discord_id ? "Change " + (row.name || row.discord_id) : "Add staff", ok: "Save",
     sub: S.me.role === "owner" ? "" : "Only the owner can make or change admins.",

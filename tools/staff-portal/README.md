@@ -107,7 +107,7 @@ pruned. Plain-text posts with `X-Report-Category` still work for older tools.
 
 ## Staff badge keys
 
-Every staff member gets their own in-game staff key under their name (top left) › Staff badge in game.
+Every staff member gets their own in-game staff key under their name (bottom left) › Staff badge in game.
 The browser makes the Ed25519 key pair and downloads `staff.key` (`TCPSTAFF1 <id> <seed>`). Only the
 public half reaches the portal. The portal writes the public keys to `<game dir>/staffkeys/staffkeys.txt`
 for every server (or `staff_keys_file` per server) and sends `staffkeys_reload` over rcon. Game servers
@@ -141,7 +141,7 @@ signs in from 127.0.0.1 without Discord. Never set either on the VPS.
    (they add the `/staff/` routes), then `sudo ./deploy/install.sh stats-link` (restarts the stats service, rolls
    back if it does not answer);
    `sv_autoDemo 1` in each game server's cfg for report demos.
-6. Owner and admins: set up two-step sign-in under your name, top left.
+6. Owner and admins: set up two-step sign-in under your name, bottom left.
 
 Data lives in `/var/lib/tcp-staff-portal/portal.db` (SQLite). It also holds two-step sign-in secrets and the Discord
 sign-in tokens of open sessions, so a backup of it belongs in the private backup repository only. Chat is kept 30 days and sightings 90 days.
