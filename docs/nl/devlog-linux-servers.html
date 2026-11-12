@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>De officiële servers draaien nu op Linux · TrueCombat: Platinum</title>
-<meta name="description" content="Beide officiële servers zijn overgestapt op een native Linux-versie van de 0.34.0-server. Wat dat betekent voor je matches, waarom we het deden en hoe we ervoor zorgden dat we het binnen enkele seconden konden terugdraaien.">
+<meta name="description" content="Beide officiële servers zijn overgestapt op een native Linux-versie van de 0.34.0-server.">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/nl/devlog-linux-servers">
 <meta property="og:type" content="article">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="nl_NL">
 <meta property="og:title" content="De officiële servers draaien nu op Linux">
-<meta property="og:description" content="Beide officiële servers zijn overgestapt op een native Linux-versie van de 0.34.0-server. Wat dat betekent voor je matches, waarom we het deden en hoe we ervoor zorgden dat we het binnen enkele seconden konden terugdraaien.">
+<meta property="og:description" content="Beide officiële servers zijn overgestapt op een native Linux-versie van de 0.34.0-server.">
 <meta property="og:image" content="https://truecombat.eu/img/og-devlog-linux-servers.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
 <link rel="manifest" href="../site.webmanifest">
 <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="De officiële servers draaien nu op Linux">
-<meta name="twitter:description" content="Beide officiële servers zijn overgestapt op een native Linux-versie van de 0.34.0-server. Wat dat betekent voor je matches, waarom we het deden en hoe we ervoor zorgden dat we het binnen enkele seconden konden terugdraaien.">
+<meta name="twitter:description" content="Beide officiële servers zijn overgestapt op een native Linux-versie van de 0.34.0-server.">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"De officiële servers draaien nu op Linux","item":"https://truecombat.eu/nl/devlog-linux-servers"}]}</script>
 <link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-linux-servers">
@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=2d1a1c7ae7">
+<link rel="stylesheet" href="../style.css?v=6bf7a5af62">
 </head>
 <body>
 <!--nav-->
@@ -100,7 +100,7 @@
 <p>Wat verandert, zit eronder. Een native server betaalt niet meer elke frame voor vertaling, dus hij gebruikt minder van de machine en heeft meer ruimte als een match druk wordt. In tests gebruikte een volle match met tien bots, op twee keer de huidige tickrate, ongeveer zeven procent van één processorkern.</p>
 <h2 id="waarom-het-ertoe-doet">Waarom het ertoe doet</h2>
 <p>Die ruimte is wat ons later de tickrate laat verhogen. De servers sturen nu twintig keer per seconde een update. Veertig zou beweging en treffers strakker laten aanvoelen, vooral in gevechten van dichtbij, maar alleen als de server het ruim bijhoudt en de hitregistratie nog steeds klopt met wat jij op je scherm zag. De snelheid verdubbelen is niet iets wat we aanzetten in de hoop dat het goed gaat.</p>
-<aside class="callout"><p>De tickrate op de officiële servers is nog niet veranderd. Die gaat pas omhoog als een aparte hitregistratietest over het internet laat zien dat het beter is, niet alleen sneller.</p></aside>
+<div class="callout"><p>De tickrate op de officiële servers is nog niet veranderd. Die gaat pas omhoog als een aparte hitregistratietest over het internet laat zien dat het beter is, niet alleen sneller.</p></div>
 <p>De Linux-versie is ook de versie die communityhosts krijgen. Sinds 0.34.0 bevat elke release naast de Windows-download een kant-en-klaar Linux-serverpakket, gebouwd uit dezelfde broncode als de officiële servers. Huur je ergens een kleine server, dan kun je nu precies draaien wat wij draaien.</p>
 <h2 id="hoe-de-overstap-ging">Hoe de overstap ging</h2>
 <p>De overstap gebeurde laat in de nacht, in een rustig moment, één server tegelijk. Voordat er iets werd aangeraakt, werd de Linux-versie vergeleken met de release: dezelfde gamebestanden, dezelfde checksums, dezelfde maps. De oude opstelling bleef naast de nieuwe staan. Teruggaan is één aanpassing en een herstart, wat seconden duurt, en dat pad lag klaar voordat de eerste server werd omgezet.</p>
@@ -193,6 +193,6 @@
 </footer>
 <!--/footer-->
 
-<script src="../js/site.js?v=36fa7c6143"></script>
+<script src="../js/site.js?v=cef5a04dba"></script>
 </body>
 </html>

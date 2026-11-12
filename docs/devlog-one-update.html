@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ten pieces of work, one update · TrueCombat: Platinum</title>
-<meta name="description" content="The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.">
+<meta name="description" content="The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final…">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/devlog-one-update">
 <meta property="og:type" content="article">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="Ten pieces of work, one update">
-<meta property="og:description" content="The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.">
+<meta property="og:description" content="The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final…">
 <meta property="og:image" content="https://truecombat.eu/img/og-devlog-one-update.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
 <link rel="manifest" href="site.webmanifest">
 <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="Ten pieces of work, one update">
-<meta name="twitter:description" content="The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.">
+<meta name="twitter:description" content="The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final…">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Ten pieces of work, one update","item":"https://truecombat.eu/devlog-one-update"}]}</script>
 <link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-one-update">
@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=2d1a1c7ae7">
+<link rel="stylesheet" href="style.css?v=6bf7a5af62">
 </head>
 <body>
 <!--nav-->
@@ -102,7 +102,7 @@
 <h2 id="merging-in-a-fixed-order">Merging in a fixed order</h2>
 <p>The patches are applied in a fixed order, biggest and most invasive first, and each step is checked before the next one starts. When two pieces change the same lines, the merge is done by hand, line by line, and recorded. This time that happened eight times. The most delicate one was the first-person hand: the camouflage work gives it a new sleeve, and the animation work moves it with the weapon. The fix was to apply both, in the right sequence, and confirm the result compiles without a single warning and still passes the movement, combat, prediction and entity tests that every build runs.</p>
 <p>The in-game menus were a special case. Two pieces rebuild the menu package, one for the new Graphics page and one for the new font, and the cheat detection on servers checks that package by checksum. So the menu sources from both are merged first, the package is generated once from the result, and the checksum is computed from that. Taking either piece's own package would have produced a client that every official server flags.</p>
-<aside class="callout"><p>Nothing in this update changes the network protocol. A 0.33 client can still see and join a 0.34 server. The upgrade only has to be installed to get the new features.</p></aside>
+<div class="callout"><p>Nothing in this update changes the network protocol. A 0.33 client can still see and join a 0.34 server. The upgrade only has to be installed to get the new features.</p></div>
 <h2 id="what-did-not-make-it">What did not make it</h2>
 <p>Easy Anti-Cheat was planned for this update. The code builds and most of the checks pass, but the one that matters, a real client being reported as protected through the real anti-cheat bootstrapper, was not verified in time. It is held for the next update rather than shipped on partial evidence. The same rule applied to Discord Rich Presence for about an hour: its first full test failed at the Discord Join step, a fix was made and re-tested on both renderers, and only then did it go back in.</p>
 <h2 id="the-gate">The gate</h2>
@@ -195,6 +195,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=36fa7c6143"></script>
+<script src="js/site.js?v=cef5a04dba"></script>
 </body>
 </html>
