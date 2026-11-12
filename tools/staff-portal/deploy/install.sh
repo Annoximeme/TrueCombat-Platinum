@@ -80,6 +80,7 @@ install_portal() {
 
   install -d -m 0750 -o root -g tcpstaff "$ETC"
   [ -f "$ETC/config.json" ] || install -m 0640 -o root -g tcpstaff "$HERE/deploy/config.example.json" "$ETC/config.json"
+  chown root:tcpstaff "$ETC/config.json"; chmod 0640 "$ETC/config.json"     # also when the file was written by hand first
   filled "$ETC/client-secret" || { say "put the Discord client secret in $ETC/client-secret first"; exit 1; }
   chown root:root "$ETC/client-secret"; chmod 0600 "$ETC/client-secret"
   if grep -q 'DISCORD_' "$ETC/config.json"; then say "fill owners, client_id and guild_id in $ETC/config.json first"; exit 1; fi
