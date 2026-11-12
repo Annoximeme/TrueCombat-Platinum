@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Staff Portal · TrueCombat: Platinum</title>
+<link rel="icon" href="/static/favicon.png">
+<link rel="preload" href="/static/fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/app.js" defer></script>
+</head>
+<body>
+<div id="signin" class="signin" hidden>
+  <div class="signin-card">
+    <img src="/static/favicon.png" alt="" class="signin-logo" width="56" height="56">
+    <p class="eyebrow">TrueCombat: Platinum</p>
+    <h1>Staff Portal</h1>
+    <p class="muted">Restricted to server staff. Sign in with the Discord account that holds your staff role.</p>
+    <p id="signin-msg" class="signin-msg" hidden></p>
+    <a class="btn btn-primary btn-wide" href="/auth/login">Sign in with Discord</a>
+    <div id="dev-login" class="dev-login" hidden>
+      <span class="muted">Local test sign-in:</span>
+      <a href="/auth/dev?role=moderator">Moderator</a>
+      <a href="/auth/dev?role=admin">Admin</a>
+      <a href="/auth/dev?role=owner">Owner</a>
+    </div>
+  </div>
+</div>
+
+<div id="mfa" class="signin" hidden>
+  <form class="signin-card" id="mfa-form">
+    <img src="/static/favicon.png" alt="" class="signin-logo" width="56" height="56">
+    <p class="eyebrow">Two-step sign-in</p>
+    <h1>Enter your code</h1>
+    <p class="muted">Open your authenticator app and type the six-digit code for TrueCombat Staff.</p>
+    <p id="mfa-msg" class="signin-msg" hidden></p>
+    <input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="123 456" class="code-input" required>
+    <button class="btn btn-primary btn-wide">Continue</button>
+    <p class="dim small">Lost your phone? Ask the owner to reset your two-step sign-in.</p>
+  </form>
+</div>
+
+<div id="app" class="app" hidden>
+  <aside class="side">
+    <a class="brand" href="#/servers">
+      <img src="/static/favicon.png" alt="" width="28" height="28">
+      <span><b>STAFF</b> PORTAL</span>
+    </a>
+    <nav id="nav">
+      <span class="nav-group">Live</span>
+      <a href="#/servers" data-page="servers">Servers</a>
+      <a href="#/chat" data-page="chat">Live chat</a>
+      <a href="#/alerts" data-page="alerts">Alerts <span class="count" id="nav-alerts" hidden></span></a>
+      <span class="nav-group">Cases</span>
+      <a href="#/reports" data-page="reports">Reports <span class="count" id="nav-reports" hidden></span></a>
+      <a href="#/players" data-page="players">Players</a>
+      <a href="#/bans" data-page="bans">Bans</a>
+      <a href="#/watchlist" data-page="watchlist">Watchlist</a>
+      <a href="#/review" data-page="review" data-perm="review">Stats review</a>
+      <span class="nav-group">Setup</span>
+      <a href="#/schedule" data-page="schedule">Schedule</a>
+      <a href="#/filter" data-page="filter">Chat filter</a>
+      <a href="#/replies" data-page="replies">Saved replies</a>
+      <a href="#/weekly" data-page="weekly" data-perm="weekly">Weekly report</a>
+      <a href="#/audit" data-page="audit" data-perm="audit">Audit log</a>
+      <a href="#/staff" data-page="staff" data-perm="staff.manage">Staff</a>
+      <a href="#/health" data-page="health" data-perm="health">Health</a>
+    </nav>
+    <div class="me">
+      <img id="me-avatar" alt="" width="32" height="32" hidden>
+      <button id="me-account" class="me-account" type="button" title="Account and two-step sign-in"><b id="me-name"></b><span id="me-role" class="role"></span></button>
+      <button id="logout" class="link" type="button">Sign out</button>
+    </div>
+  </aside>
+  <main id="main" class="main" tabindex="-1"></main>
+</div>
+
+<div id="modal" class="modal" hidden>
+  <form id="modal-form" class="modal-card" novalidate>
+    <h2 id="modal-title"></h2>
+    <p id="modal-sub" class="muted"></p>
+    <div id="modal-body"></div>
+    <p id="modal-error" class="error" hidden></p>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="modal-cancel">Cancel</button>
+      <button type="submit" class="btn btn-primary" id="modal-ok">Confirm</button>
+    </div>
+  </form>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

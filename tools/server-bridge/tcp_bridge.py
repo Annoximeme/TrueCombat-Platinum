@@ -197,6 +197,7 @@ def server_entry(addr, status, modes):
 class Bridge:
     def __init__(self, args):
         self.args = args
+        self.staff_token = ""
         self.master = parse_addr(args.master, 27950)
         self.modes = dict(DEFAULT_MODES)
         if args.modes:
@@ -252,7 +253,8 @@ def make_handler(bridge):
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
-            self.send_header("Cache-Control", "public, max-age=30" if self.command != "POST" else "no-store")
+            private = self.command == "POST" or self.path.startswith("/staff/")
+            self.send_header("Cache-Control", "no-store" if private else "public, max-age=30")
             origin = self.headers.get("Origin", "")
             allowed = [o.strip() for o in bridge.args.cors.split(",")]
             if "*" in allowed:
@@ -271,7 +273,8 @@ def make_handler(bridge):
                     return self.send_json(bridge.servers)
                 if u.path == "/health":
                     return self.send_json({"ok": True, "updated": bridge.servers["updated"]})
-            r = tcp_stats.handle_get(bridge.stats, u.path, parse_qs(u.query))
+            r = tcp_stats.handle_staff(bridge.stats, "GET", u.path, self.headers, self.client_address[0], b"", bridge.staff_token) \
+                or tcp_stats.handle_get(bridge.stats, u.path, parse_qs(u.query))
             if r:
                 return self.send_json(r[1], r[0])
             self.send_json({"error": "not found"}, 404)
@@ -283,7 +286,9 @@ def make_handler(bridge):
                 n = 0
             if n > tcp_stats.MAX_BODY:
                 return self.send_json({"error": "report too large"}, 413)
-            r = tcp_stats.handle_post(bridge.stats, urlparse(self.path).path, self.headers, self.rfile.read(n))
+            path, body = urlparse(self.path).path, self.rfile.read(n)
+            r = tcp_stats.handle_staff(bridge.stats, "POST", path, self.headers, self.client_address[0], body, bridge.staff_token) \
+                or tcp_stats.handle_post(bridge.stats, path, self.headers, body)
             self.send_json(*((r[1], r[0]) if r else ({"error": "not found"}, 404)))
 
         do_HEAD = do_GET
@@ -324,10 +329,13 @@ def main(argv=None):
     ap.add_argument("--cors", default="https://truecombat.eu,https://www.truecombat.eu",
                     help="comma-separated allowed origins, or *")
     ap.add_argument("--modes", default="", help="override g_gametype labels, e.g. 2=Elimination,3=Team elimination")
+    ap.add_argument("--staff-token-file", default="",
+                    help="shared secret for the staff portal's /staff/ routes (review queue, void); loopback only")
     ap.add_argument("--once", action="store_true", help="refresh once, print servers.json and exit")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args(argv)
     bridge = Bridge(args)
+    bridge.staff_token = tcp_stats.staff_token(args.staff_token_file)
     if args.once:
         bridge.refresh()
         print(json.dumps(bridge.servers, indent=2, ensure_ascii=False))

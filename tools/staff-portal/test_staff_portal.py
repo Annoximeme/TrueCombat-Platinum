@@ -1,0 +1,845 @@
+#!/usr/bin/env python3
+"""Loopback tests for the staff portal: a fake game server answers rcon like the 0.35/0.36 server does,
+and the tests drive the HTTP API with sessions for each role. Standard library only.
+
+    python3 test_staff_portal.py
+"""
+from __future__ import annotations
+
+import http.client
+import json
+import os
+import socket
+import sys
+import tempfile
+import threading
+import time
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+os.environ["TCP_STAFF_DEV"] = "1"
+import tcp_staff_portal as tsp  # noqa: E402
+
+GUID = "0123456789ABCDEF0123456789ABCDEF"
+PID = tsp.player_pid(GUID)
+
+
+class FakeGame(threading.Thread):
+    """Enough of the dedicated server's rcon to exercise the portal. staff=False acts like a 0.35.0 server."""
+
+    def __init__(self, staff=True, password="pw"):
+        super().__init__(daemon=True)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind(("127.0.0.1", 0))
+        self.port = self.sock.getsockname()[1]
+        self.staff = staff
+        self.password = password
+        self.commands = []
+        self.bans = []
+        self.players = {0: {"name": "Viper^7", "guid": GUID, "ip": "203.0.113.9", "team": 1, "muted": 0, "tk": 0,
+                            "xyz": (100.0, 200.0, 50.0)},
+                        1: {"name": "[BOT] Rook^7", "guid": "", "ip": "bot", "team": 2, "muted": 0, "tk": 0,
+                            "xyz": (-500.0, -900.0, 60.0)}}
+        self.cvars = {"g_friendlyFire": "1", "g_password": "", "bot_minplayers": "4", "g_autoBalance": "1",
+                      "g_allowVote": "1", "sv_autoDemo": "0", "g_warmup": "20"}
+
+    def answer(self, cmd: str) -> str:
+        word, _, rest = cmd.partition(" ")
+        if word in self.cvars and not rest:
+            return '"%s" is: "%s^7", the default\n' % (word, self.cvars[word])
+        if word == "set":
+            name, _, value = rest.partition(" ")
+            self.cvars[name] = value.strip('"')
+            return ""
+        if word == "tcp_status":
+            out = "TCP_NATIVE_STATUS bits=64 frames=10\n"
+            for slot, p in self.players.items():
+                out += ("TCP_NATIVE_PLAYER slot=%d begun=1 moves=10 time=1 xyz=%.3f,%.3f,%.3f hp=100 weapon=41 mode=0 clip=30 "
+                        "reserve=90 shots=100 hits=80 kills=20 deaths=2 targets=0 team=%d stance=0 stamina=1 head=0 body=0 legs=0\n") % (
+                    slot, *p["xyz"], p["team"])
+            return out
+        if word == "status":
+            lines = ["map                   : obj_village", "", "num score ping name lastmsg address qport rate lastConnectTime"]
+            for slot, p in self.players.items():
+                addr = "bot" if p["ip"] == "bot" else p["ip"] + ":27960"
+                lines.append("%3d %5d %4d %-36s %7d %-21s %5d %5d %d" % (slot, 5, 0 if p["ip"] == "bot" else 48, p["name"], 0, addr, 1234, 25000, 61000))
+            return "\n".join(lines) + "\n"
+        if word == "acstatus":
+            out = "anti-cheat on; speed log, aim log, files log; EAC required (eos)\nslot name             eac          files                    snaps/kills detections last\n"
+            for slot, p in self.players.items():
+                if p["ip"] == "bot":
+                    out += "%4d %-16.16s (bot or host, not checked)\n" % (slot, p["name"])
+                else:
+                    out += "%4d %-16.16s %-12s %-24.24s %5d/%-5d %10d %s\n" % (slot, p["name"], "protected", "ok", 10, 2, 0, "")
+                    out += "     account id 0002aabbccddeeff00112233445566778\n"
+            return out
+        if word == "serverinfo":
+            return "Server info settings:\nsv_hostname   Test^1 Server\nmapname   obj_village\ntcp_mode   Team Elimination\nsv_maxclients   16\nsv_eac   2\nsv_mapRotation   obj_village obj_snow\n"
+        if word == "dumpuser":
+            p = self.players.get(int(rest))
+            return "userinfo\n--------\nname   %s\ncl_guid   %s\nip   %s:27960\n" % (p["name"], p["guid"], p["ip"]) if p else "No player found.\n"
+        if word == "tcp_staffcaps":
+            return "TCP_STAFF_CAPS 1 players mute warn putteam staffsay\n" if self.staff else ""
+        if word == "tcp_players" and self.staff:
+            out = "TCP_STAFF_MATCH map_time=1000 round_phase=2 team_mode=1\n"
+            for slot, p in self.players.items():
+                out += "TCP_STAFF_PLAYER slot=%d begun=1 team=%d spec=0 bot=%d alive=1 muted=%d kills=3 deaths=1 team_kills=%d damage=300 pid=%s name=%s\n" % (
+                    slot, p["team"], p["ip"] == "bot", p["muted"], p["tk"], tsp.player_pid(p["guid"]) or "-", p["name"])
+            return out + "TCP_STAFF_END\n"
+        if word == "banlist":
+            return "%d ban(s)\n" % len(self.bans) + "".join(
+                "#%d ip %s guid %s name '%s' added 2026-11-12 10:00 reason: x%s\n" % (i + 1, b.get("ip") or "-", b.get("guid") or "-", "n", " puid " + b["puid"] if b.get("puid") else "")
+                for i, b in enumerate(self.bans))
+        if word == "banguid":
+            self.bans.append({"guid": rest.split()[0]})
+            return "ban added\n"
+        if word == "banip":
+            self.bans.append({"ip": rest.split()[0]})
+            return "ban added\n"
+        if word == "banpuid":
+            self.bans.append({"puid": rest.split()[0]})
+            return "ban added\n"
+        if word == "ban":
+            p = self.players.pop(int(rest.split()[0]))
+            self.bans.append({"guid": p["guid"], "ip": p["ip"]})
+            return "ban added, kicked\n"
+        if word == "unban":
+            before = len(self.bans)
+            self.bans = [b for b in self.bans if rest not in (b.get("guid"), b.get("ip"), b.get("puid"))]
+            return "removed %d\n" % (before - len(self.bans))
+        if word == "mute" and self.staff:
+            self.players[int(rest.split()[0])]["muted"] = 60
+            return "TCP_STAFF_MUTE slot=%s\n" % rest.split()[0]
+        if word in ("warn", "putteam", "staffsay", "unmute") and self.staff:
+            return "TCP_STAFF_%s ok\n" % word.upper()
+        if word in ("clientkick", "spectate", "say", "map", "nextmap", "map_restart", "maprotation", "voicemute", "voiceunmute"):
+            return "ok %s\n" % word
+        return ""
+
+    def run(self):
+        while True:
+            data, addr = self.sock.recvfrom(65536)
+            text = data[4:].decode("latin-1")
+            if not text.startswith("rcon "):
+                continue
+            _, pw, cmd = text.split(" ", 2)
+            if pw != self.password:
+                self.sock.sendto(b"\xff\xff\xff\xffprint\nBad rconpassword.\n", addr)
+                continue
+            self.commands.append(cmd)
+            self.sock.sendto(b"\xff\xff\xff\xffprint\n" + self.answer(cmd).encode("latin-1"), addr)
+
+
+HOOKS, VOIDED = [], []
+
+
+def totp_now(secret):
+    return tsp.totp_code(secret, int(time.time() // 30))
+
+
+def fake_stats():
+    """Stands in for the stats service (tcp_stats.py routes player.json and search.json)."""
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    class H(BaseHTTPRequestHandler):
+        def log_message(self, *a):
+            pass
+
+        def do_POST(self):
+            n = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(n) or b"{}")
+            if self.path == "/webhook":
+                HOOKS.append(body)
+                out = {}
+            elif self.path in ("/staff/void", "/staff/unvoid") and self.headers.get("X-Staff-Token") == "tok":
+                VOIDED.append((self.path, body))
+                out = {"ok": True, "rebuilt": 1}
+            else:
+                self.send_response(403)
+                self.end_headers()
+                return
+            data = json.dumps(out).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_GET(self):
+            if self.path == "/staff/review.json" and self.headers.get("X-Staff-Token") == "tok":
+                body = {"review": [{"pid": PID, "name": "Viper", "match_id": "00112233aabbccdd", "reason": "accuracy 92%",
+                                    "created": "2026-11-12T10:00:00Z"}]}
+            elif self.path.startswith("/player.json?id=" + PID):
+                body = {"id": PID, "name": "Viper", "rating": 1234, "ranked": True, "position": 3, "matches": 12, "kills": 90,
+                        "deaths": 40, "teamKills": 1, "recent": [{"ended": "2026-11-12T09:00:00Z", "map": "obj_snow", "won": True,
+                                                                  "kills": 9, "deaths": 2, "headshots": 4}]}
+            elif self.path.startswith("/search.json"):
+                body = {"players": [{"id": "fedcba9876543210", "name": "OnlyInStats"}]}
+            else:
+                self.send_response(404)
+                self.end_headers()
+                return
+            data = json.dumps(body).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+    srv = ThreadingHTTPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    return "http://127.0.0.1:%d" % srv.server_address[1]
+
+
+class PortalTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.tmp = tempfile.TemporaryDirectory()
+        cls.game = FakeGame(staff=True)
+        cls.old = FakeGame(staff=False)
+        cls.game.start()
+        cls.old.start()
+        reports = Path(cls.tmp.name) / "reports"
+        (reports / "sent").mkdir(parents=True)
+        (reports / "sent" / "1-0-0.json").write_text(json.dumps({
+            "schema": "tcp-report/1", "time": "2026-11-12T10:00:00Z", "server": "Test", "map": "obj_village",
+            "reporter": {"slot": 1, "name": "Someone", "id": ""}, "reported": {"slot": 0, "name": "Viper", "id": PID, "kills": 30},
+            "reason": "wallhack"}))
+        cls.chatlog = Path(cls.tmp.name) / "game.log"
+        cls.chatlog.write_text("")
+        cfg = {"public_url": "http://127.0.0.1:0", "data_dir": cls.tmp.name, "dev_login": True, "poll_seconds": 0.5,
+               "ban_sync_seconds": 3600, "stats_api": fake_stats(), "owners": ["100000000000000001"], "require_2fa": False, "stats_token": "tok",
+               "suspicion_seconds": 3600, "enforce_seconds": 3600, "afk_spectate_seconds": 0,
+               "discord_bot_db": str(Path(cls.tmp.name) / "bot.db"),
+               "servers": [
+                   {"key": "one", "name": "Official #1", "host": "127.0.0.1", "port": cls.game.port, "rcon_password": "pw",
+                    "reports_dir": str(reports), "log_file": str(cls.chatlog)},
+                   {"key": "two", "name": "Official #2", "host": "127.0.0.1", "port": cls.old.port, "rcon_password": "pw"}]}
+        cfg["alerts"] = {"webhook_url": cfg["stats_api"] + "/webhook", "gap_seconds": 0.05}
+        import sqlite3
+        con = sqlite3.connect(cfg["discord_bot_db"])
+        con.execute("CREATE TABLE links(discord_id INTEGER PRIMARY KEY, pid TEXT UNIQUE, name TEXT, linked_at TEXT)")
+        con.execute("INSERT INTO links VALUES(?,?,?,?)", (184000000000000001, PID, "viper#0", "2026-11-10T12:00:00Z"))
+        con.commit()
+        con.close()
+        cls.portal = tsp.Portal(cfg)
+        cls.portal.start()
+        from http.server import ThreadingHTTPServer
+        cls.httpd = ThreadingHTTPServer(("127.0.0.1", 0), tsp.make_handler(cls.portal))
+        cls.port = cls.httpd.server_address[1]
+        cfg["public_url"] = "http://127.0.0.1:%d" % cls.port
+        cls.httpd.RequestHandlerClass = tsp.make_handler(cls.portal)
+        threading.Thread(target=cls.httpd.serve_forever, daemon=True).start()
+        time.sleep(3.5)
+        cls.sessions = {r: cls.login(r) for r in ("moderator", "admin", "owner")}
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.portal.stop.set()
+        cls.httpd.shutdown()
+
+    @classmethod
+    def login(cls, role):
+        c = http.client.HTTPConnection("127.0.0.1", cls.port)
+        c.request("GET", "/auth/dev?role=%s&name=%s" % (role, role.title()))
+        r = c.getresponse()
+        r.read()
+        c.close()
+        cookie = r.getheader("Set-Cookie").split(";")[0]
+        me = cls.call(None, "GET", "/api/me", cookie=cookie)[1]
+        return {"cookie": cookie, "csrf": me["csrf"]}
+
+    @classmethod
+    def call(cls, role, method, path, body=None, cookie=None, csrf=None):
+        c = http.client.HTTPConnection("127.0.0.1", cls.port, timeout=10)
+        headers = {}
+        if role:
+            headers["Cookie"] = cls.sessions[role]["cookie"]
+            headers["X-CSRF"] = cls.sessions[role]["csrf"] if csrf is None else csrf
+        if cookie:
+            headers["Cookie"] = cookie
+        data = None
+        if body is not None:
+            data = json.dumps(body)
+            headers["Content-Type"] = "application/json"
+        c.request(method, path, body=data, headers=headers)
+        r = c.getresponse()
+        raw = r.read()
+        c.close()
+        try:
+            return r.status, json.loads(raw or b"{}")
+        except ValueError:
+            return r.status, raw
+
+    # ---------------------------------------------------------------- tests
+    def test_01_unauthenticated(self):
+        self.assertEqual(self.call(None, "GET", "/api/servers")[0], 401)
+        self.assertEqual(self.call(None, "POST", "/api/action", {})[0], 401)
+        st, body = self.call(None, "GET", "/")
+        self.assertEqual(st, 200)
+
+    def test_02_servers_snapshot(self):
+        st, data = self.call("moderator", "GET", "/api/servers")
+        self.assertEqual(st, 200)
+        one, two = data["servers"]
+        self.assertTrue(one["online"])
+        self.assertEqual(one["eac"], "required")
+        self.assertEqual(one["humans"], 1)
+        viper = [p for p in one["players"] if not p["bot"]][0]
+        self.assertEqual(viper["name"], "Viper")
+        self.assertEqual(viper["pid"], PID)
+        self.assertEqual(viper["eac"], "protected")
+        self.assertEqual(viper["puid"], "0002aabbccddeeff00112233445566778")
+        self.assertEqual(viper["kills"], 3)
+        self.assertEqual(two["staff_commands"], [])
+        self.assertTrue(one["staff_commands"])
+
+    def test_03_csrf_required(self):
+        st, _ = self.call("moderator", "POST", "/api/action", {"action": "kick", "server": "one", "slot": 0, "reason": "x"}, csrf="wrong")
+        self.assertEqual(st, 403)
+
+    def test_04_warn_mute_move(self):
+        st, d = self.call("moderator", "POST", "/api/action", {"action": "warn", "server": "one", "slot": 0, "name": "Viper", "reason": "Stop it"})
+        self.assertEqual(st, 200, d)
+        self.assertIn("warn 0 Stop it", self.game.commands)
+        st, d = self.call("moderator", "POST", "/api/action", {"action": "mute", "server": "one", "slot": 0, "length": "30m", "reason": "spam"})
+        self.assertEqual(st, 200, d)
+        self.assertIn("mute 0 30 spam", self.game.commands)
+        self.assertIn("voicemute 0", self.game.commands)
+        st, d = self.call("moderator", "POST", "/api/action", {"action": "move", "server": "one", "slot": 0, "team": "b"})
+        self.assertEqual(st, 200, d)
+        # an old server has no warn / team move, but spectate works
+        st, d = self.call("moderator", "POST", "/api/action", {"action": "warn", "server": "two", "slot": 0, "reason": "x"})
+        self.assertEqual(st, 409)
+        st, d = self.call("moderator", "POST", "/api/action", {"action": "move", "server": "two", "slot": 0, "team": "s"})
+        self.assertEqual(st, 200, d)
+        self.assertIn("spectate 0", self.old.commands)
+
+    def test_05_wrong_name_is_refused(self):
+        st, d = self.call("moderator", "POST", "/api/action", {"action": "kick", "server": "one", "slot": 0, "name": "SomeoneElse", "reason": "x"})
+        self.assertEqual(st, 409)
+
+    def test_06_kick_needs_reason(self):
+        st, _ = self.call("moderator", "POST", "/api/action", {"action": "kick", "server": "one", "slot": 0, "reason": ""})
+        self.assertEqual(st, 400)
+
+    def test_07_bans(self):
+        # moderators are capped at 24 hours
+        st, d = self.call("moderator", "POST", "/api/bans", {"pid": PID, "length": "7d", "reason": "cheating"})
+        self.assertEqual(st, 403)
+        st, d = self.call("moderator", "POST", "/api/bans", {"pid": PID, "length": "0", "reason": "cheating"})
+        self.assertEqual(st, 403)
+        st, d = self.call("admin", "POST", "/api/bans", {"pid": PID, "length": "7d", "reason": "cheating; rm -rf \"x\""})
+        self.assertEqual(st, 200, d)
+        for g in (self.game, self.old):
+            self.assertTrue(any(c.startswith("banguid %s 1w cheating rm -rf x" % GUID) for c in g.commands), g.commands)
+            self.assertTrue(any(c.startswith("banpuid 0002aabbccddeeff00112233445566778") for c in g.commands))
+        st, bans = self.call("moderator", "GET", "/api/bans")
+        ban = bans["bans"][0]
+        self.assertTrue(ban["active"])
+        # the reconcile puts a ban back on a server that lost it
+        self.old.bans = []
+        rep = self.portal.reconcile_bans()
+        self.assertIn("1 re-applied", rep["two"])
+        self.assertTrue(any(b.get("guid") == GUID for b in self.old.bans))
+        # moderators cannot lift; admins can, on every server
+        self.assertEqual(self.call("moderator", "POST", "/api/bans/lift", {"id": ban["id"]})[0], 403)
+        st, d = self.call("admin", "POST", "/api/bans/lift", {"id": ban["id"], "reason": "appeal"})
+        self.assertEqual(st, 200, d)
+        self.assertFalse([b for b in self.old.bans if b.get("guid") == GUID])
+
+    def test_08_expiry(self):
+        bid = self.portal.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_id,by_name) VALUES(?,?,?,?,?,?,?,?,?,?)",
+                                  (PID, GUID, "", "", "Viper", "x", 1, 2, "1", "t"))
+        self.game.bans.append({"guid": GUID})
+        self.portal.expire_bans()
+        self.assertEqual(self.portal.store.one("SELECT active FROM bans WHERE id=?", (bid,))["active"], 0)
+        self.assertFalse([b for b in self.game.bans if b.get("guid") == GUID])
+
+    def test_09_server_control_permissions(self):
+        self.assertEqual(self.call("moderator", "POST", "/api/server", {"server": "one", "action": "map", "map": "obj_snow"})[0], 403)
+        st, d = self.call("admin", "POST", "/api/server", {"server": "one", "action": "map", "map": "obj_snow"})
+        self.assertEqual(st, 200, d)
+        self.assertEqual(self.call("admin", "POST", "/api/server", {"server": "one", "action": "map", "map": "x; quit"})[0], 400)
+        st, d = self.call("moderator", "POST", "/api/server", {"server": "*", "action": "chat", "text": "hello all"})
+        self.assertEqual(st, 200, d)
+        self.assertTrue(any(c.startswith("staffsay Moderator hello all") for c in self.game.commands))
+        self.assertTrue(any(c.startswith("say ^8[STAFF] Moderator^7: hello all") for c in self.old.commands))
+
+    def test_10_chat_feed(self):
+        with self.chatlog.open("a") as f:
+            f.write("  1000 TCP_NATIVE_SAY slot=0 team=1 enemy at the gate\n")
+        time.sleep(1.2)
+        st, d = self.call("moderator", "GET", "/api/chat?server=one")
+        texts = [(l["name"], l["text"], l["kind"]) for l in d["lines"]]
+        self.assertIn(("Viper", "enemy at the gate", "team"), texts)
+
+    def test_11_reports_and_bugs(self):
+        st, d = self.call("moderator", "GET", "/api/reports?status=open")
+        self.assertEqual(st, 200)
+        self.assertEqual(d["reports"][0]["target_pid"], PID)
+        rid = d["reports"][0]["id"]
+        self.assertEqual(self.call("moderator", "POST", "/api/reports/update", {"id": rid, "status": "closed", "resolution": "banned"})[0], 200)
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("POST", "/api/bugreport", body="Category: Bug\nThe door on Snow does not open.\n", headers={"X-Report-Category": "Bug"})
+        self.assertEqual(c.getresponse().status, 201)
+        c.close()
+        st, d = self.call("moderator", "GET", "/api/reports?status=open&source=bug")
+        self.assertIn("door", d["reports"][0]["data"]["text"])
+
+    def test_12_lookup_and_profile(self):
+        st, d = self.call("moderator", "GET", "/api/lookup?q=vip")
+        self.assertEqual(d["players"][0]["pid"], PID)
+        self.assertIn("fedcba9876543210", [x["pid"] for x in d["players"]])
+        st, p = self.call("moderator", "GET", "/api/player/" + PID)
+        self.assertNotIn("ips", p)
+        self.assertEqual(p["stats"]["rating"], 1234)
+        self.assertEqual(p["matches"][0]["map"], "obj_snow")
+        st, p = self.call("admin", "GET", "/api/player/" + PID)
+        self.assertEqual(p["ips"][0]["ip"], "203.0.113.9")
+        self.assertEqual(self.call("moderator", "POST", "/api/notes", {"pid": PID, "text": "Watch this one"})[0], 200)
+
+    def test_13_staff_management(self):
+        self.assertEqual(self.call("moderator", "GET", "/api/staff")[0], 403)
+        self.assertEqual(self.call("admin", "POST", "/api/staff", {"discord_id": "200000000000000002", "role": "admin"})[0], 403)
+        self.assertEqual(self.call("admin", "POST", "/api/staff", {"discord_id": "200000000000000002", "role": "moderator"})[0], 200)
+        self.assertEqual(self.call("owner", "POST", "/api/staff", {"discord_id": "200000000000000002", "role": "admin"})[0], 200)
+        self.assertEqual(self.call("owner", "POST", "/api/staff", {"discord_id": "100000000000000001", "role": "revoked"})[0], 403)
+        self.assertEqual(tsp.resolve_role(self.portal, "200000000000000002", []), "admin")
+        self.assertEqual(tsp.resolve_role(self.portal, "700000000000000073", []), None)
+
+    def test_14_audit(self):
+        self.assertEqual(self.call("moderator", "GET", "/api/audit")[0], 403)
+        st, d = self.call("admin", "GET", "/api/audit")
+        actions = {a["action"] for a in d["entries"]}
+        self.assertTrue({"warn", "mute", "ban", "unban", "server map", "sign-in"} <= actions, actions)
+
+    def test_15_parsers(self):
+        self.assertEqual(tsp.duration_minutes("2w"), 20160)
+        self.assertEqual(tsp.engine_length(1440 * 7), "1w")
+        self.assertEqual(tsp.engine_length(90), "90m")
+        self.assertEqual(tsp.safe_arg('a"b;c\\d^1e\n'), "a b c de")
+        self.assertEqual(tsp.host_of("[2a02::1]:27960"), "2a02::1")
+        st = tsp.parse_status("  3     7   55 Some Name With Spaces^7          0 1.2.3.4:27960   111 25000 5000\n")
+        self.assertEqual(st["players"][3]["name"], "Some Name With Spaces")
+
+
+    # ---------------------------------------------------------------- round two
+    def viper_back(self):
+        if 0 not in self.game.players:
+            self.game.players[0] = {"name": "Viper^7", "guid": GUID, "ip": "203.0.113.9", "team": 1, "muted": 0, "tk": 0,
+                                    "xyz": (100.0, 200.0, 50.0)}
+        self.game.bans = []
+        self.portal.store.x("UPDATE bans SET active=0")
+        time.sleep(2.5)
+
+    def test_16_ladder(self):
+        self.viper_back()
+        st, d = self.call("moderator", "GET", "/api/punish/next?pid=" + PID)
+        tk = [x for x in d["steps"] if x["offence"] == "teamkill"][0]
+        self.assertEqual((tk["index"], tk["action"]), (0, "Warn"))
+        body = {"server": "one", "slot": 0, "name": "Viper", "offence": "teamkill", "note": "spawn"}
+        st, d = self.call("moderator", "POST", "/api/punish", body)
+        self.assertEqual((st, d.get("action")), (200, "Warn"), d)
+        self.assertIn("warn 0 Team killing: spawn", self.game.commands)
+        st, d = self.call("moderator", "POST", "/api/punish", body)
+        self.assertEqual(d["action"], "Kick", d)
+        st, d = self.call("moderator", "POST", "/api/punish", body)
+        self.assertEqual((st, d["action"]), (200, "Ban, 1 day"), d)
+        self.viper_back()
+        st, d = self.call("moderator", "POST", "/api/punish", body)
+        self.assertEqual(st, 403, d)                     # step 4 is 7 days: past the moderator limit
+        self.assertIn("Ask an admin", d["error"])
+        st, d = self.call("admin", "POST", "/api/punish", {"pid": PID, "offence": "teamkill"})
+        self.assertEqual((st, d["action"]), (200, "Ban, 7 days"), d)
+        self.viper_back()
+        # on a 0.35.0 server the warning goes to public chat
+        st, d = self.call("moderator", "POST", "/api/punish", {"server": "two", "slot": 0, "offence": "spam"})
+        self.assertEqual(d["result"], "warned in public chat", d)
+        self.assertTrue(any(c.startswith("say ^8[STAFF]^7 Viper: Spam") for c in self.old.commands))
+
+    def test_17_undo(self):
+        self.viper_back()
+        st, d = self.call("moderator", "POST", "/api/action", {"action": "mute", "server": "one", "slot": 0, "length": "1h", "reason": "x"})
+        self.assertTrue(d["undo"])
+        self.assertEqual(self.call("admin", "POST", "/api/undo", {"id": 999999})[0], 404)
+        st, r = self.call("moderator", "POST", "/api/undo", {"id": d["undo"]})
+        self.assertEqual(st, 200, r)
+        self.assertIn("voiceunmute 0", self.game.commands)
+        self.assertFalse(self.portal.store.one("SELECT id FROM mutes WHERE active=1"))
+        st, d = self.call("moderator", "POST", "/api/bans", {"pid": PID, "length": "2h", "reason": "rage"})
+        self.assertEqual(st, 200, d)
+        self.assertEqual(self.call("moderator", "POST", "/api/undo", {"id": d["undo"]})[0], 200)
+        self.assertFalse(self.portal.store.one("SELECT active FROM bans WHERE id=?", (d["id"],))["active"])
+        self.assertEqual(self.call("moderator", "POST", "/api/undo", {"id": d["undo"]})[0], 404)   # once only
+        # past the window
+        st, d = self.call("moderator", "POST", "/api/bans", {"pid": PID, "length": "2h", "reason": "rage"})
+        self.portal.store.x("UPDATE undo SET expires=1 WHERE audit_id=?", (d["undo"],))
+        self.assertEqual(self.call("moderator", "POST", "/api/undo", {"id": d["undo"]})[0], 409)
+        self.viper_back()
+
+    def test_18_chat_filter(self):
+        self.viper_back()
+        self.assertEqual(self.call("moderator", "POST", "/api/filters", {"pattern": "noob*", "kind": "word", "action": "mute"})[0], 403)
+        self.assertEqual(self.call("admin", "POST", "/api/filters", {"pattern": "(", "kind": "regex", "action": "flag"})[0], 400)
+        st, d = self.call("admin", "POST", "/api/filters", {"pattern": "noob*", "kind": "word", "action": "mute", "length": "15m", "note": "Insult"})
+        self.assertEqual(st, 200, d)
+        st, d = self.call("moderator", "POST", "/api/filters/test", {"text": "you are all N00BS"})
+        self.assertEqual(len(d["matches"]), 1)
+        self.assertFalse(self.call("moderator", "POST", "/api/filters/test", {"text": "snoobly"})[1]["matches"])
+        with self.chatlog.open("a") as f:
+            f.write("  1001 TCP_NATIVE_SAY slot=0 team=0 you are all N00BS\n")
+        time.sleep(1.5)
+        self.assertIn("mute 0 15 Insult", self.game.commands)
+        st, d = self.call("moderator", "GET", "/api/filters")
+        self.assertEqual(d["flagged"][0]["flag"], "Insult")
+        self.assertEqual(d["filters"][0]["hits"], 1)
+        a = self.portal.store.one("SELECT * FROM audit WHERE staff='Chat filter' ORDER BY id DESC")
+        self.assertEqual(a["action"], "mute")
+
+    def test_19_watchlist_and_dodgers(self):
+        self.viper_back()
+        self.assertEqual(self.call("moderator", "POST", "/api/watchlist", {"pid": PID, "reason": "aim looks odd"})[0], 200)
+        self.portal.watch_cache.clear()
+        self.portal.online.clear()
+        time.sleep(1.5)
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='watch' AND pid=?", (PID,)))
+        st, d = self.call("moderator", "GET", "/api/servers")
+        viper = [p for p in d["servers"][0]["players"] if p.get("pid") == PID][0]
+        self.assertTrue(viper["watched"])
+        # a banned identity on the same anti-cheat account
+        self.portal.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_id,by_name,active) VALUES(?,?,?,?,?,?,?,?,?,?,1)",
+                            ("aaaaaaaaaaaaaaaa", "G2", "198.51.100.1", "0002aabbccddeeff00112233445566778", "OldViper", "aimbot", 1, 0, "1", "t"))
+        self.portal.watch_cache.clear()
+        time.sleep(1.5)
+        f = self.portal.store.one("SELECT * FROM flags WHERE pid=? AND kind='ban dodger'", (PID,))
+        self.assertIn("OldViper", f["detail"])
+        st, p = self.call("moderator", "GET", "/api/player/" + PID)
+        self.assertEqual(p["watch"]["reason"], "aim looks odd")
+        self.assertEqual(p["discord"][0]["discord_id"], "184000000000000001")
+        score = p["suspicion"]["score"]
+        self.assertGreaterEqual(score, 50, p["suspicion"])        # shared account with a banned player + 80% accuracy
+        self.assertTrue(any("anti-cheat account" in r for r in p["suspicion"]["reasons"]))
+        st, d = self.call("moderator", "GET", "/api/lookup?q=184000000000000001")
+        self.assertIn(PID, [x["pid"] for x in d["players"]])
+        self.call("moderator", "POST", "/api/watchlist", {"pid": PID, "remove": True})
+        self.portal.store.x("UPDATE bans SET active=0")
+
+    def test_20_appeals(self):
+        self.viper_back()
+        st, d = self.call("admin", "POST", "/api/bans", {"pid": PID, "length": "7d", "reason": "wallhack"})
+        code = d["appeal_code"]
+        self.assertRegex(code, r"^[A-Z2-9]{6}$")
+        self.assertTrue(any(("appeal at 127.0.0.1:%d/appeal code %s" % (self.port, code)) in c for c in self.game.commands))
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/appeal")
+        self.assertEqual(c.getresponse().status, 200)
+        c.close()
+
+        def public(method, path, body=None):
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request(method, path, body=json.dumps(body) if body else None, headers={"Content-Type": "application/json"})
+            r = c.getresponse()
+            out = (r.status, json.loads(r.read() or b"{}"))
+            c.close()
+            return out
+        self.assertEqual(public("POST", "/appeal/submit", {"code": "ZZZZZZ", "text": "x" * 30})[0], 404)
+        self.assertEqual(public("POST", "/appeal/submit", {"code": code, "text": "short"})[0], 400)
+        st, r = public("POST", "/appeal/submit", {"code": code.lower(), "text": "I was not cheating, check the demo please.", "contact": "viper#0"})
+        self.assertEqual(st, 201, r)
+        self.assertEqual(public("POST", "/appeal/submit", {"code": code, "text": "Again, I was not cheating at all."})[0], 409)
+        st, r = public("GET", "/appeal/status?code=" + code)
+        self.assertEqual(r["appeal"]["status"], "open")
+        st, d = self.call("moderator", "GET", "/api/reports?status=open&source=appeal")
+        rep = d["reports"][0]
+        self.assertEqual(rep["data"]["contact"], "viper#0")
+        body = {"id": rep["data"]["appeal_id"], "decision": "accept", "answer": "Demo checked, you are clean."}
+        self.assertEqual(self.call("moderator", "POST", "/api/appeals/answer", body)[0], 403)
+        st, r = self.call("admin", "POST", "/api/appeals/answer", body)      # the admin made this ban: someone else answers
+        self.assertEqual(st, 403, r)
+        self.assertIn("You made this ban", r["error"])
+        self.assertEqual(self.call("owner", "POST", "/api/appeals/answer", body)[0], 200)
+        st, r = public("GET", "/appeal/status?code=" + code)
+        self.assertEqual((r["appeal"]["status"], r["ban"]["active"]), ("accepted", False))
+        self.assertEqual(r["appeal"]["answer"], "Demo checked, you are clean.")
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='appeal'"))
+
+    def test_21_schedule(self):
+        self.viper_back()
+        self.assertEqual(self.call("moderator", "POST", "/api/schedule", {"server": "one", "action": "map", "map": "obj_snow", "at": int(time.time())})[0], 403)
+        st, d = self.call("moderator", "POST", "/api/schedule", {"server": "*", "action": "say", "text": "Tournament at 20:00",
+                                                                 "at": int(time.time()), "every_min": 30})
+        self.assertEqual(st, 200, d)
+        self.assertEqual(self.portal.run_schedule(), 1)
+        self.assertTrue(any(c.startswith("staffsay Moderator Tournament at 20:00") for c in self.game.commands))
+        job = self.portal.store.one("SELECT * FROM schedule WHERE id=?", (d["id"],))
+        self.assertTrue(job["active"])
+        self.assertGreater(job["next_at"], time.time() + 25 * 60)
+        self.assertEqual(self.call("moderator", "POST", "/api/schedule/cancel", {"id": d["id"]})[0], 200)
+        st, d = self.call("admin", "POST", "/api/schedule", {"server": "one", "action": "nextmap", "at": int(time.time())})
+        self.portal.run_schedule()
+        self.assertFalse(self.portal.store.one("SELECT active FROM schedule WHERE id=?", (d["id"],))["active"])
+
+    def test_22_event_and_settings(self):
+        st, d = self.call("admin", "POST", "/api/event", {"server": "one", "action": "start", "note": "Clan cup"})
+        self.assertEqual(st, 200, d)
+        self.assertEqual(self.game.cvars["g_password"], d["password"])
+        self.assertEqual(self.game.cvars["bot_minplayers"], "0")
+        self.assertEqual(self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "bot_minplayers", "value": "2"})[0], 409)
+        self.game.cvars["g_password"] = ""                 # the server restarted mid-event
+        self.portal.enforce()
+        self.assertEqual(self.game.cvars["g_password"], d["password"])
+        st, _ = self.call("admin", "POST", "/api/event", {"server": "one", "action": "stop"})
+        self.assertEqual((self.game.cvars["g_password"], self.game.cvars["bot_minplayers"]), ("", "4"))
+        # config editor
+        self.assertEqual(self.call("moderator", "GET", "/api/cvars?server=one")[0], 403)
+        self.assertEqual(self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "rconpassword", "value": "x"})[0], 400)
+        self.assertEqual(self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_warmup", "value": "1;quit"})[0], 400)
+        st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_friendlyFire", "value": "0", "keep": True})
+        self.assertEqual((st, d["old"], self.game.cvars["g_friendlyFire"]), (200, "1", "0"), d)
+        self.game.cvars["g_friendlyFire"] = "1"
+        self.portal.enforce()
+        self.assertEqual(self.game.cvars["g_friendlyFire"], "0")
+        st, v = self.call("admin", "GET", "/api/cvars?server=one")
+        ff = [c for c in v["cvars"] if c["name"] == "g_friendlyFire"][0]
+        self.assertEqual((ff["value"], ff["kept"]), ("0", "0"))
+        st, d = self.call("admin", "POST", "/api/cvars/rollback", {"id": [h for h in v["history"] if h["kind"] == "set"][0]["id"]})
+        self.assertEqual((st, self.game.cvars["g_friendlyFire"]), (200, "1"))
+        self.game.cvars["g_friendlyFire"] = "1"
+        self.portal.enforce()
+        self.assertEqual(self.game.cvars["g_friendlyFire"], "1")           # a rollback releases the kept value
+
+    def test_23_live_map(self):
+        self.viper_back()
+        self.assertEqual(self.call("moderator", "GET", "/api/positions?server=one")[0], 403)
+        st, d = self.call("admin", "GET", "/api/positions?server=one")
+        self.assertEqual(st, 200, d)
+        self.assertEqual(d["layout"]["image"], "/static/maps/layout-village.webp")
+        viper = [p for p in d["players"] if p["slot"] == 0][0]
+        self.assertTrue(0 <= viper["u"] <= 1 and 0 <= viper["v"] <= 1, viper)
+        self.call("admin", "GET", "/api/positions?server=one")
+        n = self.portal.store.one("SELECT COUNT(*) n FROM audit WHERE action='live map' AND staff='Admin'")["n"]
+        self.assertEqual(n, 1)                                              # once per session and server
+        st, d = self.call("moderator", "GET", "/api/servers")
+        self.assertNotIn("x", d["servers"][0]["players"][0])               # positions never reach the normal view
+
+    def test_24_two_step_sign_in(self):
+        self.portal.cfg["require_2fa"] = True
+        try:
+            st, d = self.call("admin", "GET", "/api/audit")
+            self.assertEqual(st, 403)
+            st, d = self.call("admin", "POST", "/api/2fa/setup", {})
+            secret = d["secret"]
+            self.assertTrue(d["uri"].startswith("otpauth://totp/"))
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/enable", {"code": "000000"})[0], 400)
+            code = totp_now(secret)
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/enable", {"code": code})[0], 200)
+            self.assertEqual(self.call("admin", "GET", "/api/audit")[0], 200)
+            # a new session must give a code first, and a code is never accepted twice
+            fresh = self.login("admin")
+            saved = self.sessions["admin"]
+            self.sessions["admin"] = fresh
+            st, me = self.call("admin", "GET", "/api/me")
+            self.assertTrue(me["mfa_pending"])
+            self.assertEqual(self.call("admin", "GET", "/api/servers")[0], 401)
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/verify", {"code": code})[0], 400)
+            later = tsp.totp_code(secret, int(time.time() // 30) + 1)
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/verify", {"code": later})[0], 200)
+            self.assertEqual(self.call("admin", "GET", "/api/servers")[0], 200)
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/disable", {"code": tsp.totp_code(secret, int(time.time() // 30) + 2)})[0], 409)
+            self.sessions["admin"] = saved
+            # the owner resets a lost phone
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/reset", {"discord_id": "dev-admin"})[0], 403)
+            self.portal.cfg["require_2fa"] = False
+            self.assertEqual(self.call("owner", "POST", "/api/2fa/reset", {"discord_id": "dev-admin"})[0], 200)
+            self.sessions["admin"] = self.login("admin")
+        finally:
+            self.portal.cfg["require_2fa"] = False
+
+    def test_25_weekly_alerts_review_demo(self):
+        st, w = self.call("admin", "GET", "/api/weekly")
+        self.assertEqual(st, 200, w)
+        self.assertGreaterEqual(w["actions"]["ban"], 1)
+        self.assertIn("**Actions**", w["text"])
+        self.portal.alert("weekly", "Staff report", w["text"])
+        for _ in range(60):
+            if any(h["embeds"][0]["title"] == "Staff report" for h in HOOKS):
+                break
+            time.sleep(0.25)
+        self.assertTrue(any(h["embeds"][0]["title"] == "Staff report" for h in HOOKS), HOOKS)
+        self.assertEqual(HOOKS[0]["allowed_mentions"]["parse"], [])
+        st, d = self.call("moderator", "GET", "/api/alerts")
+        self.assertTrue(d["webhook"] and d["alerts"])
+        # stats review queue through the stats service's staff routes
+        self.assertEqual(self.call("moderator", "GET", "/api/review")[0], 403)
+        st, d = self.call("admin", "GET", "/api/review")
+        self.assertEqual(d["review"][0]["reason"], "accuracy 92%")
+        st, d = self.call("admin", "POST", "/api/review", {"action": "void", "kind": "match", "id": "00112233aabbccdd", "reason": "aimbot"})
+        self.assertEqual((st, VOIDED[-1][0]), (200, "/staff/void"))
+        # the server demo that covers a report
+        demos = Path(self.tmp.name) / "svdemos"
+        demos.mkdir(exist_ok=True)
+        f = demos / "Test_2026-11-12-09-50-00_obj_village.sv_84"
+        f.write_bytes(b"demo" * 100)
+        os.utime(f, (1794477600 + 3600, 1794477600 + 3600))
+        rid = self.portal.store.one("SELECT id FROM reports WHERE source='player'")["id"]
+        st, d = self.call("moderator", "GET", "/api/demo?report=%d" % rid)
+        self.assertEqual((st, d["offset_s"]), (200, 600), d)
+        st, raw = self.call("moderator", "GET", "/api/demo/file?report=%d" % rid)
+        self.assertEqual(raw, b"demo" * 100)
+
+
+    def test_26_audit_fixes(self):
+        # owner rights come from the config only, never from a leftover staff row
+        self.portal.store.x("INSERT INTO staff(discord_id,name,role,note,added_by,created) VALUES('710000000000000072','Old','owner','','x',0)")
+        self.assertIsNone(tsp.resolve_role(self.portal, "710000000000000072", []))
+        self.assertEqual(tsp.resolve_role(self.portal, "100000000000000001", []), "owner")
+        # an admin cannot revoke another admin, also when that admin's rights come from a Discord role
+        self.portal.store.x("INSERT INTO sessions(id,discord_id,name,avatar,role,csrf,created,seen,checked,token,ip) "
+                            "VALUES('x1','700000000000000073','Disco','','admin','c',?,?,?,'dev','')", (int(time.time()),) * 3)
+        st, r = self.call("admin", "POST", "/api/staff", {"discord_id": "700000000000000073", "role": "revoked"})
+        self.assertEqual(st, 403, r)
+        # a staff member who plays on a server cannot open its live map (Discord account linked to Viper, who is on "one")
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=admin&name=Player&id=184000000000000001")
+        cookie = c.getresponse().getheader("Set-Cookie").split(";")[0]
+        c.close()
+        self.viper_back()
+        st, r = self.call(None, "GET", "/api/positions?server=one", cookie=cookie)
+        self.assertEqual(st, 403, r)
+        self.assertIn("playing on this server", r["error"])
+        # scheduled jobs of revoked staff stop
+        self.portal.store.x("INSERT INTO staff(discord_id,name,role,note,added_by,created) VALUES('700000000000000074','Gone','revoked','','x',0)")
+        jid = self.portal.store.x("INSERT INTO schedule(server,action,arg,next_at,every_min,until,created,by_name,by_id) "
+                                  "VALUES('one','say','hello',?,0,0,?,'Gone','700000000000000074')", (int(time.time()) - 5, int(time.time())))
+        before = len(self.game.commands)
+        self.portal.run_schedule()
+        job = self.portal.store.one("SELECT * FROM schedule WHERE id=?", (jid,))
+        self.assertEqual(job["active"], 0)
+        self.assertIn("no longer has staff access", job["last_result"])
+        self.assertFalse(any("hello" in c for c in self.game.commands[before:]))
+        # event mode stays on when the server does not take the old values back
+        who = {"discord_id": "1", "name": "Admin", "role": "admin"}
+        srv = self.portal.server("one")
+        self.portal.event_start(who, srv)
+        real = srv.set_cvar
+
+        def down(name, value):
+            raise tsp.RconError("no answer")
+        srv.set_cvar = down
+        with self.assertRaises(tsp.ApiError):
+            self.portal.event_stop(who, srv)
+        self.assertTrue(self.portal.store.one("SELECT server FROM events WHERE server='one'"))
+        srv.set_cvar = real
+        self.assertTrue(self.portal.event_stop(who, srv)["ok"])
+        self.assertEqual(self.game.cvars["g_password"], "")
+        # filters that could stall the chat feed are refused
+        st, r = self.call("admin", "POST", "/api/filters", {"pattern": "(a+)+", "kind": "regex", "action": "flag"})
+        self.assertEqual(st, 400, r)
+        self.assertIn("Simplify", r["error"])
+        # bug report senders are tagged with a keyed hash, not a plain hash of the address
+        tag = self.portal.ip_tag("127.0.0.1")
+        self.assertNotEqual(tag, __import__("hashlib").sha256(b"127.0.0.1").hexdigest()[:12])
+        self.assertEqual(tag, self.portal.ip_tag("127.0.0.1"))
+
+    def test_27_second_audit(self):
+        # a player name that carries the chat marker inside another log line is not chat
+        before = self.portal.store.one("SELECT COUNT(*) n FROM chat")["n"]
+        for line in ('    3450 broadcast: print "TCP_NATIVE_SAY slot=0 team=0 n00b^7 connected\\n"',
+                     "   73451 ClientUserinfoChanged: 2 n\\TCP_NATIVE_SAY slot=0 team=0 n00b"):
+            self.portal._chat_line(self.portal.server("one"), line)
+        self.assertEqual(self.portal.store.one("SELECT COUNT(*) n FROM chat")["n"], before)
+        self.portal._chat_line(self.portal.server("one"), "\x1b[0m   73452 TCP_NATIVE_SAY slot=0 team=0 real line\x1b[0m")
+        self.assertEqual(self.portal.store.one("SELECT text FROM chat ORDER BY id DESC LIMIT 1")["text"], "real line")
+        # the event password is for admins only
+        self.portal.event_start({"discord_id": "1", "name": "Admin", "role": "admin"}, self.portal.server("one"), password="cup2026")
+        try:
+            ev = self.call("moderator", "GET", "/api/event")[1]["events"][0]
+            self.assertEqual(ev["password"], "")
+            self.assertNotIn("g_password", ev["preset"])
+            self.assertEqual(self.call("admin", "GET", "/api/event")[1]["events"][0]["password"], "cup2026")
+        finally:
+            self.portal.event_stop({"discord_id": "1", "name": "Admin", "role": "admin"}, self.portal.server("one"))
+        # 20 wrong two-step codes in a day end every session of that account
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=moderator&name=Lock&id=lockme")
+        cookie = c.getresponse().getheader("Set-Cookie").split(";")[0]
+        c.close()
+        csrf = self.call(None, "GET", "/api/me", cookie=cookie)[1]["csrf"]
+
+        def post(path, body):
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request("POST", path, body=json.dumps(body), headers={"Cookie": cookie, "X-CSRF": csrf, "Content-Type": "application/json"})
+            r = c.getresponse()
+            out = r.status, json.loads(r.read() or b"{}")
+            c.close()
+            return out
+        secret = post("/api/2fa/setup", {})[1]["secret"]
+        self.assertEqual(post("/api/2fa/enable", {"code": totp_now(secret)})[0], 200)
+        self.portal.rate["2fa-day:lockme"] = [time.time()] * 20
+        st, r = post("/api/2fa/verify", {"code": "000000"})
+        self.assertEqual(st, 401, r)
+        self.assertFalse(self.portal.store.one("SELECT id FROM sessions WHERE discord_id='lockme'"))
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE key='2fa-lock:lockme'"))
+        # an offline server answers the settings page quickly
+        st, v = self.call("admin", "GET", "/api/cvars?server=two")
+        self.assertEqual(st, 200)
+
+    def test_28_third_audit(self):
+        who = {"discord_id": "1", "name": "Admin", "role": "admin"}
+        # two players behind one address: lifting one ban keeps the other on the servers
+        a = self.portal.ban_player(who, {"pid": "aaaaaaaaaaaaaaaa", "guid": "A" * 32, "ip": "198.51.100.7", "name": "Twin A"}, 0, "cheating")
+        b = self.portal.ban_player(who, {"pid": "bbbbbbbbbbbbbbbb", "guid": "B" * 32, "ip": "198.51.100.7", "name": "Twin B"}, 0, "cheating")
+        before = len(self.game.commands)
+        self.portal.lift_ban(who, self.portal.store.one("SELECT * FROM bans WHERE id=?", (a["id"],)), "appeal")
+        after = self.game.commands[before:]
+        self.assertTrue(any(c.startswith("unban 198.51.100.7") for c in after))
+        self.assertTrue(any(c.startswith("banip 198.51.100.7") for c in after), after)
+        self.assertTrue(any(c.startswith("banguid " + "B" * 32) for c in after))
+        self.portal.lift_ban(who, self.portal.store.one("SELECT * FROM bans WHERE id=?", (b["id"],)), "test over")
+        # an appeal is closed by answering it, never by the plain Close button
+        rep = self.portal.store.one("SELECT id FROM reports WHERE source='appeal' ORDER BY id DESC LIMIT 1")
+        if rep:
+            st, r = self.call("admin", "POST", "/api/reports/update", {"id": rep["id"], "status": "closed"})
+            self.assertEqual(st, 409, r)
+        # event mode never stays half switched on
+        srv = self.portal.server("one")
+        real, calls = srv.set_cvar, []
+
+        def flaky(name, value):
+            calls.append(name)
+            if len(calls) == 2:
+                raise tsp.RconError("no answer")
+            return real(name, value)
+        old_pw = self.game.cvars.get("g_password", "")
+        srv.set_cvar = flaky
+        try:
+            with self.assertRaises(tsp.ApiError):
+                self.portal.event_start(who, srv, password="half2026")
+        finally:
+            srv.set_cvar = real
+        self.assertFalse(self.portal.store.one("SELECT server FROM events WHERE server='one'"))
+        self.assertEqual(self.game.cvars.get("g_password", ""), old_pw)
+        # settings the server does not have are skipped, not created
+        self.portal.cfg["event_preset"] = dict(tsp.EVENT_PRESET, g_madeUpSetting="1")
+        try:
+            r = self.portal.event_start(who, srv)
+            self.assertNotIn("g_madeUpSetting", r["preset"])
+            self.assertNotIn("g_madeUpSetting", self.game.cvars)
+            self.portal.event_stop(who, srv)
+        finally:
+            self.portal.cfg.pop("event_preset")
+
+    def test_29_webhook_url_checked(self):
+        alerts = self.portal.cfg["alerts"]
+        saved = alerts["webhook_url"]
+        try:
+            for bad in ("file:///etc/passwd", "http://example.com/hook", "https://evil.example/api/webhooks/1/x"):
+                alerts["webhook_url"] = bad
+                self.assertEqual(self.portal.webhook_url(), "")
+            alerts["webhook_url"] = "https://discord.com/api/webhooks/123456/abc-DEF_9"
+            self.assertTrue(self.portal.webhook_url())
+        finally:
+            alerts["webhook_url"] = saved
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

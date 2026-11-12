@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Ban Appeal · TrueCombat: Platinum</title>
+<link rel="icon" href="/static/favicon.png">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/appeal.js" defer></script>
+</head>
+<body>
+<main class="appeal">
+  <div class="appeal-card">
+    <img src="/static/favicon.png" alt="" width="48" height="48">
+    <p class="eyebrow">TrueCombat: Platinum</p>
+    <h1>Ban appeal</h1>
+    <p class="muted">Removed from an official server and think it was a mistake? Every appeal is read by a member of the
+      server staff who was not involved in the ban. Use the six-character code from the message you saw when you were removed.</p>
+
+    <form id="appeal-form" novalidate>
+      <label for="code">Appeal code</label>
+      <input id="code" name="code" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="K7P2QX" required>
+      <label for="text">Your side of the story</label>
+      <textarea id="text" name="text" maxlength="2000" rows="7" required placeholder="What happened, and why the ban should be lifted. Be specific: map, time, what you were doing."></textarea>
+      <label for="contact">How staff can reach you (optional)</label>
+      <input id="contact" name="contact" maxlength="100" placeholder="Discord name">
+      <button class="btn btn-primary btn-wide" type="submit">Send appeal</button>
+    </form>
+    <div id="result" class="appeal-result" hidden></div>
+
+    <p class="dim small">Already sent one? Enter your code above and <button type="button" class="link" id="check">check the status</button>.
+      One appeal per ban is reviewed at a time. Appeals for anti-cheat detections are reviewed, but rarely lifted.</p>
+  </div>
+</main>
+</body>
+</html>
