@@ -1413,7 +1413,33 @@ VERSIONED = re.compile(r'((?:href|src)="(?:\.\./)?(?:style\.css|js/site\.js))\?v
 
 
 def unbust(html):
-    return unclean(VERSIONED.sub(r'\1"', html))
+    return unclean(VERSIONED.sub(r'\1"', SCRIPT_CSP.sub("", html)))
+
+
+# ---------------------------------------------------------------- script policy
+# The VPS header policy still allows inline scripts (pages outside this build carry their own).
+# Every built page adds a stricter policy of its own: only site files and the exact inline
+# scripts written here may run, so injected markup (an onerror= attribute, a stray <script>)
+# never executes. Browsers apply both policies, so the stricter one wins. JSON-LD is data and
+# is not affected.
+SCRIPT_CSP = re.compile(r'<meta http-equiv="Content-Security-Policy" content="script-src [^"]*">\n')
+INLINE_SCRIPT = re.compile(r'<script(?: type="speculationrules")?>(.*?)</script>', re.S)
+
+
+def script_policy(html):
+    import base64
+    import hashlib
+    html = SCRIPT_CSP.sub("", html)
+    hashes = []
+    for m in INLINE_SCRIPT.finditer(html):
+        h = "'sha256-%s'" % base64.b64encode(hashlib.sha256(m.group(1).encode("utf-8")).digest()).decode("ascii")
+        if h not in hashes:
+            hashes.append(h)
+    meta = '<meta http-equiv="Content-Security-Policy" content="script-src %s">\n' % " ".join(["'self'"] + hashes)
+    head = '<meta charset="utf-8">\n'
+    if head not in html:
+        raise SystemExit("script policy: no <meta charset> line to put the policy after")
+    return html.replace(head, head + meta, 1)
 
 
 # ---------------------------------------------------------------- clean URLs
@@ -1443,7 +1469,7 @@ def bust(html):
     for name, attr in (("style.css", "href"), ("js/site.js", "src")):
         v = hashlib.sha1((DOCS / name).read_bytes()).hexdigest()[:10]
         html = re.sub(r'(%s="(?:\.\./)?%s)"' % (attr, re.escape(name)), r'\1?v=%s"' % v, html)
-    return html
+    return script_policy(html)
 
 
 OLD_LASTMOD = {}

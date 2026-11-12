@@ -1,0 +1,7 @@
+# Found a security problem in TrueCombat: Platinum, truecombat.eu or one of its services?
+# Please tell us privately first, through a direct message to a staff member on Discord,
+# and give us a reasonable time to fix it before you publish anything.
+Contact: https://discord.gg/8kcHdg2Hch
+Expires: 2027-11-12T00:00:00.000Z
+Preferred-Languages: en, nl
+Canonical: https://truecombat.eu/.well-known/security.txt
