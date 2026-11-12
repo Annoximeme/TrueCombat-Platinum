@@ -41,7 +41,7 @@ DOWNLOAD = """<section class="page-head">
       </ol>
       <p class="yt-note">[[note]]</p>
     </div>
-    <aside class="reqs">
+    <div class="reqs">
       <h2>[[need]]</h2>
       <dl>
         <dt>[[r1t]]</dt><dd>[[r1]]</dd>
@@ -51,7 +51,7 @@ DOWNLOAD = """<section class="page-head">
         <dt>[[r5t]]</dt><dd>[[r5]]</dd>
         <dt>[[r6t]]</dt><dd>[[r6]]</dd>
       </dl>
-    </aside>
+    </div>
   </div>
 </section>
 

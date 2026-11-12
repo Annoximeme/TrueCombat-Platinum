@@ -36,7 +36,7 @@ S = {
         "more_maps": "More maps", "all_maps": "All six maps", "shot_alt": "{m} in DirectX 12",
         "play_cta": "Play {m}", "play_cta_p": "Host it from the launcher or find it in the rotation on the official servers.", "download": "Download", "servers": "Find a server",
         "terrorists": "Terrorist", "specops": "SpecOps",
-        "w_title": "{n} ({full}): damage, fire rate and stats · TrueCombat: Platinum",
+        "w_title": "{n}: damage, fire rate and stats · TrueCombat: Platinum",
         "w_title_eq": "{n} ({full}) · TrueCombat: Platinum",
         "w_desc": "{n} in TrueCombat: Platinum: {dmg} damage, {rpm} rpm, {clip}-round magazine, {reload} s reload. Original TrueCombat: Elite values, compared with every other weapon in its class.",
         "w_desc_eq": "{n} ({full}) in TrueCombat: Platinum. {note}",
@@ -84,7 +84,7 @@ S = {
         "more_maps": "Meer maps", "all_maps": "Alle zes maps", "shot_alt": "{m} in DirectX 12",
         "play_cta": "Speel {m}", "play_cta_p": "Host de map vanuit de launcher of vind hem in de rotatie op de officiële servers.", "download": "Download", "servers": "Vind een server",
         "terrorists": "Terroristen", "specops": "SpecOps",
-        "w_title": "{n} ({full}): schade, vuursnelheid en statistieken · TrueCombat: Platinum",
+        "w_title": "{n}: schade, vuursnelheid en statistieken · TrueCombat: Platinum",
         "w_title_eq": "{n} ({full}) · TrueCombat: Platinum",
         "w_desc": "{n} in TrueCombat: Platinum: {dmg} schade, {rpm} spm, magazijn van {clip}, herladen in {reload} s. Originele waarden uit TrueCombat: Elite, vergeleken met elk ander wapen in zijn klasse.",
         "w_desc_eq": "{n} ({full}) in TrueCombat: Platinum. {note}",
@@ -217,7 +217,7 @@ def map_body(lang, name, maplist, layout_html):
       </div>
     </div>
     <div id="layout" class="anchor">
-{layout_html(lang, name)}
+{layout_html(lang, name).replace('<h3>', '<h2 class="h3">', 1).replace('</h3>', '</h2>', 1)}
     </div>
   </div>
 </section>

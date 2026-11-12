@@ -1,0 +1,17 @@
+# truecombat.eu: security and caching headers.
+# Imported from the truecombat.eu site block in /etc/caddy/Caddyfile by install-headers.sh.
+# Tested against every page template with no Content-Security-Policy violations.
+
+header {
+	# scripts, styles, fonts and images come from the site itself; the live data comes from
+	# api.truecombat.eu and the patch notes from the GitHub API
+	Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.truecombat.eu https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+	X-Frame-Options DENY
+	Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+	Cross-Origin-Opener-Policy same-origin
+}
+
+# the self-hosted fonts never change under the same name: cache them for 30 days
+# (images, css and js keep the existing one-hour rule in the Caddyfile)
+@tcp_fonts path /fonts/*
+header @tcp_fonts Cache-Control "public, max-age=2592000"

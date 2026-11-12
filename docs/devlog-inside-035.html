@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Inside 0.35.0, our biggest update yet · TrueCombat: Platinum</title>
-<meta name="description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.">
+<meta name="description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes.">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/devlog-inside-035">
 <meta property="og:type" content="article">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="Inside 0.35.0, our biggest update yet">
-<meta property="og:description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.">
+<meta property="og:description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes.">
 <meta property="og:image" content="https://truecombat.eu/img/og-devlog-inside-035.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
 <link rel="manifest" href="site.webmanifest">
 <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="Inside 0.35.0, our biggest update yet">
-<meta name="twitter:description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.">
+<meta name="twitter:description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes.">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Inside 0.35.0, our biggest update yet","item":"https://truecombat.eu/devlog-inside-035"}]}</script>
 <link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-inside-035">
@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=2d1a1c7ae7">
+<link rel="stylesheet" href="style.css?v=6bf7a5af62">
 </head>
 <body>
 <!--nav-->
@@ -99,7 +99,7 @@
       <div class="prose">
 <p>Version 0.35.0 went live on the morning of 12 November, at 07:39 Belgian time. It is the largest update TrueCombat: Platinum has had so far, and it was shaped more by you than any update before it. Most of what is in it started as a line in <a href="devlog-playtest-fixes">What the playtests told us</a>, a message on Discord or a clip from a match.</p>
 <p>The patch notes list every change. This post goes behind them. It explains the four big pieces of the update, the decisions behind them, and how we tested them, and it is honest about the items that did not make the cut. It is a long read, so use the contents list to jump to what interests you.</p>
-<aside class="callout"><p>Updating is the same as always: the launcher picks up 0.35.0 by itself. The first time anti-cheat is set up on your PC, Windows asks once for permission to install its service. That prompt is expected.</p></aside>
+<div class="callout"><p>Updating is the same as always: the launcher picks up 0.35.0 by itself. The first time anti-cheat is set up on your PC, Windows asks once for permission to install its service. That prompt is expected.</p></div>
 <h2 id="easy-anti-cheat">Easy Anti-Cheat</h2>
 <p>From this update on, TrueCombat: Platinum ships with Easy Anti-Cheat. When you press PLAY, the launcher starts the game through the anti-cheat bootstrapper, and the anti-cheat service checks the game while it runs. The service is installed once, by the installer or on the first start, and that is the one administrator prompt you will see.</p>
 <p>All four official servers, Ranked, Unranked and both pickup servers, now require it. They were switched over in the hours after the release went out, and a clean copy of the published game was confirmed connecting to them with protection active.</p>
@@ -266,6 +266,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=36fa7c6143"></script>
+<script src="js/site.js?v=cef5a04dba"></script>
 </body>
 </html>

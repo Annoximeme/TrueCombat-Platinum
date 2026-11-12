@@ -174,7 +174,7 @@ var TCP_API = 'https://api.truecombat.eu';
     var n = parseNotes(rel.body);
     if (!n.sections.length) return '';
     var ver = esc(verOf(rel));
-    var meta = (n.num ? '#' + n.num + ' · ' : '') + esc(n.build || rel.tag_name) + ' · ' + fmtDate(rel.published_at);
+    var meta = (n.num ? '#' + esc(n.num) + ' · ' : '') + esc(n.build || rel.tag_name) + ' · ' + fmtDate(rel.published_at);
     var secs = n.sections.map(function (sec) {
       return '<section><h3>' + esc(sec.title) + '</h3><ul>' + sec.items.map(function (it) { return '<li>' + inline(it) + '</li>'; }).join('') + '</ul></section>';
     }).join('');
@@ -407,7 +407,7 @@ var TCP_API = 'https://api.truecombat.eu';
                     (!w && m.rounds > 1 ? '<span class="res">' + L.draw + '</span>' : '');
           var mins = Math.max(1, Math.round((m.duration || 0) / 60));
           var bits = [esc(m.mode || ''), (m.rounds > 1 ? m.rounds + ' ' + L.rounds : ''), mins + ' ' + L.minutes, (m.players || 0) + ' ' + L.players].filter(Boolean).join(' · ');
-          var mvp = m.mvp ? '<span class="mvp"><b>' + L.mvp + '</b> <a href="' + esc(profileHref(m.mvp.id)) + '">' + esc(m.mvp.name) + '</a> · ' + m.mvp.kills + ' ' + L.kills.toLowerCase() + '</span>' : '';
+          var mvp = m.mvp ? '<span class="mvp"><b>' + L.mvp + '</b> <a href="' + esc(profileHref(m.mvp.id)) + '">' + esc(m.mvp.name) + '</a> · ' + num(m.mvp.kills) + ' ' + L.kills.toLowerCase() + '</span>' : '';
           return '<li><img src="' + art + '" alt="" width="120" height="68" loading="lazy"><div class="r-main"><p class="r-top">' + (MID.test(m.id || '') ? '<a href="' + matchHref(m.id) + '"><b>' + mapLabel(m.map) + '</b></a>' : '<b>' + mapLabel(m.map) + '</b>') + res + '</p><p class="r-sub">' + bits + '</p></div>' +
             '<div class="r-side">' + mvp + '<span class="r-when"><time datetime="' + esc(m.ended) + '">' + ago(m.ended) + '</time>' + (m.server ? ' · ' + esc(shortName(m.server)) : '') + '</span></div></li>';
         }).join('');
@@ -526,7 +526,7 @@ var TCP_API = 'https://api.truecombat.eu';
   })();
 
   /* ---------- leaderboards and player profiles (stats service JSON, tools/server-bridge/tcp_stats.py) ---------- */
-  function num(n) { return (n || 0).toLocaleString(lang); }
+  function num(n) { return (Number(n) || 0).toLocaleString(lang); }
   function pct(n) { return Math.round((n || 0) * 100) + '%'; }
   function badge(r) { return r ? '<span class="badge" title="' + esc(r.title) + '">' + esc(r.short) + '</span>' : ''; }
   function dur(s) { var h = Math.floor((s || 0) / 3600), m = Math.round(((s || 0) % 3600) / 60); return h ? h + ' ' + L.hours + ' ' + m + ' ' + L.minutes : m + ' ' + L.minutes; }
@@ -643,7 +643,7 @@ var TCP_API = 'https://api.truecombat.eu';
         return '<circle cx="' + x(i + 1).toFixed(1) + '" cy="' + y(pts[i + 1]).toFixed(1) + '" r="3.5" class="' + (m.won ? 'w' : 'l') + '"><title>' +
           esc(fmtDate(m.ended)) + ' · ' + esc(MAPS[String(m.map || '').toLowerCase()] || m.map) + ' · ' + (m.won ? L.won : L.lost) + ' · ' + Math.round(pts[i + 1]) + '</title></circle>';
       }).join('');
-      box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(L.rating) + ': ' + Math.round(pts[0]) + ' → ' + p.rating + '">' +
+      box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(L.rating) + ': ' + Math.round(pts[0]) + ' → ' + Math.round(+p.rating || 0) + '">' +
         '<path d="' + area + '" class="area"/><polyline points="' + line + '" class="line"/>' + dots + '</svg>' +
         '<div class="pf-scale"><span>' + Math.round(hi) + '</span><span>' + Math.round(lo) + '</span></div>';
     }
@@ -725,7 +725,7 @@ var TCP_API = 'https://api.truecombat.eu';
     if (k === 'timePlayed') return dur(v);
     if (k === 'kd' || k === 'kpm') return (+v).toFixed(2);
     if (k === 'adr') return Math.round(v).toLocaleString(lang);
-    if (k === 'bestClutch') return '1v' + v;
+    if (k === 'bestClutch') return '1v' + num(v);
     return num(v);
   }
   function seg(name, opts, cur) {
@@ -767,7 +767,7 @@ var TCP_API = 'https://api.truecombat.eu';
         if (d.minimum && d.minimum.stat === 'timePlayed') note.textContent = L.minSample.replace('{n}', num(d.minimum.value / 60)).replace('{what}', L.minutes);
         empty.textContent = L.boardEmpty; empty.hidden = rows.length > 0;
         tbody.innerHTML = rows.map(function (p) {
-          return '<tr><td class="rank">' + p.position + '</td><td><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a></td><td>' + sVal(d.stat || st.stat, p.value) + '</td></tr>';
+          return '<tr><td class="rank">' + num(p.position) + '</td><td><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a></td><td>' + sVal(d.stat || st.stat, p.value) + '</td></tr>';
         }).join('');
       }, function () { setPill(root, false, TCP_API ? L.offline : L.soon); empty.textContent = L.lbOffline; empty.hidden = false; tbody.innerHTML = ''; });
     }
@@ -1433,5 +1433,13 @@ var TCP_API = 'https://api.truecombat.eu';
       var wio = new IntersectionObserver(function (entries) { entries.forEach(function (en) { if (en.isIntersecting || en.boundingClientRect.top < 0) { en.target.classList.add('in'); wio.unobserve(en.target); } }); }, { rootMargin: '0px 0px -12% 0px' });
       $all('.vf img, .shot-wide img').forEach(function (im) { if (im.getBoundingClientRect().top < (window.innerHeight || 800)) return; im.classList.add('wipe'); wio.observe(im); });
     }
+  })();
+
+  /* regions that scroll sideways on small screens (tables, the screenshot strip) must be reachable with the keyboard */
+  (function () {
+    var pending = false;
+    function mark() { pending = false; $all('.table-scroll:not([tabindex]), .trio:not([tabindex])').forEach(function (el) { el.tabIndex = 0; }); }
+    mark();
+    if ('MutationObserver' in window) new MutationObserver(function () { if (!pending) { pending = true; requestAnimationFrame(mark); } }).observe(document.body, { childList: true, subtree: true });
   })();
 })();

@@ -363,10 +363,10 @@ def weapons_html(lang):
                     reload_s = "%.2f s*" % (w["reload"] / 1000)
                 stats = (
                     '<dl class="wstats">'
-                    f'<div><dt>{W["damage"]}</dt><span class="bar"><i style="width:{min(100, w["damage"] / 1.5):.0f}%"></i></span><dd>{dmg_label}</dd></div>'
-                    f'<div><dt>{W["rpm"]}</dt><span class="bar"><i style="width:{min(100, rpm / 12):.0f}%"></i></span><dd>{rpm} {W["rpm_u"]}</dd></div>'
-                    f'<div><dt>{W["mag"]}</dt><span class="bar"><i style="width:{min(100, w["clip"] / 0.3):.0f}%"></i></span><dd>{w["clip"]} / {w["reserve"]}</dd></div>'
-                    f'<div><dt>{W["reload"]}</dt><span class="bar"><i style="width:{min(100, w["reload"] / 27):.0f}%"></i></span><dd>{reload_s}</dd></div>'
+                    f'<div><dt>{W["damage"]}</dt><dd><span class="bar" aria-hidden="true"><i style="width:{min(100, w["damage"] / 1.5):.0f}%"></i></span><b>{dmg_label}</b></dd></div>'
+                    f'<div><dt>{W["rpm"]}</dt><dd><span class="bar" aria-hidden="true"><i style="width:{min(100, rpm / 12):.0f}%"></i></span><b>{rpm} {W["rpm_u"]}</b></dd></div>'
+                    f'<div><dt>{W["mag"]}</dt><dd><span class="bar" aria-hidden="true"><i style="width:{min(100, w["clip"] / 0.3):.0f}%"></i></span><b>{w["clip"]} / {w["reserve"]}</b></dd></div>'
+                    f'<div><dt>{W["reload"]}</dt><dd><span class="bar" aria-hidden="true"><i style="width:{min(100, w["reload"] / 27):.0f}%"></i></span><b>{reload_s}</b></dd></div>'
                     "</dl>")
                 note = ""
                 if w.get("pellets"):
@@ -588,7 +588,7 @@ def markdown(text, lang="en"):
             out.append("<ol>\n" + "\n".join("  <li>%s</li>" % inline(l.split(". ", 1)[1]) for l in lines) + "\n</ol>")
         elif all(l.startswith(">") for l in lines):
             body = " ".join(l[1:].strip() for l in lines)
-            out.append('<aside class="callout"><p>%s</p></aside>' % inline(body))
+            out.append('<div class="callout"><p>%s</p></div>' % inline(body))
         elif len(lines) == 1 and first.startswith("!compare("):
             a, la, b, lb, cap = [x.strip() for x in first[len("!compare("):-1].split("|")]
             out.append(f"""<figure class="wide">
@@ -667,8 +667,11 @@ def post_cards(lang, posts, feature=False, h="h2"):
         big = feature and i == 0
         art = p["image"] if big else p["image"].replace(".webp", "-640.webp")
         size = 'width="1280" height="720"' if big else 'width="640" height="360"'
+        small = p["image"].replace(".webp", "-640.webp")
+        # the featured card is full width on phones and about 60% wide on desktop: let the browser pick the size
+        srcset = (' srcset="%s 640w, %s 1280w" sizes="(max-width: 860px) 100vw, 60vw"' % (small, p["image"])) if big and (DOCS / small).exists() else ""
         cards.append(f"""      <article class="post-card{' featured' if big else ''}" data-tag="{htmlmod.escape(p['tag'])}">
-        <a class="post-art" href="devlog-{p['slug']}.html" tabindex="-1" aria-hidden="true"><img src="{art}" alt="" {size} loading="{'eager' if big else 'lazy'}"></a>
+        <a class="post-art" href="devlog-{p['slug']}.html" tabindex="-1" aria-hidden="true"><img src="{art}"{srcset} alt="" {size} loading="{'eager' if big else 'lazy'}"></a>
         <div>
           {post_meta(lang, p)}
           <{h}><a href="devlog-{p['slug']}.html">{htmlmod.escape(p['title'])}</a></{h}>
@@ -790,13 +793,24 @@ def devlog_feed(lang, posts):
 """
 
 
+def snippet(text, limit=160):
+    """A meta description search engines show in full: whole sentences up to the limit, else whole words and an ellipsis."""
+    text = " ".join(text.split())
+    if len(text) <= limit:
+        return text
+    ends = [m.end() for m in re.finditer(r"[.!?](?=\s)", text[:limit + 1])]
+    if ends and ends[-1] >= limit * 0.55:
+        return text[:ends[-1]]
+    return text[:limit - 1].rsplit(" ", 1)[0].rstrip(",;:") + "\u2026"
+
+
 def devlog_page(lang, post, posts, template):
     """A full post page, built from the head of devlog.html."""
     T = DL[lang]
     page = "devlog-" + post["slug"]
     head = template[:template.index("<!--nav-->")]
     title = htmlmod.escape(post["title"])
-    desc = htmlmod.escape(post["summary"], quote=True)
+    desc = htmlmod.escape(snippet(post["summary"]), quote=True)
     head = re.sub(r"<title>.*?</title>", f"<title>{title} · TrueCombat: Platinum</title>", head)
     head = re.sub(r'(<meta (?:name|property)="(?:description|og:description)" content=")[^"]*"', lambda m: m.group(1) + desc + '"', head)
     head = re.sub(r'(<meta property="og:title" content=")[^"]*"', lambda m: m.group(1) + title + '"', head)
@@ -1075,7 +1089,7 @@ def landing_page(lang, page):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{e(title)}</title>
-<meta name="description" content="{e(desc)}">
+<meta name="description" content="{e(snippet(desc))}">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="{url(lang, page)}">
 <meta property="og:type" content="website">
@@ -1137,7 +1151,7 @@ def shell(lang, page, title, desc, og, image, body, extra=""):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>{e(title)}</title>
-<meta name="description" content="{e(desc)}">
+<meta name="description" content="{e(snippet(desc))}">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="{url(lang, page)}">
 <meta property="og:type" content="website">
