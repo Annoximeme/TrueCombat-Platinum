@@ -137,3 +137,27 @@ index 9711d26..d0fec4b 100644
  
  	if (client->netchan.remoteAddress.type == NA_IP6)
  	{
+diff --git a/reference/etlegacy/src/sys/sys_win32.c b/reference/etlegacy/src/sys/sys_win32.c
+index 982007c..5f0de90 100644
+--- a/reference/etlegacy/src/sys/sys_win32.c
++++ b/reference/etlegacy/src/sys/sys_win32.c
+@@ -1160,6 +1160,9 @@ void Sys_PlatformInit(void)
+ 
+ #ifdef DEDICATED
+ 	Sys_ShowConsoleWindow(1, qtrue);
++	// TCP: 1 ms timer resolution, otherwise Windows sleeps the server loop in 15.6 ms steps
++	// and sv_fps 128 cannot hold its 7/8 ms frames
++	timeBeginPeriod(1);
+ #endif
+ 
+ 	// no abort/retry/fail errors
+@@ -1170,6 +1173,9 @@ NORETURN_MSVC void _attribute((noreturn)) Sys_PlatformExit(int code)
+ {
+ #if defined(LEGACY_DUMP_MEMLEAKS)
+ 	_CrtDumpMemoryLeaks();
++#endif
++#ifdef DEDICATED
++	timeEndPeriod(1);
+ #endif
+ 	exit(code);
+ }
