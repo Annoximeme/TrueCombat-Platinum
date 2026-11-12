@@ -1,5 +1,7 @@
 # Native voice chat: build and test on Gianni-PC
 
+**Round 2 (Squad-style), patch sha256 0e4d29be…:** adds the radio sound on team voice and local 3D voice. Run cases a to k again, then l to p below.
+
 ## What this is
 
 - **Patch:** voice-chat.patch, a git diff with `-p1`.
@@ -139,3 +141,56 @@
 - libopus 1.5.2 matched xiph's SHA256SUMS (65c1d2f7…7ce1).
 - Not tested yet: a real microphone. That needs Gianni at the PC.
 - Report: C:\TrueCombatWork\voice\PC-TEST-RESULTS.md. Screenshots: C:\TrueCombatWork\voice\shots.
+
+## Round 2: Squad-style voice (Gianni, 2026-11-11 23:56Z)
+
+### Radio sound (client, cl_voip_radio.h)
+
+- Team voice goes through a field-radio filter:
+  - band-pass 350 Hz to 3.2 kHz;
+  - a +5 dB presence lift at 1.8 kHz;
+  - soft clipping;
+  - a faint hiss.
+- A transmission opens with a 30 ms click and closes with a 90 ms burst of squelch, about 250 ms after the last frame.
+- `cl_voipRadio 0` gives clean voice.
+- The filter response was measured in the cloud:
+
+| Frequency | Response |
+|---|---|
+| 100 Hz | -44 dB |
+| 350 Hz | -6 dB |
+| 1 kHz | +2 dB |
+| 1.8 kHz | +4 dB |
+| 3 kHz | -2.5 dB |
+| 8 kHz | -35 dB |
+
+### Local voice
+
+- Key: `+voiplocal`. It is bound once to the first free key of H, Z and N (cvar `cg_voipBinds2`).
+- Wire format: bit 7 of gen marks local voice. The server adds the speaker's origin (3 shorts) to local messages.
+- Who hears it (qagame):
+  - the speaker must be alive;
+  - receivers are every player on a team within `g_voiceLocalRange` (1500 units, in serverinfo), enemies included;
+  - mutes and `cl_voipMuteEnemies` still apply;
+  - `g_voiceLocal 0` turns it off.
+- How it sounds (client):
+  - full volume within 250 units, fading to silence at the range;
+  - panned left or right by where the speaker stands;
+  - slightly quieter from behind;
+  - no radio filter.
+- HUD:
+  - a teammate talking nearby shows in the talking list as "name (nearby)";
+  - an enemy talking nearby is heard, but never named or marked;
+  - your own row says "You (nearby)".
+
+### Tests (same setup: UDP 28150, g_balanceSkill 0, suite.lock)
+
+Record B's output in stereo.
+
+| # | Situation | Expected |
+|---|---|---|
+| l | A sends the tone on the radio to B, first with `cl_voipRadio 1`, then with 0 | With 1: a click transient at the start of each transmission, a squelch noise burst after A releases `+voip`, and the tone still clearly there. With 0: none of these. |
+| m | Live round, A and B on different teams, close together; A holds `+voiplocal` | B gets recv lines with local=1 and hears the tone |
+| n | The same, with B moved more than 1500 units away (setviewpos under devmap, or a far spawn) | no recv lines |
+| o | A within range, standing to B's left (B turned so A is at about 90 degrees) | B's left channel is clearly louder than the right; mirrored on the other side |
+| p | A dead and holding `+voiplocal` | nobody gets recv lines. Also: a teammate's local voice puts "(nearby)" in B's talking list, and an enemy's local voice adds no row. |
