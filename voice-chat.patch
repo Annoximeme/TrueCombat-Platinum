@@ -1,5 +1,5 @@
 diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
-index 1560d23..d35289a 100644
+index 1560d23..1ad5f9a 100644
 --- a/game_src/native/tcp_cgame.c
 +++ b/game_src/native/tcp_cgame.c
 @@ -706,6 +706,8 @@ static void obituary(int victim,int killer,int weapon,int local,int time){
@@ -47,7 +47,7 @@ index 1560d23..d35289a 100644
          drawScoreboard(&p);
      }
 -    nqFrame(&p,time);
-+    nqFrame(&p,time);voipCgFrame(time);
++    nqFrame(&p,time);voipCgFrame(time,p.clientNum);
      matchCgDraw(&p,time);
      qolOverlay(); /* TCP_QOL: vote panel, quick menus */
      mapVoteDraw(time);
@@ -114,10 +114,10 @@ index bcfe046..eb25016 100644
      int digits=arg[0]!=0;for(const char *s=arg;*s;s++)if(*s<'0'||*s>'9')digits=0;
 diff --git a/game_src/native/tcp_voip.h b/game_src/native/tcp_voip.h
 new file mode 100644
-index 0000000..3d41a60
+index 0000000..7cf7d49
 --- /dev/null
 +++ b/game_src/native/tcp_voip.h
-@@ -0,0 +1,105 @@
+@@ -0,0 +1,124 @@
 +/* Native voice chat, game rules (online play round 3, item 12). GPL-3.0-or-later.
 + * Included by tcp_game.c after tcp_netq.h.
 + *
@@ -125,7 +125,10 @@ index 0000000..3d41a60
 + * hands that to the engine 20 times a second through trap_TcpVoiceMatrix. An older engine has
 + * no such trap: then the server never advertises voice and nothing changes.
 + *
-+ * Rules (decided by Gianni, 2026-11-11):
++ * Two channels (Gianni, 2026-11-11: "Squad type"): the team radio (+voip) and local voice
++ * (+voiplocal), spoken out loud and heard by everyone within g_voiceLocalRange, enemies included.
++ *
++ * Radio rules (decided by Gianni, 2026-11-11):
 + *   - Waiting for players, match warmup, end of match, and modes without teams: everyone hears everyone.
 + *   - Live round: team voice. Living players talk to their whole team. Dead players hear their
 + *     team but only talk to other dead teammates, so they can't call out enemy positions.
@@ -133,8 +136,12 @@ index 0000000..3d41a60
 + *   - Spectators talk to and hear only spectators, except when everyone hears everyone.
 + *   - userinfo cl_voipMuteEnemies 1: never hear the other team, not even in warmup.
 + *   - Players muted by an admin are heard by nobody until the next map.
++ * Local voice: only living players speak; every living or dead player on a team within range hears
++ * them (cl_voipMuteEnemies and mutes still apply). The client pans and fades it by distance.
 + *
 + * Cvars:    g_voice 1          0 turns voice off for this game
++ *           g_voiceLocal 1     0 turns local voice off
++ *           g_voiceLocalRange 1500  how far local voice carries, in game units (serverinfo, the client fades to it)
 + * Commands: voicemute <slot|name>, voiceunmute <slot|name>, voicemutes  (rcon / server console)
 + */
 +static int voipTrapId,voipNextSend;
@@ -145,6 +152,8 @@ index 0000000..3d41a60
 +static void TCP_VoipInit(void){
 +    char v[16]="";voipTrapId=SystemCall(G_TRAP_GETVALUE,v,(int)sizeof(v),"trap_TcpVoiceMatrix")?atoi(v):0;
 +    SystemCall(G_CVAR_REGISTER,NULL,"g_voice","1",CVAR_ARCHIVE);
++    SystemCall(G_CVAR_REGISTER,NULL,"g_voiceLocal","1",CVAR_ARCHIVE);
++    SystemCall(G_CVAR_REGISTER,NULL,"g_voiceLocalRange","1500",CVAR_ARCHIVE|CVAR_SERVERINFO);
 +    memset(voipMuteEnemies,0,sizeof(voipMuteEnemies));memset(voipMuted,0,sizeof(voipMuted));voipNextSend=0;
 +}
 +static void TCP_VoipUserinfo(int n){
@@ -179,17 +188,27 @@ index 0000000..3d41a60
 +    if(voipAlive(s))return 1;                            /* the living talk to the whole team */
 +    return !voipAlive(r);                                /* the dead only reach the dead */
 +}
++/* Does receiver r hear speaker s talking out loud? */
++static int voipHearsLocal(int r,int s,float range,const unsigned char *muted){
++    if(muted[s]||!voipAlive(s)||voipSpectator(r))return 0;
++    if(clients[r].team!=clients[s].team&&voipMuteEnemies[r])return 0;
++    vec3_t d;VectorSubtract(clients[r].ps.origin,clients[s].ps.origin,d);
++    return DotProduct(d,d)<=range*range;
++}
 +static void TCP_VoipFrame(void){
 +    if(!voipTrapId||levelTime<voipNextSend)return;
 +    voipNextSend=levelTime+50;
-+    static int masks[MAX_CLIENTS*2];memset(masks,0,sizeof(masks));
++    static int masks[MAX_CLIENTS*2],local[MAX_CLIENTS*2];memset(masks,0,sizeof(masks));memset(local,0,sizeof(local));
++    const int localOn=netqCvar("g_voiceLocal",1)>0;float range=(float)netqCvar("g_voiceLocalRange",1500);if(range<200)range=200;
 +    const int on=netqCvar("g_voice",1)>0,open=voipOpen();
 +    unsigned char human[MAX_CLIENTS]={0},muted[MAX_CLIENTS]={0};
 +    const int count=maxClients<MAX_CLIENTS?maxClients:MAX_CLIENTS;
 +    if(on)for(int i=0;i<count&&i<TCP_MAX_PLAYERS;i++){human[i]=clients[i].connected&&clients[i].begun&&!bots[i].active;if(human[i])muted[i]=(unsigned char)voipIsMuted(i);}
 +    if(on)for(int r=0;r<count;r++){if(!human[r])continue;
-+        for(int s=0;s<count;s++)if(s!=r&&human[s]&&voipHears(r,s,open,muted))masks[r*2+(s>>5)]|=(int)(1u<<(s&31));}
-+    SystemCall(voipTrapId,masks,count);
++        for(int s=0;s<count;s++){if(s==r||!human[s])continue;
++            if(voipHears(r,s,open,muted))masks[r*2+(s>>5)]|=(int)(1u<<(s&31));
++            if(localOn&&voipHearsLocal(r,s,range,muted))local[r*2+(s>>5)]|=(int)(1u<<(s&31));}}
++    SystemCall(voipTrapId,masks,count,local);
 +}
 +static int voipFindSlot(const char *arg){
 +    int digits=arg[0]!=0;for(const char *s=arg;*s;s++)if(*s<'0'||*s>'9')digits=0;
@@ -225,10 +244,10 @@ index 0000000..3d41a60
 +}
 diff --git a/game_src/native/tcp_voip_cg.h b/game_src/native/tcp_voip_cg.h
 new file mode 100644
-index 0000000..8462211
+index 0000000..f483201
 --- /dev/null
 +++ b/game_src/native/tcp_voip_cg.h
-@@ -0,0 +1,62 @@
+@@ -0,0 +1,80 @@
 +/* Native voice chat, cgame side (online play round 3, item 12). GPL-3.0-or-later.
 + * Included by tcp_cgame.c after tcp_voice_cg.h. The engine does the audio (cl_voip.c); this file:
 + *   - passes the game's mute list (cg_muted: mute / unmute / mute menu) to the engine, so muted
@@ -236,18 +255,25 @@ index 0000000..8462211
 + *   - shows who is talking: a list at the left of the screen, the voice icon over their head
 + *     (the same sprite as voice commands) and on the scoreboard next to their name,
 + *   - shows your own microphone level while you transmit,
-+ *   - binds push to talk (+voip) once, to the first free key of B, H and Z.
++ *   - binds push to talk (+voip) once, to the first free key of B, H and Z, and local voice
++ *     (+voiplocal) to the next free one of H, Z and N.
++ * Local voice (spoken out loud, enemies nearby hear it too) shows teammates in the list marked
++ * "nearby"; an enemy talking nearby is only heard, never named.
 + * The engine reports nothing when it has no voice (older build): then this file does nothing.
 + *
 + * cg_voipHud 1   0 hides the talking list (icons stay)
 + */
-+static int voipCgTrap,voipNextIgnore,voipNoMicShown,voipIgnoreMask[2],voipState[7];
-+static vmCvar_t voipHudCvar,voipBindsDone;
++static int voipCgTrap,voipNextIgnore,voipNoMicShown,voipIgnoreMask[2],voipState[10];
++static unsigned voipLocalSpeak[2];
++static vmCvar_t voipHudCvar,voipBindsDone,voipBindsDone2;
++static int voipLocalSpeaking(int s){return s>=0&&s<MAX_CLIENTS&&((voipLocalSpeak[s>>5]>>(s&31))&1u);}
++static int voipFriendly(int s,int self){const int a=playerTeam(s),b=playerTeam(self);return a==b||!a||!b;}
 +
 +static void voipCgInit(void){
 +    char v[16]="";voipCgTrap=SystemCall(CG_TRAP_GETVALUE,v,(int)sizeof(v),"trap_TcpVoice")?atoi(v):0;
 +    SystemCall(CG_CVAR_REGISTER,&voipHudCvar,"cg_voipHud","1",CVAR_ARCHIVE);
 +    SystemCall(CG_CVAR_REGISTER,&voipBindsDone,"cg_voipBinds","0",CVAR_ARCHIVE);
++    SystemCall(CG_CVAR_REGISTER,&voipBindsDone2,"cg_voipBinds2","0",CVAR_ARCHIVE);voipLocalSpeak[0]=voipLocalSpeak[1]=0;
 +    voipNextIgnore=voipNoMicShown=0;memset(voipIgnoreMask,0,sizeof(voipIgnoreMask));memset(voipState,0,sizeof(voipState));voipSpeak[0]=voipSpeak[1]=0;
 +    if(!voipCgTrap)return;
 +    /* Push to talk gets a key once, and only one nothing else uses. */
@@ -258,9 +284,16 @@ index 0000000..8462211
 +                if(!current[0]){SystemCall(CG_KEY_SETBINDING,keys[i],"+voip");break;}}}
 +        SystemCall(CG_CVAR_SET,"cg_voipBinds","1");
 +    }
++    if(!voipBindsDone2.integer){
++        int first=-1,second=-1;SystemCall(CG_KEY_BINDINGTOKEYS,"+voiplocal",&first,&second);
++        if(first<0){static const int keys[]={'h','z','n'};
++            for(size_t i=0;i<sizeof(keys)/sizeof(keys[0]);i++){char current[64]="";SystemCall(CG_KEY_GETBINDINGBUF,keys[i],current,sizeof(current));
++                if(!current[0]){SystemCall(CG_KEY_SETBINDING,keys[i],"+voiplocal");break;}}}
++        SystemCall(CG_CVAR_SET,"cg_voipBinds2","1");
++    }
 +}
 +/* Every frame: hand over the mute list, read who is talking. */
-+static void voipCgFrame(int time){
++static void voipCgFrame(int time,int self){
 +    if(!voipCgTrap)return;
 +    SystemCall(CG_CVAR_UPDATE,&voipHudCvar);
 +    if(time>=voipNextIgnore||time<voipNextIgnore-1000){
@@ -269,6 +302,9 @@ index 0000000..8462211
 +    }
 +    SystemCall(voipCgTrap,voipState,voipIgnoreMask);
 +    voipSpeak[0]=(unsigned)voipState[0];voipSpeak[1]=(unsigned)voipState[1];
++    voipLocalSpeak[0]=(unsigned)voipState[7];voipLocalSpeak[1]=(unsigned)voipState[8];
++    /* Teammates talking near you also count as talking (scoreboard icon); enemies stay anonymous. */
++    for(int i=0;i<MAX_CLIENTS;i++)if(voipLocalSpeaking(i)&&voipFriendly(i,self))voipSpeak[i>>5]|=1u<<(i&31);
 +    for(int i=0;i<MAX_CLIENTS;i++)if(voipSpeaking(i)&&hudVoiceChat){vcSprite[i]=hudVoiceChat;if(vcSpriteUntil[i]<time+300)vcSpriteUntil[i]=time+300;}
 +    if(voipState[4]<0&&voipState[2]==0&&!voipNoMicShown){voipNoMicShown=1;
 +        addPopup("No microphone found for voice chat. Check Windows microphone privacy settings.",hudVoiceChat,hudNow);}
@@ -280,13 +316,14 @@ index 0000000..8462211
 +    float y=150;int shown=0;char line[80];
 +    if(voipState[2]){
 +        hudFill(4,y-11,120,14,back);if(hudVoiceChat)hudPic(6,y-11,13,13,hudVoiceChat);
-+        hudText(22,y,.18f,hudWhite,"You",1);
-+        const float w=60;hudFill(56,y-7,w,5,dim);hudFill(56,y-7,w*(voipState[3]>100?100:voipState[3])/100.f,5,bar);
++        hudText(22,y,.18f,hudWhite,voipState[9]?"You (nearby)":"You",1);
++        const float w=50,bx=voipState[9]?72:56;hudFill(bx,y-7,w,5,dim);hudFill(bx,y-7,w*(voipState[3]>100?100:voipState[3])/100.f,5,bar);
 +        y+=15;shown++;
 +    }
 +    for(int i=0;i<MAX_CLIENTS&&shown<6;i++){
 +        if(i==p->clientNum||!voipSpeaking(i))continue;
 +        teamName(i,line,sizeof(line));line[40]=0;
++        if(voipLocalSpeaking(i)&&!(voipState[i>>5]&(int)(1u<<(i&31)))){size_t n=strlen(line);snprintf(line+n,sizeof(line)-n,"^7 (nearby)");}
 +        hudFill(4,y-11,150,14,back);if(hudVoiceChat)hudPic(6,y-11,13,13,hudVoiceChat);
 +        hudText(22,y,.18f,hudWhite,line,1);y+=15;shown++;
 +    }
@@ -587,10 +624,10 @@ index 11026fc..b52de64 100644
  
 diff --git a/reference/etlegacy/src/client/cl_voip.c b/reference/etlegacy/src/client/cl_voip.c
 new file mode 100644
-index 0000000..5657aa8
+index 0000000..98a1de6
 --- /dev/null
 +++ b/reference/etlegacy/src/client/cl_voip.c
-@@ -0,0 +1,732 @@
+@@ -0,0 +1,864 @@
 +/*
 + * TrueCombat: Platinum - native voice chat, client side.
 + *
@@ -599,6 +636,12 @@ index 0000000..5657aa8
 + * Network:    clc_voipOpus / svc_voipOpus inside the normal game packets (qcommon/tcp_voip.h).
 + * Playback:   one raw sound stream per speaker (stream TCP_VOIP_STREAM_BASE + slot).
 + *
++ * Two channels, like Squad:
++ *   radio (+voip)       team voice through a field-radio filter, with a click when a transmission
++ *                       opens and squelch when it closes (cl_voip_radio.h)
++ *   local (+voiplocal)  spoken out loud: everyone within range hears it, enemies too, panned and
++ *                       fading with distance from where the speaker stands
++ *
 + * Cvars (archived):
 + *   cl_voip 1                voice on (userinfo; 0 = never send or play voice)
 + *   cl_voipVolume 1          voice playback volume (0 .. 2)
@@ -606,10 +649,11 @@ index 0000000..5657aa8
 + *   cl_voipUseVAD 0          1 = open microphone: send whenever you speak (no key needed)
 + *   cl_voipVADThreshold 0.08 open microphone level (0 .. 1)
 + *   cl_voipCaptureDevice ""  microphone name ("" = system default); voip_devices lists them
++ *   cl_voipRadio 1           radio sound on team voice (0 = clean)
 + *   cl_voipMuteEnemies 0     1 = never hear the other team, not even in warmup (userinfo)
 + * Test aids (not archived): cl_voipTestTone 1 sends a 440 Hz tone instead of the microphone,
 + *   cl_voipDebug 1 prints every transmission start and received frame counts (TCP_NATIVE_VOIP lines).
-+ * Commands: +voip / -voip (push to talk), voip_devices.
++ * Commands: +voip / -voip (team radio), +voiplocal / -voiplocal (local voice), voip_devices.
 + * Muting single players goes through the game's mute list (mute / unmute / mute menu).
 + *
 + * Without TCP_VOIP (no libopus in the build) everything here is a no-op and the client never
@@ -623,6 +667,7 @@ index 0000000..5657aa8
 +
 +#include <SDL2/SDL.h>
 +#include "opus.h"
++#include "cl_voip_radio.h"
 +
 +static cvar_t *cl_voip;
 +static cvar_t *cl_voipVolume;
@@ -630,6 +675,7 @@ index 0000000..5657aa8
 +static cvar_t *cl_voipUseVAD;
 +static cvar_t *cl_voipVADThreshold;
 +static cvar_t *cl_voipCaptureDevice;
++static cvar_t *cl_voipRadio;
 +static cvar_t *cl_voipTestTone;
 +static cvar_t *cl_voipDebug;
 +static int    voipToneAt;                        ///< test tone: realtime covered so far
@@ -639,7 +685,9 @@ index 0000000..5657aa8
 +static SDL_AudioDeviceID voipMic;
 +static qboolean          voipMicFailed;          ///< opening the microphone failed; retried when the device cvar changes
 +static OpusEncoder       *voipEncoder;
-+static qboolean          voipKeyDown;            ///< push-to-talk held
++static qboolean          voipKeyDown;            ///< push-to-talk held (radio)
++static qboolean          voipLocalKeyDown;       ///< local voice key held
++static qboolean          voipSendLocal;          ///< the current transmission is local voice
 +static qboolean          voipSending;            ///< currently transmitting
 +static int               voipReleaseAt;          ///< when push-to-talk was let go (a short tail is still sent)
 +static int               voipLastVoiceAt;        ///< open microphone: last frame above the threshold
@@ -660,9 +708,14 @@ index 0000000..5657aa8
 +	int gen;                                    ///< -1 = no stream yet
 +	unsigned short nextSeq;
 +	int lastAt;                                 ///< cls.realtime of the last frame
++	qboolean local;                             ///< the current transmission is local voice
++	qboolean radioOpen;                         ///< a radio transmission is playing (squelch when it ends)
++	vec3_t origin;                              ///< local voice: where the speaker stands
++	voipRadio_t radio;                          ///< radio filter state
 +} voipSpeaker_t;
 +
 +static voipSpeaker_t voipSpeakers[MAX_CLIENTS];
++static void          CL_VoipSpeakersFrame(void);
 +static unsigned int  voipIgnore[2];             ///< muted players (set by cgame)
 +
 +/**
@@ -787,10 +840,11 @@ index 0000000..5657aa8
 +		}
 +		SDL_PauseAudioDevice(voipMic, 0);
 +	}
-+	voipGen++;
++	voipGen       = (unsigned char)((voipGen + 1) & TCP_VOIP_GEN_MASK);
++	voipSendLocal = voipLocalKeyDown && !voipKeyDown;
 +	if (cl_voipDebug->integer)
 +	{
-+		Com_Printf("TCP_NATIVE_VOIP send start gen=%d tone=%d\n", voipGen, cl_voipTestTone->integer);
++		Com_Printf("TCP_NATIVE_VOIP send start gen=%d local=%d tone=%d\n", voipGen, voipSendLocal, cl_voipTestTone->integer);
 +	}
 +	voipSending   = qtrue;
 +	voipOutFrames = 0;
@@ -880,6 +934,7 @@ index 0000000..5657aa8
 +	{
 +		return;
 +	}
++	CL_VoipSpeakersFrame();
 +	if (cl_voipCaptureDevice->modified)
 +	{
 +		cl_voipCaptureDevice->modified = qfalse;
@@ -942,7 +997,11 @@ index 0000000..5657aa8
 +	}
 +
 +	// push to talk; keep sending 150 ms after the key comes up so the last word isn't cut off
-+	want = voipKeyDown || (voipSending && cls.realtime - voipReleaseAt < 150);
++	want = voipKeyDown || voipLocalKeyDown || (voipSending && cls.realtime - voipReleaseAt < 150);
++	if (want && voipSending && (voipKeyDown || voipLocalKeyDown) && voipSendLocal != (voipLocalKeyDown && !voipKeyDown))
++	{
++		CL_VoipStopSending();   // switched between radio and local voice: start a new transmission
++	}
 +	if (want && !voipSending)
 +	{
 +		CL_VoipStartSending();
@@ -1001,7 +1060,7 @@ index 0000000..5657aa8
 +		return;
 +	}
 +	MSG_WriteByte(buf, clc_voipOpus);
-+	MSG_WriteByte(buf, voipGen);
++	MSG_WriteByte(buf, voipGen | (voipSendLocal ? TCP_VOIP_LOCAL : 0));
 +	MSG_WriteShort(buf, voipOutSeq);
 +	MSG_WriteByte(buf, voipOutFrames);
 +	for (i = 0; i < voipOutFrames; i++)
@@ -1015,11 +1074,73 @@ index 0000000..5657aa8
 +/**
 + * @brief CL_VoipPlay hands decoded speech to the sound system.
 + */
-+static void CL_VoipPlay(int sender, const short *pcm, int samples)
++static void CL_VoipPlay(int sender, short *pcm, int samples)
 +{
-+	const float volume = Com_Clamp(0.f, 2.f, cl_voipVolume->value);
++	voipSpeaker_t *sp     = &voipSpeakers[sender];
++	float         volume  = Com_Clamp(0.f, 2.f, cl_voipVolume->value), left = volume, right = volume;
 +
-+	S_RawSamples(TCP_VOIP_STREAM_BASE + sender, samples, TCP_VOIP_RATE, 2, 1, (const byte *)pcm, volume, volume);
++	if (sp->local)
++	{
++		// spoken out loud: louder close by, gone at the edge of the range, panned to the speaker's side
++		const char *info  = cl.gameState.stringData + cl.gameState.stringOffsets[CS_SERVERINFO];
++		float      range  = (float)atof(Info_ValueForKey(info, "g_voiceLocalRange"));
++		vec3_t     eye, dir, forward, rightv, up;
++		float      dist, gain, pan;
++
++		if (range < 200.f)
++		{
++			range = 1500.f;
++		}
++		VectorCopy(cl.snap.ps.origin, eye);
++		eye[2] += cl.snap.ps.viewheight;
++		VectorSubtract(sp->origin, eye, dir);
++		dist = VectorNormalize(dir);
++		gain = dist <= 250.f ? 1.f : 1.f - (dist - 250.f) / (range - 250.f);
++		gain = gain < 0.f ? 0.f : gain * gain;
++		AngleVectors(cl.snap.ps.viewangles, forward, rightv, up);
++		pan = DotProduct(dir, rightv);
++		if (dist < 32.f)
++		{
++			pan = 0.f;
++		}
++		if (DotProduct(dir, forward) < 0.f)
++		{
++			gain *= 0.85f;  // a little duller from behind
++		}
++		left  = volume * gain * (pan > 0.f ? 1.f - 0.7f * pan : 1.f);
++		right = volume * gain * (pan < 0.f ? 1.f + 0.7f * pan : 1.f);
++	}
++	else if (cl_voipRadio->integer)
++	{
++		voipRadioProcess(&sp->radio, pcm, samples, 0.006f);
++	}
++	S_RawSamples(TCP_VOIP_STREAM_BASE + sender, samples, TCP_VOIP_RATE, 2, 1, (const byte *)pcm, left, right);
++}
++
++/**
++ * @brief CL_VoipSpeakersFrame closes finished radio transmissions with a burst of squelch.
++ */
++static void CL_VoipSpeakersFrame(void)
++{
++	static short squelch[4320];
++	int          i, n;
++
++	for (i = 0; i < MAX_CLIENTS; i++)
++	{
++		voipSpeaker_t *sp = &voipSpeakers[i];
++
++		if (sp->radioOpen && cls.realtime - sp->lastAt > 250)
++		{
++			sp->radioOpen = qfalse;
++			if (cl_voipRadio->integer && !(voipIgnore[i >> 5] & (1u << (i & 31))))
++			{
++				const float volume = Com_Clamp(0.f, 2.f, cl_voipVolume->value);
++
++				n = voipRadioClick(&sp->radio, squelch, 0);
++				S_RawSamples(TCP_VOIP_STREAM_BASE + i, n, TCP_VOIP_RATE, 2, 1, (const byte *)squelch, volume, volume);
++			}
++		}
++	}
 +}
 +
 +/**
@@ -1028,18 +1149,27 @@ index 0000000..5657aa8
 +void CL_ParseVoip(msg_t *msg)
 +{
 +	const int      sender = MSG_ReadByte(msg);
-+	const int      gen    = MSG_ReadByte(msg);
++	const int      genByte = MSG_ReadByte(msg);
++	const int      gen     = genByte & TCP_VOIP_GEN_MASK;
++	const qboolean local   = (genByte & TCP_VOIP_LOCAL) ? qtrue : qfalse;
 +	unsigned short seq    = (unsigned short)MSG_ReadShort(msg);
 +	const int      frames = MSG_ReadByte(msg);
 +	unsigned short len[TCP_VOIP_MAX_FRAMES];
 +	unsigned char  data[TCP_VOIP_MAX_FRAMES][TCP_VOIP_MAX_BYTES];
 +	short          pcm[TCP_VOIP_FRAME_SAMPLES];
++	vec3_t         origin = { 0, 0, 0 };
 +	voipSpeaker_t  *sp;
 +	int            i, error = 0;
 +
 +	if (frames < 1 || frames > TCP_VOIP_MAX_FRAMES || sender < 0 || sender >= MAX_CLIENTS)
 +	{
 +		Com_Error(ERR_DROP, "CL_ParseVoip: bad voice message");
++	}
++	if (local)
++	{
++		origin[0] = MSG_ReadShort(msg);
++		origin[1] = MSG_ReadShort(msg);
++		origin[2] = MSG_ReadShort(msg);
 +	}
 +	for (i = 0; i < frames; i++)
 +	{
@@ -1053,7 +1183,7 @@ index 0000000..5657aa8
 +
 +	if (cl_voipDebug && cl_voipDebug->integer > 1)
 +	{
-+		Com_Printf("TCP_NATIVE_VOIP recv slot=%d gen=%d seq=%d frames=%d muted=%d\n", sender, gen, seq, frames,
++		Com_Printf("TCP_NATIVE_VOIP recv slot=%d gen=%d local=%d seq=%d frames=%d muted=%d\n", sender, gen, local, seq, frames,
 +		           (voipIgnore[sender >> 5] >> (sender & 31)) & 1);
 +	}
 +	if (!cl_voip || !cl_voip->integer || sender == clc.clientNum || (voipIgnore[sender >> 5] & (1u << (sender & 31))))
@@ -1072,19 +1202,32 @@ index 0000000..5657aa8
 +		sp->gen = -1;
 +	}
 +
-+	if (sp->gen != gen || cls.realtime - sp->lastAt > 1000)
++	VectorCopy(origin, sp->origin);
++	if (sp->gen != gen || sp->local != local || cls.realtime - sp->lastAt > 1000)
 +	{
-+		// a new transmission: fresh decoder state, and 40 ms of silence so playback has a little cushion
-+		static const short silence[TCP_VOIP_FRAME_SAMPLES * 2];
++		// a new transmission: fresh decoder state, the radio click, and 40 ms of silence so playback has a little cushion
++		static short silence[TCP_VOIP_FRAME_SAMPLES * 2];
++		static short click[4320];
 +
 +		opus_decoder_ctl(sp->decoder, OPUS_RESET_STATE);
-+		sp->gen     = gen;
-+		sp->nextSeq = seq;
++		sp->gen       = gen;
++		sp->nextSeq   = seq;
++		sp->local     = local;
++		sp->radioOpen = !local;
++		voipRadioReset(&sp->radio);
++		if (!local && cl_voipRadio->integer)
++		{
++			const float volume = Com_Clamp(0.f, 2.f, cl_voipVolume->value);
++			const int   n      = voipRadioClick(&sp->radio, click, 1);
++
++			S_RawSamples(TCP_VOIP_STREAM_BASE + sender, n, TCP_VOIP_RATE, 2, 1, (const byte *)click, volume, volume);
++		}
++		Com_Memset(silence, 0, sizeof(silence));
 +		if (cl_voipDebug->integer)
 +		{
 +			Com_Printf("TCP_NATIVE_VOIP recv start slot=%d gen=%d\n", sender, gen);
 +		}
-+		CL_VoipPlay(sender, silence, TCP_VOIP_FRAME_SAMPLES * 2);
++		S_RawSamples(TCP_VOIP_STREAM_BASE + sender, TCP_VOIP_FRAME_SAMPLES * 2, TCP_VOIP_RATE, 2, 1, (const byte *)silence, 0.f, 0.f);
 +	}
 +	else
 +	{
@@ -1128,14 +1271,16 @@ index 0000000..5657aa8
 +			CL_VoipPlay(sender, pcm, n);
 +		}
 +	}
-+	sp->nextSeq = (unsigned short)(seq + frames);
-+	sp->lastAt  = cls.realtime;
++	sp->nextSeq   = (unsigned short)(seq + frames);
++	sp->lastAt    = cls.realtime;
++	sp->radioOpen = !local;
 +}
 +
 +/**
 + * @brief CL_VoipCgameState answers the cgame's voice call (trap_TcpVoice).
-+ * @param[out] out out[0..1] speaking now (slots 0-31, 32-63), out[2] sending, out[3] microphone level 0..100,
-+ *                 out[4] 1 voice available, 0 server without voice, -1 no microphone, out[5] cl_voip, out[6] open microphone
++ * @param[out] out out[0..1] speaking on the radio now (slots 0-31, 32-63), out[2] sending, out[3] microphone level 0..100,
++ *                 out[4] 1 voice available, 0 server without voice, -1 no microphone, out[5] cl_voip, out[6] open microphone,
++ *                 out[7..8] speaking out loud (local voice) now, out[9] own transmission is local voice
 + * @param[in] ignore ignore[0..1] players this client has muted
 + */
 +void CL_VoipCgameState(int *out, const int *ignore)
@@ -1151,15 +1296,16 @@ index 0000000..5657aa8
 +	{
 +		return;
 +	}
-+	Com_Memset(out, 0, sizeof(int) * 7);
++	Com_Memset(out, 0, sizeof(int) * 10);
 +	for (i = 0; i < MAX_CLIENTS; i++)
 +	{
 +		if (voipSpeakers[i].decoder && voipSpeakers[i].lastAt && cls.realtime - voipSpeakers[i].lastAt < 250
 +		    && !(voipIgnore[i >> 5] & (1u << (i & 31))))
 +		{
-+			out[i >> 5] |= (int)(1u << (i & 31));
++			out[(voipSpeakers[i].local ? 7 : 0) + (i >> 5)] |= (int)(1u << (i & 31));
 +		}
 +	}
++	out[9] = voipSending && voipSendLocal;
 +	out[2] = voipSending && cls.realtime - voipLastSentAt < 200;
 +	out[3] = voipSending ? voipLevel : 0;
 +	out[4] = !CL_VoipServerHasVoice() ? 0 : voipMicFailed ? -1 : 1;
@@ -1179,6 +1325,17 @@ index 0000000..5657aa8
 +{
 +	voipKeyDown   = qfalse;
 +	voipReleaseAt = cls.realtime;
++}
++
++static void CL_VoipLocalDown_f(void)
++{
++	voipLocalKeyDown = qtrue;
++}
++
++static void CL_VoipLocalUp_f(void)
++{
++	voipLocalKeyDown = qfalse;
++	voipReleaseAt    = cls.realtime;
 +}
 +
 +/**
@@ -1216,8 +1373,9 @@ index 0000000..5657aa8
 +	voipOutFrames = 0;
 +	for (i = 0; i < MAX_CLIENTS; i++)
 +	{
-+		voipSpeakers[i].gen    = -1;
-+		voipSpeakers[i].lastAt = 0;
++		voipSpeakers[i].gen       = -1;
++		voipSpeakers[i].lastAt    = 0;
++		voipSpeakers[i].radioOpen = qfalse;
 +	}
 +	voipIgnore[0] = voipIgnore[1] = 0;
 +}
@@ -1234,11 +1392,14 @@ index 0000000..5657aa8
 +	cl_voipVADThreshold  = Cvar_Get("cl_voipVADThreshold", "0.08", CVAR_ARCHIVE);
 +	cl_voipCaptureDevice = Cvar_Get("cl_voipCaptureDevice", "", CVAR_ARCHIVE);
 +	Cvar_Get("cl_voipMuteEnemies", "0", CVAR_ARCHIVE | CVAR_USERINFO); // read by the server from the userinfo
++	cl_voipRadio         = Cvar_Get("cl_voipRadio", "1", CVAR_ARCHIVE);
 +	cl_voipTestTone      = Cvar_Get("cl_voipTestTone", "0", CVAR_TEMP);
 +	cl_voipDebug         = Cvar_Get("cl_voipDebug", "0", CVAR_TEMP);
 +	cl_voipCaptureDevice->modified = qfalse;
 +	Cmd_AddCommand("+voip", CL_VoipDown_f, "Push to talk (voice chat).");
 +	Cmd_AddCommand("-voip", CL_VoipUp_f, "Push to talk (voice chat).");
++	Cmd_AddCommand("+voiplocal", CL_VoipLocalDown_f, "Talk out loud: everyone nearby hears you, enemies too.");
++	Cmd_AddCommand("-voiplocal", CL_VoipLocalUp_f, "Talk out loud: everyone nearby hears you, enemies too.");
 +	Cmd_AddCommand("voip_devices", CL_VoipDevices_f, "Lists the microphones voice chat can use.");
 +	CL_VoipReset();
 +}
@@ -1267,6 +1428,8 @@ index 0000000..5657aa8
 +	}
 +	Cmd_RemoveCommand("+voip");
 +	Cmd_RemoveCommand("-voip");
++	Cmd_RemoveCommand("+voiplocal");
++	Cmd_RemoveCommand("-voiplocal");
 +	Cmd_RemoveCommand("voip_devices");
 +}
 +
@@ -1293,21 +1456,27 @@ index 0000000..5657aa8
 +	(void)ignore;
 +	if (out)
 +	{
-+		Com_Memset(out, 0, sizeof(int) * 7);
++		Com_Memset(out, 0, sizeof(int) * 10);
 +	}
 +}
 +void CL_ParseVoip(msg_t *msg)
 +{
-+	int frames, i;
++	int frames, i, local;
 +
 +	// never asked for (no cl_voip in the userinfo), but read it properly anyway
 +	MSG_ReadByte(msg);
-+	MSG_ReadByte(msg);
++	local = MSG_ReadByte(msg) & TCP_VOIP_LOCAL;
 +	MSG_ReadShort(msg);
 +	frames = MSG_ReadByte(msg);
 +	if (frames < 1 || frames > TCP_VOIP_MAX_FRAMES)
 +	{
 +		Com_Error(ERR_DROP, "CL_ParseVoip: bad voice message");
++	}
++	if (local)
++	{
++		MSG_ReadShort(msg);
++		MSG_ReadShort(msg);
++		MSG_ReadShort(msg);
 +	}
 +	for (i = 0; i < frames; i++)
 +	{
@@ -1320,6 +1489,175 @@ index 0000000..5657aa8
 +		}
 +		MSG_ReadData(msg, skip, len);
 +	}
++}
++
++#endif
+diff --git a/reference/etlegacy/src/client/cl_voip_radio.h b/reference/etlegacy/src/client/cl_voip_radio.h
+new file mode 100644
+index 0000000..36c819e
+--- /dev/null
++++ b/reference/etlegacy/src/client/cl_voip_radio.h
+@@ -0,0 +1,163 @@
++/*
++ * TrueCombat: Platinum - the radio sound of team voice chat (cl_voip.c).
++ *
++ * A field radio: band-pass 350 Hz .. 3.2 kHz (two high-pass and two low-pass biquads), a
++ * presence bump at 1.8 kHz, soft clipping for a little grit and a faint hiss while the channel is
++ * open. A short click opens each transmission, and a burst of squelch closes it.
++ * Plain C, no engine dependencies, 48 kHz mono 16-bit.
++ */
++#ifndef INCLUDE_CL_VOIP_RADIO_H
++#define INCLUDE_CL_VOIP_RADIO_H
++
++#include <math.h>
++#include <string.h>
++
++#ifndef M_PI
++#define M_PI 3.14159265358979323846
++#endif
++
++typedef struct
++{
++	float b0, b1, b2, a1, a2;
++} voipBiquad_t;
++
++typedef struct
++{
++	float x1, x2, y1, y2;
++} voipBiquadState_t;
++
++typedef struct
++{
++	voipBiquadState_t s[5];
++	unsigned int noise;     ///< hiss generator state
++} voipRadio_t;
++
++static voipBiquad_t voipRadioFilters[5];
++static int          voipRadioReady;
++
++/* RBJ cookbook biquads at 48 kHz */
++static void voipBiquadPass(voipBiquad_t *f, int high, double freq, double q)
++{
++	const double w = 2.0 * M_PI * freq / 48000.0, c = cos(w), alpha = sin(w) / (2.0 * q), a0 = 1.0 + alpha;
++
++	if (high)
++	{
++		f->b0 = (float)((1.0 + c) / 2.0 / a0);
++		f->b1 = (float)(-(1.0 + c) / a0);
++	}
++	else
++	{
++		f->b0 = (float)((1.0 - c) / 2.0 / a0);
++		f->b1 = (float)((1.0 - c) / a0);
++	}
++	f->b2 = f->b0;
++	f->a1 = (float)(-2.0 * c / a0);
++	f->a2 = (float)((1.0 - alpha) / a0);
++}
++
++static void voipBiquadPeak(voipBiquad_t *f, double freq, double q, double gainDb)
++{
++	const double A = pow(10.0, gainDb / 40.0), w = 2.0 * M_PI * freq / 48000.0, c = cos(w), alpha = sin(w) / (2.0 * q);
++	const double a0 = 1.0 + alpha / A;
++
++	f->b0 = (float)((1.0 + alpha * A) / a0);
++	f->b1 = (float)(-2.0 * c / a0);
++	f->b2 = (float)((1.0 - alpha * A) / a0);
++	f->a1 = (float)(-2.0 * c / a0);
++	f->a2 = (float)((1.0 - alpha / A) / a0);
++}
++
++static void voipRadioInitFilters(void)
++{
++	voipBiquadPass(&voipRadioFilters[0], 1, 350.0, 0.707);
++	voipBiquadPass(&voipRadioFilters[1], 1, 350.0, 0.707);
++	voipBiquadPass(&voipRadioFilters[2], 0, 3200.0, 0.707);
++	voipBiquadPass(&voipRadioFilters[3], 0, 3200.0, 0.707);
++	voipBiquadPeak(&voipRadioFilters[4], 1800.0, 1.0, 5.0);
++	voipRadioReady = 1;
++}
++
++static float voipBiquadRun(const voipBiquad_t *f, voipBiquadState_t *s, float x)
++{
++	const float y = f->b0 * x + f->b1 * s->x1 + f->b2 * s->x2 - f->a1 * s->y1 - f->a2 * s->y2;
++
++	s->x2 = s->x1;
++	s->x1 = x;
++	s->y2 = s->y1;
++	s->y1 = y;
++	return y;
++}
++
++static float voipRadioHiss(voipRadio_t *r)
++{
++	r->noise = r->noise * 1664525u + 1013904223u;
++	return (float)((int)(r->noise >> 9) - (1 << 22)) / (float)(1 << 22);  // -1 .. 1
++}
++
++static void voipRadioReset(voipRadio_t *r)
++{
++	memset(r->s, 0, sizeof(r->s));
++	if (!r->noise)
++	{
++		r->noise = 0x9e3779b9u;
++	}
++}
++
++/**
++ * @brief voipRadioProcess filters speech in place.
++ * @param hiss level of the open-channel hiss, 0 .. 1 (0.006 is a faint hiss)
++ */
++static void voipRadioProcess(voipRadio_t *r, short *pcm, int samples, float hiss)
++{
++	const float drive = 2.2f, norm = 1.f / (float)tanh(2.2), pre = 0.5f;  // small signals pass at about unity gain
++	int         i, k;
++
++	if (!voipRadioReady)
++	{
++		voipRadioInitFilters();
++	}
++	for (i = 0; i < samples; i++)
++	{
++		float x = pcm[i] / 32768.f;
++
++		x += hiss * voipRadioHiss(r);
++		for (k = 0; k < 5; k++)
++		{
++			x = voipBiquadRun(&voipRadioFilters[k], &r->s[k], x);
++		}
++		x = (float)tanh(x * pre * drive) * norm * 0.9f;
++		pcm[i] = (short)(x > 1.f ? 32767 : x < -1.f ? -32768 : x * 32767.f);
++	}
++}
++
++/**
++ * @brief voipRadioClick writes the opening click (start != 0, 30 ms) or the closing squelch (start == 0, 90 ms).
++ * @return number of samples written (out must hold 4320)
++ */
++static int voipRadioClick(voipRadio_t *r, short *out, int start)
++{
++	const int samples = start ? 1440 : 4320;
++	int       i;
++
++	for (i = 0; i < samples; i++)
++	{
++		const float t = i / 48000.f;
++		float       v;
++
++		if (start)
++		{
++			// a key-up click: a sharp transient and a short 1.2 kHz chirp
++			v = (i < 48 ? 0.9f * (1.f - i / 48.f) : 0.f) + 0.35f * (float)sin(2.0 * M_PI * 1200.0 * t) * expf(-t * 120.f);
++		}
++		else
++		{
++			// squelch tail: a burst of noise that dies away
++			v = 0.45f * voipRadioHiss(r) * expf(-t * 35.f);
++		}
++		out[i] = (short)(v * 16000.f);
++	}
++	voipRadioProcess(r, out, samples, 0.f);
++	return samples;
 +}
 +
 +#endif
@@ -1383,16 +1721,19 @@ index c12fade..b26e16b 100644
  /*
 diff --git a/reference/etlegacy/src/qcommon/tcp_voip.h b/reference/etlegacy/src/qcommon/tcp_voip.h
 new file mode 100644
-index 0000000..3249ead
+index 0000000..c6c9160
 --- /dev/null
 +++ b/reference/etlegacy/src/qcommon/tcp_voip.h
-@@ -0,0 +1,36 @@
+@@ -0,0 +1,43 @@
 +/*
 + * TrueCombat: Platinum - native voice chat, wire format shared by client and server.
 + *
 + * Voice travels inside the normal game packets, so it needs no extra port.
 + *   client -> server  clc_voipOpus: byte gen, short seq, byte frames, frames x {short len, len bytes}
-+ *   server -> client  svc_voipOpus: byte sender, byte gen, short seq, byte frames, frames x {short len, len bytes}
++ *   server -> client  svc_voipOpus: byte sender, byte gen, short seq, byte frames,
++ *                     [local only: 3 x short speaker origin], frames x {short len, len bytes}
++ * Bit 7 of gen (TCP_VOIP_LOCAL) marks local voice: spoken out loud, heard in 3D by everyone
++ * nearby (enemies too). Without it the message is team radio.
 + * Every frame is 20 ms of 48 kHz mono Opus. "gen" changes with every new transmission, so the
 + * receiver resets its decoder; "seq" is the number of the first frame and lets the receiver
 + * conceal lost frames.
@@ -1401,8 +1742,9 @@ index 0000000..3249ead
 + * server only sends voice to a client whose userinfo has cl_voip 1. Older builds never see the
 + * new message types, so the network protocol stays 84.
 + *
-+ * Who hears whom is decided by the game module (trap_TcpVoiceMatrix): team voice, dead players
-+ * only to dead teammates, spectators to spectators, everyone in warmup.
++ * Who hears whom is decided by the game module (trap_TcpVoiceMatrix): for radio, team voice, dead
++ * players only to dead teammates, spectators to spectators, everyone in warmup; for local voice,
++ * living speakers to everyone within range.
 + */
 +#ifndef INCLUDE_TCP_VOIP_H
 +#define INCLUDE_TCP_VOIP_H
@@ -1413,18 +1755,21 @@ index 0000000..3249ead
 +#define TCP_VOIP_MAX_BYTES     256      ///< one Opus frame (24 kbps is about 60 bytes)
 +#define TCP_VOIP_QUEUE         32       ///< messages waiting for one receiver
 +#define TCP_VOIP_STREAM_BASE   64       ///< raw sound stream of slot 0 (64 + slot, below MAX_RAW_STREAMS 128)
++#define TCP_VOIP_LOCAL         0x80     ///< gen bit: local (proximity) voice
++#define TCP_VOIP_GEN_MASK      0x7f
 +
 +typedef struct
 +{
 +	unsigned char sender, gen, frames;
 +	unsigned short seq;
++	short origin[3];                    ///< local voice: where the speaker stands
 +	unsigned short len[TCP_VOIP_MAX_FRAMES];
 +	unsigned char data[TCP_VOIP_MAX_FRAMES][TCP_VOIP_MAX_BYTES];
 +} tcpVoipPacket_t;
 +
 +#endif
 diff --git a/reference/etlegacy/src/server/server.h b/reference/etlegacy/src/server/server.h
-index e456b31..f39d58d 100644
+index e456b31..ea19281 100644
 --- a/reference/etlegacy/src/server/server.h
 +++ b/reference/etlegacy/src/server/server.h
 @@ -510,6 +510,16 @@ void SV_UpdateUserinfo_f(client_t *cl);
@@ -1435,7 +1780,7 @@ index e456b31..f39d58d 100644
 +// sv_voip.c (TrueCombat voice relay)
 +void SV_VoipInit(void);
 +void SV_VoipGameStart(void);
-+void SV_VoipSetMatrix(const int *masks, int count);
++void SV_VoipSetMatrix(const int *masks, int count, const int *local);
 +void SV_VoipFrame(void);
 +void SV_VoipUserinfo(client_t *cl);
 +void SV_VoipDrop(client_t *cl);
@@ -1480,7 +1825,7 @@ index e7c7ceb..52a8389 100644
  		{
  			break;
 diff --git a/reference/etlegacy/src/server/sv_game.c b/reference/etlegacy/src/server/sv_game.c
-index 2dfd8b1..63ef634 100644
+index 2dfd8b1..995e3ac 100644
 --- a/reference/etlegacy/src/server/sv_game.c
 +++ b/reference/etlegacy/src/server/sv_game.c
 @@ -52,6 +52,7 @@ static ext_trap_keys_t g_extensionTraps[] =
@@ -1491,18 +1836,19 @@ index 2dfd8b1..63ef634 100644
  	{ NULL,                                -1,                       qfalse }
  };
  
-@@ -723,6 +724,10 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
+@@ -723,6 +724,11 @@ intptr_t SV_GameSystemCalls(intptr_t *args)
  	case G_CVAR_SET_DESCRIPTION:
  		return Cvar_SetDescriptionByName(VMA(1), VMA(2));
  
 +	case G_TCP_VOICEMATRIX:
-+		// args[1] two ints per client (hears senders 0-31, 32-63), args[2] client count
-+		SV_VoipSetMatrix(VMA(1), args[2]);
++		// args[1] two ints per client (hears senders 0-31, 32-63) on the radio, args[2] client count,
++		// args[3] the same for local voice (or NULL)
++		SV_VoipSetMatrix(VMA(1), args[2], VMA(3));
 +		return 1;
  	case G_TCP_NETSTATS:
  	{
  		// out[0] packets received, out[1] packets lost on the way in, out[2] ping, out[3] snapshot interval (ms)
-@@ -779,6 +784,9 @@ static void SV_InitGameVM(qboolean restart)
+@@ -779,6 +785,9 @@ static void SV_InitGameVM(qboolean restart)
  	// start the entity parsing at the beginning
  	sv.entityParsePoint = CM_EntityString();
  
@@ -1554,10 +1900,10 @@ index 1f5255c..9711d26 100644
  		return;
 diff --git a/reference/etlegacy/src/server/sv_voip.c b/reference/etlegacy/src/server/sv_voip.c
 new file mode 100644
-index 0000000..cc0310a
+index 0000000..705e787
 --- /dev/null
 +++ b/reference/etlegacy/src/server/sv_voip.c
-@@ -0,0 +1,301 @@
+@@ -0,0 +1,326 @@
 +/*
 + * TrueCombat: Platinum - native voice chat, server relay.
 + *
@@ -1579,8 +1925,10 @@ index 0000000..cc0310a
 +static cvar_t *sv_voice;
 +static cvar_t *sv_voipMaxFrames;
 +
-+/// svVoipHear[r] bit s: client r hears client s. Set by the game module every frame.
++/// svVoipHear[r] bit s: client r hears client s on the radio; svVoipLocal the same for local voice.
++/// Set by the game module every frame.
 +static unsigned int svVoipHear[MAX_CLIENTS][2];
++static unsigned int svVoipLocal[MAX_CLIENTS][2];
 +static qboolean     svVoipGameReady;
 +
 +static qboolean        svVoipRecv[MAX_CLIENTS];          ///< userinfo cl_voip 1
@@ -1623,6 +1971,7 @@ index 0000000..cc0310a
 +
 +	svVoipGameReady = qfalse;
 +	Com_Memset(svVoipHear, 0, sizeof(svVoipHear));
++	Com_Memset(svVoipLocal, 0, sizeof(svVoipLocal));
 +	for (i = 0; i < MAX_CLIENTS; i++)
 +	{
 +		svVoipHead[i] = svVoipCount[i] = 0;
@@ -1632,10 +1981,11 @@ index 0000000..cc0310a
 +
 +/**
 + * @brief SV_VoipSetMatrix stores who hears whom (trap_TcpVoiceMatrix).
-+ * @param[in] masks two ints per receiving client: senders 0-31, senders 32-63
++ * @param[in] masks two ints per receiving client: senders 0-31, senders 32-63 (radio)
 + * @param[in] count number of receiving clients in masks
++ * @param[in] local the same for local voice, or NULL (no local voice)
 + */
-+void SV_VoipSetMatrix(const int *masks, int count)
++void SV_VoipSetMatrix(const int *masks, int count, const int *local)
 +{
 +	int i;
 +
@@ -1648,10 +1998,16 @@ index 0000000..cc0310a
 +		count = MAX_CLIENTS;
 +	}
 +	Com_Memset(svVoipHear, 0, sizeof(svVoipHear));
++	Com_Memset(svVoipLocal, 0, sizeof(svVoipLocal));
 +	for (i = 0; i < count; i++)
 +	{
 +		svVoipHear[i][0] = (unsigned int)masks[i * 2];
 +		svVoipHear[i][1] = (unsigned int)masks[i * 2 + 1];
++		if (local)
++		{
++			svVoipLocal[i][0] = (unsigned int)local[i * 2];
++			svVoipLocal[i][1] = (unsigned int)local[i * 2 + 1];
++		}
 +	}
 +	svVoipGameReady = qtrue;
 +	SV_VoipUpdateAvailable();
@@ -1774,6 +2130,15 @@ index 0000000..cc0310a
 +	}
 +	packet.frames = (unsigned char)frames;
 +	packet.sender = (unsigned char)sender;
++	if ((packet.gen & TCP_VOIP_LOCAL) && cl->gentity)
++	{
++		for (i = 0; i < 3; i++)
++		{
++			const float v = cl->gentity->r.currentOrigin[i];
++
++			packet.origin[i] = (short)(v > 32767.f ? 32767 : v < -32768.f ? -32768 : v);
++		}
++	}
 +
 +	if (!sv_voip->integer || !svVoipGameReady || cl->state != CS_ACTIVE || sender < 0 || sender >= MAX_CLIENTS)
 +	{
@@ -1805,7 +2170,7 @@ index 0000000..cc0310a
 +		{
 +			continue;
 +		}
-+		if (!(svVoipHear[r][sender >> 5] & (1u << (sender & 31))))
++		if (!(((packet.gen & TCP_VOIP_LOCAL) ? svVoipLocal : svVoipHear)[r][sender >> 5] & (1u << (sender & 31))))
 +		{
 +			continue;
 +		}
@@ -1835,7 +2200,7 @@ index 0000000..cc0310a
 +	while (svVoipCount[n])
 +	{
 +		const tcpVoipPacket_t *p   = &svVoipQueue[n][svVoipHead[n]];
-+		int                   size = 6, i;
++		int                   size = (p->gen & TCP_VOIP_LOCAL) ? 12 : 6, i;
 +
 +		for (i = 0; i < p->frames; i++)
 +		{
@@ -1850,6 +2215,12 @@ index 0000000..cc0310a
 +		MSG_WriteByte(msg, p->gen);
 +		MSG_WriteShort(msg, p->seq);
 +		MSG_WriteByte(msg, p->frames);
++		if (p->gen & TCP_VOIP_LOCAL)
++		{
++			MSG_WriteShort(msg, p->origin[0]);
++			MSG_WriteShort(msg, p->origin[1]);
++			MSG_WriteShort(msg, p->origin[2]);
++		}
 +		for (i = 0; i < p->frames; i++)
 +		{
 +			MSG_WriteShort(msg, p->len[i]);
