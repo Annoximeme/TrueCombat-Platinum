@@ -138,20 +138,63 @@ index 9711d26..d0fec4b 100644
  	if (client->netchan.remoteAddress.type == NA_IP6)
  	{
 diff --git a/reference/etlegacy/src/sys/sys_win32.c b/reference/etlegacy/src/sys/sys_win32.c
-index 982007c..5f0de90 100644
+index 982007c..e912a42 100644
 --- a/reference/etlegacy/src/sys/sys_win32.c
 +++ b/reference/etlegacy/src/sys/sys_win32.c
-@@ -1160,6 +1160,9 @@ void Sys_PlatformInit(void)
+@@ -1129,6 +1129,41 @@ WinVars_t g_wv;
+ /**
+  * @brief Windows specific initialization
+  */
++#ifdef DEDICATED
++/**
++ * @brief TCP: keep the 1 ms timer when the server window is hidden or minimized.
++ * Windows 11 otherwise ignores timeBeginPeriod for such processes. Looked up at run time,
++ * so older Windows versions simply skip it.
++ */
++static void Sys_KeepTimerResolution(void)
++{
++	typedef struct
++	{
++		ULONG Version;
++		ULONG ControlMask;
++		ULONG StateMask;
++	} tcpPowerThrottling_t;
++	typedef BOOL (WINAPI *setProcInfo_t)(HANDLE, int, LPVOID, DWORD);
++	setProcInfo_t        setProcInfo;
++	tcpPowerThrottling_t state;
++	HMODULE              kernel = GetModuleHandleA("kernel32.dll");
++
++	if (!kernel)
++	{
++		return;
++	}
++	setProcInfo = (setProcInfo_t)(void *)GetProcAddress(kernel, "SetProcessInformation");
++	if (!setProcInfo)
++	{
++		return;
++	}
++	state.Version     = 1;      // PROCESS_POWER_THROTTLING_CURRENT_VERSION
++	state.ControlMask = 0x5;    // EXECUTION_SPEED | IGNORE_TIMER_RESOLUTION
++	state.StateMask   = 0;      // opt out of both
++	setProcInfo(GetCurrentProcess(), 4 /* ProcessPowerThrottling */, &state, sizeof(state));
++}
++#endif
++
+ void Sys_PlatformInit(void)
+ {
+ 	g_wv.hInstance = GetModuleHandle(NULL);
+@@ -1160,6 +1195,10 @@ void Sys_PlatformInit(void)
  
  #ifdef DEDICATED
  	Sys_ShowConsoleWindow(1, qtrue);
 +	// TCP: 1 ms timer resolution, otherwise Windows sleeps the server loop in 15.6 ms steps
 +	// and sv_fps 128 cannot hold its 7/8 ms frames
++	Sys_KeepTimerResolution();
 +	timeBeginPeriod(1);
  #endif
  
  	// no abort/retry/fail errors
-@@ -1170,6 +1173,9 @@ NORETURN_MSVC void _attribute((noreturn)) Sys_PlatformExit(int code)
+@@ -1170,6 +1209,9 @@ NORETURN_MSVC void _attribute((noreturn)) Sys_PlatformExit(int code)
  {
  #if defined(LEGACY_DUMP_MEMLEAKS)
  	_CrtDumpMemoryLeaks();
