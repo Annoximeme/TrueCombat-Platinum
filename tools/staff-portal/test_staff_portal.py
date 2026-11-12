@@ -405,7 +405,7 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(self.call("owner", "POST", "/api/staff", {"discord_id": "200000000000000002", "role": "admin"})[0], 200)
         self.assertEqual(self.call("owner", "POST", "/api/staff", {"discord_id": "100000000000000001", "role": "revoked"})[0], 403)
         self.assertEqual(tsp.resolve_role(self.portal, "200000000000000002", []), "admin")
-        self.assertEqual(tsp.resolve_role(self.portal, "300000000000000003", []), None)
+        self.assertEqual(tsp.resolve_role(self.portal, "700000000000000073", []), None)
 
     def test_14_audit(self):
         self.assertEqual(self.call("moderator", "GET", "/api/audit")[0], 403)
@@ -554,7 +554,10 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(rep["data"]["contact"], "viper#0")
         body = {"id": rep["data"]["appeal_id"], "decision": "accept", "answer": "Demo checked, you are clean."}
         self.assertEqual(self.call("moderator", "POST", "/api/appeals/answer", body)[0], 403)
-        self.assertEqual(self.call("admin", "POST", "/api/appeals/answer", body)[0], 200)
+        st, r = self.call("admin", "POST", "/api/appeals/answer", body)      # the admin made this ban: someone else answers
+        self.assertEqual(st, 403, r)
+        self.assertIn("You made this ban", r["error"])
+        self.assertEqual(self.call("owner", "POST", "/api/appeals/answer", body)[0], 200)
         st, r = public("GET", "/appeal/status?code=" + code)
         self.assertEqual((r["appeal"]["status"], r["ban"]["active"]), ("accepted", False))
         self.assertEqual(r["appeal"]["answer"], "Demo checked, you are clean.")
@@ -607,13 +610,14 @@ class PortalTest(unittest.TestCase):
 
     def test_23_live_map(self):
         self.viper_back()
-        st, d = self.call("moderator", "GET", "/api/positions?server=one")
+        self.assertEqual(self.call("moderator", "GET", "/api/positions?server=one")[0], 403)
+        st, d = self.call("admin", "GET", "/api/positions?server=one")
         self.assertEqual(st, 200, d)
         self.assertEqual(d["layout"]["image"], "/static/maps/layout-village.webp")
         viper = [p for p in d["players"] if p["slot"] == 0][0]
         self.assertTrue(0 <= viper["u"] <= 1 and 0 <= viper["v"] <= 1, viper)
-        self.call("moderator", "GET", "/api/positions?server=one")
-        n = self.portal.store.one("SELECT COUNT(*) n FROM audit WHERE action='live map' AND staff='Moderator'")["n"]
+        self.call("admin", "GET", "/api/positions?server=one")
+        n = self.portal.store.one("SELECT COUNT(*) n FROM audit WHERE action='live map' AND staff='Admin'")["n"]
         self.assertEqual(n, 1)                                              # once per session and server
         st, d = self.call("moderator", "GET", "/api/servers")
         self.assertNotIn("x", d["servers"][0]["players"][0])               # positions never reach the normal view
@@ -683,6 +687,59 @@ class PortalTest(unittest.TestCase):
         st, raw = self.call("moderator", "GET", "/api/demo/file?report=%d" % rid)
         self.assertEqual(raw, b"demo" * 100)
 
+
+    def test_26_audit_fixes(self):
+        # owner rights come from the config only, never from a leftover staff row
+        self.portal.store.x("INSERT INTO staff(discord_id,name,role,note,added_by,created) VALUES('710000000000000072','Old','owner','','x',0)")
+        self.assertIsNone(tsp.resolve_role(self.portal, "710000000000000072", []))
+        self.assertEqual(tsp.resolve_role(self.portal, "100000000000000001", []), "owner")
+        # an admin cannot revoke another admin, also when that admin's rights come from a Discord role
+        self.portal.store.x("INSERT INTO sessions(id,discord_id,name,avatar,role,csrf,created,seen,checked,token,ip) "
+                            "VALUES('x1','700000000000000073','Disco','','admin','c',?,?,?,'dev','')", (int(time.time()),) * 3)
+        st, r = self.call("admin", "POST", "/api/staff", {"discord_id": "700000000000000073", "role": "revoked"})
+        self.assertEqual(st, 403, r)
+        # a staff member who plays on a server cannot open its live map (Discord account linked to Viper, who is on "one")
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=admin&name=Player&id=184000000000000001")
+        cookie = c.getresponse().getheader("Set-Cookie").split(";")[0]
+        c.close()
+        self.viper_back()
+        st, r = self.call(None, "GET", "/api/positions?server=one", cookie=cookie)
+        self.assertEqual(st, 403, r)
+        self.assertIn("playing on this server", r["error"])
+        # scheduled jobs of revoked staff stop
+        self.portal.store.x("INSERT INTO staff(discord_id,name,role,note,added_by,created) VALUES('700000000000000074','Gone','revoked','','x',0)")
+        jid = self.portal.store.x("INSERT INTO schedule(server,action,arg,next_at,every_min,until,created,by_name,by_id) "
+                                  "VALUES('one','say','hello',?,0,0,?,'Gone','700000000000000074')", (int(time.time()) - 5, int(time.time())))
+        before = len(self.game.commands)
+        self.portal.run_schedule()
+        job = self.portal.store.one("SELECT * FROM schedule WHERE id=?", (jid,))
+        self.assertEqual(job["active"], 0)
+        self.assertIn("no longer has staff access", job["last_result"])
+        self.assertFalse(any("hello" in c for c in self.game.commands[before:]))
+        # event mode stays on when the server does not take the old values back
+        who = {"discord_id": "1", "name": "Admin", "role": "admin"}
+        srv = self.portal.server("one")
+        self.portal.event_start(who, srv)
+        real = srv.set_cvar
+
+        def down(name, value):
+            raise tsp.RconError("no answer")
+        srv.set_cvar = down
+        with self.assertRaises(tsp.ApiError):
+            self.portal.event_stop(who, srv)
+        self.assertTrue(self.portal.store.one("SELECT server FROM events WHERE server='one'"))
+        srv.set_cvar = real
+        self.assertTrue(self.portal.event_stop(who, srv)["ok"])
+        self.assertEqual(self.game.cvars["g_password"], "")
+        # filters that could stall the chat feed are refused
+        st, r = self.call("admin", "POST", "/api/filters", {"pattern": "(a+)+", "kind": "regex", "action": "flag"})
+        self.assertEqual(st, 400, r)
+        self.assertIn("Simplify", r["error"])
+        # bug report senders are tagged with a keyed hash, not a plain hash of the address
+        tag = self.portal.ip_tag("127.0.0.1")
+        self.assertNotEqual(tag, __import__("hashlib").sha256(b"127.0.0.1").hexdigest()[:12])
+        self.assertEqual(tag, self.portal.ip_tag("127.0.0.1"))
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
