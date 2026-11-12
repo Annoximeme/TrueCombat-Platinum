@@ -169,6 +169,22 @@ loose = tcp_stats.StatsStore(":memory:", min_matches=1)
 st, _ = loose.ingest(dict(report(1), schema="tcp-match/1"), "local")
 check("development store accepts tcp-match/1", st == "stored")
 
+# staff portal routes: loopback, no proxy header, and the token; everything else looks like 404
+SH = {"X-Staff-Token": "s3cret"}
+code, r = tcp_stats.handle_staff(store, "GET", "/staff/review.json", SH, "127.0.0.1", b"", "s3cret")
+check("staff route: code == 200 and isinstance(r['review'], list)", code == 200 and isinstance(r["review"], list))
+check("staff route: tcp_stats.handle_staff(store, 'GET', '/staff/review.json', H", tcp_stats.handle_staff(store, "GET", "/staff/review.json", SH, "203.0.113.5", b"", "s3cret")[0] == 404)
+check("staff route: tcp_stats.handle_staff(store, 'GET', '/staff/review.json', d", tcp_stats.handle_staff(store, "GET", "/staff/review.json", dict(SH, **{"X-Forwarded-For": "1.2.3.4"}), "127.0.0.1", b"", "s3cret")[0] == 404)
+check("staff route: tcp_stats.handle_staff(store, 'GET', '/staff/review.json', {", tcp_stats.handle_staff(store, "GET", "/staff/review.json", {"X-Staff-Token": "nope"}, "127.0.0.1", b"", "s3cret")[0] == 404)
+check("staff route: tcp_stats.handle_staff(store, 'GET', '/staff/review.json', H", tcp_stats.handle_staff(store, "GET", "/staff/review.json", SH, "127.0.0.1", b"", "")[0] == 404)
+check("staff route: tcp_stats.handle_staff(store, 'GET', '/leaderboard.json', H,", tcp_stats.handle_staff(store, "GET", "/leaderboard.json", SH, "127.0.0.1", b"", "s3cret") is None)
+code, r = tcp_stats.handle_staff(store, "POST", "/staff/void", SH, "127.0.0.1", json.dumps({"kind": "player", "id": pid["Ana"], "reason": "test"}).encode(), "s3cret")
+check("staff route: code == 200 and r['ok']", code == 200 and r["ok"])
+code, r = tcp_stats.handle_staff(store, "POST", "/staff/unvoid", SH, "127.0.0.1", json.dumps({"kind": "player", "id": pid["Ana"]}).encode(), "s3cret")
+check("staff route: code == 200", code == 200)
+check("staff route: tcp_stats.handle_staff(store, 'POST', '/staff/void', SH, '127", tcp_stats.handle_staff(store, "POST", "/staff/void", SH, "127.0.0.1", b'{"kind":"x","id":"1"}', "s3cret")[0] == 400)
+
 ok = sum(1 for _, c in checks if c)
+
 print("%d/%d checks passed" % (ok, len(checks)))
 sys.exit(0 if ok == len(checks) else 1)

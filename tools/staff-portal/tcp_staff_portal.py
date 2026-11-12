@@ -20,6 +20,7 @@ See README.md for the configuration, roles and deployment.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import hmac
 import ipaddress
@@ -42,7 +43,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
 log = logging.getLogger("tcp-staff")
@@ -73,8 +74,79 @@ PERMS = {
     "staff.manage": "admin",
     "health": "moderator",
     "health.restart": "admin",
+    "punish": "moderator",            # punishment ladder; steps past MOD_BAN_LIMIT need an admin
+    "watch": "moderator",
+    "filters.manage": "admin",
+    "templates.manage": "admin",
+    "appeals.answer": "admin",
+    "schedule": "admin",
+    "event": "admin",
+    "livemap": "moderator",
+    "cvars": "admin",
+    "review": "admin",
+    "weekly": "admin",
+    "2fa.reset": "owner",
 }
 MOD_BAN_LIMIT = 24 * 60
+UNDO_SECONDS = 300
+SYSTEM = {"discord_id": "", "name": "Portal", "role": "system"}
+
+# Default punishment ladder. Each offence climbs one step per earlier punishment for it in the last 90 days.
+# Steps: warn, kick, mute:<length>, ban:<length> (ban:0 is permanent). Override with "ladder" in the config.
+DEFAULT_LADDER = {
+    "teamkill": {"label": "Team killing", "steps": ["warn", "kick", "ban:1d", "ban:7d", "ban:0"]},
+    "toxic": {"label": "Toxic chat", "steps": ["warn", "mute:1h", "mute:1d", "ban:1d", "ban:7d"]},
+    "cheat": {"label": "Cheating", "steps": ["ban:0"]},
+    "grief": {"label": "Griefing or AFK", "steps": ["warn", "kick", "ban:1d", "ban:7d"]},
+    "spam": {"label": "Spam or advertising", "steps": ["warn", "mute:1h", "mute:1d", "ban:1d", "ban:7d"]},
+}
+
+# Saved replies seeded on the first start. Admins edit them in the portal.
+DEFAULT_TEMPLATES = [
+    ("warn", "Team killing", "Watch your fire. Team kills lead to a kick, then a ban."),
+    ("warn", "Language", "Keep the chat clean. The next step is a mute."),
+    ("warn", "Spawn camping", "Stop camping the enemy spawn. Next time it is a kick."),
+    ("kick", "Team killing", "Team killing"),
+    ("kick", "AFK", "Away from keyboard"),
+    ("kick", "Name", "Offensive name. Change it before you rejoin."),
+    ("mute", "Spam", "Chat spam"),
+    ("mute", "Toxic", "Toxic behaviour in chat"),
+    ("ban", "Cheating", "Cheating"),
+    ("ban", "Team killing", "Repeated team killing"),
+    ("ban", "Ban evasion", "Ban evasion"),
+    ("chat", "Behave", "Staff is watching this server. Play fair and keep it friendly."),
+    ("chat", "Restart soon", "The server restarts for an update in 5 minutes."),
+    ("appeal", "Accepted", "We looked at your case again and lifted the ban. Welcome back, play fair."),
+    ("appeal", "Denied", "We checked the evidence again and the ban stays."),
+    ("appeal", "Denied, cheating", "The anti-cheat evidence is clear. Cheating bans are not lifted."),
+    ("close", "Banned", "Watched the demo, player banned."),
+    ("close", "No action", "Checked the demo and the stats. Nothing wrong found."),
+]
+
+# Server settings staff may change from the portal (the config editor). Override with "cvars" in the config.
+CVARS = {
+    "g_friendlyFire": "Friendly fire (0 off, 1 on)",
+    "g_warmup": "Warm-up seconds",
+    "g_antilag": "Lag compensation (0 off, 1 on)",
+    "sv_maxPing": "Highest ping allowed to join",
+    "g_mapvote": "Map vote at the end of a map",
+    "g_allowVote": "Player votes",
+    "g_reports": "In-game /report",
+    "g_fallDamage": "Fall damage",
+    "tcp_roundtime": "Round time (seconds)",
+    "g_roundlimit": "Rounds per map",
+    "sv_mapRotationTime": "Minutes per map",
+    "bot_minplayers": "Fill with bots up to",
+    "g_autoBalance": "Automatic team balance",
+    "g_autoBalanceDelay": "Seconds before auto-balance moves someone",
+    "g_balanceGap": "Player gap that triggers auto-balance",
+    "g_balanceSkill": "Balance teams by rating",
+    "sv_autoDemo": "Record a server demo of every map",
+}
+CVAR_VALUE = re.compile(r"^[A-Za-z0-9 ._-]{0,64}$")
+
+# Event mode: what the server switches to, and back again afterwards. "*random*" makes a fresh password.
+EVENT_PRESET = {"g_password": "*random*", "bot_minplayers": "0", "g_autoBalance": "0", "g_allowVote": "0"}
 
 
 def allowed(role: str | None, perm: str) -> bool:
@@ -145,6 +217,69 @@ def engine_length(minutes: int) -> str:
         if minutes % size == 0:
             return "%d%s" % (minutes // size, unit)
     return "%dm" % minutes
+
+
+def human_length(minutes: int) -> str:
+    if not minutes:
+        return "permanent"
+    for unit, size in (("day", 1440), ("hour", 60)):
+        if minutes % size == 0:
+            n = minutes // size
+            return "%d %s%s" % (n, unit, "" if n == 1 else "s")
+    return "%d minutes" % minutes
+
+
+def parse_step(step: str) -> tuple:
+    """Ladder step 'warn' | 'kick' | 'mute:1h' | 'ban:7d' -> (action, minutes)."""
+    action, _, length = str(step).partition(":")
+    if action not in ("warn", "kick", "mute", "ban"):
+        raise ValueError("Unknown ladder step %r." % step)
+    return action, duration_minutes(length) if action in ("mute", "ban") else 0
+
+
+def step_label(step: str) -> str:
+    action, minutes = parse_step(step)
+    if action in ("warn", "kick"):
+        return action.title()
+    return "%s, %s" % (action.title(), human_length(minutes))
+
+
+APPEAL_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"     # no 0/O or 1/I
+
+
+def appeal_code() -> str:
+    return "".join(secrets.choice(APPEAL_ALPHABET) for _ in range(6))
+
+
+def normalise_chat(text: str) -> str:
+    """Lower case, common letter swaps undone, everything that is not a letter or digit turned into one space."""
+    t = plain(text).lower().translate(str.maketrans("013457@$!|", "oieastasil"))
+    return " " + re.sub(r"[^a-z0-9]+", " ", t).strip() + " "
+
+
+# ----------------------------------------------------------------------------- two-step sign-in (RFC 6238 TOTP)
+
+def totp_secret() -> str:
+    return base64.b32encode(secrets.token_bytes(20)).decode().rstrip("=")
+
+
+def totp_code(secret: str, step: int) -> str:
+    key = base64.b32decode(secret + "=" * (-len(secret) % 8), casefold=True)
+    digest = hmac.new(key, step.to_bytes(8, "big"), hashlib.sha1).digest()
+    off = digest[-1] & 15
+    return "%06d" % ((int.from_bytes(digest[off:off + 4], "big") & 0x7FFFFFFF) % 1000000)
+
+
+def totp_match(secret: str, code: str, last_step: int, t: float | None = None) -> int:
+    """The time step the code belongs to (one step of clock drift either way), or 0. A step is never accepted twice."""
+    code = re.sub(r"\s", "", str(code or ""))
+    if not re.fullmatch(r"\d{6}", code):
+        return 0
+    step = int((time.time() if t is None else t) // 30)
+    for s in (step - 1, step, step + 1):
+        if s > (last_step or 0) and hmac.compare_digest(totp_code(secret, s), code):
+            return s
+    return 0
 
 
 # ----------------------------------------------------------------------------- rcon
@@ -290,6 +425,36 @@ def parse_staff_players(text: str) -> dict:
     return out
 
 
+NATIVE_PLAYER = re.compile(r"^TCP_NATIVE_PLAYER (.*)$")
+
+
+def parse_native_status(text: str) -> dict:
+    """The game's own tcp_status: per slot position, health, shots and hits on this map (0.35.0 and later)."""
+    out = {}
+    for line in text.splitlines():
+        m = NATIVE_PLAYER.match(line.strip())
+        if not m:
+            continue
+        kv = dict(re.findall(r"(\w+)=(\S+)", m.group(1)))
+        try:
+            x, y, z = (float(v) for v in kv.get("xyz", "0,0,0").split(","))
+            out[int(kv["slot"])] = {"x": x, "y": y, "z": z, "hp": int(kv.get("hp", 0)), "shots": int(kv.get("shots", 0)),
+                                    "hits": int(kv.get("hits", 0)), "kills": int(kv.get("kills", 0)),
+                                    "deaths": int(kv.get("deaths", 0)), "team": int(kv.get("team", 0)),
+                                    "begun": kv.get("begun") == "1"}
+        except (KeyError, ValueError):
+            continue
+    return out
+
+
+CVAR_REPLY = re.compile(r'"([A-Za-z0-9_]+)" is:\s*"(.*?)(?:\^7)?"')
+
+
+def parse_cvar(text: str) -> str | None:
+    m = CVAR_REPLY.search(text or "")
+    return m.group(2) if m else None
+
+
 BAN_LINE = re.compile(r"^#(\d+)\s+ip\s+(\S+)\s+guid\s+(\S+)\s+name\s+'(.*?)'\s+added\s+(\S+(?: \S+)?)(.*)$")
 
 
@@ -344,7 +509,41 @@ CREATE TABLE IF NOT EXISTS reports(id INTEGER PRIMARY KEY AUTOINCREMENT, source 
   server TEXT, received INTEGER, data TEXT, target_pid TEXT, target_name TEXT, status TEXT DEFAULT 'open',
   claimed_by TEXT, resolution TEXT, updated INTEGER);
 CREATE INDEX IF NOT EXISTS reports_status ON reports(status);
+CREATE TABLE IF NOT EXISTS punishments(id INTEGER PRIMARY KEY AUTOINCREMENT, pid TEXT, name TEXT, offence TEXT, step TEXT,
+  created INTEGER, by_name TEXT, server TEXT, note TEXT);
+CREATE INDEX IF NOT EXISTS punishments_pid ON punishments(pid, offence);
+CREATE TABLE IF NOT EXISTS filters(id INTEGER PRIMARY KEY AUTOINCREMENT, pattern TEXT, kind TEXT, action TEXT, minutes INTEGER,
+  note TEXT, active INTEGER DEFAULT 1, created INTEGER, by_name TEXT, hits INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS watchlist(pid TEXT PRIMARY KEY, name TEXT, reason TEXT, created INTEGER, by_name TEXT);
+CREATE TABLE IF NOT EXISTS templates(id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT, title TEXT, text TEXT, created INTEGER, by_name TEXT);
+CREATE TABLE IF NOT EXISTS schedule(id INTEGER PRIMARY KEY AUTOINCREMENT, server TEXT, action TEXT, arg TEXT, next_at INTEGER,
+  every_min INTEGER, until INTEGER, created INTEGER, by_name TEXT, by_id TEXT, active INTEGER DEFAULT 1, runs INTEGER DEFAULT 0,
+  last_run INTEGER, last_result TEXT);
+CREATE TABLE IF NOT EXISTS events(server TEXT PRIMARY KEY, started INTEGER, by_name TEXT, saved TEXT, preset TEXT, note TEXT);
+CREATE TABLE IF NOT EXISTS cvar_changes(id INTEGER PRIMARY KEY AUTOINCREMENT, server TEXT, cvar TEXT, old TEXT, new TEXT,
+  at INTEGER, by_name TEXT, kind TEXT, kept INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS cvar_overrides(server TEXT, cvar TEXT, value TEXT, set_at INTEGER, by_name TEXT, PRIMARY KEY(server, cvar));
+CREATE TABLE IF NOT EXISTS totp(discord_id TEXT PRIMARY KEY, secret TEXT, enabled INTEGER DEFAULT 0, created INTEGER, last_step INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS alerts(id INTEGER PRIMARY KEY AUTOINCREMENT, key TEXT, at INTEGER, kind TEXT, title TEXT, text TEXT,
+  pid TEXT, server TEXT, sent INTEGER DEFAULT 0);
+CREATE INDEX IF NOT EXISTS alerts_key ON alerts(key, at);
+CREATE TABLE IF NOT EXISTS flags(id INTEGER PRIMARY KEY AUTOINCREMENT, pid TEXT, name TEXT, server TEXT, kind TEXT, detail TEXT, at INTEGER);
+CREATE INDEX IF NOT EXISTS flags_pid ON flags(pid, at);
+CREATE TABLE IF NOT EXISTS suspicion(pid TEXT PRIMARY KEY, name TEXT, score INTEGER, reasons TEXT, updated INTEGER, peak INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS peaks(day TEXT, server TEXT, peak INTEGER, PRIMARY KEY(day, server));
+CREATE TABLE IF NOT EXISTS appeals(id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT, ban_id INTEGER, pid TEXT, name TEXT, text TEXT,
+  contact TEXT, created INTEGER, status TEXT DEFAULT 'open', answer TEXT, answered_by TEXT, updated INTEGER, from_hash TEXT);
+CREATE INDEX IF NOT EXISTS appeals_code ON appeals(code);
+CREATE TABLE IF NOT EXISTS undo(audit_id INTEGER PRIMARY KEY, kind TEXT, ref INTEGER, by_id TEXT, expires INTEGER, done INTEGER DEFAULT 0);
 """
+
+# Columns added after 1.0.0, applied to an existing database on start.
+MIGRATIONS = [
+    "ALTER TABLE bans ADD COLUMN appeal_code TEXT",
+    "ALTER TABLE sessions ADD COLUMN mfa INTEGER DEFAULT 0",
+    "ALTER TABLE chat ADD COLUMN flag TEXT",
+    "ALTER TABLE mutes ADD COLUMN server TEXT",
+]
 
 
 class Store:
@@ -355,6 +554,11 @@ class Store:
         with self.lock:
             self.db.execute("PRAGMA journal_mode=WAL")
             self.db.executescript(SCHEMA)
+            for sql in MIGRATIONS:
+                try:
+                    self.db.execute(sql)
+                except sqlite3.OperationalError:       # the column is already there
+                    pass
 
     def q(self, sql: str, args=()) -> list:
         with self.lock:
@@ -370,8 +574,8 @@ class Store:
             return cur.lastrowid
 
     def audit(self, who: dict, action: str, server: str = "", target: str = "", pid: str = "",
-              detail: str = "", ok: bool = True, result: str = "") -> None:
-        self.x("INSERT INTO audit(at,discord_id,staff,role,action,server,target,target_pid,detail,ok,result) "
+              detail: str = "", ok: bool = True, result: str = "") -> int:
+        return self.x("INSERT INTO audit(at,discord_id,staff,role,action,server,target,target_pid,detail,ok,result) "
                "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                (now(), who.get("discord_id", ""), who.get("name", "system"), who.get("role", ""), action, server,
                 target, pid, detail[:500], 1 if ok else 0, (result or "")[:500]))
@@ -399,14 +603,23 @@ class GameServer:
         self.info = {}
         self.info_at = 0
         self.error = ""
+        self.positions = {}
+        self.positions_at = 0
 
     # -- rcon
-    def run(self, command: str, timeout: float = 1.5) -> str:
+    def run(self, command: str, timeout: float = 1.5, settle: float = 0.2) -> str:
         with self.cmd_lock:                      # one command at a time per server: replies never mix
-            return rcon(self.host, self.port, read_password(self.cfg), command, timeout=timeout)
+            return rcon(self.host, self.port, read_password(self.cfg), command, timeout=timeout, settle=settle)
 
     def has(self, feature: str) -> bool:
         return bool(self.caps) and feature in self.caps
+
+    def cvar(self, name: str) -> str | None:
+        """A cvar's current value over rcon, or None when the server does not know it."""
+        return parse_cvar(self.run(name, settle=0.06))        # one short packet: no need to wait for more
+
+    def set_cvar(self, name: str, value: str) -> str:
+        return self.run('set %s "%s"' % (name, value), settle=0.06)
 
     # -- polling
     def poll(self) -> None:
@@ -423,6 +636,7 @@ class GameServer:
             status = parse_status(self.run("status"))
             ac = parse_acstatus(self.run("acstatus"))
             staff = parse_staff_players(self.run("tcp_players")) if self.has("players") else {"match": {}, "players": {}}
+            native = parse_native_status(self.run("tcp_status")) if status["players"] else {}
         except (RconError, OSError) as e:
             with self.lock:
                 self.error = str(e)
@@ -442,6 +656,13 @@ class GameServer:
                 "eac": acp.get("eac", ""), "files": acp.get("files", ""), "detections": acp.get("detections", 0),
                 "puid": acp.get("puid", ""), "ip": "" if bot else host_of(p["address"]),
             }
+            live = native.get(slot)
+            if live:
+                row.update({"shots": live["shots"], "hits": live["hits"], "hp": live["hp"]})
+                if row["kills"] is None:
+                    row["kills"], row["deaths"] = live["kills"], live["deaths"]
+                if row["team"] is None:
+                    row["team"] = live["team"]
             if not bot:
                 self._identify(slot, row)
             self.names[slot] = row["name"]
@@ -468,6 +689,10 @@ class GameServer:
         with self.lock:
             self.error = ""
             self.snapshot = snap
+            # positions stay out of the snapshot: only the live map asks for them, and that view is audited
+            self.positions = {slot: dict(v, name=next((p["name"] for p in players if p["slot"] == slot), ""))
+                              for slot, v in native.items()}
+            self.positions_at = t
         self._reapply_mutes(players)
 
     def _identify(self, slot: int, row: dict) -> None:
@@ -522,9 +747,1049 @@ class GameServer:
             return json.loads(json.dumps(self.snapshot))
 
 
+# ----------------------------------------------------------------------------- moderation core
+# Player actions, bans, the punishment ladder and undo. The API, the chat filter, the AFK and team-kill watch
+# and the scheduler all go through these, so every path is checked and audited the same way.
+
+class Moderation:
+    def act(self, who: dict, srv: GameServer, slot: int, p: dict, act: str, reason: str = "", length: str = "",
+            team: str = "") -> tuple:
+        """kick | warn | mute | unmute | move. Returns (server answer, audit id)."""
+        reason = safe_arg(reason, 100)
+        detail, result, mute_id = reason, "", None
+        if act == "kick":
+            if not reason:
+                raise ApiError(400, "Give a reason. The player sees it.")
+            result = srv.run("clientkick %d %s" % (slot, reason))
+        elif act == "warn":
+            if not reason:
+                raise ApiError(400, "Write the warning.")
+            if not srv.has("warn"):
+                raise ApiError(409, "This server needs the 0.36.0 server update for private warnings.")
+            result = srv.run("warn %d %s" % (slot, reason))
+            self.store.x("INSERT INTO warnings(pid,name,text,created,by_name,server) VALUES(?,?,?,?,?,?)",
+                         (p.get("pid", ""), p["name"], reason, now(), who["name"], srv.key))
+        elif act in ("mute", "unmute"):
+            if not srv.has("mute"):
+                raise ApiError(409, "This server needs the 0.36.0 server update for mutes.")
+            if act == "mute":
+                minutes = duration_minutes(length or "30m")
+                detail = "%s, %s" % (engine_length(minutes) or "until lifted", reason)
+                result = srv.run("mute %d %d %s" % (slot, min(minutes, 10080) if minutes else 0, reason))
+                srv.run("voicemute %d" % slot)        # 0.36.0 voice chat; an unknown command on older servers
+                if p.get("pid"):
+                    self.store.x("UPDATE mutes SET active=0 WHERE pid=? AND active=1", (p["pid"],))
+                    mute_id = self.store.x("INSERT INTO mutes(pid,guid,name,reason,created,expires,by_name,server) "
+                                           "VALUES(?,?,?,?,?,?,?,?)",
+                                           (p["pid"], p.get("guid", ""), p["name"], reason, now(),
+                                            now() + minutes * 60 if minutes else 0, who["name"], srv.key))
+            else:
+                result = srv.run("unmute %d" % slot)
+                srv.run("voiceunmute %d" % slot)
+                if p.get("pid"):
+                    self.store.x("UPDATE mutes SET active=0 WHERE pid=? AND active=1", (p["pid"],))
+        elif act == "move":
+            if team not in ("r", "b", "s"):
+                raise ApiError(400, "Pick a team.")
+            detail = {"r": "to Terrorists", "b": "to Specops", "s": "to spectators"}[team] + (", " + reason if reason else "")
+            if srv.has("putteam"):
+                result = srv.run("putteam %d %s" % (slot, team))
+            elif team == "s":
+                result = srv.run("spectate %d" % slot)
+            else:
+                raise ApiError(409, "This server needs the 0.36.0 server update to move players between teams.")
+        else:
+            raise ApiError(400, "Unknown action.")
+        ok = "usage:" not in result.lower() and "refused" not in result.lower()
+        aid = self.store.audit(who, act, server=srv.key, target=p["name"], pid=p.get("pid", ""), detail=detail,
+                               ok=ok, result=plain(result).strip())
+        if not ok:
+            raise ApiError(409, "The server refused: %s" % plain(result).strip()[:200])
+        if mute_id:
+            self.undoable(aid, "mute", mute_id, who)
+        return plain(result).strip(), aid
+
+    # -- bans
+    def ban_text(self, b: dict) -> str:
+        """The reason the banned player sees, with the appeal code when appeals are on."""
+        reason = safe_arg(b.get("reason", ""), 100)
+        code = b.get("appeal_code")
+        if not code:
+            return reason
+        where = re.sub(r"^https?://", "", self.appeal_url())
+        return safe_arg("%s - appeal at %s code %s" % (reason[:48], where, code), 120)
+
+    def appeal_url(self) -> str:
+        return str(self.cfg.get("appeal_url") or self.cfg.get("public_url", "https://staff.truecombat.eu").rstrip("/") + "/appeal")
+
+    def ban_player(self, who: dict, target: dict, minutes: int, reason: str, ip_ban: bool = True,
+                   srv: GameServer | None = None, slot: int | None = None, via: str = "") -> dict:
+        """target: pid, guid, ip, puid, name. Applies the ban on every server; srv/slot also kicks the player now."""
+        reason = safe_arg(reason, 100)
+        if not reason:
+            raise ApiError(400, "Give a reason. The player sees it.")
+        if minutes > MOD_BAN_LIMIT or minutes == 0:
+            if not allowed(who.get("role"), "ban.perm") and who.get("role") != "system":
+                raise ApiError(403, "Moderators can ban for up to 24 hours. Ask an admin for longer bans.")
+        b = {k: target.get(k, "") or "" for k in ("pid", "guid", "ip", "puid", "name")}
+        if not ip_ban:
+            b["ip"] = ""
+        code = appeal_code() if self.cfg.get("appeals", True) else ""
+        b.update({"reason": reason, "expires": now() + minutes * 60 if minutes else 0, "appeal_code": code})
+        bid = self.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_id,by_name,appeal_code) "
+                           "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                           (b["pid"], b["guid"], b["ip"], b["puid"], b["name"], reason, now(), b["expires"],
+                            who.get("discord_id", ""), who["name"], code))
+        results = {}
+        for key in self.order:
+            server = self.servers[key]
+            try:
+                out = self._apply_ban(server, b, slot if server is srv else None)
+                results[key] = plain(" ".join(out)).strip()[:200] or "ok"
+            except RconError as e:
+                results[key] = "offline, applied at the next sync: %s" % e
+        aid = self.store.audit(who, "ban", server=srv.key if srv else "", target=b["name"], pid=b["pid"],
+                               detail="%s, %s%s" % (engine_length(minutes) or "permanent", reason, via), result=json.dumps(results))
+        self.undoable(aid, "ban", bid, who)
+        if who.get("role") == "moderator":
+            self.alert("mod_ban", "Ban by a moderator", "%s banned **%s** for %s: %s" % (
+                who["name"], b["name"], human_length(minutes), reason), pid=b["pid"])
+        self.watch_cache.clear()
+        return {"id": bid, "servers": results, "audit_id": aid, "appeal_code": code}
+
+    def ban_target(self, pid: str) -> dict:
+        """Identity of a player who is not online, from what the portal has seen."""
+        if not PID.match(pid or ""):
+            raise ApiError(400, "Pick a player.")
+        last = self.store.one("SELECT * FROM sightings WHERE pid=? ORDER BY last_seen DESC LIMIT 1", (pid,))
+        if not last:
+            raise ApiError(404, "The portal has never seen this player on a server, so it has nothing to ban.")
+        puid = self.store.one("SELECT puid FROM sightings WHERE pid=? AND puid<>'' ORDER BY last_seen DESC LIMIT 1", (pid,))
+        return {"pid": pid, "guid": last["guid"], "ip": last["ip"], "puid": puid["puid"] if puid else "", "name": last["name"]}
+
+    def lift_ban(self, who: dict, b: dict, reason: str, action: str = "unban") -> dict:
+        res = self._lift_everywhere(b)
+        self.store.x("UPDATE bans SET active=0, lifted=?, lifted_by=?, lift_reason=? WHERE id=?",
+                     (now(), who["name"], safe_arg(reason, 200), b["id"]))
+        self.store.audit(who, action, target=b["name"], pid=b["pid"], detail=safe_arg(reason, 200) or "#%d" % b["id"],
+                         result=json.dumps(res))
+        self.watch_cache.clear()
+        return res
+
+    # -- undo (ban and mute, for UNDO_SECONDS)
+    def undoable(self, audit_id: int, kind: str, ref: int, who: dict) -> None:
+        if who.get("role") in RANK:
+            self.store.x("INSERT OR REPLACE INTO undo(audit_id,kind,ref,by_id,expires) VALUES(?,?,?,?,?)",
+                         (audit_id, kind, ref, who.get("discord_id", ""), now() + UNDO_SECONDS))
+
+    def undo(self, who: dict, audit_id: int) -> str:
+        u = self.store.one("SELECT * FROM undo WHERE audit_id=?", (audit_id,))
+        if not u or u["done"]:
+            raise ApiError(404, "There is nothing to undo for that action.")
+        if u["expires"] < now():
+            raise ApiError(409, "The 5-minute undo window has passed. Lift it the normal way.")
+        if u["by_id"] != who["discord_id"] and not allowed(who["role"], "ban.remove"):
+            raise ApiError(403, "Only the person who did it, or an admin, can undo this.")
+        self.store.x("UPDATE undo SET done=1 WHERE audit_id=?", (audit_id,))
+        if u["kind"] == "ban":
+            b = self.store.one("SELECT * FROM bans WHERE id=?", (u["ref"],))
+            if b and b["active"]:
+                self.lift_ban(who, b, "undone", action="undo ban")
+            return "Ban undone on every server."
+        m = self.store.one("SELECT * FROM mutes WHERE id=?", (u["ref"],))
+        if m:
+            self.store.x("UPDATE mutes SET active=0 WHERE id=?", (m["id"],))
+            for s in self.servers.values():
+                for p in s.view().get("players", []):
+                    if p.get("pid") == m["pid"] and s.has("mute"):
+                        try:
+                            s.run("unmute %d" % p["slot"])
+                            s.run("voiceunmute %d" % p["slot"])
+                        except RconError:
+                            pass
+            self.store.audit(who, "undo mute", target=m["name"], pid=m["pid"], detail="#%d" % m["id"])
+        return "Mute undone."
+
+    # -- punishment ladder
+    def ladder(self) -> dict:
+        return self.cfg.get("ladder") or DEFAULT_LADDER
+
+    def next_step(self, pid: str, offence: str) -> dict:
+        lad = self.ladder().get(offence)
+        if not lad:
+            raise ApiError(400, "Pick an offence.")
+        days = int(self.cfg.get("ladder_days", 90))
+        n = self.store.one("SELECT COUNT(*) n FROM punishments WHERE pid=? AND offence=? AND created>?",
+                           (pid, offence, now() - days * 86400))["n"] if pid else 0
+        i = min(n, len(lad["steps"]) - 1)
+        return {"offence": offence, "label": lad["label"], "index": i, "of": len(lad["steps"]), "earlier": n,
+                "step": lad["steps"][i], "action": step_label(lad["steps"][i]), "days": days,
+                "steps": [step_label(x) for x in lad["steps"]]}
+
+    def punish(self, who: dict, offence: str, note: str = "", srv: GameServer | None = None, slot: int | None = None,
+               p: dict | None = None, pid: str = "") -> dict:
+        pid = (p or {}).get("pid") or pid
+        if not pid:
+            raise ApiError(409, "The portal has not identified this player yet. Use the normal buttons.")
+        nxt = self.next_step(pid, offence)
+        action, minutes = parse_step(nxt["step"])
+        reason = safe_arg(nxt["label"] + (": " + note if note else ""), 100)
+        if action == "ban" and (minutes == 0 or minutes > MOD_BAN_LIMIT) and not allowed(who["role"], "ban.perm"):
+            raise ApiError(403, "This is step %d of %d for %s: %s. Ask an admin to apply it." % (
+                nxt["index"] + 1, nxt["of"], nxt["label"].lower(), nxt["action"].lower()))
+        via = " (ladder step %d of %d)" % (nxt["index"] + 1, nxt["of"])
+        if action != "ban" and p is None:
+            raise ApiError(409, "Step %d is %s, and the player is not on a server right now." % (nxt["index"] + 1, nxt["action"].lower()))
+        result = ""
+        if action == "ban":
+            target = dict(p) if p else self.ban_target(pid)
+            r = self.ban_player(who, target, minutes, reason, srv=srv if p else None, slot=slot if p else None, via=via)
+            result, aid = "banned", r["audit_id"]
+        elif action == "warn" and not srv.has("warn"):
+            # 0.35.0 servers have no private warning: the ladder warns in public chat instead
+            srv.run("say ^8[STAFF]^7 %s: %s" % (safe_arg(p["name"], 32), reason))
+            self.store.x("INSERT INTO warnings(pid,name,text,created,by_name,server) VALUES(?,?,?,?,?,?)",
+                         (pid, p["name"], reason, now(), who["name"], srv.key))
+            aid = self.store.audit(who, "warn", server=srv.key, target=p["name"], pid=pid, detail=reason + via + ", in public chat")
+            result = "warned in public chat"
+        else:
+            result, aid = self.act(who, srv, slot, p, action, reason=reason + (via if action == "kick" else ""),
+                                   length="%dm" % minutes if action == "mute" else "")
+        self.store.x("INSERT INTO punishments(pid,name,offence,step,created,by_name,server,note) VALUES(?,?,?,?,?,?,?,?)",
+                     (pid, (p or {}).get("name") or self.ban_target(pid)["name"], offence, nxt["step"], now(), who["name"],
+                      srv.key if srv else "", safe_arg(note, 200)))
+        return {"ok": True, "step": nxt["index"] + 1, "of": nxt["of"], "action": nxt["action"], "result": result, "audit_id": aid}
+
+
+# ----------------------------------------------------------------------------- watchers
+# Chat filter, joins (watchlist, ban dodgers), AFK and team-kill watch, suspicion score, server up and down.
+
+class Watchers:
+    SEVERITY = {"flag": 0, "warn": 1, "mute": 2, "kick": 3}
+
+    # -- chat filter
+    def filters(self) -> list:
+        if self._filters is None:
+            out = []
+            for f in self.store.q("SELECT * FROM filters WHERE active=1"):
+                try:
+                    out.append((f, self.compile_filter(f["pattern"], f["kind"])))
+                except (re.error, ValueError):
+                    continue
+            self._filters = out
+        return self._filters
+
+    @staticmethod
+    def compile_filter(pattern: str, kind: str):
+        pattern = str(pattern or "").strip()
+        if not pattern or len(pattern) > 200:
+            raise ValueError("Write a word or pattern of up to 200 characters.")
+        if kind == "regex":
+            return re.compile(pattern, re.I)
+        if kind != "word":
+            raise ValueError("Unknown filter type.")
+        parts = [normalise_chat(x).strip() for x in pattern.split("*")]
+        if not "".join(parts):
+            raise ValueError("The word has no letters or digits.")
+        return re.compile(r"(?<= )" + "[a-z0-9]*".join(re.escape(x) for x in parts) + r"(?= )")
+
+    def filter_hits(self, text: str) -> list:
+        norm = normalise_chat(text)
+        raw = plain(text)
+        return [f for f, rx in self.filters() if rx.search(norm if f["kind"] == "word" else raw)]
+
+    def check_chat(self, srv: GameServer, slot: int, p: dict, text: str, chat_id: int) -> None:
+        hits = self.filter_hits(text)
+        if not hits:
+            return
+        f = max(hits, key=lambda h: self.SEVERITY.get(h["action"], 0))
+        for h in hits:
+            self.store.x("UPDATE filters SET hits=hits+1 WHERE id=?", (h["id"],))
+        label = f["note"] or "filter #%d" % f["id"]
+        self.store.x("UPDATE chat SET flag=? WHERE id=?", (label[:60], chat_id))
+        name, pid = p.get("name") or "slot %d" % slot, p.get("pid", "")
+        self.flag(pid, name, srv.key, "chat filter", "%s: %s" % (label, plain(text)[:120]))
+        self.alert("filter", "Chat filter on %s" % srv.name, "**%s**: %s\nMatched %s." % (name, plain(text)[:200], label),
+                   key="filter:" + (pid or name), window=900, pid=pid, server=srv.key)
+        if not p or p.get("bot") or f["action"] == "flag" or self.limited("filter:%s:%s" % (srv.key, pid or slot), 1, 60):
+            return
+        who = dict(SYSTEM, name="Chat filter")
+        reason = f["note"] or "Language"
+        try:
+            if f["action"] == "warn" and srv.has("warn"):
+                self.act(who, srv, slot, p, "warn", reason="Watch your language (%s)." % reason)
+            elif f["action"] == "mute" and srv.has("mute"):
+                self.act(who, srv, slot, p, "mute", reason=reason, length="%dm" % (f["minutes"] or 10))
+            elif f["action"] == "kick":
+                self.act(who, srv, slot, p, "kick", reason=reason)
+        except (ApiError, RconError) as e:
+            log.info("chat filter action failed: %s", e)
+
+    # -- flags and alerts
+    def flag(self, pid: str, name: str, server: str, kind: str, detail: str) -> None:
+        self.store.x("INSERT INTO flags(pid,name,server,kind,detail,at) VALUES(?,?,?,?,?,?)",
+                     (pid, name, server, kind, detail[:300], now()))
+
+    def alert(self, kind: str, title: str, text: str, key: str = "", window: int = 0, pid: str = "",
+              server: str = "", urgent: bool = False) -> bool:
+        """Records an alert for the portal's feed and queues it for the staff Discord channel. Same key within window: dropped."""
+        key = key or kind + ":" + title
+        if window and self.store.one("SELECT id FROM alerts WHERE key=? AND at>?", (key, now() - window)):
+            return False
+        aid = self.store.x("INSERT INTO alerts(key,at,kind,title,text,pid,server) VALUES(?,?,?,?,?,?,?)",
+                           (key, now(), kind, title[:200], text[:1800], pid, server))
+        kinds = self.cfg.get("alerts", {}).get("kinds")
+        if kinds is None or kind in kinds:
+            self.alert_queue.put((aid, urgent))
+        return True
+
+    def webhook_url(self) -> str:
+        cred = os.environ.get("CREDENTIALS_DIRECTORY")
+        if cred and (Path(cred) / "staff-webhook").exists():
+            return (Path(cred) / "staff-webhook").read_text(encoding="utf-8").strip()
+        return str(self.cfg.get("alerts", {}).get("webhook_url", "") or "")
+
+    COLOURS = {"server_down": 0xD63B3B, "server_up": 0x4FBF7A, "suspicion": 0xD63B3B, "dodger": 0xD63B3B,
+               "reports": 0xE7A73C, "mod_ban": 0x5B9BD5, "watch": 0xE7A73C, "appeal": 0x5B9BD5, "filter": 0xE7A73C,
+               "teamkill": 0xE7A73C, "weekly": 0xFF9914}
+    LINKS = {"suspicion": "player", "dodger": "player", "reports": "reports", "watch": "player", "appeal": "reports",
+             "mod_ban": "bans", "filter": "chat", "teamkill": "player", "server_down": "health", "server_up": "health",
+             "weekly": "weekly"}
+
+    def alert_loop(self) -> None:
+        import queue
+        while not self.stop.is_set():
+            try:
+                aid, urgent = self.alert_queue.get(timeout=5)
+            except queue.Empty:
+                continue
+            url = self.webhook_url()
+            a = self.store.one("SELECT * FROM alerts WHERE id=?", (aid,))
+            if not url or not a:
+                continue
+            base = self.cfg.get("public_url", "").rstrip("/")
+            page = self.LINKS.get(a["kind"], "alerts")
+            if page == "player":
+                page = "player/" + a["pid"] if a["pid"] else "alerts"
+            link = "%s/#/%s" % (base, page)
+            ping = self.cfg.get("alerts", {}).get("ping_role_id")
+            payload = {"username": "Staff Portal", "allowed_mentions": {"parse": [], "roles": [str(ping)] if ping and urgent else []},
+                       "embeds": [{"title": a["title"], "description": a["text"], "color": self.COLOURS.get(a["kind"], 0x9AA3B3),
+                                   "timestamp": iso(a["at"])}]}
+            if base.startswith("https://"):
+                payload["embeds"][0]["url"] = link
+            if ping and urgent:
+                payload["content"] = "<@&%s>" % ping
+            for _ in range(3):
+                try:
+                    req = urllib.request.Request(url, data=json.dumps(payload).encode(), headers={
+                        "Content-Type": "application/json", "User-Agent": "TrueCombatStaffPortal/%s" % VERSION})
+                    urllib.request.urlopen(req, timeout=8).read()
+                    self.store.x("UPDATE alerts SET sent=1 WHERE id=?", (aid,))
+                    break
+                except urllib.error.HTTPError as e:
+                    if e.code == 429:
+                        try:
+                            wait = float(json.loads(e.read().decode()).get("retry_after", 2))
+                        except (ValueError, OSError):
+                            wait = 2
+                        self.stop.wait(min(wait, 30))
+                        continue
+                    log.warning("staff webhook refused alert %d: %s", aid, e)
+                    break
+                except (urllib.error.URLError, OSError) as e:
+                    log.warning("staff webhook unreachable: %s", e)
+                    self.stop.wait(5)
+            self.stop.wait(float(self.cfg.get("alerts", {}).get("gap_seconds", 1.2)))   # well under Discord's webhook limit
+
+    # -- after every poll of a server
+    def watch(self, srv: GameServer) -> None:
+        v = srv.view()
+        t = now()
+        if not v.get("online"):
+            first = self.down_since.setdefault(srv.key, t)
+            if t - first >= int(self.cfg.get("down_alert_seconds", 90)) and srv.key not in self.down_alerted:
+                self.down_alerted.add(srv.key)
+                self.alert("server_down", "%s is down" % srv.name, "No answer for %d seconds: %s" % (t - first, v.get("error") or "no reply"),
+                           key="down:" + srv.key, server=srv.key, urgent=True)
+            return
+        if srv.key in self.down_alerted:
+            self.down_alerted.discard(srv.key)
+            self.alert("server_up", "%s is back" % srv.name, "Answering again after %s." % human_length(max(1, (t - self.down_since.get(srv.key, t)) // 60)),
+                       key="up:%s:%d" % (srv.key, t), server=srv.key)
+        self.down_since.pop(srv.key, None)
+        players = [p for p in v.get("players", []) if not p["bot"]]
+        day = time.strftime("%Y-%m-%d", time.gmtime(t))
+        self.store.x("INSERT INTO peaks(day,server,peak) VALUES(?,?,?) ON CONFLICT(day,server) DO UPDATE SET "
+                     "peak=MAX(peak, excluded.peak)", (day, srv.key, len(players)))
+        online = {}
+        for p in players:
+            pid = p.get("pid")
+            if not pid:
+                continue
+            online[pid] = p["slot"]
+            mark = (pid, p.get("puid", ""), p.get("ip", ""))
+            if self.watch_cache.get((srv.key, p["slot"])) != mark:
+                self.watch_cache[(srv.key, p["slot"])] = mark
+                self.on_join(srv, p, first=(pid not in self.online.get(srv.key, {})))
+        self.online[srv.key] = online
+        self.afk_and_tk(srv, v, players)
+
+    def on_join(self, srv: GameServer, p: dict, first: bool) -> None:
+        pid, name = p["pid"], p["name"]
+        w = self.store.one("SELECT * FROM watchlist WHERE pid=?", (pid,))
+        if w and first:
+            self.alert("watch", "Watched player joined %s" % srv.name, "**%s** is on %s. Watch reason: %s" % (name, srv.name, w["reason"] or "none given"),
+                       key="watch:%s:%s" % (pid, srv.key), window=1800, pid=pid, server=srv.key)
+        for hit in self.dodger_hits(pid, p.get("puid", ""), p.get("ip", "")):
+            strong = hit["why"] == "anti-cheat account"
+            detail = "Shares the %s of banned player %s (ban #%d: %s)" % (hit["why"], hit["name"], hit["id"], hit["reason"])
+            if self.store.one("SELECT id FROM flags WHERE pid=? AND kind=? AND detail=? AND at>?",
+                              (pid, "ban dodger" if strong else "possible alt", detail, now() - 86400)):
+                continue
+            self.flag(pid, name, srv.key, "ban dodger" if strong else "possible alt", detail)
+            self.alert("dodger", ("Ban dodger on %s" if strong else "Possible alt of a banned player on %s") % srv.name,
+                       "**%s**: %s." % (name, detail), key="dodger:%s:%d" % (pid, hit["id"]), window=86400, pid=pid,
+                       server=srv.key, urgent=strong)
+
+    def dodger_hits(self, pid: str, puid: str, ip: str) -> list:
+        """Active bans on other identities that share this player's anti-cheat account (strong) or address (weak)."""
+        out, seen = [], set()
+        if puid:
+            for b in self.store.q("SELECT id,name,reason,pid FROM bans WHERE active=1 AND pid<>? AND ((puid<>'' AND puid=?) OR "
+                                  "pid IN (SELECT pid FROM sightings WHERE puid=? AND pid<>?))", (pid, puid, puid, pid)):
+                seen.add(b["id"])
+                out.append(dict(b, why="anti-cheat account"))
+        if ip and self.cfg.get("dodger_ip_check", True):
+            for b in self.store.q("SELECT id,name,reason,pid FROM bans WHERE active=1 AND pid<>? AND ((ip<>'' AND ip=?) OR "
+                                  "pid IN (SELECT pid FROM sightings WHERE ip=? AND pid<>?))", (pid, ip, ip, pid)):
+                if b["id"] not in seen:
+                    out.append(dict(b, why="internet address"))
+        return out
+
+    def afk_and_tk(self, srv: GameServer, v: dict, players: list) -> None:
+        t = now()
+        afk_flag = int(self.cfg.get("afk_flag_seconds", 120))
+        afk_spec = int(self.cfg.get("afk_spectate_seconds", 300))
+        with srv.lock:
+            pos = dict(srv.positions)
+        live = set()
+        for p in players:
+            pid = p.get("pid")
+            if not pid:
+                continue
+            key = (srv.key, pid)
+            live.add(key)
+            here = pos.get(p["slot"])
+            if p.get("spectator") or p.get("team") not in (1, 2) or not here or here["hp"] <= 0 or not here["begun"]:
+                self.afk.pop(key, None)
+            else:
+                a = self.afk.get(key)
+                if not a or abs(here["x"] - a["x"]) + abs(here["y"] - a["y"]) + abs(here["z"] - a["z"]) > 32:
+                    self.afk[key] = {"x": here["x"], "y": here["y"], "z": here["z"], "since": t, "flagged": False}
+                else:
+                    still = t - a["since"]
+                    if afk_flag and still >= afk_flag and not a["flagged"]:
+                        a["flagged"] = True
+                        self.flag(pid, p["name"], srv.key, "afk", "Alive and not moving for %d seconds" % still)
+                    if afk_spec and still >= afk_spec:
+                        try:
+                            self.act(dict(SYSTEM, name="AFK watch"), srv, p["slot"], p, "move", team="s",
+                                     reason="not moving for %d minutes" % (still // 60))
+                        except (ApiError, RconError) as e:
+                            log.info("AFK move failed: %s", e)
+                        self.afk.pop(key, None)
+            # team kills: the 0.36.0 player list counts them per map
+            tk = p.get("team_kills")
+            if tk is None:
+                continue
+            mark = (srv.key, pid, v.get("map", ""))
+            done = self.tk_seen.setdefault(mark, set())
+            warn_at = int(self.cfg.get("tk_warn_at", 2))
+            flag_at = int(self.cfg.get("tk_flag_at", 3))
+            if warn_at and tk >= warn_at and "warn" not in done:
+                done.add("warn")
+                if srv.has("warn"):
+                    try:
+                        self.act(dict(SYSTEM, name="Team-kill watch"), srv, p["slot"], p, "warn",
+                                 reason="%d team kills on this map. Watch your fire." % tk)
+                    except (ApiError, RconError) as e:
+                        log.info("team-kill warning failed: %s", e)
+            if flag_at and tk >= flag_at and "flag" not in done:
+                done.add("flag")
+                self.flag(pid, p["name"], srv.key, "team kills", "%d team kills on %s" % (tk, v.get("map", "")))
+                self.alert("teamkill", "Team killing on %s" % srv.name, "**%s** has %d team kills on %s." % (p["name"], tk, v.get("map", "")),
+                           key="tk:%s:%s:%s" % (srv.key, pid, v.get("map", "")), window=3600, pid=pid, server=srv.key)
+        for key in [k for k in self.afk if k[0] == srv.key and k not in live]:
+            del self.afk[key]
+        if len(self.tk_seen) > 2000:
+            self.tk_seen.clear()
+
+    # -- suspicion score
+    def suspicion_loop(self) -> None:
+        while not self.stop.is_set():
+            self.suspicion_pass()
+            self.stop.wait(float(self.cfg.get("suspicion_seconds", 60)))
+
+    def suspicion_pass(self) -> None:
+        threshold = int(self.cfg.get("suspicion_alert", 60))
+        for srv in self.servers.values():
+            for p in srv.view().get("players", []):
+                if p["bot"] or not p.get("pid"):
+                    continue
+                score, reasons = self.suspicion(p)
+                prev = self.store.one("SELECT score, peak FROM suspicion WHERE pid=?", (p["pid"],))
+                self.store.x("INSERT INTO suspicion(pid,name,score,reasons,updated,peak) VALUES(?,?,?,?,?,?) ON CONFLICT(pid) DO UPDATE SET "
+                             "name=excluded.name, score=excluded.score, reasons=excluded.reasons, updated=excluded.updated, "
+                             "peak=MAX(suspicion.peak, excluded.score)", (p["pid"], p["name"], score, json.dumps(reasons), now(), score))
+                if score >= threshold and (not prev or prev["score"] < threshold):
+                    self.alert("suspicion", "Suspicion %d: %s on %s" % (score, p["name"], srv.name),
+                               "\n".join("- " + r for r in reasons), key="sus:" + p["pid"], window=6 * 3600,
+                               pid=p["pid"], server=srv.key, urgent=score >= 85)
+
+    def suspicion(self, p: dict) -> tuple:
+        """0-100 and the reasons. A pointer for staff to look closer, never proof on its own."""
+        pid, score, why = p.get("pid", ""), 0, []
+        det = int(p.get("detections") or 0)
+        if det:
+            score += min(60, 40 + 10 * (det - 1))
+            why.append("%d anti-cheat detection%s this session" % (det, "" if det == 1 else "s"))
+        week = now() - 7 * 86400
+        reporters, autos = set(), 0
+        for r in self.store.q("SELECT source, data FROM reports WHERE target_pid=? AND received>? AND source IN ('player','auto')", (pid, week)):
+            if r["source"] == "auto":
+                autos += 1
+                continue
+            try:
+                by = json.loads(r["data"]).get("reporter") or {}
+            except ValueError:
+                by = {}
+            reporters.add(str(by.get("id") or plain(by.get("name")) or "?"))
+        if reporters:
+            score += min(30, 8 * len(reporters))
+            why.append("reported by %d player%s in 7 days" % (len(reporters), "" if len(reporters) == 1 else "s"))
+        if autos:
+            score += min(36, 12 * autos)
+            why.append("%d automatic flag%s in 7 days" % (autos, "" if autos == 1 else "s"))
+        shots, hits = int(p.get("shots") or 0), int(p.get("hits") or 0)
+        if shots >= 60 and hits <= shots:        # shotguns count every pellet as a hit; those numbers say nothing
+            acc = hits / shots
+            if acc >= 0.55:
+                score += 25 if acc >= 0.70 else 15
+                why.append("%d%% accuracy on this map (%d shots)" % (round(acc * 100), shots))
+        kills, deaths = int(p.get("kills") or 0), int(p.get("deaths") or 0)
+        if kills >= 15 and kills / max(1, deaths) >= 4:
+            kd = kills / max(1, deaths)
+            score += 15 if kd >= 6 else 10
+            why.append("%d kills, %d deaths on this map" % (kills, deaths))
+        st = self.cached_stats(pid)
+        if st:
+            rk = sum(int(m.get("kills") or 0) for m in st.get("recent", []))
+            hs = sum(int(m.get("headshots") or 0) for m in st.get("recent", []))
+            if rk >= 60 and hs / rk >= 0.45:
+                score += 20 if hs / rk >= 0.60 else 10
+                why.append("%d%% headshot kills over the last %d matches" % (round(100 * hs / rk), len(st.get("recent", []))))
+        for hit in self.dodger_hits(pid, p.get("puid", ""), p.get("ip", "")):
+            if hit["why"] == "anti-cheat account":
+                score += 50
+                why.append("same anti-cheat account as banned player %s" % hit["name"])
+            else:
+                score += 15
+                why.append("same internet address as banned player %s" % hit["name"])
+            break
+        return min(100, score), why
+
+    def cached_stats(self, pid: str):
+        t, data = self.stats_cache.get(pid, (0, None))
+        if time.time() - t > 1800:
+            data = self.stats("player.json", id=pid)
+            self.stats_cache[pid] = (time.time(), data)
+            if len(self.stats_cache) > 2000:
+                self.stats_cache.clear()
+        return data
+
+
+# ----------------------------------------------------------------------------- operations
+# Appeals, scheduled actions, event mode, the config editor, the weekly report, server demos,
+# linked Discord accounts, the stats review queue and the live map.
+
+DEMO_NAME = re.compile(r"_(\d{4})-(\d{2})-(\d{2})-(\d{2})-(\d{2})-(\d{2})_[^/]*\.sv_?\d+$")
+SCHEDULE_ACTIONS = {"say": "server.say", "map": "schedule", "nextmap": "schedule", "restart": "schedule"}
+
+
+def iso_to_unix(text) -> int | None:
+    try:
+        import datetime as dt
+        return int(dt.datetime.fromisoformat(str(text).replace("Z", "+00:00")).timestamp())
+    except (TypeError, ValueError):
+        return None
+
+
+def brussels(t: float):
+    import datetime as dt
+    try:
+        from zoneinfo import ZoneInfo
+        return dt.datetime.fromtimestamp(t, ZoneInfo("Europe/Brussels"))
+    except Exception:  # noqa: BLE001  (no tz database: CET is close enough for a weekly report)
+        return dt.datetime.fromtimestamp(t, dt.timezone(dt.timedelta(hours=1)))
+
+
+class Operations:
+    # -- server commands shared by the API and the scheduler
+    def server_command(self, who: dict, act: str, keys: list, text: str = "", m: str = "", maps: str = "", via: str = "") -> dict:
+        text = safe_arg(text, 200)
+        results = {}
+        for key in keys:
+            srv = self.servers[key]
+            try:
+                if act in ("say", "chat"):
+                    if not text:
+                        raise ApiError(400, "Write a message.")
+                    staff_name = safe_arg(who["name"], 24) or "Staff"
+                    if srv.has("staffsay"):
+                        cmd = "staffsay %s %s" % (staff_name.replace(" ", "_"), text)
+                    else:
+                        cmd = "say ^8[STAFF] %s^7: %s" % (staff_name, text)
+                    results[key] = srv.run(cmd)
+                    # rcon output never reaches the server log, so the portal records staff lines itself
+                    self.store.x("INSERT INTO chat(server,at,slot,team,pid,name,text,kind) VALUES(?,?,?,?,?,?,?,?)",
+                                 (srv.key, now(), -1, None, "", staff_name, text, "staff"))
+                elif act == "map":
+                    if not MAP_NAME.match(m or ""):
+                        raise ApiError(400, "Pick a map.")
+                    results[key] = srv.run("map %s" % m, timeout=4)
+                    text = m
+                elif act == "nextmap":
+                    if m and not MAP_NAME.match(m):
+                        raise ApiError(400, "Pick a map.")
+                    results[key] = srv.run(("nextmap %s" % (m or "")).strip(), timeout=4)
+                    text = m or "next in rotation"
+                elif act == "restart":
+                    results[key] = srv.run("map_restart 0", timeout=4)
+                    text = "match restart"
+                elif act == "rotation":
+                    names = [x for x in str(maps or "").split() if MAP_NAME.match(x)]
+                    if not names:
+                        raise ApiError(400, "List at least one map.")
+                    results[key] = srv.run("maprotation %s" % " ".join(names[:20]), timeout=3)
+                    text = " ".join(names[:20])
+                else:
+                    raise ApiError(400, "Unknown action.")
+            except RconError as e:
+                results[key] = "offline: %s" % e
+        self.store.audit(who, "server " + act, server=",".join(keys), detail=text + via,
+                         result=json.dumps({k: plain(v).strip()[:200] for k, v in results.items()}))
+        return {k: plain(v).strip()[:300] for k, v in results.items()}
+
+    # -- appeals
+    def appeal_submit(self, code: str, text: str, contact: str, sender: str) -> dict:
+        code = re.sub(r"[^A-Z0-9]", "", str(code or "").upper())
+        b = self.store.one("SELECT * FROM bans WHERE appeal_code=? AND active=1", (code,)) if len(code) == 6 else None
+        if not b:
+            raise ApiError(404, "No active ban has that code. Check the code in the message you saw when you were removed.")
+        text = str(text or "").replace("\x00", "").strip()[:2000]
+        if len(text) < 20:
+            raise ApiError(400, "Tell us in a few sentences why the ban should be lifted.")
+        if self.store.one("SELECT id FROM appeals WHERE ban_id=? AND status='open'", (b["id"],)):
+            raise ApiError(409, "An appeal for this ban is already waiting. Check its status with the same code.")
+        if self.store.one("SELECT COUNT(*) n FROM appeals WHERE ban_id=?", (b["id"],))["n"] >= 3:
+            raise ApiError(409, "This ban has been appealed three times. Staff will not review it again.")
+        contact = safe_arg(contact, 100)
+        aid = self.store.x("INSERT INTO appeals(code,ban_id,pid,name,text,contact,created,updated,from_hash) VALUES(?,?,?,?,?,?,?,?,?)",
+                           (code, b["id"], b["pid"], b["name"], text, contact, now(), now(), sender))
+        data = {"appeal_id": aid, "code": code, "text": text, "contact": contact,
+                "ban": {"id": b["id"], "reason": b["reason"], "created": b["created"], "expires": b["expires"], "by": b["by_name"]}}
+        self.store.x("INSERT INTO reports(source,file,server,received,data,target_pid,target_name,status,updated) VALUES(?,?,?,?,?,?,?,?,?)",
+                     ("appeal", "appeal/%d" % aid, "", now(), json.dumps(data), b["pid"], b["name"], "open", now()))
+        self.alert("appeal", "Ban appeal from %s" % b["name"], "Ban #%d (%s). %s" % (b["id"], b["reason"], text[:300]),
+                   key="appeal:%d" % aid, pid=b["pid"])
+        return {"ok": True, "status": "open"}
+
+    def appeal_status(self, code: str) -> dict:
+        code = re.sub(r"[^A-Z0-9]", "", str(code or "").upper())
+        b = self.store.one("SELECT * FROM bans WHERE appeal_code=?", (code,)) if len(code) == 6 else None
+        if not b:
+            raise ApiError(404, "No ban has that code.")
+        a = self.store.one("SELECT status, answer, created, updated FROM appeals WHERE ban_id=? ORDER BY id DESC LIMIT 1", (b["id"],))
+        return {"ban": {"reason": b["reason"], "since": b["created"], "expires": b["expires"], "active": bool(b["active"])},
+                "appeal": a}
+
+    def appeal_answer(self, who: dict, appeal_id: int, decision: str, answer: str) -> dict:
+        a = self.store.one("SELECT * FROM appeals WHERE id=?", (appeal_id,))
+        if not a:
+            raise ApiError(404, "No such appeal.")
+        if a["status"] != "open":
+            raise ApiError(409, "This appeal was already answered.")
+        if decision not in ("accept", "deny"):
+            raise ApiError(400, "Accept or deny.")
+        answer = str(answer or "").strip()[:1000]
+        if not answer:
+            raise ApiError(400, "Write the answer the player will read.")
+        if decision == "accept":
+            b = self.store.one("SELECT * FROM bans WHERE id=?", (a["ban_id"],))
+            if b and b["active"]:
+                self.lift_ban(who, b, "appeal accepted")
+        status = "accepted" if decision == "accept" else "denied"
+        self.store.x("UPDATE appeals SET status=?, answer=?, answered_by=?, updated=? WHERE id=?", (status, answer, who["name"], now(), a["id"]))
+        self.store.x("UPDATE reports SET status='closed', claimed_by=?, resolution=?, updated=? WHERE file=?",
+                     (who["name"], "Appeal %s: %s" % (status, answer[:300]), now(), "appeal/%d" % a["id"]))
+        self.store.audit(who, "appeal " + status, target=a["name"], pid=a["pid"], detail=answer[:300])
+        return {"ok": True, "status": status}
+
+    # -- linked Discord accounts (the Discord bot's /link table, read only)
+    def discord_links(self, pid: str = "", discord_id: str = "") -> list | None:
+        path = self.cfg.get("discord_bot_db")
+        if not path or not Path(path).exists():
+            return None
+        # read only; if the bot's WAL index cannot be shared, fall back to the last checkpointed state
+        for mode in ("mode=ro", "mode=ro&immutable=1"):
+            try:
+                con = sqlite3.connect("file:%s?%s" % (urllib.parse.quote(str(path)), mode), uri=True, timeout=2)
+                try:
+                    con.row_factory = sqlite3.Row
+                    if pid:
+                        rows = con.execute("SELECT discord_id, pid, name, linked_at FROM links WHERE pid=?", (pid,)).fetchall()
+                    else:
+                        rows = con.execute("SELECT discord_id, pid, name, linked_at FROM links WHERE discord_id=?", (int(discord_id),)).fetchall()
+                    return [{k: str(r[k]) if k == "discord_id" else r[k] for k in r.keys()} for r in rows]
+                finally:
+                    con.close()
+            except (sqlite3.Error, ValueError, OSError) as e:
+                log.info("Discord link lookup (%s) failed: %s", mode, e)
+        return None
+
+    # -- scheduled actions
+    def schedule_loop(self) -> None:
+        while not self.stop.is_set():
+            self.run_schedule()
+            self.stop.wait(10)
+
+    def run_schedule(self) -> int:
+        ran = 0
+        t = now()
+        for job in self.store.q("SELECT * FROM schedule WHERE active=1 AND next_at<=?", (t,)):
+            who = {"discord_id": job["by_id"], "name": job["by_name"], "role": "system"}
+            keys = self.order if job["server"] == "*" else [job["server"]] if job["server"] in self.servers else []
+            try:
+                if not keys:
+                    raise ApiError(404, "server no longer configured")
+                res = self.server_command(who, job["action"], keys, text=job["arg"] if job["action"] == "say" else "",
+                                          m=job["arg"] if job["action"] in ("map", "nextmap") else "", via=" (scheduled #%d)" % job["id"])
+                result = "; ".join("%s: %s" % (k, v or "ok") for k, v in res.items())
+            except ApiError as e:
+                result = "failed: " + e.message
+            nxt, active = 0, 0
+            if job["every_min"]:
+                nxt = job["next_at"]
+                while nxt <= t:
+                    nxt += job["every_min"] * 60
+                active = 1 if not job["until"] or nxt <= job["until"] else 0
+            self.store.x("UPDATE schedule SET runs=runs+1, last_run=?, last_result=?, next_at=?, active=? WHERE id=?",
+                         (t, result[:300], nxt or job["next_at"], active, job["id"]))
+            ran += 1
+        return ran
+
+    # -- event mode and the config editor share one rule: the portal keeps live values where staff put them
+    def event_start(self, who: dict, srv: GameServer, password: str = "", note: str = "") -> dict:
+        if self.store.one("SELECT server FROM events WHERE server=?", (srv.key,)):
+            raise ApiError(409, "Event mode is already on for this server.")
+        preset = {k: str(v) for k, v in (self.cfg.get("event_preset") or EVENT_PRESET).items()}
+        if password:
+            if not re.fullmatch(r"[A-Za-z0-9_-]{4,24}", password):
+                raise ApiError(400, "Use 4 to 24 letters, digits, - or _ for the password.")
+            preset["g_password"] = password
+        elif preset.get("g_password") == "*random*":
+            preset["g_password"] = "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8))
+        for k, v in preset.items():
+            if not re.fullmatch(r"[A-Za-z0-9_]{1,40}", k) or not CVAR_VALUE.match(v):
+                raise ApiError(500, "The event preset in the config has a bad entry: %s" % k)
+        saved = {}
+        for k in preset:
+            val = srv.cvar(k)
+            saved[k] = val if val is not None else ""
+        for k, v in preset.items():
+            srv.set_cvar(k, v)
+            self.store.x("INSERT INTO cvar_changes(server,cvar,old,new,at,by_name,kind) VALUES(?,?,?,?,?,?,'event')",
+                         (srv.key, k, saved[k], v if k != "g_password" else "(event password)", now(), who["name"]))
+        self.store.x("INSERT INTO events(server,started,by_name,saved,preset,note) VALUES(?,?,?,?,?,?)",
+                     (srv.key, now(), who["name"], json.dumps(saved), json.dumps(preset), safe_arg(note, 120)))
+        self.store.audit(who, "event start", server=srv.key, detail=safe_arg(note, 120) or "event mode on")
+        return {"ok": True, "password": preset.get("g_password", ""), "preset": preset}
+
+    def event_stop(self, who: dict, srv: GameServer) -> dict:
+        e = self.store.one("SELECT * FROM events WHERE server=?", (srv.key,))
+        if not e:
+            raise ApiError(409, "Event mode is not on for this server.")
+        saved = json.loads(e["saved"] or "{}")
+        failed = []
+        for k, v in saved.items():
+            override = self.store.one("SELECT value FROM cvar_overrides WHERE server=? AND cvar=?", (srv.key, k))
+            value = override["value"] if override else v
+            try:
+                srv.set_cvar(k, value)
+                self.store.x("INSERT INTO cvar_changes(server,cvar,old,new,at,by_name,kind) VALUES(?,?,?,?,?,?,'event end')",
+                             (srv.key, k, "(event)" if k == "g_password" else json.loads(e["preset"]).get(k, ""), value if k != "g_password" else "(restored)",
+                              now(), who["name"]))
+            except RconError:
+                failed.append(k)
+        self.store.x("DELETE FROM events WHERE server=?", (srv.key,))
+        self.store.audit(who, "event stop", server=srv.key, detail="restored %d settings" % (len(saved) - len(failed)),
+                         ok=not failed, result=", ".join(failed))
+        return {"ok": True, "restored": len(saved) - len(failed), "failed": failed}
+
+    def wanted_cvars(self, key: str) -> dict:
+        out = {r["cvar"]: r["value"] for r in self.store.q("SELECT cvar, value FROM cvar_overrides WHERE server=?", (key,))}
+        e = self.store.one("SELECT preset FROM events WHERE server=?", (key,))
+        if e:
+            out.update(json.loads(e["preset"] or "{}"))
+        return out
+
+    def enforce_loop(self) -> None:
+        while not self.stop.is_set():
+            self.stop.wait(float(self.cfg.get("enforce_seconds", 60)))
+            self.enforce()
+
+    def enforce(self) -> int:
+        """After a server restart or a cfg reload, put kept settings and the event preset back."""
+        fixed = 0
+        for srv in self.servers.values():
+            want = self.wanted_cvars(srv.key)
+            if not want or not srv.view().get("online"):
+                continue
+            for k, v in want.items():
+                try:
+                    live = srv.cvar(k)
+                    if live is not None and live != v:
+                        srv.set_cvar(k, v)
+                        fixed += 1
+                        if not self.limited("reapply:%s:%s" % (srv.key, k), 1, 3600):
+                            self.store.x("INSERT INTO cvar_changes(server,cvar,old,new,at,by_name,kind) VALUES(?,?,?,?,?,?,'re-applied')",
+                                         (srv.key, k, live if k != "g_password" else "(changed)", v if k != "g_password" else "(event)", now(), "Portal"))
+                except RconError:
+                    break
+        return fixed
+
+    def cvar_list(self) -> dict:
+        return self.cfg.get("cvars") or CVARS
+
+    def cvars_view(self, srv: GameServer) -> dict:
+        overrides = {r["cvar"]: r for r in self.store.q("SELECT * FROM cvar_overrides WHERE server=?", (srv.key,))}
+        e = self.store.one("SELECT * FROM events WHERE server=?", (srv.key,))
+        event = json.loads(e["preset"]) if e else {}
+        rows = []
+        for name, label in self.cvar_list().items():
+            try:
+                val = srv.cvar(name)
+            except RconError:
+                val = None
+            rows.append({"name": name, "label": label, "value": val, "kept": overrides.get(name, {}).get("value"),
+                         "event": name in event})
+        hist = self.store.q("SELECT * FROM cvar_changes WHERE server=? ORDER BY id DESC LIMIT 60", (srv.key,))
+        return {"cvars": rows, "history": hist}
+
+    def cvar_set(self, who: dict, srv: GameServer, name: str, value: str, keep: bool, kind: str = "set") -> dict:
+        if name not in self.cvar_list():
+            raise ApiError(400, "That setting cannot be changed from the portal.")
+        value = str(value if value is not None else "").strip()
+        if not CVAR_VALUE.match(value):
+            raise ApiError(400, "Use letters, digits, spaces, dots, - or _ only (64 at most).")
+        if self.store.one("SELECT server FROM events WHERE server=? AND preset LIKE ?", (srv.key, '%"' + name + '"%')):
+            raise ApiError(409, "Event mode controls this setting right now. Stop the event first.")
+        old = srv.cvar(name)
+        if old is None:
+            raise ApiError(409, "The server does not know the setting %s." % name)
+        srv.set_cvar(name, value)
+        now_val = srv.cvar(name)
+        if keep:
+            self.store.x("INSERT INTO cvar_overrides(server,cvar,value,set_at,by_name) VALUES(?,?,?,?,?) ON CONFLICT(server,cvar) "
+                         "DO UPDATE SET value=excluded.value, set_at=excluded.set_at, by_name=excluded.by_name",
+                         (srv.key, name, value, now(), who["name"]))
+        else:
+            self.store.x("DELETE FROM cvar_overrides WHERE server=? AND cvar=?", (srv.key, name))
+        cid = self.store.x("INSERT INTO cvar_changes(server,cvar,old,new,at,by_name,kind,kept) VALUES(?,?,?,?,?,?,?,?)",
+                           (srv.key, name, old, value, now(), who["name"], kind, 1 if keep else 0))
+        self.store.audit(who, "setting " + kind, server=srv.key, target=name, detail="%s -> %s%s" % (old, value, ", kept" if keep else ""),
+                         ok=now_val == value, result="now %s" % now_val)
+        return {"ok": True, "id": cid, "old": old, "value": now_val,
+                "note": "" if now_val == value else "The server reports %s. Some settings only change at the next map." % now_val}
+
+    def cvar_rollback(self, who: dict, change_id: int) -> dict:
+        c = self.store.one("SELECT * FROM cvar_changes WHERE id=?", (change_id,))
+        if not c or c["kind"] not in ("set", "rollback"):
+            raise ApiError(404, "Only changes made in the editor can be rolled back.")
+        srv = self.server(c["server"])
+        return self.cvar_set(who, srv, c["cvar"], c["old"], keep=False, kind="rollback")
+
+    # -- weekly staff report
+    def weekly(self, end: int | None = None) -> dict:
+        end = end or now()
+        start = end - 7 * 86400
+        q, one = self.store.q, self.store.one
+        acts = q("SELECT action, COUNT(*) n FROM audit WHERE at>=? AND at<? AND ok=1 GROUP BY action", (start, end))
+        by_action = {a["action"]: a["n"] for a in acts}
+        moderation = ("kick", "warn", "mute", "ban", "unban", "move", "report closed", "appeal accepted", "appeal denied")
+        staff = q("SELECT staff, role, COUNT(*) n FROM audit WHERE at>=? AND at<? AND ok=1 AND role IN ('moderator','admin','owner') "
+                  "AND action IN (%s) GROUP BY staff ORDER BY n DESC" % ",".join("?" * len(moderation)), [start, end, *moderation])
+        closed = q("SELECT received, updated FROM reports WHERE status='closed' AND updated>=? AND updated<? AND source<>'bug'", (start, end))
+        waits = sorted(r["updated"] - r["received"] for r in closed if r["updated"] >= r["received"])
+        peaks = q("SELECT server, MAX(peak) peak FROM peaks WHERE day>=? AND day<=? GROUP BY server",
+                  (time.strftime("%Y-%m-%d", time.gmtime(start)), time.strftime("%Y-%m-%d", time.gmtime(end))))
+        daily = q("SELECT day, SUM(peak) peak FROM peaks WHERE day>=? AND day<=? GROUP BY day ORDER BY day",
+                  (time.strftime("%Y-%m-%d", time.gmtime(start)), time.strftime("%Y-%m-%d", time.gmtime(end))))
+        return {
+            "from": start, "to": end,
+            "players": one("SELECT COUNT(DISTINCT pid) n FROM sightings WHERE last_seen>=?", (start,))["n"],
+            "new_players": one("SELECT COUNT(*) n FROM (SELECT pid, MIN(first_seen) f FROM sightings GROUP BY pid) WHERE f>=? AND f<?", (start, end))["n"],
+            "peaks": {p["server"]: p["peak"] for p in peaks}, "daily_peak": daily,
+            "actions": {k: by_action.get(k, 0) for k in ("kick", "warn", "mute", "ban", "unban", "move")},
+            "auto_actions": one("SELECT COUNT(*) n FROM audit WHERE at>=? AND at<? AND role='system'", (start, end))["n"],
+            "bans_by_moderators": one("SELECT COUNT(*) n FROM audit WHERE at>=? AND at<? AND action='ban' AND role='moderator'", (start, end))["n"],
+            "reports_in": {r["source"]: r["n"] for r in q("SELECT source, COUNT(*) n FROM reports WHERE received>=? AND received<? GROUP BY source", (start, end))},
+            "reports_closed": len(closed), "median_close_minutes": waits[len(waits) // 2] // 60 if waits else None,
+            "open_now": one("SELECT COUNT(*) n FROM reports WHERE status<>'closed'")["n"],
+            "appeals": {r["status"]: r["n"] for r in q("SELECT status, COUNT(*) n FROM appeals WHERE created>=? AND created<? GROUP BY status", (start, end))},
+            "flags": {r["kind"]: r["n"] for r in q("SELECT kind, COUNT(*) n FROM flags WHERE at>=? AND at<? GROUP BY kind", (start, end))},
+            "staff": staff,
+        }
+
+    def weekly_text(self, w: dict) -> str:
+        a = w["actions"]
+        lines = [
+            "**Players**: %d played, %d new. Peak: %s." % (w["players"], w["new_players"],
+                                                           ", ".join("%s %d" % (k, v) for k, v in w["peaks"].items()) or "none"),
+            "**Actions**: %d bans (%d by moderators), %d kicks, %d mutes, %d warnings, %d lifted. %d automatic." % (
+                a["ban"], w["bans_by_moderators"], a["kick"], a["mute"], a["warn"], a["unban"], w["auto_actions"]),
+            "**Reports**: %d in, %d closed%s, %d still open." % (
+                sum(w["reports_in"].values()), w["reports_closed"],
+                ", median %s to close" % human_length(max(1, w["median_close_minutes"])) if w["median_close_minutes"] is not None else "",
+                w["open_now"]),
+        ]
+        if w["appeals"]:
+            lines.append("**Appeals**: " + ", ".join("%d %s" % (v, k) for k, v in w["appeals"].items()) + ".")
+        if w["flags"]:
+            lines.append("**Flags**: " + ", ".join("%d %s" % (v, k) for k, v in sorted(w["flags"].items(), key=lambda kv: -kv[1])) + ".")
+        if w["staff"]:
+            lines.append("**Most active staff**: " + ", ".join("%s %d" % (s["staff"], s["n"]) for s in w["staff"][:5]) + ".")
+        return "\n".join(lines)
+
+    def weekly_loop(self) -> None:
+        while not self.stop.is_set():
+            local = brussels(time.time())
+            week = "%d-W%02d" % local.isocalendar()[:2]
+            if local.weekday() == 0 and local.hour >= 8 and self.meta("weekly_sent") != week:
+                self.meta("weekly_sent", week)
+                self.alert("weekly", "Staff report, week %s" % week.split("-W")[1], self.weekly_text(self.weekly()), key="weekly:" + week)
+            self.stop.wait(600)
+
+    def meta(self, key: str, value: str | None = None) -> str | None:
+        if value is None:
+            r = self.store.one("SELECT value FROM meta WHERE key=?", (key,))
+            return r["value"] if r else None
+        self.store.x("INSERT INTO meta(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (key, value))
+        return value
+
+    # -- server demos for reports
+    def demo_for(self, report_id: int) -> dict:
+        r = self.store.one("SELECT * FROM reports WHERE id=?", (report_id,))
+        if not r or r["source"] not in ("player", "auto"):
+            raise ApiError(404, "No such player report.")
+        srv = self.servers.get(r["server"])
+        if not srv:
+            raise ApiError(404, "The server of this report is no longer configured.")
+        folder = srv.cfg.get("demos_dir") or (str(Path(srv.cfg["reports_dir"]).parent / "svdemos") if srv.cfg.get("reports_dir") else "")
+        try:
+            data = json.loads(r["data"])
+        except ValueError:
+            data = {}
+        when = iso_to_unix(data.get("time")) or r["received"]
+        try:
+            from zoneinfo import ZoneInfo
+            import datetime as dt
+            zone = ZoneInfo(srv.cfg.get("demo_timezone", self.cfg.get("demo_timezone", "UTC")))
+        except Exception:  # noqa: BLE001
+            import datetime as dt
+            zone = dt.timezone.utc
+        best = None
+        try:
+            files = list(Path(folder).glob("*.sv*")) if folder else []
+        except OSError:
+            files = []
+        for f in files:
+            m = DEMO_NAME.search(f.name)
+            if not m:
+                continue
+            try:
+                begin = int(dt.datetime(*map(int, m.groups()), tzinfo=zone).timestamp())
+                st = f.stat()
+            except (ValueError, OSError):
+                continue
+            if begin <= when <= int(st.st_mtime) + 5 and (best is None or begin > best[1]):
+                best = (f, begin, st.st_size)
+        if not best:
+            raise ApiError(404, "No server demo covers this moment. Servers record demos only while sv_autoDemo is on "
+                                "(Settings page), and old demos are cleaned up.")
+        f, begin, size = best
+        return {"file": f.name, "path": str(f), "offset_s": when - begin, "size": size, "server": srv.key, "at": when}
+
+    # -- stats review queue (the stats service's staff routes, loopback only)
+    def stats_staff(self, method: str, route: str, body: dict | None = None):
+        base = self.cfg.get("stats_api")
+        cred = os.environ.get("CREDENTIALS_DIRECTORY")
+        token = ""
+        if cred and (Path(cred) / "stats-token").exists():
+            token = (Path(cred) / "stats-token").read_text(encoding="utf-8").strip()
+        token = token or str(self.cfg.get("stats_token", "") or "")
+        if not base or not token:
+            raise ApiError(409, "The stats review queue is not connected yet (stats service token missing).")
+        req = urllib.request.Request("%s%s" % (base.rstrip("/"), route), method=method,
+                                     data=json.dumps(body).encode() if body is not None else None,
+                                     headers={"X-Staff-Token": token, "Content-Type": "application/json", "User-Agent": "TCPStaff"})
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read().decode())
+        except urllib.error.HTTPError as e:
+            try:
+                msg = json.loads(e.read().decode()).get("error", "")
+            except (ValueError, OSError):
+                msg = ""
+            raise ApiError(502 if e.code >= 500 else 409, "The stats service said: %s" % (msg or e.code)) from e
+        except (urllib.error.URLError, OSError, ValueError) as e:
+            raise ApiError(502, "The stats service did not answer.") from e
+
+    # -- live map
+    def map_layouts(self) -> dict:
+        if self._layouts is None:
+            try:
+                self._layouts = json.loads((STATIC / "maps" / "maps.json").read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                self._layouts = {}
+        return self._layouts
+
+    def positions(self, srv: GameServer) -> dict:
+        v = srv.view()
+        layout = self.map_layouts().get(v.get("map", ""))
+        with srv.lock:
+            pos = {k: dict(p) for k, p in srv.positions.items()}
+            at = srv.positions_at
+        bots = {p["slot"]: p["bot"] for p in v.get("players", [])}
+        spec = {p["slot"]: p.get("spectator") for p in v.get("players", [])}
+        out = []
+        for slot, p in sorted(pos.items()):
+            if not p.get("begun") or spec.get(slot) or p["team"] not in (1, 2):
+                continue
+            item = {"slot": slot, "name": p["name"], "team": p["team"], "alive": p["hp"] > 0, "hp": p["hp"], "bot": bots.get(slot, False)}
+            if layout:
+                (x0, y0), (x1, y1) = layout["mins"], layout["maxs"]
+                item["u"] = round((p["x"] - x0) / (x1 - x0), 4)
+                item["v"] = round((y1 - p["y"]) / (y1 - y0), 4)
+            out.append(item)
+        return {"server": srv.key, "map": v.get("map", ""), "layout": {"image": "/static/maps/" + layout["image"], "w": layout["w"],
+                "h": layout["h"]} if layout else None, "players": out, "updated": at}
+
+
 # ----------------------------------------------------------------------------- the portal
 
-class Portal:
+class Portal(Moderation, Watchers, Operations):
     def __init__(self, cfg: dict):
         self.cfg = cfg
         data = Path(cfg.get("data_dir", "/var/lib/tcp-staff-portal"))
@@ -537,6 +1802,22 @@ class Portal:
         self.rate = {}
         self.rate_lock = threading.Lock()
         self.health_cache = (0, None)
+        import queue
+        self.alert_queue = queue.Queue()
+        self._filters = None
+        self._layouts = None
+        self.watch_cache = {}      # (server, slot) -> identity last checked for watchlist / ban dodgers
+        self.online = {}           # server -> {pid: slot}
+        self.afk = {}
+        self.tk_seen = {}
+        self.down_since = {}
+        self.down_alerted = set()
+        self.stats_cache = {}
+        self.map_views = set()
+        if not self.meta("templates_seeded"):
+            for kind, title, text in DEFAULT_TEMPLATES:
+                self.store.x("INSERT INTO templates(kind,title,text,created,by_name) VALUES(?,?,?,?,?)", (kind, title, text, now(), "Portal"))
+            self.meta("templates_seeded", "1")
         for d in cfg.get("owners", []):
             self.store.x("INSERT INTO staff(discord_id,name,role,note,added_by,created) VALUES(?,?,?,?,?,?) "
                          "ON CONFLICT(discord_id) DO UPDATE SET role='owner'",
@@ -545,7 +1826,8 @@ class Portal:
     # ------------------------------------------------------------------ background work
     def start(self) -> None:
         loops = [(self.poll_loop, "poll"), (self.report_loop, "reports"), (self.ban_loop, "bans"),
-                 (self.prune_loop, "prune")]
+                 (self.prune_loop, "prune"), (self.alert_loop, "alerts"), (self.suspicion_loop, "suspicion"),
+                 (self.schedule_loop, "schedule"), (self.enforce_loop, "enforce"), (self.weekly_loop, "weekly")]
         for s in self.servers.values():
             loops.append((lambda s=s: self.chat_loop(s), "chat-" + s.key))
         for fn, name in loops:
@@ -568,6 +1850,11 @@ class Portal:
                 th.start()
             for th in threads:
                 th.join(10)
+            for srv in self.servers.values():
+                try:
+                    self.watch(srv)
+                except Exception:  # noqa: BLE001  (a watcher bug must never stop the live view)
+                    log.exception("watchers failed for %s", srv.key)
             self.stop.wait(max(0.5, every - (time.time() - started)))
 
     # chat comes from the game's own log line: TCP_NATIVE_SAY slot=N team=T text
@@ -589,9 +1876,13 @@ class Portal:
             slot, team, text = int(m.group(1)), int(m.group(2)), m.group(3)
             p = server.slot_player(slot) or {}
             name = p.get("name") or server.names.get(slot) or "slot %d" % slot
-            self.store.x("INSERT INTO chat(server,at,slot,team,pid,name,text,kind) VALUES(?,?,?,?,?,?,?,?)",
-                         (server.key, now(), slot, p.get("team") if team else None, p.get("pid", ""), name, text[:300],
-                          "team" if team else "all"))
+            cid = self.store.x("INSERT INTO chat(server,at,slot,team,pid,name,text,kind) VALUES(?,?,?,?,?,?,?,?)",
+                               (server.key, now(), slot, p.get("team") if team else None, p.get("pid", ""), name, text[:300],
+                                "team" if team else "all"))
+            try:
+                self.check_chat(server, slot, p, text[:300], cid)
+            except Exception:  # noqa: BLE001
+                log.exception("chat filter failed")
             return
 
     def _tail_journal(self, server: GameServer) -> None:
@@ -659,6 +1950,14 @@ class Portal:
                                  ("auto" if r.get("auto") else "player", key, s.key, now(), json.dumps(r),
                                   str(who.get("id") or ""), plain(who.get("name"))[:64], "open", now()))
                     added += 1
+                    pid = str(who.get("id") or "")
+                    if PID.match(pid):
+                        n = self.store.one("SELECT COUNT(*) n FROM reports WHERE target_pid=? AND received>? AND source IN ('player','auto')",
+                                           (pid, now() - 3600))["n"]
+                        if n >= int(self.cfg.get("reports_alert_at", 3)):
+                            self.alert("reports", "%d reports on %s in the last hour" % (n, plain(who.get("name"))[:40]),
+                                       "Latest on %s: %s" % (s.name, plain(r.get("reason"))[:200]), key="reports:" + pid,
+                                       window=3600, pid=pid, server=s.key)
         return added
 
     # bans: expiry and making sure every server still has every ban
@@ -697,7 +1996,7 @@ class Portal:
     def _apply_ban(self, s: GameServer, b: dict, slot: int | None) -> list:
         left = 0 if not b["expires"] else max(1, (b["expires"] - now() + 59) // 60)
         length = engine_length(left)
-        reason = safe_arg(b["reason"], 100)
+        reason = self.ban_text(b)
         done = []
         if slot is not None:
             done.append(s.run(("ban %d %s %s" % (slot, length, reason)).strip()))
@@ -730,6 +2029,11 @@ class Portal:
             self.store.x("DELETE FROM chat WHERE at<?", (now() - int(self.cfg.get("chat_days", 30)) * 86400,))
             self.store.x("DELETE FROM sightings WHERE last_seen<?", (cut,))
             self.store.x("DELETE FROM sessions WHERE seen<?", (now() - 86400,))
+            self.store.x("DELETE FROM flags WHERE at<?", (cut,))
+            self.store.x("DELETE FROM alerts WHERE at<?", (cut,))
+            self.store.x("DELETE FROM undo WHERE expires<?", (now() - 86400,))
+            self.store.x("DELETE FROM peaks WHERE day<?", (time.strftime("%Y-%m-%d", time.gmtime(cut)),))
+            self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
             self.stop.wait(3600)
 
     # ------------------------------------------------------------------ queries used by the API
@@ -766,6 +2070,13 @@ class Portal:
         for r in self.store.q("SELECT pid, expires FROM mutes WHERE active=1 AND (expires=0 OR expires>?) AND pid IN (%s)" % marks,
                               [t] + pids):
             out.setdefault(r["pid"], {})["mute_until"] = r["expires"]
+        for r in self.store.q("SELECT pid FROM watchlist WHERE pid IN (%s)" % marks, pids):
+            out.setdefault(r["pid"], {})["watched"] = True
+        for r in self.store.q("SELECT pid, score FROM suspicion WHERE updated>? AND pid IN (%s)" % marks, [t - 600] + pids):
+            out.setdefault(r["pid"], {})["suspicion"] = r["score"]
+        for r in self.store.q("SELECT pid, kind FROM flags WHERE at>? AND kind IN ('ban dodger','possible alt','afk','team kills') "
+                              "AND pid IN (%s) GROUP BY pid, kind" % marks, [t - 3 * 3600] + pids):
+            out.setdefault(r["pid"], {}).setdefault("live_flags", []).append(r["kind"])
         return out
 
     def stats(self, route: str, **params):
@@ -797,6 +2108,9 @@ class Portal:
         except ValueError:
             pass
         sql += " GROUP BY pid ORDER BY last_seen DESC LIMIT 50"
+        if re.fullmatch(r"\d{15,21}", q):
+            for link in self.discord_links(discord_id=q) or []:
+                rows[link["pid"]] = {"pid": link["pid"], "stats_name": link.get("name") or "", "discord": True}
         for r in self.store.q(sql, params):
             rows[r["pid"]] = {"pid": r["pid"], "last_seen": r["last_seen"], "first_seen": r["first_seen"]}
         found = self.stats("search.json", q=q) or {}
@@ -853,7 +2167,34 @@ class Portal:
         st = self.stats("player.json", id=pid)
         out["stats"] = st
         out["matches"] = (st or {}).get("recent", [])
-        out["profile_url"] = "%s/player.html?id=%s" % (self.cfg.get("site", "https://truecombat.eu").rstrip("/"), pid)
+        out["profile_url"] = "%s/player?id=%s" % (self.cfg.get("site", "https://truecombat.eu").rstrip("/"), pid)
+        out["discord"] = self.discord_links(pid=pid)
+        out["watch"] = self.store.one("SELECT reason, created, by_name FROM watchlist WHERE pid=?", (pid,))
+        out["flags"] = self.store.q("SELECT kind, detail, server, at FROM flags WHERE pid=? ORDER BY id DESC LIMIT 50", (pid,))
+        out["punishments"] = self.store.q("SELECT offence, step, created, by_name, note FROM punishments WHERE pid=? ORDER BY id DESC LIMIT 50", (pid,))
+        live = next(({**p, "server": s.key} for s in self.servers.values() for p in s.view().get("players", []) if p.get("pid") == pid), None)
+        sus = self.store.one("SELECT score, reasons, updated, peak FROM suspicion WHERE pid=?", (pid,))
+        if live:
+            score, reasons = self.suspicion(live)
+            out["suspicion"] = {"score": score, "reasons": reasons, "live": True, "peak": max(score, (sus or {}).get("peak") or 0)}
+        elif sus:
+            out["suspicion"] = {"score": sus["score"], "reasons": json.loads(sus["reasons"] or "[]"), "live": False,
+                                "updated": sus["updated"], "peak": sus["peak"]}
+        else:
+            out["suspicion"] = None
+        alts = {}
+        for pu in out["puids"]:
+            for r in self.store.q("SELECT pid, MAX(name) name FROM sightings WHERE puid=? AND pid<>? GROUP BY pid", (pu, pid)):
+                alts[r["pid"]] = {"pid": r["pid"], "name": r["name"], "why": "anti-cheat account"}
+        if show_ip:
+            for alt in out.get("shared_ip", []):
+                if alt not in alts:
+                    r = self.store.one("SELECT name FROM sightings WHERE pid=? ORDER BY last_seen DESC LIMIT 1", (alt,))
+                    alts[alt] = {"pid": alt, "name": r["name"] if r else alt, "why": "internet address"}
+        for a in alts.values():
+            a["banned"] = bool(self.store.one("SELECT id FROM bans WHERE pid=? AND active=1", (a["pid"],)))
+        out["alts"] = list(alts.values())[:30]
+        out["appeals"] = self.store.q("SELECT id, status, text, answer, created, answered_by FROM appeals WHERE pid=? ORDER BY id DESC", (pid,))
         return out
 
     def _report_row(self, r: dict) -> dict:
@@ -1136,7 +2477,16 @@ def make_handler(portal: Portal):
                 raise ApiError(401, "Please sign in.")
             if not allowed(s["role"], perm):
                 raise ApiError(403, "Your role cannot do that.")
+            if RANK[PERMS[perm]] >= RANK["admin"] and cfg.get("require_2fa", True) and not self.totp_on(s):
+                raise ApiError(403, "Admin tools need two-step sign-in. Turn it on under your name, bottom left.")
             return s
+
+        def totp_on(self, s: dict) -> bool:
+            r = portal.store.one("SELECT enabled FROM totp WHERE discord_id=?", (s["discord_id"],))
+            return bool(r and r["enabled"])
+
+        def mfa_pending(self, s: dict | None) -> bool:
+            return bool(s) and not s.get("mfa") and self.totp_on(s)
 
         # -- routing
         def do_HEAD(self):
@@ -1163,8 +2513,15 @@ def make_handler(portal: Portal):
                     return self.auth(method, path, qs)
                 if path == "/api/bugreport" and method == "POST":
                     return self.bugreport()
+                if path in ("/appeal", "/appeal/") and method == "GET":
+                    return self.static("appeal.html")
+                if path.startswith("/appeal/"):
+                    return self.appeal(method, path, qs)
                 if path.startswith("/api/"):
                     s = self.session()
+                    route = path[len("/api/"):]
+                    if self.mfa_pending(s) and route not in ("me", "2fa", "2fa/verify"):
+                        raise ApiError(401, "Enter the code from your authenticator app first.")
                     if method == "POST":
                         if not s:
                             raise ApiError(401, "Please sign in.")
@@ -1179,6 +2536,9 @@ def make_handler(portal: Portal):
                 return
             except ApiError as e:
                 self.json({"error": e.message}, e.status)
+            except ValueError as e:
+                msg = str(e)
+                self.json({"error": msg if msg.startswith("Use ") else "Check the values you entered."}, 400)
             except RconError as e:
                 self.json({"error": "The game server did not take the command: %s" % e}, 502)
             except Exception:  # noqa: BLE001
@@ -1276,6 +2636,11 @@ def make_handler(portal: Portal):
                 perms = sorted(p for p in PERMS if allowed(s["role"], p))
                 return self.json({"signed_in": True, "name": s["name"], "avatar": s["avatar"], "role": s["role"],
                                   "discord_id": s["discord_id"], "csrf": s["csrf"], "perms": perms,
+                                  "mfa_pending": self.mfa_pending(s), "mfa_on": self.totp_on(s),
+                                  "mfa_required": bool(cfg.get("require_2fa", True)) and RANK.get(s["role"], 0) >= RANK["admin"],
+                                  "ladder": {k: {"label": v["label"], "steps": [step_label(x) for x in v["steps"]]}
+                                             for k, v in portal.ladder().items()},
+                                  "undo_seconds": UNDO_SECONDS,
                                   "mod_ban_limit": MOD_BAN_LIMIT, "version": VERSION,
                                   "maps": cfg.get("maps", []), "site": cfg.get("site", "https://truecombat.eu")})
             if route == "servers" and method == "GET":
@@ -1303,9 +2668,10 @@ def make_handler(portal: Portal):
                 self.need(s, "view")
                 show = qs.get("show", "active")
                 where = "active=1" if show == "active" else "1=1"
-                bans = portal.store.q("SELECT id,pid,name,reason,created,expires,by_name,active,lifted,lifted_by,lift_reason,"
-                                      "guid<>'' has_guid, ip<>'' has_ip, puid<>'' has_puid FROM bans WHERE %s "
-                                      "ORDER BY id DESC LIMIT 500" % where)
+                bans = portal.store.q("SELECT id,pid,name,reason,created,expires,by_name,active,lifted,lifted_by,lift_reason,appeal_code,"
+                                      "guid<>'' has_guid, ip<>'' has_ip, puid<>'' has_puid, (SELECT audit_id FROM undo WHERE kind='ban' "
+                                      "AND ref=bans.id AND done=0 AND expires>? AND (by_id=? OR ?)) undo FROM bans WHERE %s "
+                                      "ORDER BY id DESC LIMIT 500" % where, (now(), s["discord_id"], 1 if allowed(s["role"], "ban.remove") else 0))
                 return self.json({"bans": bans})
             if route == "bans" and method == "POST":
                 return self.ban(s, self.body_json())
@@ -1345,7 +2711,7 @@ def make_handler(portal: Portal):
                 portal.scan_reports()
                 status = qs.get("status", "open")
                 where, args = ("status=?", [status]) if status in ("open", "claimed", "closed") else ("1=1", [])
-                if qs.get("source") in ("player", "auto", "bug"):
+                if qs.get("source") in ("player", "auto", "bug", "appeal"):
                     where += " AND source=?"
                     args.append(qs["source"])
                 rows = [portal._report_row(r) for r in portal.store.q(
@@ -1389,6 +2755,345 @@ def make_handler(portal: Portal):
                 return self.json(portal.health())
             if route == "health/restart" and method == "POST":
                 return self.restart(s, self.body_json())
+            return self.api2(method, route, qs, s)
+
+        # -- API, round two: moderation tools, alerts, operations and two-step sign-in
+        def api2(self, method: str, route: str, qs: dict, s: dict | None) -> None:
+            G, P = method == "GET", method == "POST"
+            if route == "undo" and P:
+                who = self.need(s, "view")
+                d = self.body_json()
+                return self.json({"ok": True, "message": portal.undo(who, int(d.get("id") or 0))})
+            # punishment ladder
+            if route == "punish/next" and G:
+                self.need(s, "punish")
+                pid = qs.get("pid", "")
+                if not PID.match(pid):
+                    raise ApiError(400, "Pick a player.")
+                return self.json({"steps": [portal.next_step(pid, k) for k in portal.ladder()]})
+            if route == "punish" and P:
+                who = self.need(s, "punish")
+                d = self.body_json()
+                if portal.limited("act:" + who["discord_id"], 40, 60):
+                    raise ApiError(429, "Slow down a little.")
+                if d.get("server") is not None and d.get("slot") is not None:
+                    srv, slot, p = self.target(d)
+                    if p["bot"]:
+                        raise ApiError(400, "That is a bot.")
+                    return self.json(portal.punish(who, str(d.get("offence")), d.get("note", ""), srv=srv, slot=slot, p=p))
+                return self.json(portal.punish(who, str(d.get("offence")), d.get("note", ""), pid=str(d.get("pid", ""))))
+            # chat filter
+            if route == "filters" and G:
+                self.need(s, "view")
+                return self.json({"filters": portal.store.q("SELECT * FROM filters ORDER BY active DESC, id DESC"),
+                                  "flagged": portal.store.q("SELECT * FROM chat WHERE flag IS NOT NULL ORDER BY id DESC LIMIT 50")})
+            if route == "filters" and P:
+                who = self.need(s, "filters.manage")
+                d = self.body_json()
+                kind, action = d.get("kind", "word"), d.get("action", "flag")
+                if action not in Watchers.SEVERITY:
+                    raise ApiError(400, "Pick what the filter does.")
+                try:
+                    Watchers.compile_filter(d.get("pattern", ""), kind)
+                except re.error as e:
+                    raise ApiError(400, "That pattern does not work: %s" % e) from e
+                minutes = duration_minutes(d.get("length") or "10m") if action == "mute" else 0
+                vals = (str(d["pattern"]).strip()[:200], kind, action, minutes, safe_arg(d.get("note", ""), 60), 1 if d.get("active", True) else 0)
+                if d.get("id"):
+                    portal.store.x("UPDATE filters SET pattern=?, kind=?, action=?, minutes=?, note=?, active=? WHERE id=?", vals + (int(d["id"]),))
+                else:
+                    portal.store.x("INSERT INTO filters(pattern,kind,action,minutes,note,active,created,by_name) VALUES(?,?,?,?,?,?,?,?)",
+                                   vals + (now(), who["name"]))
+                portal._filters = None
+                portal.store.audit(who, "filter " + ("change" if d.get("id") else "add"), detail="%s %s -> %s" % (kind, vals[0], action))
+                return self.json({"ok": True})
+            if route == "filters/delete" and P:
+                who = self.need(s, "filters.manage")
+                fid = int(self.body_json().get("id") or 0)
+                f = portal.store.one("SELECT * FROM filters WHERE id=?", (fid,))
+                if not f:
+                    raise ApiError(404, "No such filter.")
+                portal.store.x("DELETE FROM filters WHERE id=?", (fid,))
+                portal._filters = None
+                portal.store.audit(who, "filter delete", detail="%s %s" % (f["kind"], f["pattern"]))
+                return self.json({"ok": True})
+            if route == "filters/test" and P:
+                self.need(s, "view")
+                text = str(self.body_json().get("text", ""))[:300]
+                return self.json({"matches": [{"id": f["id"], "pattern": f["pattern"], "action": f["action"], "note": f["note"]}
+                                              for f in portal.filter_hits(text)]})
+            # watchlist
+            if route == "watchlist" and G:
+                self.need(s, "view")
+                rows = portal.store.q("SELECT * FROM watchlist ORDER BY created DESC")
+                online = {p.get("pid"): k for k, srv in portal.servers.items() for p in srv.view().get("players", []) if p.get("pid")}
+                for r in rows:
+                    r["online"] = online.get(r["pid"])
+                return self.json({"watchlist": rows})
+            if route == "watchlist" and P:
+                who = self.need(s, "watch")
+                d = self.body_json()
+                pid = str(d.get("pid", ""))
+                if not PID.match(pid):
+                    raise ApiError(400, "Pick a player.")
+                if d.get("remove"):
+                    portal.store.x("DELETE FROM watchlist WHERE pid=?", (pid,))
+                    portal.store.audit(who, "unwatch", target=pid, pid=pid)
+                else:
+                    name = safe_arg(d.get("name", ""), 40) or (portal.store.one(
+                        "SELECT name FROM sightings WHERE pid=? ORDER BY last_seen DESC LIMIT 1", (pid,)) or {}).get("name", pid)
+                    portal.store.x("INSERT INTO watchlist(pid,name,reason,created,by_name) VALUES(?,?,?,?,?) ON CONFLICT(pid) DO UPDATE SET "
+                                   "reason=excluded.reason", (pid, name, safe_arg(d.get("reason", ""), 200), now(), who["name"]))
+                    portal.store.audit(who, "watch", target=name, pid=pid, detail=safe_arg(d.get("reason", ""), 200))
+                return self.json({"ok": True})
+            # saved replies
+            if route == "templates" and G:
+                self.need(s, "view")
+                return self.json({"templates": portal.store.q("SELECT * FROM templates ORDER BY kind, title")})
+            if route == "templates" and P:
+                who = self.need(s, "templates.manage")
+                d = self.body_json()
+                if d.get("delete"):
+                    portal.store.x("DELETE FROM templates WHERE id=?", (int(d.get("id") or 0),))
+                    portal.store.audit(who, "saved reply delete", detail="#%s" % d.get("id"))
+                    return self.json({"ok": True})
+                kind = d.get("kind")
+                if kind not in ("warn", "kick", "mute", "ban", "chat", "appeal", "close"):
+                    raise ApiError(400, "Pick where the reply is used.")
+                title, text = safe_arg(d.get("title", ""), 40), str(d.get("text", "")).strip()[:500]
+                if not title or not text:
+                    raise ApiError(400, "Give the reply a name and a text.")
+                if d.get("id"):
+                    portal.store.x("UPDATE templates SET kind=?, title=?, text=? WHERE id=?", (kind, title, text, int(d["id"])))
+                else:
+                    portal.store.x("INSERT INTO templates(kind,title,text,created,by_name) VALUES(?,?,?,?,?)", (kind, title, text, now(), who["name"]))
+                portal.store.audit(who, "saved reply", detail="%s: %s" % (kind, title))
+                return self.json({"ok": True})
+            # alerts and flags
+            if route == "alerts" and G:
+                self.need(s, "view")
+                before = int(qs.get("before") or 0) or 2 ** 62
+                return self.json({"alerts": portal.store.q("SELECT id,at,kind,title,text,pid,server,sent FROM alerts WHERE id<? ORDER BY id DESC LIMIT 100", (before,)),
+                                  "webhook": bool(portal.webhook_url())})
+            if route == "suspicion" and G:
+                self.need(s, "view")
+                rows = portal.store.q("SELECT * FROM suspicion WHERE updated>? AND score>0 ORDER BY score DESC LIMIT 50", (now() - 600,))
+                for r in rows:
+                    r["reasons"] = json.loads(r["reasons"] or "[]")
+                return self.json({"players": rows, "threshold": int(cfg.get("suspicion_alert", 60))})
+            # appeals (staff side; the player side is /appeal/*)
+            if route == "appeals/answer" and P:
+                who = self.need(s, "appeals.answer")
+                d = self.body_json()
+                return self.json(portal.appeal_answer(who, int(d.get("id") or 0), d.get("decision"), d.get("answer")))
+            # scheduled actions
+            if route == "schedule" and G:
+                self.need(s, "view")
+                return self.json({"jobs": portal.store.q("SELECT * FROM schedule WHERE active=1 ORDER BY next_at"),
+                                  "done": portal.store.q("SELECT * FROM schedule WHERE active=0 ORDER BY COALESCE(last_run, created) DESC LIMIT 20")})
+            if route == "schedule" and P:
+                d = self.body_json()
+                act = d.get("action")
+                if act not in SCHEDULE_ACTIONS:
+                    raise ApiError(400, "Pick what to do.")
+                who = self.need(s, SCHEDULE_ACTIONS[act])
+                server = str(d.get("server", ""))
+                if server != "*" and server not in portal.servers or (server == "*" and act != "say"):
+                    raise ApiError(400, "Pick a server.")
+                at = int(d.get("at") or 0)
+                every = int(d.get("every_min") or 0)
+                until = int(d.get("until") or 0)
+                if at < now() - 60 or at > now() + 60 * 86400:
+                    raise ApiError(400, "Pick a time in the next 60 days.")
+                if every and (every < 5 or every > 10080):
+                    raise ApiError(400, "Repeat every 5 minutes to 7 days.")
+                if until and until <= at:
+                    raise ApiError(400, "The end must be after the first run.")
+                arg = safe_arg(d.get("text", ""), 200) if act == "say" else str(d.get("map", "") or "")
+                if act == "say" and not arg:
+                    raise ApiError(400, "Write the message.")
+                if act == "map" and not MAP_NAME.match(arg) or act == "nextmap" and arg and not MAP_NAME.match(arg):
+                    raise ApiError(400, "Pick a map.")
+                if portal.store.one("SELECT COUNT(*) n FROM schedule WHERE active=1")["n"] >= 100:
+                    raise ApiError(409, "100 scheduled actions are waiting already. Cancel some first.")
+                jid = portal.store.x("INSERT INTO schedule(server,action,arg,next_at,every_min,until,created,by_name,by_id) VALUES(?,?,?,?,?,?,?,?,?)",
+                                     (server, act, arg, max(at, now()), every, until, now(), who["name"], who["discord_id"]))
+                portal.store.audit(who, "schedule " + act, server=server, detail="%s at %s%s" % (
+                    arg, iso(at), ", every %d min" % every if every else ""))
+                return self.json({"ok": True, "id": jid})
+            if route == "schedule/cancel" and P:
+                who = self.need(s, "server.say")
+                job = portal.store.one("SELECT * FROM schedule WHERE id=? AND active=1", (int(self.body_json().get("id") or 0),))
+                if not job:
+                    raise ApiError(404, "No such scheduled action.")
+                self.need(s, SCHEDULE_ACTIONS.get(job["action"], "schedule"))
+                portal.store.x("UPDATE schedule SET active=0, last_result='cancelled by ' || ? WHERE id=?", (who["name"], job["id"]))
+                portal.store.audit(who, "schedule cancel", server=job["server"], detail="#%d %s %s" % (job["id"], job["action"], job["arg"]))
+                return self.json({"ok": True})
+            # event mode and the config editor
+            if route == "event" and G:
+                self.need(s, "view")
+                rows = portal.store.q("SELECT server, started, by_name, preset, note FROM events")
+                for r in rows:
+                    r["preset"] = json.loads(r["preset"] or "{}")
+                    r["password"] = r["preset"].get("g_password", "")
+                return self.json({"events": rows})
+            if route == "event" and P:
+                who = self.need(s, "event")
+                d = self.body_json()
+                srv = portal.server(d.get("server"))
+                if d.get("action") == "start":
+                    return self.json(portal.event_start(who, srv, str(d.get("password") or ""), d.get("note", "")))
+                if d.get("action") == "stop":
+                    return self.json(portal.event_stop(who, srv))
+                raise ApiError(400, "Start or stop.")
+            if route == "cvars" and G:
+                self.need(s, "cvars")
+                return self.json(portal.cvars_view(portal.server(qs.get("server"))))
+            if route == "cvars" and P:
+                who = self.need(s, "cvars")
+                d = self.body_json()
+                return self.json(portal.cvar_set(who, portal.server(d.get("server")), str(d.get("cvar", "")), d.get("value"), bool(d.get("keep"))))
+            if route == "cvars/rollback" and P:
+                who = self.need(s, "cvars")
+                return self.json(portal.cvar_rollback(who, int(self.body_json().get("id") or 0)))
+            if route == "cvars/release" and P:
+                who = self.need(s, "cvars")
+                d = self.body_json()
+                portal.store.x("DELETE FROM cvar_overrides WHERE server=? AND cvar=?", (str(d.get("server")), str(d.get("cvar"))))
+                portal.store.audit(who, "setting release", server=str(d.get("server")), target=str(d.get("cvar")))
+                return self.json({"ok": True})
+            # live map
+            if route == "positions" and G:
+                who = self.need(s, "livemap")
+                srv = portal.server(qs.get("server"))
+                mark = (s["id"], srv.key)
+                if mark not in portal.map_views:
+                    portal.map_views.add(mark)
+                    portal.store.audit(who, "live map", server=srv.key, detail="opened the live map")
+                return self.json(portal.positions(srv))
+            # weekly report
+            if route == "weekly" and G:
+                self.need(s, "weekly")
+                weeks = max(0, min(52, int(qs.get("weeks_ago") or 0)))
+                w = portal.weekly(now() - weeks * 7 * 86400)
+                return self.json(dict(w, text=portal.weekly_text(w)))
+            # stats review queue
+            if route == "review" and G:
+                self.need(s, "review")
+                rows = portal.stats_staff("GET", "/staff/review.json").get("review", [])
+                done = {r["key"]: r for r in portal.store.q("SELECT key, value FROM meta WHERE key LIKE 'review:%'")}
+                for r in rows:
+                    r["checked"] = (done.get("review:%s:%s:%s" % (r.get("pid"), r.get("match_id"), r.get("reason"))) or {}).get("value")
+                return self.json({"review": rows})
+            if route == "review" and P:
+                who = self.need(s, "review")
+                d = self.body_json()
+                act, kind, ident = d.get("action"), d.get("kind"), str(d.get("id", ""))
+                if kind not in ("match", "player") or not PID.match(ident):
+                    raise ApiError(400, "Pick a player or a match.")
+                if act == "checked":
+                    portal.meta("review:%s:%s:%s" % (d.get("pid"), d.get("match_id"), d.get("reason")), "%s, %s" % (who["name"], iso()))
+                    portal.store.audit(who, "stats checked", target=ident, pid=ident if kind == "player" else "", detail=str(d.get("reason", ""))[:200])
+                    return self.json({"ok": True})
+                if act not in ("void", "unvoid"):
+                    raise ApiError(400, "Void or restore.")
+                r = portal.stats_staff("POST", "/staff/" + act, {"kind": kind, "id": ident, "reason": safe_arg(d.get("reason", ""), 200)})
+                portal.store.audit(who, "stats " + act, target=ident, pid=ident if kind == "player" else "", detail="%s %s" % (kind, d.get("reason", "")))
+                return self.json(r)
+            # server demos for reports
+            if route == "demo" and G:
+                self.need(s, "reports")
+                d = portal.demo_for(int(qs.get("report") or 0))
+                d.pop("path")
+                return self.json(d)
+            if route == "demo/file" and G:
+                who = self.need(s, "reports")
+                d = portal.demo_for(int(qs.get("report") or 0))
+                portal.store.audit(who, "demo download", server=d["server"], detail="%s, from %ss" % (d["file"], d["offset_s"]))
+                return self.send_file(Path(d["path"]), d["file"])
+            # two-step sign-in
+            if route == "2fa" and G:
+                if not s:
+                    raise ApiError(401, "Please sign in.")
+                return self.json({"enabled": self.totp_on(s), "pending": self.mfa_pending(s),
+                                  "required": bool(cfg.get("require_2fa", True)) and RANK.get(s["role"], 0) >= RANK["admin"]})
+            if route == "2fa/setup" and P:
+                who = self.need(s, "view")
+                if self.totp_on(who):
+                    raise ApiError(409, "Two-step sign-in is already on.")
+                secret_b32 = totp_secret()
+                portal.store.x("INSERT INTO totp(discord_id,secret,enabled,created,last_step) VALUES(?,?,0,?,0) ON CONFLICT(discord_id) "
+                               "DO UPDATE SET secret=excluded.secret, enabled=0, created=excluded.created, last_step=0",
+                               (who["discord_id"], secret_b32, now()))
+                label = urllib.parse.quote("TrueCombat Staff:%s" % who["name"])
+                return self.json({"secret": secret_b32, "uri": "otpauth://totp/%s?secret=%s&issuer=%s&digits=6&period=30" % (
+                    label, secret_b32, urllib.parse.quote("TrueCombat Staff"))})
+            if route in ("2fa/enable", "2fa/verify", "2fa/disable") and P:
+                if not s:
+                    raise ApiError(401, "Please sign in.")
+                if portal.limited("2fa:" + s["discord_id"], 5, 300):
+                    raise ApiError(429, "Too many tries. Wait five minutes.")
+                if route == "2fa/disable" and bool(cfg.get("require_2fa", True)) and RANK.get(s["role"], 0) >= RANK["admin"]:
+                    raise ApiError(409, "Admins and owners must keep two-step sign-in on.")
+                row = portal.store.one("SELECT * FROM totp WHERE discord_id=?", (s["discord_id"],))
+                if not row or (route == "2fa/enable") == bool(row["enabled"]):
+                    raise ApiError(409, "Start the setup first." if route == "2fa/enable" else "Two-step sign-in is not on.")
+                step = totp_match(row["secret"], self.body_json().get("code"), row["last_step"])
+                if not step:
+                    portal.store.audit(s, "2fa failed", detail=self.client_ip(), ok=False)
+                    raise ApiError(400, "That code is not right. Check the time on your phone and try the next code.")
+                if route == "2fa/disable":
+                    portal.store.x("DELETE FROM totp WHERE discord_id=?", (s["discord_id"],))
+                    portal.store.audit(s, "2fa off")
+                    return self.json({"ok": True})
+                portal.store.x("UPDATE totp SET enabled=1, last_step=? WHERE discord_id=?", (step, s["discord_id"]))
+                portal.store.x("UPDATE sessions SET mfa=1 WHERE id=?", (s["id"],))
+                portal.store.audit(s, "2fa on" if route == "2fa/enable" else "2fa ok", detail=self.client_ip())
+                return self.json({"ok": True})
+            if route == "2fa/reset" and P:
+                who = self.need(s, "2fa.reset")
+                did = str(self.body_json().get("discord_id", ""))
+                portal.store.x("DELETE FROM totp WHERE discord_id=?", (did,))
+                portal.store.x("DELETE FROM sessions WHERE discord_id=?", (did,))
+                portal.store.audit(who, "2fa reset", target=did)
+                return self.json({"ok": True})
+            raise ApiError(404, "Not found.")
+
+        def send_file(self, path: Path, name: str) -> None:
+            try:
+                f = path.open("rb")
+            except OSError as e:
+                raise ApiError(404, "The demo file could not be read.") from e
+            with f:
+                size = os.fstat(f.fileno()).st_size
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Length", str(size))
+                self.send_header("Content-Disposition", 'attachment; filename="%s"' % re.sub(r'[^A-Za-z0-9_.-]', "_", name))
+                self.send_header("Cache-Control", "no-store")
+                for k, v in SECURITY_HEADERS.items():
+                    self.send_header(k, v)
+                self.end_headers()
+                if self.command != "HEAD":
+                    shutil.copyfileobj(f, self.wfile, 256 * 1024)
+
+        # -- public ban appeals: the only pages a player can reach
+        def appeal(self, method: str, path: str, qs: dict) -> None:
+            ip = self.client_ip()
+            sender = hashlib.sha256(("appeal:" + ip).encode()).hexdigest()[:12]
+            if path == "/appeal/status" and method == "GET":
+                if portal.limited("appeal-status:" + ip, 30, 3600):
+                    raise ApiError(429, "Too many lookups. Try again later.")
+                return self.json(portal.appeal_status(qs.get("code", "")))
+            if path == "/appeal/submit" and method == "POST":
+                origin = self.headers.get("Origin")
+                if origin and origin.rstrip("/") != public:
+                    raise ApiError(403, "Wrong origin.")
+                if portal.limited("appeal:" + ip, 6, 3600) or portal.limited("appeal:*", 100, 86400):
+                    raise ApiError(429, "Too many appeals from this connection. Try again later.")
+                d = self.body_json()
+                return self.json(portal.appeal_submit(d.get("code"), d.get("text"), d.get("contact", ""), sender), 201)
             raise ApiError(404, "Not found.")
 
         # -- player actions
@@ -1415,109 +3120,30 @@ def make_handler(portal: Portal):
             if portal.limited("act:" + who["discord_id"], 40, 60):
                 raise ApiError(429, "Slow down a little.")
             srv, slot, p = self.target(d)
-            reason = safe_arg(d.get("reason", ""), 100)
-            detail, result = reason, ""
-            if act == "kick":
-                if not reason:
-                    raise ApiError(400, "Give a reason. The player sees it.")
-                result = srv.run("clientkick %d %s" % (slot, reason))
-            elif act == "warn":
-                if not reason:
-                    raise ApiError(400, "Write the warning.")
-                if not srv.has("warn"):
-                    raise ApiError(409, "This server needs the 0.36.0 server update for private warnings.")
-                result = srv.run("warn %d %s" % (slot, reason))
-                portal.store.x("INSERT INTO warnings(pid,name,text,created,by_name,server) VALUES(?,?,?,?,?,?)",
-                               (p.get("pid", ""), p["name"], reason, now(), who["name"], srv.key))
-            elif act in ("mute", "unmute"):
-                if not srv.has("mute"):
-                    raise ApiError(409, "This server needs the 0.36.0 server update for mutes.")
-                if act == "mute":
-                    minutes = duration_minutes(d.get("length") or "30m")
-                    detail = "%s, %s" % (engine_length(minutes) or "until lifted", reason)
-                    result = srv.run("mute %d %d %s" % (slot, min(minutes, 10080) if minutes else 0, reason))
-                    srv.run("voicemute %d" % slot)        # 0.36.0 voice chat; an unknown command on older servers
-                    if p.get("pid"):
-                        portal.store.x("UPDATE mutes SET active=0 WHERE pid=? AND active=1", (p["pid"],))
-                        portal.store.x("INSERT INTO mutes(pid,guid,name,reason,created,expires,by_name) VALUES(?,?,?,?,?,?,?)",
-                                       (p["pid"], p.get("guid", ""), p["name"], reason, now(),
-                                        now() + minutes * 60 if minutes else 0, who["name"]))
-                else:
-                    result = srv.run("unmute %d" % slot)
-                    srv.run("voiceunmute %d" % slot)
-                    if p.get("pid"):
-                        portal.store.x("UPDATE mutes SET active=0 WHERE pid=? AND active=1", (p["pid"],))
-            elif act == "move":
-                team = d.get("team")
-                if team not in ("r", "b", "s"):
-                    raise ApiError(400, "Pick a team.")
-                detail = {"r": "to Terrorists", "b": "to Specops", "s": "to spectators"}[team]
-                if srv.has("putteam"):
-                    result = srv.run("putteam %d %s" % (slot, team))
-                elif team == "s":
-                    result = srv.run("spectate %d" % slot)
-                else:
-                    raise ApiError(409, "This server needs the 0.36.0 server update to move players between teams.")
-            ok = "usage:" not in result.lower() and "refused" not in result.lower()
-            portal.store.audit(who, act, server=srv.key, target=p["name"], pid=p.get("pid", ""), detail=detail,
-                               ok=ok, result=plain(result).strip())
-            if not ok:
-                raise ApiError(409, "The server refused: %s" % plain(result).strip()[:200])
-            self.json({"ok": True, "result": plain(result).strip()})
+            result, aid = portal.act(who, srv, slot, p, act, reason=d.get("reason", ""), length=d.get("length") or "",
+                                     team=d.get("team") or "")
+            self.json({"ok": True, "result": result, "undo": aid if act == "mute" else None})
 
         def ban(self, s: dict | None, d: dict) -> None:
             minutes = duration_minutes(d.get("length", ""))
-            who = self.need(s, "ban.temp" if minutes else "ban.perm")
-            if minutes > MOD_BAN_LIMIT and not allowed(who["role"], "ban.perm"):
-                raise ApiError(403, "Moderators can ban for up to 24 hours. Ask an admin for longer bans.")
-            reason = safe_arg(d.get("reason", ""), 100)
-            if not reason:
-                raise ApiError(400, "Give a reason. The player sees it.")
-            slot, srv = None, None
+            who = self.need(s, "ban.temp")          # ban_player refuses moderators past MOD_BAN_LIMIT
+            srv = slot = None
             if d.get("server") is not None and d.get("slot") is not None:
                 srv, slot, p = self.target(d)
                 if p["bot"]:
                     raise ApiError(400, "That is a bot.")
-                b = {"pid": p.get("pid", ""), "guid": p.get("guid", ""), "ip": p.get("ip", ""), "puid": p.get("puid", ""),
-                     "name": p["name"]}
+                target = p
             else:
-                pid = str(d.get("pid", ""))
-                if not PID.match(pid):
-                    raise ApiError(400, "Pick a player.")
-                last = portal.store.one("SELECT * FROM sightings WHERE pid=? ORDER BY last_seen DESC LIMIT 1", (pid,))
-                if not last:
-                    raise ApiError(404, "The portal has never seen this player on a server, so it has nothing to ban.")
-                puid = portal.store.one("SELECT puid FROM sightings WHERE pid=? AND puid<>'' ORDER BY last_seen DESC LIMIT 1", (pid,))
-                b = {"pid": pid, "guid": last["guid"], "ip": last["ip"], "puid": puid["puid"] if puid else "", "name": last["name"]}
-            if not d.get("ip_ban", True):
-                b["ip"] = ""
-            b.update({"reason": reason, "expires": now() + minutes * 60 if minutes else 0})
-            bid = portal.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_id,by_name) VALUES(?,?,?,?,?,?,?,?,?,?)",
-                                 (b["pid"], b["guid"], b["ip"], b["puid"], b["name"], reason, now(), b["expires"],
-                                  who["discord_id"], who["name"]))
-            results = {}
-            for key in portal.order:
-                server = portal.servers[key]
-                try:
-                    out = portal._apply_ban(server, b, slot if server is srv else None)
-                    results[key] = plain(" ".join(out)).strip()[:200] or "ok"
-                except RconError as e:
-                    results[key] = "offline, applied at the next sync: %s" % e
-            portal.store.audit(who, "ban", server=srv.key if srv else "", target=b["name"], pid=b["pid"],
-                               detail="%s, %s" % (engine_length(minutes) or "permanent", reason), result=json.dumps(results))
-            self.json({"ok": True, "id": bid, "servers": results})
+                target = portal.ban_target(str(d.get("pid", "")))
+            r = portal.ban_player(who, target, minutes, d.get("reason", ""), ip_ban=bool(d.get("ip_ban", True)), srv=srv, slot=slot)
+            self.json({"ok": True, "id": r["id"], "servers": r["servers"], "undo": r["audit_id"], "appeal_code": r["appeal_code"]})
 
         def unban(self, s: dict | None, d: dict) -> None:
             who = self.need(s, "ban.remove")
             b = portal.store.one("SELECT * FROM bans WHERE id=? AND active=1", (int(d.get("id") or 0),))
             if not b:
                 raise ApiError(404, "No active ban with that number.")
-            reason = safe_arg(d.get("reason", ""), 200)
-            res = portal._lift_everywhere(b)
-            portal.store.x("UPDATE bans SET active=0, lifted=?, lifted_by=?, lift_reason=? WHERE id=?",
-                           (now(), who["name"], reason, b["id"]))
-            portal.store.audit(who, "unban", target=b["name"], pid=b["pid"], detail=reason or "#%d" % b["id"], result=json.dumps(res))
-            self.json({"ok": True, "servers": res})
+            self.json({"ok": True, "servers": portal.lift_ban(who, b, d.get("reason", ""))})
 
         def server_action(self, s: dict | None, d: dict) -> None:
             act = d.get("action")
@@ -1529,50 +3155,8 @@ def make_handler(portal: Portal):
             if portal.limited("srv:" + who["discord_id"], 30, 60):
                 raise ApiError(429, "Slow down a little.")
             keys = portal.order if d.get("server") == "*" and act in ("say", "chat") else [portal.server(d.get("server")).key]
-            text = safe_arg(d.get("text", ""), 200)
-            results = {}
-            for key in keys:
-                srv = portal.servers[key]
-                if act in ("say", "chat"):
-                    if not text:
-                        raise ApiError(400, "Write a message.")
-                    staff_name = safe_arg(who["name"], 24) or "Staff"
-                    if srv.has("staffsay"):
-                        cmd = "staffsay %s %s" % (staff_name.replace(" ", "_"), text)
-                    else:
-                        cmd = "say ^8[STAFF] %s^7: %s" % (staff_name, text)
-                    try:
-                        results[key] = srv.run(cmd)
-                    except RconError as e:
-                        results[key] = "offline: %s" % e
-                        continue
-                    # rcon output never reaches the server log, so the portal records staff lines itself
-                    portal.store.x("INSERT INTO chat(server,at,slot,team,pid,name,text,kind) VALUES(?,?,?,?,?,?,?,?)",
-                                   (srv.key, now(), -1, None, "", staff_name, text, "staff"))
-                elif act == "map":
-                    m = str(d.get("map", ""))
-                    if not MAP_NAME.match(m):
-                        raise ApiError(400, "Pick a map.")
-                    results[key] = srv.run("map %s" % m, timeout=4)
-                    text = m
-                elif act == "nextmap":
-                    m = str(d.get("map", "") or "")
-                    if m and not MAP_NAME.match(m):
-                        raise ApiError(400, "Pick a map.")
-                    results[key] = srv.run(("nextmap %s" % m).strip(), timeout=4)
-                    text = m or "next in rotation"
-                elif act == "restart":
-                    results[key] = srv.run("map_restart 0", timeout=4)
-                    text = "match restart"
-                elif act == "rotation":
-                    maps = [x for x in str(d.get("maps", "")).split() if MAP_NAME.match(x)]
-                    if not maps:
-                        raise ApiError(400, "List at least one map.")
-                    results[key] = srv.run("maprotation %s" % " ".join(maps[:20]), timeout=3)
-                    text = " ".join(maps[:20])
-            portal.store.audit(who, "server " + act, server=",".join(keys), detail=text, result=json.dumps(
-                {k: plain(v).strip()[:200] for k, v in results.items()}))
-            self.json({"ok": True, "servers": {k: plain(v).strip()[:300] for k, v in results.items()}})
+            res = portal.server_command(who, act, keys, text=d.get("text", ""), m=str(d.get("map", "") or ""), maps=str(d.get("maps", "")))
+            self.json({"ok": True, "servers": res})
 
         def staff_change(self, s: dict | None, d: dict) -> None:
             who = self.need(s, "staff.manage")
@@ -1643,9 +3227,17 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--config", required=True)
     ap.add_argument("--listen", help="host:port (default from the config, 127.0.0.1:8097)")
+    ap.add_argument("--reset-2fa", metavar="DISCORD_ID", help="turn off two-step sign-in for one account (lost phone) and exit")
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     cfg = load_config(a.config)
+    if a.reset_2fa:
+        store = Store(str(Path(cfg.get("data_dir", "/var/lib/tcp-staff-portal")) / "portal.db"))
+        store.x("DELETE FROM totp WHERE discord_id=?", (a.reset_2fa,))
+        store.x("DELETE FROM sessions WHERE discord_id=?", (a.reset_2fa,))
+        store.audit({"name": "console", "role": "system"}, "2fa reset", target=a.reset_2fa, detail="from the command line")
+        print("two-step sign-in reset for %s; they set it up again at the next sign-in" % a.reset_2fa)
+        return 0
     if cfg.get("dev_login") and str(cfg.get("public_url", "")).startswith("https://"):
         raise SystemExit("dev_login is for local tests only; remove it from a public portal's config")
     host, _, port = (a.listen or "%s:%s" % (cfg.get("host", "127.0.0.1"), cfg.get("port", 8097))).rpartition(":")

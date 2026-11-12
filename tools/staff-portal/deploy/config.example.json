@@ -18,6 +18,20 @@
   "retention_days": 90,
   "chat_days": 30,
   "bugreport_per_hour": 6,
+  "require_2fa": true,
+  "appeals": true,
+  "demo_timezone": "UTC",
+  "discord_bot_db": "/var/lib/tcp-discord-bot/bot.db",
+  "alerts": {
+    "ping_role_id": "",
+    "kinds": ["server_down", "server_up", "suspicion", "dodger", "watch", "reports", "filter", "teamkill", "mod_ban", "appeal", "weekly"]
+  },
+  "suspicion_alert": 60,
+  "afk_flag_seconds": 120,
+  "afk_spectate_seconds": 300,
+  "tk_warn_at": 2,
+  "tk_flag_at": 3,
+  "ladder_days": 90,
   "servers": [
     {"key": "official1", "name": "Official #1 Ranked", "kind": "official", "host": "127.0.0.1", "port": 27960,
      "public_address": "truecombat.eu:27960", "unit": "tcp-official.service", "rcon_credential": "rcon-official1",

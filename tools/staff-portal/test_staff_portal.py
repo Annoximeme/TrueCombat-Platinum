@@ -37,11 +37,28 @@ class FakeGame(threading.Thread):
         self.password = password
         self.commands = []
         self.bans = []
-        self.players = {0: {"name": "Viper^7", "guid": GUID, "ip": "203.0.113.9", "team": 1, "muted": 0},
-                        1: {"name": "[BOT] Rook^7", "guid": "", "ip": "bot", "team": 2, "muted": 0}}
+        self.players = {0: {"name": "Viper^7", "guid": GUID, "ip": "203.0.113.9", "team": 1, "muted": 0, "tk": 0,
+                            "xyz": (100.0, 200.0, 50.0)},
+                        1: {"name": "[BOT] Rook^7", "guid": "", "ip": "bot", "team": 2, "muted": 0, "tk": 0,
+                            "xyz": (-500.0, -900.0, 60.0)}}
+        self.cvars = {"g_friendlyFire": "1", "g_password": "", "bot_minplayers": "4", "g_autoBalance": "1",
+                      "g_allowVote": "1", "sv_autoDemo": "0", "g_warmup": "20"}
 
     def answer(self, cmd: str) -> str:
         word, _, rest = cmd.partition(" ")
+        if word in self.cvars and not rest:
+            return '"%s" is: "%s^7", the default\n' % (word, self.cvars[word])
+        if word == "set":
+            name, _, value = rest.partition(" ")
+            self.cvars[name] = value.strip('"')
+            return ""
+        if word == "tcp_status":
+            out = "TCP_NATIVE_STATUS bits=64 frames=10\n"
+            for slot, p in self.players.items():
+                out += ("TCP_NATIVE_PLAYER slot=%d begun=1 moves=10 time=1 xyz=%.3f,%.3f,%.3f hp=100 weapon=41 mode=0 clip=30 "
+                        "reserve=90 shots=100 hits=80 kills=20 deaths=2 targets=0 team=%d stance=0 stamina=1 head=0 body=0 legs=0\n") % (
+                    slot, *p["xyz"], p["team"])
+            return out
         if word == "status":
             lines = ["map                   : obj_village", "", "num score ping name lastmsg address qport rate lastConnectTime"]
             for slot, p in self.players.items():
@@ -67,8 +84,8 @@ class FakeGame(threading.Thread):
         if word == "tcp_players" and self.staff:
             out = "TCP_STAFF_MATCH map_time=1000 round_phase=2 team_mode=1\n"
             for slot, p in self.players.items():
-                out += "TCP_STAFF_PLAYER slot=%d begun=1 team=%d spec=0 bot=%d alive=1 muted=%d kills=3 deaths=1 team_kills=0 damage=300 pid=%s name=%s\n" % (
-                    slot, p["team"], p["ip"] == "bot", p["muted"], tsp.player_pid(p["guid"]) or "-", p["name"])
+                out += "TCP_STAFF_PLAYER slot=%d begun=1 team=%d spec=0 bot=%d alive=1 muted=%d kills=3 deaths=1 team_kills=%d damage=300 pid=%s name=%s\n" % (
+                    slot, p["team"], p["ip"] == "bot", p["muted"], p["tk"], tsp.player_pid(p["guid"]) or "-", p["name"])
             return out + "TCP_STAFF_END\n"
         if word == "banlist":
             return "%d ban(s)\n" % len(self.bans) + "".join(
@@ -114,6 +131,13 @@ class FakeGame(threading.Thread):
             self.sock.sendto(b"\xff\xff\xff\xffprint\n" + self.answer(cmd).encode("latin-1"), addr)
 
 
+HOOKS, VOIDED = [], []
+
+
+def totp_now(secret):
+    return tsp.totp_code(secret, int(time.time() // 30))
+
+
 def fake_stats():
     """Stands in for the stats service (tcp_stats.py routes player.json and search.json)."""
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -122,8 +146,30 @@ def fake_stats():
         def log_message(self, *a):
             pass
 
+        def do_POST(self):
+            n = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(n) or b"{}")
+            if self.path == "/webhook":
+                HOOKS.append(body)
+                out = {}
+            elif self.path in ("/staff/void", "/staff/unvoid") and self.headers.get("X-Staff-Token") == "tok":
+                VOIDED.append((self.path, body))
+                out = {"ok": True, "rebuilt": 1}
+            else:
+                self.send_response(403)
+                self.end_headers()
+                return
+            data = json.dumps(out).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
         def do_GET(self):
-            if self.path.startswith("/player.json?id=" + PID):
+            if self.path == "/staff/review.json" and self.headers.get("X-Staff-Token") == "tok":
+                body = {"review": [{"pid": PID, "name": "Viper", "match_id": "00112233aabbccdd", "reason": "accuracy 92%",
+                                    "created": "2026-11-12T10:00:00Z"}]}
+            elif self.path.startswith("/player.json?id=" + PID):
                 body = {"id": PID, "name": "Viper", "rating": 1234, "ranked": True, "position": 3, "matches": 12, "kills": 90,
                         "deaths": 40, "teamKills": 1, "recent": [{"ended": "2026-11-12T09:00:00Z", "map": "obj_snow", "won": True,
                                                                   "kills": 9, "deaths": 2, "headshots": 4}]}
@@ -161,11 +207,20 @@ class PortalTest(unittest.TestCase):
         cls.chatlog = Path(cls.tmp.name) / "game.log"
         cls.chatlog.write_text("")
         cfg = {"public_url": "http://127.0.0.1:0", "data_dir": cls.tmp.name, "dev_login": True, "poll_seconds": 0.5,
-               "ban_sync_seconds": 3600, "stats_api": fake_stats(), "owners": ["100000000000000001"],
+               "ban_sync_seconds": 3600, "stats_api": fake_stats(), "owners": ["100000000000000001"], "require_2fa": False, "stats_token": "tok",
+               "suspicion_seconds": 3600, "enforce_seconds": 3600, "afk_spectate_seconds": 0,
+               "discord_bot_db": str(Path(cls.tmp.name) / "bot.db"),
                "servers": [
                    {"key": "one", "name": "Official #1", "host": "127.0.0.1", "port": cls.game.port, "rcon_password": "pw",
                     "reports_dir": str(reports), "log_file": str(cls.chatlog)},
                    {"key": "two", "name": "Official #2", "host": "127.0.0.1", "port": cls.old.port, "rcon_password": "pw"}]}
+        cfg["alerts"] = {"webhook_url": cfg["stats_api"] + "/webhook", "gap_seconds": 0.05}
+        import sqlite3
+        con = sqlite3.connect(cfg["discord_bot_db"])
+        con.execute("CREATE TABLE links(discord_id INTEGER PRIMARY KEY, pid TEXT UNIQUE, name TEXT, linked_at TEXT)")
+        con.execute("INSERT INTO links VALUES(?,?,?,?)", (184000000000000001, PID, "viper#0", "2026-11-10T12:00:00Z"))
+        con.commit()
+        con.close()
         cls.portal = tsp.Portal(cfg)
         cls.portal.start()
         from http.server import ThreadingHTTPServer
@@ -174,7 +229,7 @@ class PortalTest(unittest.TestCase):
         cfg["public_url"] = "http://127.0.0.1:%d" % cls.port
         cls.httpd.RequestHandlerClass = tsp.make_handler(cls.portal)
         threading.Thread(target=cls.httpd.serve_forever, daemon=True).start()
-        time.sleep(1.5)
+        time.sleep(3.5)
         cls.sessions = {r: cls.login(r) for r in ("moderator", "admin", "owner")}
 
     @classmethod
@@ -366,6 +421,267 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(tsp.host_of("[2a02::1]:27960"), "2a02::1")
         st = tsp.parse_status("  3     7   55 Some Name With Spaces^7          0 1.2.3.4:27960   111 25000 5000\n")
         self.assertEqual(st["players"][3]["name"], "Some Name With Spaces")
+
+
+    # ---------------------------------------------------------------- round two
+    def viper_back(self):
+        if 0 not in self.game.players:
+            self.game.players[0] = {"name": "Viper^7", "guid": GUID, "ip": "203.0.113.9", "team": 1, "muted": 0, "tk": 0,
+                                    "xyz": (100.0, 200.0, 50.0)}
+        self.game.bans = []
+        self.portal.store.x("UPDATE bans SET active=0")
+        time.sleep(2.5)
+
+    def test_16_ladder(self):
+        self.viper_back()
+        st, d = self.call("moderator", "GET", "/api/punish/next?pid=" + PID)
+        tk = [x for x in d["steps"] if x["offence"] == "teamkill"][0]
+        self.assertEqual((tk["index"], tk["action"]), (0, "Warn"))
+        body = {"server": "one", "slot": 0, "name": "Viper", "offence": "teamkill", "note": "spawn"}
+        st, d = self.call("moderator", "POST", "/api/punish", body)
+        self.assertEqual((st, d.get("action")), (200, "Warn"), d)
+        self.assertIn("warn 0 Team killing: spawn", self.game.commands)
+        st, d = self.call("moderator", "POST", "/api/punish", body)
+        self.assertEqual(d["action"], "Kick", d)
+        st, d = self.call("moderator", "POST", "/api/punish", body)
+        self.assertEqual((st, d["action"]), (200, "Ban, 1 day"), d)
+        self.viper_back()
+        st, d = self.call("moderator", "POST", "/api/punish", body)
+        self.assertEqual(st, 403, d)                     # step 4 is 7 days: past the moderator limit
+        self.assertIn("Ask an admin", d["error"])
+        st, d = self.call("admin", "POST", "/api/punish", {"pid": PID, "offence": "teamkill"})
+        self.assertEqual((st, d["action"]), (200, "Ban, 7 days"), d)
+        self.viper_back()
+        # on a 0.35.0 server the warning goes to public chat
+        st, d = self.call("moderator", "POST", "/api/punish", {"server": "two", "slot": 0, "offence": "spam"})
+        self.assertEqual(d["result"], "warned in public chat", d)
+        self.assertTrue(any(c.startswith("say ^8[STAFF]^7 Viper: Spam") for c in self.old.commands))
+
+    def test_17_undo(self):
+        self.viper_back()
+        st, d = self.call("moderator", "POST", "/api/action", {"action": "mute", "server": "one", "slot": 0, "length": "1h", "reason": "x"})
+        self.assertTrue(d["undo"])
+        self.assertEqual(self.call("admin", "POST", "/api/undo", {"id": 999999})[0], 404)
+        st, r = self.call("moderator", "POST", "/api/undo", {"id": d["undo"]})
+        self.assertEqual(st, 200, r)
+        self.assertIn("voiceunmute 0", self.game.commands)
+        self.assertFalse(self.portal.store.one("SELECT id FROM mutes WHERE active=1"))
+        st, d = self.call("moderator", "POST", "/api/bans", {"pid": PID, "length": "2h", "reason": "rage"})
+        self.assertEqual(st, 200, d)
+        self.assertEqual(self.call("moderator", "POST", "/api/undo", {"id": d["undo"]})[0], 200)
+        self.assertFalse(self.portal.store.one("SELECT active FROM bans WHERE id=?", (d["id"],))["active"])
+        self.assertEqual(self.call("moderator", "POST", "/api/undo", {"id": d["undo"]})[0], 404)   # once only
+        # past the window
+        st, d = self.call("moderator", "POST", "/api/bans", {"pid": PID, "length": "2h", "reason": "rage"})
+        self.portal.store.x("UPDATE undo SET expires=1 WHERE audit_id=?", (d["undo"],))
+        self.assertEqual(self.call("moderator", "POST", "/api/undo", {"id": d["undo"]})[0], 409)
+        self.viper_back()
+
+    def test_18_chat_filter(self):
+        self.viper_back()
+        self.assertEqual(self.call("moderator", "POST", "/api/filters", {"pattern": "noob*", "kind": "word", "action": "mute"})[0], 403)
+        self.assertEqual(self.call("admin", "POST", "/api/filters", {"pattern": "(", "kind": "regex", "action": "flag"})[0], 400)
+        st, d = self.call("admin", "POST", "/api/filters", {"pattern": "noob*", "kind": "word", "action": "mute", "length": "15m", "note": "Insult"})
+        self.assertEqual(st, 200, d)
+        st, d = self.call("moderator", "POST", "/api/filters/test", {"text": "you are all N00BS"})
+        self.assertEqual(len(d["matches"]), 1)
+        self.assertFalse(self.call("moderator", "POST", "/api/filters/test", {"text": "snoobly"})[1]["matches"])
+        with self.chatlog.open("a") as f:
+            f.write("  1001 TCP_NATIVE_SAY slot=0 team=0 you are all N00BS\n")
+        time.sleep(1.5)
+        self.assertIn("mute 0 15 Insult", self.game.commands)
+        st, d = self.call("moderator", "GET", "/api/filters")
+        self.assertEqual(d["flagged"][0]["flag"], "Insult")
+        self.assertEqual(d["filters"][0]["hits"], 1)
+        a = self.portal.store.one("SELECT * FROM audit WHERE staff='Chat filter' ORDER BY id DESC")
+        self.assertEqual(a["action"], "mute")
+
+    def test_19_watchlist_and_dodgers(self):
+        self.viper_back()
+        self.assertEqual(self.call("moderator", "POST", "/api/watchlist", {"pid": PID, "reason": "aim looks odd"})[0], 200)
+        self.portal.watch_cache.clear()
+        self.portal.online.clear()
+        time.sleep(1.5)
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='watch' AND pid=?", (PID,)))
+        st, d = self.call("moderator", "GET", "/api/servers")
+        viper = [p for p in d["servers"][0]["players"] if p.get("pid") == PID][0]
+        self.assertTrue(viper["watched"])
+        # a banned identity on the same anti-cheat account
+        self.portal.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_id,by_name,active) VALUES(?,?,?,?,?,?,?,?,?,?,1)",
+                            ("aaaaaaaaaaaaaaaa", "G2", "198.51.100.1", "0002aabbccddeeff00112233445566778", "OldViper", "aimbot", 1, 0, "1", "t"))
+        self.portal.watch_cache.clear()
+        time.sleep(1.5)
+        f = self.portal.store.one("SELECT * FROM flags WHERE pid=? AND kind='ban dodger'", (PID,))
+        self.assertIn("OldViper", f["detail"])
+        st, p = self.call("moderator", "GET", "/api/player/" + PID)
+        self.assertEqual(p["watch"]["reason"], "aim looks odd")
+        self.assertEqual(p["discord"][0]["discord_id"], "184000000000000001")
+        score = p["suspicion"]["score"]
+        self.assertGreaterEqual(score, 50, p["suspicion"])        # shared account with a banned player + 80% accuracy
+        self.assertTrue(any("anti-cheat account" in r for r in p["suspicion"]["reasons"]))
+        st, d = self.call("moderator", "GET", "/api/lookup?q=184000000000000001")
+        self.assertIn(PID, [x["pid"] for x in d["players"]])
+        self.call("moderator", "POST", "/api/watchlist", {"pid": PID, "remove": True})
+        self.portal.store.x("UPDATE bans SET active=0")
+
+    def test_20_appeals(self):
+        self.viper_back()
+        st, d = self.call("admin", "POST", "/api/bans", {"pid": PID, "length": "7d", "reason": "wallhack"})
+        code = d["appeal_code"]
+        self.assertRegex(code, r"^[A-Z2-9]{6}$")
+        self.assertTrue(any(("appeal at 127.0.0.1:%d/appeal code %s" % (self.port, code)) in c for c in self.game.commands))
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/appeal")
+        self.assertEqual(c.getresponse().status, 200)
+        c.close()
+
+        def public(method, path, body=None):
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request(method, path, body=json.dumps(body) if body else None, headers={"Content-Type": "application/json"})
+            r = c.getresponse()
+            out = (r.status, json.loads(r.read() or b"{}"))
+            c.close()
+            return out
+        self.assertEqual(public("POST", "/appeal/submit", {"code": "ZZZZZZ", "text": "x" * 30})[0], 404)
+        self.assertEqual(public("POST", "/appeal/submit", {"code": code, "text": "short"})[0], 400)
+        st, r = public("POST", "/appeal/submit", {"code": code.lower(), "text": "I was not cheating, check the demo please.", "contact": "viper#0"})
+        self.assertEqual(st, 201, r)
+        self.assertEqual(public("POST", "/appeal/submit", {"code": code, "text": "Again, I was not cheating at all."})[0], 409)
+        st, r = public("GET", "/appeal/status?code=" + code)
+        self.assertEqual(r["appeal"]["status"], "open")
+        st, d = self.call("moderator", "GET", "/api/reports?status=open&source=appeal")
+        rep = d["reports"][0]
+        self.assertEqual(rep["data"]["contact"], "viper#0")
+        body = {"id": rep["data"]["appeal_id"], "decision": "accept", "answer": "Demo checked, you are clean."}
+        self.assertEqual(self.call("moderator", "POST", "/api/appeals/answer", body)[0], 403)
+        self.assertEqual(self.call("admin", "POST", "/api/appeals/answer", body)[0], 200)
+        st, r = public("GET", "/appeal/status?code=" + code)
+        self.assertEqual((r["appeal"]["status"], r["ban"]["active"]), ("accepted", False))
+        self.assertEqual(r["appeal"]["answer"], "Demo checked, you are clean.")
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='appeal'"))
+
+    def test_21_schedule(self):
+        self.viper_back()
+        self.assertEqual(self.call("moderator", "POST", "/api/schedule", {"server": "one", "action": "map", "map": "obj_snow", "at": int(time.time())})[0], 403)
+        st, d = self.call("moderator", "POST", "/api/schedule", {"server": "*", "action": "say", "text": "Tournament at 20:00",
+                                                                 "at": int(time.time()), "every_min": 30})
+        self.assertEqual(st, 200, d)
+        self.assertEqual(self.portal.run_schedule(), 1)
+        self.assertTrue(any(c.startswith("staffsay Moderator Tournament at 20:00") for c in self.game.commands))
+        job = self.portal.store.one("SELECT * FROM schedule WHERE id=?", (d["id"],))
+        self.assertTrue(job["active"])
+        self.assertGreater(job["next_at"], time.time() + 25 * 60)
+        self.assertEqual(self.call("moderator", "POST", "/api/schedule/cancel", {"id": d["id"]})[0], 200)
+        st, d = self.call("admin", "POST", "/api/schedule", {"server": "one", "action": "nextmap", "at": int(time.time())})
+        self.portal.run_schedule()
+        self.assertFalse(self.portal.store.one("SELECT active FROM schedule WHERE id=?", (d["id"],))["active"])
+
+    def test_22_event_and_settings(self):
+        st, d = self.call("admin", "POST", "/api/event", {"server": "one", "action": "start", "note": "Clan cup"})
+        self.assertEqual(st, 200, d)
+        self.assertEqual(self.game.cvars["g_password"], d["password"])
+        self.assertEqual(self.game.cvars["bot_minplayers"], "0")
+        self.assertEqual(self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "bot_minplayers", "value": "2"})[0], 409)
+        self.game.cvars["g_password"] = ""                 # the server restarted mid-event
+        self.portal.enforce()
+        self.assertEqual(self.game.cvars["g_password"], d["password"])
+        st, _ = self.call("admin", "POST", "/api/event", {"server": "one", "action": "stop"})
+        self.assertEqual((self.game.cvars["g_password"], self.game.cvars["bot_minplayers"]), ("", "4"))
+        # config editor
+        self.assertEqual(self.call("moderator", "GET", "/api/cvars?server=one")[0], 403)
+        self.assertEqual(self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "rconpassword", "value": "x"})[0], 400)
+        self.assertEqual(self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_warmup", "value": "1;quit"})[0], 400)
+        st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_friendlyFire", "value": "0", "keep": True})
+        self.assertEqual((st, d["old"], self.game.cvars["g_friendlyFire"]), (200, "1", "0"), d)
+        self.game.cvars["g_friendlyFire"] = "1"
+        self.portal.enforce()
+        self.assertEqual(self.game.cvars["g_friendlyFire"], "0")
+        st, v = self.call("admin", "GET", "/api/cvars?server=one")
+        ff = [c for c in v["cvars"] if c["name"] == "g_friendlyFire"][0]
+        self.assertEqual((ff["value"], ff["kept"]), ("0", "0"))
+        st, d = self.call("admin", "POST", "/api/cvars/rollback", {"id": [h for h in v["history"] if h["kind"] == "set"][0]["id"]})
+        self.assertEqual((st, self.game.cvars["g_friendlyFire"]), (200, "1"))
+        self.game.cvars["g_friendlyFire"] = "1"
+        self.portal.enforce()
+        self.assertEqual(self.game.cvars["g_friendlyFire"], "1")           # a rollback releases the kept value
+
+    def test_23_live_map(self):
+        self.viper_back()
+        st, d = self.call("moderator", "GET", "/api/positions?server=one")
+        self.assertEqual(st, 200, d)
+        self.assertEqual(d["layout"]["image"], "/static/maps/layout-village.webp")
+        viper = [p for p in d["players"] if p["slot"] == 0][0]
+        self.assertTrue(0 <= viper["u"] <= 1 and 0 <= viper["v"] <= 1, viper)
+        self.call("moderator", "GET", "/api/positions?server=one")
+        n = self.portal.store.one("SELECT COUNT(*) n FROM audit WHERE action='live map' AND staff='Moderator'")["n"]
+        self.assertEqual(n, 1)                                              # once per session and server
+        st, d = self.call("moderator", "GET", "/api/servers")
+        self.assertNotIn("x", d["servers"][0]["players"][0])               # positions never reach the normal view
+
+    def test_24_two_step_sign_in(self):
+        self.portal.cfg["require_2fa"] = True
+        try:
+            st, d = self.call("admin", "GET", "/api/audit")
+            self.assertEqual(st, 403)
+            st, d = self.call("admin", "POST", "/api/2fa/setup", {})
+            secret = d["secret"]
+            self.assertTrue(d["uri"].startswith("otpauth://totp/"))
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/enable", {"code": "000000"})[0], 400)
+            code = totp_now(secret)
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/enable", {"code": code})[0], 200)
+            self.assertEqual(self.call("admin", "GET", "/api/audit")[0], 200)
+            # a new session must give a code first, and a code is never accepted twice
+            fresh = self.login("admin")
+            saved = self.sessions["admin"]
+            self.sessions["admin"] = fresh
+            st, me = self.call("admin", "GET", "/api/me")
+            self.assertTrue(me["mfa_pending"])
+            self.assertEqual(self.call("admin", "GET", "/api/servers")[0], 401)
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/verify", {"code": code})[0], 400)
+            later = tsp.totp_code(secret, int(time.time() // 30) + 1)
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/verify", {"code": later})[0], 200)
+            self.assertEqual(self.call("admin", "GET", "/api/servers")[0], 200)
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/disable", {"code": tsp.totp_code(secret, int(time.time() // 30) + 2)})[0], 409)
+            self.sessions["admin"] = saved
+            # the owner resets a lost phone
+            self.assertEqual(self.call("admin", "POST", "/api/2fa/reset", {"discord_id": "dev-admin"})[0], 403)
+            self.portal.cfg["require_2fa"] = False
+            self.assertEqual(self.call("owner", "POST", "/api/2fa/reset", {"discord_id": "dev-admin"})[0], 200)
+            self.sessions["admin"] = self.login("admin")
+        finally:
+            self.portal.cfg["require_2fa"] = False
+
+    def test_25_weekly_alerts_review_demo(self):
+        st, w = self.call("admin", "GET", "/api/weekly")
+        self.assertEqual(st, 200, w)
+        self.assertGreaterEqual(w["actions"]["ban"], 1)
+        self.assertIn("**Actions**", w["text"])
+        self.portal.alert("weekly", "Staff report", w["text"])
+        for _ in range(60):
+            if any(h["embeds"][0]["title"] == "Staff report" for h in HOOKS):
+                break
+            time.sleep(0.25)
+        self.assertTrue(any(h["embeds"][0]["title"] == "Staff report" for h in HOOKS), HOOKS)
+        self.assertEqual(HOOKS[0]["allowed_mentions"]["parse"], [])
+        st, d = self.call("moderator", "GET", "/api/alerts")
+        self.assertTrue(d["webhook"] and d["alerts"])
+        # stats review queue through the stats service's staff routes
+        self.assertEqual(self.call("moderator", "GET", "/api/review")[0], 403)
+        st, d = self.call("admin", "GET", "/api/review")
+        self.assertEqual(d["review"][0]["reason"], "accuracy 92%")
+        st, d = self.call("admin", "POST", "/api/review", {"action": "void", "kind": "match", "id": "00112233aabbccdd", "reason": "aimbot"})
+        self.assertEqual((st, VOIDED[-1][0]), (200, "/staff/void"))
+        # the server demo that covers a report
+        demos = Path(self.tmp.name) / "svdemos"
+        demos.mkdir(exist_ok=True)
+        f = demos / "Test_2026-11-12-09-50-00_obj_village.sv_84"
+        f.write_bytes(b"demo" * 100)
+        os.utime(f, (1794477600 + 3600, 1794477600 + 3600))
+        rid = self.portal.store.one("SELECT id FROM reports WHERE source='player'")["id"]
+        st, d = self.call("moderator", "GET", "/api/demo?report=%d" % rid)
+        self.assertEqual((st, d["offset_s"]), (200, 600), d)
+        st, raw = self.call("moderator", "GET", "/api/demo/file?report=%d" % rid)
+        self.assertEqual(raw, b"demo" * 100)
 
 
 if __name__ == "__main__":
