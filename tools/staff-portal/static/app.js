@@ -221,17 +221,46 @@ async function staffKeyDialog() {
   const k = await api("staffkey");
   const state = !k.key ? '<p><span class="tag">None</span> You have no staff key yet.</p>'
     : `<p><span class="tag ${k.active ? "ok" : "bad"}">${k.active ? "Active" : "Not active"}</span> Key made ${when(k.key.created)}.${k.active ? "" : " Sign in to the portal regularly to keep it active."}</p>`;
-  modal({ title: "Staff badge in game", sub: "Your staff key shows your staff badge and orange name on our servers.", ok: k.key ? "Get a new key" : "Get my staff key",
-    body: state + `<p class="muted">The key is made in this browser and downloads as <b>staff.key</b>. The portal never sees the secret part, so keep the file to yourself.${k.key ? " Getting a new key cancels the old one straight away." : ""}</p>`,
+  modal({ title: "Staff badge in game", sub: "Your staff key shows your staff badge and orange name on our servers.", ok: "Install in game",
+    body: state + `<p class="muted">Install in game hands the job to the TrueCombat Platinum launcher on this PC: it makes the key and puts it in your game's profile folder. The secret part never leaves your PC.${k.key ? " A new key cancels the old one straight away." : ""}</p>
+      <p class="small">No launcher on this PC? <button type="button" class="linkish" data-download>Download the key file instead</button>.</p>`,
     onOk: async () => {
-      const r = await makeStaffKey();
-      setTimeout(() => modal({ title: "Install your staff key", ok: "Done",
-        body: `<ol class="steps"><li>Move the downloaded <b>staff.key</b> into the <b>profile</b> folder of your game, for example <span class="mono">C:\\Games\\TrueCombat Platinum\\profile</span>.</li>
-          <li>Start the game. It locks the key to your Windows account the first time it reads it.</li>
-          <li>Join one of our servers: your name shows in staff orange on the scoreboard.</li></ol>
-          <p class="muted">Don't share the file. If it leaks or you change PC, just get a new key here.</p>${r.problems && r.problems.length ? `<p class="error">Some servers did not take the new key yet: ${esc(r.problems.join("; "))}</p>` : ""}`,
-        onOk: () => {} }), 0);
+      const r = await api("staffkey/link", {});
+      const before = k.key ? k.key.id : "";
+      location.href = r.link;
+      setTimeout(() => launcherWait(before), 0);
     } });
+  $("#modal-body").onclick = (e) => { if (e.target.closest("[data-download]")) staffKeyDownload().catch((err) => toast(err.message, true)); };
+}
+
+function launcherWait(before) {
+  modal({ title: "Installing your staff key", ok: "Close",
+    body: `<p id="kw-state"><span class="tag">Waiting</span> Your launcher should open and install the key. Allow it if your browser asks to open TrueCombat Platinum.</p>
+      <p class="muted small">Needs launcher 2.1 or newer. Nothing happening? Update the launcher, or use "Download the key file instead".</p>`,
+    onOk: () => {} });
+  const started = Date.now();
+  const tick = async () => {
+    if ($("#modal").hidden || Date.now() - started > 180000) return;
+    const k = await api("staffkey").catch(() => null);
+    if (k && k.key && k.key.id !== before) {
+      const el = $("#kw-state");
+      if (el) el.innerHTML = '<span class="tag ok">Installed</span> Your key is in the game. Start TrueCombat Platinum and join one of our servers.';
+      return;
+    }
+    setTimeout(tick, 2500);
+  };
+  setTimeout(tick, 2500);
+}
+
+async function staffKeyDownload() {
+  const r = await makeStaffKey();
+  modal({ title: "Install your staff key", ok: "Done",
+    body: `<ol class="steps"><li>Move the downloaded <b>staff.key</b> into the <b>profile</b> folder of your game, for example <span class="mono">C:\\Games\\TrueCombat Platinum\\profile</span>.</li>
+      <li>Start the game. It locks the key to your Windows account the first time it reads it.</li>
+      <li>Join one of our servers: your name shows in staff orange on the scoreboard.</li></ol>
+      <p class="small">No download? <a href="${makeStaffKey.url}" download="staff.key">Save staff.key</a>. This link works only until you close the portal.</p>
+      <p class="muted">Don't share the file. If it leaks or you change PC, just get a new key here.</p>${r.problems && r.problems.length ? `<p class="error">Some servers did not take the new key yet: ${esc(r.problems.join("; "))}</p>` : ""}`,
+    onOk: () => {} });
 }
 
 function every(fn, ms, page) {
