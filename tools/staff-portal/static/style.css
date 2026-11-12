@@ -234,3 +234,4 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .report-body.console { max-height: 50vh; }
 .staffkey-row { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 ol.steps { padding-left: 20px; display: grid; gap: 8px; }
+.linkish { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }

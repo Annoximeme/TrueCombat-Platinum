@@ -44,6 +44,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 VERSION = "1.2.1"
+STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
 log = logging.getLogger("tcp-staff")
@@ -776,6 +777,7 @@ CREATE TABLE IF NOT EXISTS staff(discord_id TEXT PRIMARY KEY, name TEXT, role TE
 CREATE TABLE IF NOT EXISTS staff_keys(id TEXT PRIMARY KEY, discord_id TEXT, name TEXT, public TEXT, created INTEGER,
   revoked INTEGER DEFAULT 0, revoked_by TEXT);
 CREATE INDEX IF NOT EXISTS staff_keys_owner ON staff_keys(discord_id);
+CREATE TABLE IF NOT EXISTS staff_key_codes(code_hash TEXT PRIMARY KEY, discord_id TEXT, name TEXT, expires INTEGER);
 CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER, discord_id TEXT, staff TEXT,
   role TEXT, action TEXT, server TEXT, target TEXT, target_pid TEXT, detail TEXT, ok INTEGER, result TEXT);
 CREATE INDEX IF NOT EXISTS audit_at ON audit(at);
@@ -2667,6 +2669,14 @@ class Portal(Moderation, Watchers, Operations):
                 return d / "staffkeys.txt"
         return None
 
+    def create_staff_key(self, discord_id: str, name: str, pub: str) -> tuple:
+        """Replaces the person's key with a new public key; returns (key id, servers that did not take it)."""
+        self.store.x("UPDATE staff_keys SET revoked=?, revoked_by='replaced' WHERE discord_id=? AND revoked=0", (now(), discord_id))
+        kid = "k" + secrets.token_hex(5)
+        clean = re.sub(r"[^\w .|*\[\]()-]", "", name, flags=re.ASCII).strip()[:24] or "staff"
+        self.store.x("INSERT INTO staff_keys(id,discord_id,name,public,created) VALUES(?,?,?,?,?)", (kid, discord_id, clean, pub, now()))
+        return kid, self.publish_staff_keys()
+
     def revoke_staff_keys(self, discord_id: str, by: str) -> int:
         n = self.store.one("SELECT COUNT(*) n FROM staff_keys WHERE discord_id=? AND revoked=0", (discord_id,))["n"]
         if n:
@@ -2747,13 +2757,16 @@ class Portal(Moderation, Watchers, Operations):
         return hmac.new(key.encode(), ip.encode(), hashlib.sha256).hexdigest()[:12]
 
     # ------------------------------------------------------------------ rate limit (per key, per window)
-    def limited(self, key: str, limit: int, window: int) -> bool:
+    def limited(self, key: str, limit: int, window: int, peek: bool = False) -> bool:
+        """True when key used its limit within window; otherwise counts this use (peek: only looks)."""
         t = time.time()
         with self.rate_lock:
             hits = [x for x in self.rate.get(key, []) if t - x < window]
             if len(hits) >= limit:
                 self.rate[key] = hits
                 return True
+            if peek:
+                return False
             hits.append(t)
             self.rate[key] = hits
             if len(self.rate) > 5000:
@@ -3005,6 +3018,8 @@ def make_handler(portal: Portal):
                     return self.auth(method, path, qs)
                 if path == "/api/bugreport" and method == "POST":
                     return self.bugreport()
+                if path == "/api/staffkey/claim" and method == "POST":
+                    return self.staffkey_claim()
                 if path in ("/appeal", "/appeal/") and method == "GET":
                     return self.static("appeal.html")
                 if path.startswith("/appeal/"):
@@ -3100,6 +3115,33 @@ def make_handler(portal: Portal):
                     portal.store.x("DELETE FROM sessions WHERE id=?", (s["id"],))
                 return self.json({"ok": True}, extra={"Set-Cookie": [self.set_cookie(cookie_name, "", 0)]})
             raise ApiError(404, "Not found.")
+
+        # -- the launcher claims a one-time "Install in game" link: it sends the public half of a key pair it made
+        def staffkey_claim(self) -> None:
+            ip = self.client_ip()
+            if portal.limited("keyclaim:" + ip, 10, 3600):
+                raise ApiError(429, "Too many tries. Try again later.")
+            d = self.body_json()
+            code, pub = str(d.get("code", "")).lower(), str(d.get("public", "")).lower()
+            if not re.fullmatch(r"[0-9a-f]{32}", code) or not re.fullmatch(r"[0-9a-f]{64}", pub) or pub == "0" * 64:
+                raise ApiError(400, "Bad request.")
+            h = hashlib.sha256(code.encode()).hexdigest()
+            with portal.store.lock:
+                row = portal.store.one("SELECT * FROM staff_key_codes WHERE code_hash=?", (h,))
+                portal.store.x("DELETE FROM staff_key_codes WHERE code_hash=?", (h,))        # single use, right or wrong
+            if not row or row["expires"] < now():
+                raise ApiError(410, "This link has expired. Make a new one in the staff portal.")
+            # access ends sessions, so a link only works while the person who made it still has a portal session
+            staff = portal.store.one("SELECT role FROM staff WHERE discord_id=?", (row["discord_id"],))
+            if (staff and staff["role"] == "revoked") or not portal.store.one(
+                    "SELECT 1 x FROM sessions WHERE discord_id=?", (row["discord_id"],)):
+                raise ApiError(403, "This account no longer has staff access.")
+            if portal.limited("staffkey:" + row["discord_id"], 5, 86400):
+                raise ApiError(429, "Five keys were made for this account today. Try again tomorrow.")
+            kid, problems = portal.create_staff_key(row["discord_id"], row["name"], pub)
+            portal.store.audit({"discord_id": row["discord_id"], "name": row["name"]}, "staff key made", target=kid,
+                               detail="installed by the launcher")
+            self.json({"id": kid, "name": row["name"]}, 201)
 
         # -- public bug report intake: F12 in game (0.36.0+) posts JSON "tcp-bugreport/1"; older tools post plain text
         def bugreport(self) -> None:
@@ -3574,15 +3616,19 @@ def make_handler(portal: Portal):
                     raise ApiError(400, "That is not an Ed25519 public key.")
                 if portal.limited("staffkey:" + who["discord_id"], 5, 86400):
                     raise ApiError(429, "You made five keys today. Try again tomorrow.")
-                portal.store.x("UPDATE staff_keys SET revoked=?, revoked_by='replaced' WHERE discord_id=? AND revoked=0",
-                               (now(), who["discord_id"]))
-                kid = "k" + secrets.token_hex(5)
-                name = re.sub(r"[^\w .|*\[\]()-]", "", who["name"], flags=re.ASCII).strip()[:24] or "staff"
-                portal.store.x("INSERT INTO staff_keys(id,discord_id,name,public,created) VALUES(?,?,?,?,?)",
-                               (kid, who["discord_id"], name, pub, now()))
-                problems = portal.publish_staff_keys()
-                portal.store.audit(who, "staff key made", target=kid)
+                kid, problems = portal.create_staff_key(who["discord_id"], who["name"], pub)
+                portal.store.audit(who, "staff key made", target=kid, detail="downloaded")
                 return self.json({"id": kid, "problems": problems}, 201)
+            if route == "staffkey/link" and P:
+                # "Install in game": a one-time link the launcher claims; the launcher makes the key pair itself
+                who = self.need(s, "view")
+                if portal.limited("staffkey:" + who["discord_id"], 5, 86400, peek=True):
+                    raise ApiError(429, "You made five keys today. Try again tomorrow.")
+                code = secrets.token_hex(16)
+                portal.store.x("DELETE FROM staff_key_codes WHERE discord_id=? OR expires<?", (who["discord_id"], now()))
+                portal.store.x("INSERT INTO staff_key_codes(code_hash,discord_id,name,expires) VALUES(?,?,?,?)",
+                               (hashlib.sha256(code.encode()).hexdigest(), who["discord_id"], who["name"], now() + STAFF_KEY_LINK_SECONDS))
+                return self.json({"link": "truecombat://staffkey/" + code, "expires": now() + STAFF_KEY_LINK_SECONDS})
             if route == "staffkeys" and G:
                 self.need(s, "staff.manage")
                 sql, args = portal.staff_key_valid_sql()

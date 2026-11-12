@@ -114,6 +114,12 @@ public half reaches the portal. The portal writes the public keys to `<game dir>
 for every server (or `staff_keys_file` per server) and sends `staffkeys_reload` over rcon. Game servers
 from 0.36.0 read that list next to the keys built into the game (see `game/STAFF-KEYS-INTEGRATION.md`).
 
+**Install in game** (the default) opens a one-time `truecombat://staffkey/<code>` link (10 minutes, single
+use). The launcher (2.1+, see `launcher/STAFF-KEY-INSTALL.md`) makes the key pair itself, claims the link at
+`POST /api/staffkey/claim` with the public half and writes `profile\staff.key`, so the secret never leaves
+that PC. A claim only works while the person who made the link still has a portal session. Downloading the
+file stays available as a fallback.
+
 A key stops working when a newer one is made, when an admin revokes it (Staff page), when the person
 loses staff access (revoked in the portal or Discord role removed, seen at their next portal visit), or
 after `staff_key_idle_days` (default 60, 0 = never) without signing in to the portal.
@@ -121,7 +127,7 @@ after `staff_key_idle_days` (default 60, 0 = never) without signing in to the po
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 32 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 33 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 

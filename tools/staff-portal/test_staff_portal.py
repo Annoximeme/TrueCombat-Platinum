@@ -1000,5 +1000,41 @@ class PortalTest(unittest.TestCase):
         self.assertFalse(self.portal.store.one("SELECT 1 x FROM staff_keys WHERE revoked=0 AND discord_id='555000000000000001'"))
         self.call("admin", "POST", "/api/staff", {"discord_id": "555000000000000001", "role": "discord"})
 
+    def test_33_launcher_installs_staff_key(self):
+        keyfile = Path(self.tmp.name) / "staffkeys.txt"
+        self.portal.servers["one"].cfg["staff_keys_file"] = str(keyfile)
+        self.portal.rate.pop("staffkey:dev-admin", None)
+        st, r = self.call("admin", "POST", "/api/staffkey/link", {})
+        self.assertEqual(st, 200)
+        self.assertRegex(r["link"], r"^truecombat://staffkey/[0-9a-f]{32}$")
+        code = r["link"].rsplit("/", 1)[1]
+        def claim(body):
+            self.portal.rate.pop("keyclaim:127.0.0.1", None)
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request("POST", "/api/staffkey/claim", body=json.dumps(body), headers={"Content-Type": "application/json"})
+            resp = c.getresponse()
+            out = resp.status, json.loads(resp.read() or b"{}")
+            c.close()
+            return out
+        self.assertEqual(claim({"code": code, "public": "nope"})[0], 400)          # malformed: the code survives
+        st, k = claim({"code": code, "public": "12" * 32})
+        self.assertEqual(st, 201)
+        self.assertIn("TCPSTAFFKEY1 %s 1 %s" % (k["id"], "12" * 32), keyfile.read_text())
+        self.assertEqual(claim({"code": code, "public": "34" * 32})[0], 410)        # single use
+        self.assertEqual(self.call("admin", "GET", "/api/staffkey")[1]["key"]["id"], k["id"])
+        # an expired link does nothing
+        st, r = self.call("admin", "POST", "/api/staffkey/link", {})
+        self.portal.store.x("UPDATE staff_key_codes SET expires=?", (int(time.time()) - 1,))
+        self.assertEqual(claim({"code": r["link"].rsplit("/", 1)[1], "public": "56" * 32})[0], 410)
+        # a link made before someone lost access does nothing either
+        st, r = self.call("admin", "POST", "/api/staffkey/link", {})
+        saved = self.portal.store.q("SELECT * FROM sessions WHERE discord_id='dev-admin'")
+        self.portal.store.x("DELETE FROM sessions WHERE discord_id='dev-admin'")
+        try:
+            self.assertEqual(claim({"code": r["link"].rsplit("/", 1)[1], "public": "78" * 32})[0], 403)
+        finally:
+            for row in saved:
+                self.portal.store.x("INSERT INTO sessions(%s) VALUES(%s)" % (",".join(row.keys()), ",".join("?" * len(row))), tuple(row))
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
