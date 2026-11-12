@@ -246,8 +246,11 @@ class News(commands.Cog):
             return
         channel = self.bot.text_channel(self.cfg.channel("devlog", "announcements"))
         for entry in reversed(entries):
-            if entry["id"] in seen or channel is None:
+            if entry["id"] in seen:
                 continue
+            if channel is None:
+                log.warning("new devlog %s not posted: no devlog or announcements channel I can use", entry["url"])
+                return
             meta = article_meta(self.cfg["devlog"]["site_root"], entry["url"])
             role = int(self.cfg["devlog"].get("ping_role_id") or 0) or self.bot.role_id("devlog")
             view = _link_view("Read the article", entry["url"], emoji="\N{OPEN BOOK}")
@@ -262,6 +265,7 @@ class News(commands.Cog):
                 return
             seen.append(entry["id"])
             self.bot.store.set("devlog_seen", seen[-200:])
+            log.info("devlog posted: %s", entry["url"])
 
     # ------------------------------------------------------------ staff commands
     release = app_commands.Group(name="release", description="Release announcements (staff)",
