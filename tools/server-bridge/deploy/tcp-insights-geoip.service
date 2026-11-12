@@ -1,0 +1,16 @@
+[Unit]
+Description=Refresh the DB-IP Lite country list for tcp-insights
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=tcpsvc
+Group=tcpsvc
+ExecStart=/bin/sh /opt/tcp/server-bridge/insights-geoip.sh /var/lib/tcp-insights/geo.csv.gz
+ExecStartPost=+/bin/systemctl try-restart tcp-insights.service
+StateDirectory=tcp-insights
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/tcp-insights

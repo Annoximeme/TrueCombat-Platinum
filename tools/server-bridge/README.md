@@ -263,3 +263,20 @@ public later, add `--public-reads` to `ExecStart` in
 picks them up by itself.
 
 Tests: `python -m unittest test_devlog`.
+
+## Website insights (tcp_insights.py)
+
+Cookie-free counting for truecombat.eu: page views, the channel that brought a visitor (campaign tag or
+referring site), and download clicks credited to that channel. Same privacy model as `tcp_devlog.py`: a keyed
+hash of (IP, user agent) with a secret that only lives for the current UTC day, deleted at midnight with every
+hash; no IPs, cookies, user agents or full referrer URLs are stored. Global Privacy Control and Do Not Track
+are honoured. Optional country codes from a local DB-IP Lite list (CC BY 4.0), refreshed monthly by
+`tcp-insights-geoip.timer`. Optional daily GitHub release download counts (`--github-repo`).
+
+Routes: `POST /insights/hit`, `POST /insights/event` (download), `GET /insights/stats.json?days=N`
+(Bearer key from `/etc/tcp-insights/key`, used by the staff portal's Insights page), `GET /insights/health`.
+
+Install on the VPS: `sudo sh tools/server-bridge/deploy/install-insights.sh` (undo with `--undo`), then add
+`handle /insights/* { reverse_proxy 127.0.0.1:8093 }` to the api.truecombat.eu block. Short campaign links
+(`truecombat.eu/go/<name>`) come from `tools/website/golinks.json` and are written by `build.py`.
+Tests: `python3 test_insights.py`.

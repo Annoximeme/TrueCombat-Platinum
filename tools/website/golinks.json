@@ -1,0 +1,17 @@
+{
+  "_about": "Short campaign links: truecombat.eu/go/<name> opens the target page with these utm tags, so the staff portal's Insights page can tell the channels apart. build.py writes docs/go/<name>/index.html. Add one entry per channel, creator or campaign before posting a link.",
+  "links": {
+    "reddit":   {"to": "", "source": "reddit",   "medium": "social",    "campaign": "launch"},
+    "moddb":    {"to": "", "source": "moddb",    "medium": "store",     "campaign": "launch"},
+    "itch":     {"to": "", "source": "itch",     "medium": "store",     "campaign": "launch"},
+    "gamejolt": {"to": "", "source": "gamejolt", "medium": "store",     "campaign": "launch"},
+    "youtube":  {"to": "", "source": "youtube",  "medium": "video",     "campaign": "launch"},
+    "discord":  {"to": "", "source": "discord",  "medium": "community", "campaign": "launch"},
+    "press":    {"to": "press.html", "source": "press", "medium": "pr", "campaign": "launch"},
+    "forums":   {"to": "", "source": "forums",   "medium": "community", "campaign": "launch"},
+    "x":        {"to": "", "source": "x",        "medium": "social",    "campaign": "launch"},
+    "steam":    {"to": "", "source": "steam",    "medium": "community", "campaign": "launch"},
+    "elite":    {"to": "truecombat-elite.html", "source": "tce-community", "medium": "community", "campaign": "launch"},
+    "download": {"to": "download.html", "source": "direct-link", "medium": "share", "campaign": "launch"}
+  }
+}

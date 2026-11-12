@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nieuwe spelers vinden zonder iemand te volgen · TrueCombat: Platinum</title>
+<meta name="description" content="TrueCombat: Platinum gaat binnenkort op meer platformen dan ooit naar buiten. Om te weten welke daarvan echt spelers opleveren, telt de site nu bezoeken en…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-counting-without-cookies">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-counting-without-cookies">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Nieuwe spelers vinden zonder iemand te volgen">
+<meta property="og:description" content="TrueCombat: Platinum gaat binnenkort op meer platformen dan ooit naar buiten. Om te weten welke daarvan echt spelers opleveren, telt de site nu bezoeken en…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-counting-without-cookies.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-counting-without-cookies.jpg">
+<meta property="article:published_time" content="2026-11-12">
+<meta property="article:section" content="Community">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Nieuwe spelers vinden zonder iemand te volgen","description":"TrueCombat: Platinum gaat binnenkort op meer platformen dan ooit naar buiten. Om te weten welke daarvan echt spelers opleveren, telt de site nu bezoeken en downloads zoals hij devloglezers telt: zonder cookies, zonder externe bedrijven en zonder iets dat naar jou terugleidt.","datePublished":"2026-11-12","dateModified":"2026-11-12","inLanguage":"nl","articleSection":"Community","timeRequired":"PT2M","image":"https://truecombat.eu/img/og-devlog-counting-without-cookies.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-counting-without-cookies","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Nieuwe spelers vinden zonder iemand te volgen">
+<meta name="twitter:description" content="TrueCombat: Platinum gaat binnenkort op meer platformen dan ooit naar buiten. Om te weten welke daarvan echt spelers opleveren, telt de site nu bezoeken en…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Nieuwe spelers vinden zonder iemand te volgen","item":"https://truecombat.eu/nl/devlog-counting-without-cookies"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-counting-without-cookies">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-counting-without-cookies">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-counting-without-cookies">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=6bf7a5af62">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Wapens</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Gids</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Ranglijsten</a></li>
+      <li><a href="competitive">Competitief</a></li>
+      <li><a href="news">Nieuws</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-12">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Zoeken</button><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="media">Media</a><a href="guide">Gids</a><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Steun ons</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq">Vragen</a><a href="press">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-counting-without-cookies" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-counting-without-cookies" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Steun ons</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="counting-without-cookies" data-min="2">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/map-stadtrand.webp); --art-s: url(../img/map-stadtrand-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-12">12 nov 2026</time><span>2 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="counting-without-cookies" hidden></span></p>
+      <h1>Nieuwe spelers vinden zonder iemand te volgen</h1>
+      <p class="lede">TrueCombat: Platinum gaat binnenkort op meer platformen dan ooit naar buiten. Om te weten welke daarvan echt spelers opleveren, telt de site nu bezoeken en downloads zoals hij devloglezers telt: zonder cookies, zonder externe bedrijven en zonder iets dat naar jou terugleidt.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#wat-er-verandert">Wat er verandert</a></li>
+          <li><a href="#wat-er-niet-verandert">Wat er niet verandert</a></li>
+          <li><a href="#waar-je-de-details-leest">Waar je de details leest</a></li>
+          <li><a href="#wat-er-hierna-komt">Wat er hierna komt</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Met 0.36.0 vertellen we een veel groter publiek over TrueCombat: Platinum. ModDB, itch.io, Reddit, makers van video's, de oude TC:E-community. Sommige van die plekken zullen spelers opleveren. Andere niet. Met een klein team en beperkte tijd moeten we weten welke welke is, zodat de moeite gaat naar wat werkt.</p>
+<p>Eerder deze maand legden we uit hoe de devlog <a href="devlog-reads-and-ratings">lezers telt zonder iemand te volgen</a>. De site gebruikt nu dezelfde aanpak voor de hele website.</p>
+<h2 id="wat-er-verandert">Wat er verandert</h2>
+<p>Elke pagina meldt nu één keer aan onze eigen server dat iemand hem opende: de pagina, de naam van de site die ernaar linkte, de campagnetag in de link als die er is, de taal van de pagina, en of het scherm de grootte van een telefoon, tablet of desktop heeft. Een klik op een downloadknop meldt dat er een download is gestart.</p>
+<p>Links die we op andere platformen plaatsen gaan nu via korte adressen zoals <code>truecombat.eu/go/moddb</code>. Ze openen de gewone pagina met een kleine campagnetag, die de site één keer leest en daarna uit de adresbalk haalt, zodat een link die je kopieert en deelt schoon blijft.</p>
+<h2 id="wat-er-niet-verandert">Wat er niet verandert</h2>
+<ul>
+  <li>Geen cookies. Er wordt niets in je browser opgeslagen om te tellen.</li>
+  <li>Geen Google Analytics, geen Meta-pixel, geen enkel analysebedrijf.</li>
+  <li>Geen IP-adressen bewaard. De server gebruikt je verbinding één moment om je één keer per dag te tellen, en om middernacht wordt het dagelijkse geheim achter die telling gewist, samen met alles wat ermee gemaakt is.</li>
+  <li>Global Privacy Control en Do Not Track worden gerespecteerd. Staat een van beide aan, dan word je helemaal niet geteld.</li>
+</ul>
+<p>Wat overblijft is een reeks dagtotalen: zoveel mensen openden de mapspagina, zoveel kwamen van ModDB, zoveel van hen downloadden de game. Genoeg om goede beslissingen te nemen, en niet genoeg om iets over één van jullie te zeggen.</p>
+<h2 id="waar-je-de-details-leest">Waar je de details leest</h2>
+<p>Alles wat we tellen, op de website en in de game, staat nu op één plek: de nieuwe <a href="privacy">privacypagina</a>, in alle vijf talen van de site. Als we ooit iets nieuws gaan tellen, verandert eerst die pagina en meldt de devlog het.</p>
+<h2 id="wat-er-hierna-komt">Wat er hierna komt</h2>
+<p>De launcher krijgt een optionele schakelaar om anonieme prestatie- en crashgegevens te delen, zodat we zien welke grafische kaarten en drivers aandacht nodig hebben voordat een playtest het ons vertelt. Hij staat uit tenzij je hem aanzet, en staat gepland voor de update na 0.36.0. We publiceren de volledige lijst van wat hij verstuurt voordat hij verschijnt.</p>
+<p>De code die het tellen doet staat in de openbare repository, naast de statistiekendienst. Zoals altijd hoef je ons nooit op ons woord te geloven.</p>
+      </div>
+      <div class="post-rate" data-rate="counting-without-cookies" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-inside-035"><small>Vorig artikel</small>Achter de schermen van 0.35.0, onze grootste update tot nu toe</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Community">
+        <a class="post-art" href="devlog-reads-and-ratings" tabindex="-1" aria-hidden="true"><img src="../img/map-northport-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-09">9 nov 2026</time><span>2 min lezen</span><span class="post-stat" data-post-stat="reads-and-ratings" hidden></span></p>
+          <h2><a href="devlog-reads-and-ratings">Lezers tellen zonder iemand te volgen</a></h2>
+          <p>Elk devlogartikel eindigt nu met een sterrenbeoordeling, en we zien eindelijk welke artikelen gelezen worden. Zo hebben we dat gebouwd, zonder cookies, zonder analytics en zonder iets op te slaan dat naar jou terugwijst.</p>
+          <a class="more" href="devlog-reads-and-ratings">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Community">
+        <a class="post-art" href="devlog-support" tabindex="-1" aria-hidden="true"><img src="../img/map-snow-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-09">9 nov 2026</time><span>3 min lezen</span><span class="post-stat" data-post-stat="support" hidden></span></p>
+          <h2><a href="devlog-support">Gratis is gratis: zo werkt steunen</a></h2>
+          <p>TrueCombat: Platinum heeft nu een steunpagina en een Ko-fi. Waarom we die toevoegden, waar het geld naartoe gaat en de regels die we onszelf oplegden, zodat steunen nooit verandert hoe het spel speelt.</p>
+          <a class="more" href="devlog-support">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=7a70d66b62"></script>
+</body>
+</html>

@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/nl/devlog</id>
   <updated>2026-11-12T12:00:00Z</updated>
   <entry>
+    <title>Nieuwe spelers vinden zonder iemand te volgen</title>
+    <link href="https://truecombat.eu/nl/devlog-counting-without-cookies"/>
+    <id>https://truecombat.eu/nl/devlog-counting-without-cookies</id>
+    <published>2026-11-12T12:00:00Z</published>
+    <updated>2026-11-12T12:00:00Z</updated>
+    <category term="Community"/>
+    <summary>TrueCombat: Platinum gaat binnenkort op meer platformen dan ooit naar buiten. Om te weten welke daarvan echt spelers opleveren, telt de site nu bezoeken en downloads zoals hij devloglezers telt: zonder cookies, zonder externe bedrijven en zonder iets dat naar jou terugleidt.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Achter de schermen van 0.35.0, onze grootste update tot nu toe</title>
     <link href="https://truecombat.eu/nl/devlog-inside-035"/>
     <id>https://truecombat.eu/nl/devlog-inside-035</id>
