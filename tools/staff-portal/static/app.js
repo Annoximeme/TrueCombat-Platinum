@@ -802,7 +802,7 @@ async function drawEventBanner(key) {
     S.events = Object.fromEntries(r.events.map((e) => [e.server, e]));
   } catch (e) { return; }
   const ev = S.events[key];
-  el.innerHTML = ev ? `<div class="banner event"><span><b>Event mode</b>${ev.note ? " · " + esc(ev.note) : ""} · password <span class="mono">${esc(ev.password)}</span> · since ${clock(ev.started)}, ${esc(ev.by_name)}</span>${can("event") ? '<button class="btn btn-small" id="ev-stop">Stop event</button>' : ""}</div>` : "";
+  el.innerHTML = ev ? `<div class="banner event"><span><b>Event mode</b>${ev.note ? " · " + esc(ev.note) : ""}${ev.password ? ` · password <span class="mono">${esc(ev.password)}</span>` : " · password set"} · since ${clock(ev.started)}, ${esc(ev.by_name)}</span>${can("event") ? '<button class="btn btn-small" id="ev-stop">Stop event</button>' : ""}</div>` : "";
   const stop = $("#ev-stop");
   if (stop) stop.onclick = () => eventDialog(key);
 }
@@ -1089,7 +1089,7 @@ async function pageSettings(main, key) {
     draw.rows = r.cvars;
     $("#cv-list").innerHTML = `<table><tr><th>Setting</th><th>Value</th><th></th></tr>${r.cvars.map((c, i) => `
       <tr><td>${esc(c.label)}<div class="cvar-name">${esc(c.name)}</div></td>
-      <td class="mono">${c.value == null ? '<span class="dim">not on this server</span>' : esc(c.value)}${c.kept != null ? ' <span class="kept" title="Kept after restarts">kept</span>' : ""}${c.event ? ' <span class="tag">event</span>' : ""}</td>
+      <td class="mono">${c.value == null ? `<span class="dim">${r.offline ? "server not answering" : "not on this server"}</span>` : esc(c.value)}${c.kept != null ? ' <span class="kept" title="Kept after restarts">kept</span>' : ""}${c.event ? ' <span class="tag">event</span>' : ""}</td>
       <td><div class="row-actions">${c.value != null && !c.event ? `<button class="btn btn-small" data-i="${i}">Change</button>` : ""}${c.kept != null ? `<button class="btn btn-small" data-i="${i}" data-do="release">Stop keeping</button>` : ""}</div></td></tr>`).join("")}</table>`;
     $("#cv-hist").innerHTML = r.history.length ? `<ul class="list">${r.history.map((h) => `<li><span class="mono">${esc(h.cvar)}</span> ${esc(h.old)} → <b>${esc(h.new)}</b>
       <div class="dim small">${esc(h.kind)}${h.kept ? ", kept" : ""} · ${esc(h.by_name)} · ${when(h.at)}</div>
