@@ -138,13 +138,13 @@ index 9711d26..d0fec4b 100644
  	if (client->netchan.remoteAddress.type == NA_IP6)
  	{
 diff --git a/reference/etlegacy/src/sys/sys_win32.c b/reference/etlegacy/src/sys/sys_win32.c
-index 982007c..e912a42 100644
+index 982007c..8cb369c 100644
 --- a/reference/etlegacy/src/sys/sys_win32.c
 +++ b/reference/etlegacy/src/sys/sys_win32.c
-@@ -1129,6 +1129,41 @@ WinVars_t g_wv;
- /**
-  * @brief Windows specific initialization
-  */
+@@ -1126,6 +1126,41 @@ void Sys_SetProcessProperties(void)
+ 
+ WinVars_t g_wv;
+ 
 +#ifdef DEDICATED
 +/**
 + * @brief TCP: keep the 1 ms timer when the server window is hidden or minimized.
@@ -180,9 +180,9 @@ index 982007c..e912a42 100644
 +}
 +#endif
 +
- void Sys_PlatformInit(void)
- {
- 	g_wv.hInstance = GetModuleHandle(NULL);
+ /**
+  * @brief Windows specific initialization
+  */
 @@ -1160,6 +1195,10 @@ void Sys_PlatformInit(void)
  
  #ifdef DEDICATED
