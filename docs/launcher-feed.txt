@@ -1,13 +1,11 @@
 # Launcher Play page. Written by tools/website/build.py from tools/website/launcher.json; do not edit.
 [slide]
-eyebrow=Update 0.34.1
+eyebrow=Update 0.35.0
 chip=Live now
-title=Instant replay.|Fairer teams.
-text=Press F8 to save the last 30 seconds, see who hit you after every round, and let auto-balance fix lopsided matches.
+title=Update 0.35.0|is live.
+text=See everything that changed in the latest update.
 button=Read patch notes
 url=https://truecombat.eu/news.html
-button2=Watch the trailer
-url2=https://www.youtube.com/watch?v=pb1IvJOg7Lg
 [slide]
 eyebrow=Devlog
 title=Every fight|on the record.
