@@ -17,7 +17,7 @@ A private web console for the people who run the official and pickup servers, se
 | Health | CPU, memory, disk, every service's state, restarts and problems in the last 24 hours; restart a game server |
 | Punishment ladder | One Punish button per player: the portal picks the next step for the offence (warn, mute, kick, timed ban, permanent) from the player's history in the last 90 days |
 | Undo | Bans and mutes can be undone for five minutes from the toast or the ban list (a kick or a team move has nothing to undo) |
-| Ban appeals | Every ban message carries a six-character code; players appeal at `/appeal` (no sign-in), an admin who did not make the ban accepts or denies it from Reports (the owner may answer any), the player checks the answer with the same code |
+| Ban appeals | Every ban message carries a six-character code; players appeal at `/appeal` (no sign-in), an admin who did not make the ban accepts or denies it from Reports, the player checks the answer with the same code |
 | Alerts | Server down and back, reports piling up, suspicion scores, watchlist joins, possible ban dodgers, chat filter hits, moderator bans; in the portal and in a staff Discord channel through a webhook |
 | Suspicion score | 0-100 per player from anti-cheat detections, reports, automatic flags, accuracy, K/D, headshot rate and links to banned players; 60 and up raises an alert |
 | Stats review | Players whose stats stand out, with match history, one click to mark them checked |

@@ -784,5 +784,62 @@ class PortalTest(unittest.TestCase):
         st, v = self.call("admin", "GET", "/api/cvars?server=two")
         self.assertEqual(st, 200)
 
+    def test_28_third_audit(self):
+        who = {"discord_id": "1", "name": "Admin", "role": "admin"}
+        # two players behind one address: lifting one ban keeps the other on the servers
+        a = self.portal.ban_player(who, {"pid": "aaaaaaaaaaaaaaaa", "guid": "A" * 32, "ip": "198.51.100.7", "name": "Twin A"}, 0, "cheating")
+        b = self.portal.ban_player(who, {"pid": "bbbbbbbbbbbbbbbb", "guid": "B" * 32, "ip": "198.51.100.7", "name": "Twin B"}, 0, "cheating")
+        before = len(self.game.commands)
+        self.portal.lift_ban(who, self.portal.store.one("SELECT * FROM bans WHERE id=?", (a["id"],)), "appeal")
+        after = self.game.commands[before:]
+        self.assertTrue(any(c.startswith("unban 198.51.100.7") for c in after))
+        self.assertTrue(any(c.startswith("banip 198.51.100.7") for c in after), after)
+        self.assertTrue(any(c.startswith("banguid " + "B" * 32) for c in after))
+        self.portal.lift_ban(who, self.portal.store.one("SELECT * FROM bans WHERE id=?", (b["id"],)), "test over")
+        # an appeal is closed by answering it, never by the plain Close button
+        rep = self.portal.store.one("SELECT id FROM reports WHERE source='appeal' ORDER BY id DESC LIMIT 1")
+        if rep:
+            st, r = self.call("admin", "POST", "/api/reports/update", {"id": rep["id"], "status": "closed"})
+            self.assertEqual(st, 409, r)
+        # event mode never stays half switched on
+        srv = self.portal.server("one")
+        real, calls = srv.set_cvar, []
+
+        def flaky(name, value):
+            calls.append(name)
+            if len(calls) == 2:
+                raise tsp.RconError("no answer")
+            return real(name, value)
+        old_pw = self.game.cvars.get("g_password", "")
+        srv.set_cvar = flaky
+        try:
+            with self.assertRaises(tsp.ApiError):
+                self.portal.event_start(who, srv, password="half2026")
+        finally:
+            srv.set_cvar = real
+        self.assertFalse(self.portal.store.one("SELECT server FROM events WHERE server='one'"))
+        self.assertEqual(self.game.cvars.get("g_password", ""), old_pw)
+        # settings the server does not have are skipped, not created
+        self.portal.cfg["event_preset"] = dict(tsp.EVENT_PRESET, g_madeUpSetting="1")
+        try:
+            r = self.portal.event_start(who, srv)
+            self.assertNotIn("g_madeUpSetting", r["preset"])
+            self.assertNotIn("g_madeUpSetting", self.game.cvars)
+            self.portal.event_stop(who, srv)
+        finally:
+            self.portal.cfg.pop("event_preset")
+
+    def test_29_webhook_url_checked(self):
+        alerts = self.portal.cfg["alerts"]
+        saved = alerts["webhook_url"]
+        try:
+            for bad in ("file:///etc/passwd", "http://example.com/hook", "https://evil.example/api/webhooks/1/x"):
+                alerts["webhook_url"] = bad
+                self.assertEqual(self.portal.webhook_url(), "")
+            alerts["webhook_url"] = "https://discord.com/api/webhooks/123456/abc-DEF_9"
+            self.assertTrue(self.portal.webhook_url())
+        finally:
+            alerts["webhook_url"] = saved
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

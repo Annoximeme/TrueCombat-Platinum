@@ -225,7 +225,9 @@ function route() {
     player: pagePlayer, bans: pageBans, audit: pageAudit, staff: pageStaff, health: pageHealth, alerts: pageAlerts,
     watchlist: pageWatchlist, review: pageReview, schedule: pageSchedule, filter: pageFilter, replies: pageReplies,
     weekly: pageWeekly, settings: pageSettings };
-  (pages[page] || pageServers)(main, decodeURIComponent(parts[1] || ""));
+  let arg = "";
+  try { arg = decodeURIComponent(parts[1] || ""); } catch (e) { arg = ""; }      // a broken link opens the page, not a blank screen
+  (pages[page] || pageServers)(main, arg);
   if (S.me.mfa_required && !S.me.mfa_on) {
     main.insertAdjacentHTML("afterbegin", '<div class="banner"><span>Admin tools stay locked until you turn on two-step sign-in.</span><button class="btn btn-small" id="mfa-now">Set it up</button></div>');
     $("#mfa-now").onclick = accountDialog;
@@ -506,7 +508,7 @@ function reportCard(r) {
   const d = r.data || {};
   const status = r.status === "open" ? '<span class="tag bad">Open</span>' : r.status === "claimed" ? `<span class="tag warn">${esc(r.claimed_by || "In progress")}</span>` : '<span class="tag ok">Closed</span>';
   const buttons = [r.status !== "claimed" && r.status !== "closed" ? `<button class="btn btn-small" data-id="${r.id}" data-do="claim">Take it</button>` : "",
-    r.status !== "closed" ? `<button class="btn btn-small" data-id="${r.id}" data-do="close">Close</button>` : `<button class="btn btn-small" data-id="${r.id}" data-do="reopen">Reopen</button>`].join("");
+    r.source === "appeal" ? "" : r.status !== "closed" ? `<button class="btn btn-small" data-id="${r.id}" data-do="close">Close</button>` : `<button class="btn btn-small" data-id="${r.id}" data-do="reopen">Reopen</button>`].join("");
   if (r.source === "appeal") {
     const ban = d.ban || {};
     const decide = r.status !== "closed" && can("appeals.answer") ? `<button class="btn btn-small" data-appeal="${esc(d.appeal_id)}" data-decision="accept" data-name="${esc(r.target_name)}">Accept, lift ban</button><button class="btn btn-small btn-danger" data-appeal="${esc(d.appeal_id)}" data-decision="deny" data-name="${esc(r.target_name)}">Deny</button>` : "";
