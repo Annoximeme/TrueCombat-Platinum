@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>The official servers now run on Linux · TrueCombat: Platinum</title>
-<meta name="description" content="Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.">
+<meta name="description" content="Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could…">
 <meta name="theme-color" content="#0d1016">
 <link rel="canonical" href="https://truecombat.eu/devlog-linux-servers">
 <meta property="og:type" content="article">
@@ -12,7 +12,7 @@
 <meta property="og:site_name" content="TrueCombat: Platinum">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="The official servers now run on Linux">
-<meta property="og:description" content="Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.">
+<meta property="og:description" content="Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could…">
 <meta property="og:image" content="https://truecombat.eu/img/og-devlog-linux-servers.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
 <link rel="manifest" href="site.webmanifest">
 <script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
 <meta name="twitter:title" content="The official servers now run on Linux">
-<meta name="twitter:description" content="Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.">
+<meta name="twitter:description" content="Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could…">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"The official servers now run on Linux","item":"https://truecombat.eu/devlog-linux-servers"}]}</script>
 <link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
 <link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-linux-servers">
@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=2d1a1c7ae7">
+<link rel="stylesheet" href="style.css?v=6bf7a5af62">
 </head>
 <body>
 <!--nav-->
@@ -100,7 +100,7 @@
 <p>What changes is underneath. A native server no longer pays for translation on every frame, so it uses less of the machine and has more headroom when a match gets busy. In testing, a full ten-bot match running at twice today's tick rate used about seven percent of a single processor core.</p>
 <h2 id="why-it-matters">Why it matters</h2>
 <p>Headroom is what lets us raise the tick rate later. The servers currently send updates twenty times per second. Forty would make movement and hits feel tighter, especially in close fights, but only if the server can keep up comfortably and the hit registration still agrees with what you saw on your screen. Doubling the rate is not something we will switch on and hope for the best.</p>
-<aside class="callout"><p>The tick rate on the official servers has not changed yet. It will only go up after a dedicated internet hit-registration test shows that it is better, not just faster.</p></aside>
+<div class="callout"><p>The tick rate on the official servers has not changed yet. It will only go up after a dedicated internet hit-registration test shows that it is better, not just faster.</p></div>
 <p>The Linux build is also the version community hosts get. Since 0.34.0, every release ships a ready-made Linux server package next to the Windows download, built from the same source code as the official servers. If you rent a small server somewhere, you can now run exactly what we run.</p>
 <h2 id="how-the-move-was-done">How the move was done</h2>
 <p>The switch happened late at night, in a quiet window, one server at a time. Before anything was touched, the Linux build was checked against the release: the same game files, the same checksums, the same maps. The old setup was left in place next to the new one. Going back is a single change and a restart, which takes seconds, and that path was ready before the first server was switched.</p>
@@ -193,6 +193,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=36fa7c6143"></script>
+<script src="js/site.js?v=5cffcf206a"></script>
 </body>
 </html>
