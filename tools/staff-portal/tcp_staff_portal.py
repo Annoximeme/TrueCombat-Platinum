@@ -43,7 +43,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
 log = logging.getLogger("tcp-staff")
