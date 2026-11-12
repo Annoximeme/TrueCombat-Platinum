@@ -2383,23 +2383,30 @@ class Portal(Moderation, Watchers, Operations):
 
     def prune_loop(self) -> None:
         while not self.stop.is_set():
-            days = int(self.cfg.get("retention_days", 90))
-            cut = now() - days * 86400
-            self.store.x("DELETE FROM chat WHERE at<?", (now() - int(self.cfg.get("chat_days", 30)) * 86400,))
-            self.store.x("DELETE FROM sightings WHERE last_seen<?", (cut,))
-            self.store.x("DELETE FROM sessions WHERE seen<?", (now() - 86400,))
-            self.store.x("DELETE FROM flags WHERE at<?", (cut,))
-            self.store.x("DELETE FROM alerts WHERE at<?", (cut,))
-            self.store.x("DELETE FROM undo WHERE expires<?", (now() - 86400,))
-            self.store.x("DELETE FROM peaks WHERE day<?", (time.strftime("%Y-%m-%d", time.gmtime(cut)),))
-            self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
-            self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
-            try:
-                self.prune_bugshots()
-                self.publish_staff_keys()
-            except OSError as e:
-                log.warning("bug report screenshot clean-up failed: %s", e)
+            try:                                   # one bad hour (a locked database, a full disk) never ends the loop
+                self.prune_once()
+            except Exception:  # noqa: BLE001
+                log.exception("hourly clean-up failed; trying again in an hour")
+            for job in (self.prune_bugshots, self.publish_staff_keys):
+                try:
+                    job()
+                except Exception:  # noqa: BLE001
+                    log.exception("%s failed", job.__name__)
             self.stop.wait(3600)
+
+    def prune_once(self) -> None:
+        days = int(self.cfg.get("retention_days", 90))
+        cut = now() - days * 86400
+        self.store.x("DELETE FROM chat WHERE at<?", (now() - int(self.cfg.get("chat_days", 30)) * 86400,))
+        self.store.x("DELETE FROM sightings WHERE last_seen<?", (cut,))
+        self.store.x("DELETE FROM sessions WHERE seen<?", (now() - 86400,))
+        self.store.x("DELETE FROM flags WHERE at<?", (cut,))
+        self.store.x("DELETE FROM alerts WHERE at<?", (cut,))
+        self.store.x("DELETE FROM undo WHERE expires<?", (now() - 86400,))
+        self.store.x("DELETE FROM peaks WHERE day<?", (time.strftime("%Y-%m-%d", time.gmtime(cut)),))
+        self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
+        self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
+        self.store.x("DELETE FROM staff_key_codes WHERE expires<?", (now(),))
 
     # ------------------------------------------------------------------ queries used by the API
     def server(self, key: str) -> GameServer:
@@ -3188,9 +3195,10 @@ def make_handler(portal: Portal):
                            (key, data.get("server_name", ""), now(), json.dumps(data), pid, data.get("name", ""), now()))
             where = " on %s" % data["map"] if data.get("map") else ""
             by = " from %s" % data["name"] if data.get("name") else ""
+            # one alert per report, but a player sending many in a row raises one alert per ten minutes
             portal.alert("bugreport", discord_plain("%s report%s%s" % (data["category"], by, where)),
                          discord_plain(data["summary"]) + ("\nBuild %s" % discord_plain(data["build"]) if data.get("build") else ""),
-                         key=key, pid=pid)
+                         key=("bugreport:" + pid) if pid else key, window=600 if pid else 0, pid=pid)
             self.json({"ok": True, "id": key}, 201)
 
         # -- API
@@ -3607,7 +3615,8 @@ def make_handler(portal: Portal):
                                      (who["discord_id"],))
                 sql, args = portal.staff_key_valid_sql()
                 live = bool(k) and bool(portal.store.one("SELECT 1 x FROM (%s) WHERE id=?" % sql, args + [k["id"]]))
-                return self.json({"key": k, "active": live, "servers": sum(1 for x in portal.servers.values() if portal.staff_keys_file(x))})
+                return self.json({"key": k, "active": live, "servers": sum(1 for x in portal.servers.values() if portal.staff_keys_file(x)),
+                                  "launcher": bool(cfg.get("launcher_key_install", False))})
             if route == "staffkey" and P:
                 who = self.need(s, "view")
                 d = self.body_json()

@@ -918,9 +918,12 @@ class PortalTest(unittest.TestCase):
         self.assertIn("max-age", resp.getheader("Cache-Control"))          # the inbox refresh doesn't fetch it again
         c.close()
         self.assertEqual(self.call(None, "GET", "/api/reports/bugshot?id=%d" % r["id"])[0], 401)
-        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='bugreport' AND key=?", (d["id"],)))
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='bugreport' AND key=?", ("bugreport:" + PID,)))
+        n = self.portal.store.one("SELECT COUNT(*) n FROM alerts WHERE kind='bugreport'")["n"]
+        self.assertEqual(post(json.dumps(sample))[0], 201)                      # same player again: no second alert yet
+        self.assertEqual(self.portal.store.one("SELECT COUNT(*) n FROM alerts WHERE kind='bugreport'")["n"], n)
         # player text can't smuggle links or mentions into the staff Discord
-        st, d4 = post(json.dumps(dict(sample, text="[free skins](https://evil.example) @everyone", screenshot_jpg="")))
+        st, d4 = post(json.dumps(dict(sample, text="[free skins](https://evil.example) @everyone", screenshot_jpg="", guid="")))
         a = self.portal.store.one("SELECT title, text FROM alerts WHERE key=?", (d4["id"],))
         self.assertNotIn("](", a["text"])
         self.assertNotIn("https://", a["text"])
