@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Every fight|on the record.
-text=Player profiles are about to get a lot deeper, and unranked servers count too. Here is what we track, and the rules that keep every number honest.
+title=Inside 0.35.0, our|biggest update yet.
+text=Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes.
 button=Read the devlog
-url=https://truecombat.eu/devlog-every-fight-counts.html
+url=https://truecombat.eu/devlog-inside-035.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
-title=Every fight on the record
-text=Player profiles are about to get a lot deeper, and unranked servers count too. Here is what we track, and the rules that keep every number honest.
-url=https://truecombat.eu/devlog-every-fight-counts.html
+title=Inside 0.35.0, our biggest update yet
+text=Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes.
+url=https://truecombat.eu/devlog-inside-035.html
 [news]
 tag=Community
 title=Weekend ranked ladder
