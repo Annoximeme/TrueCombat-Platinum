@@ -5,6 +5,7 @@
   "data_dir": "/var/lib/tcp-staff-portal",
   "site": "https://truecombat.eu",
   "stats_api": "http://127.0.0.1:8090",
+  "insights_api": "http://127.0.0.1:8093",
   "owners": ["DISCORD_USER_ID_OF_THE_OWNER"],
   "discord": {
     "client_id": "DISCORD_APPLICATION_ID",

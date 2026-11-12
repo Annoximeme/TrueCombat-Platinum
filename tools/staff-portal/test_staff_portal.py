@@ -1055,6 +1055,36 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(d["server_label"], "TrueCombat Platinum | Example")    # not ours: kept as reported
         self.assertTrue(d["shot"] and d["console"] and d["hw"] and d["match"] and d["puid"])
         self.assertNotIn("^3", d["console"])
+    def test_insights_page_reads_the_insights_service(self):
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "server-bridge"))
+        try:
+            import tcp_insights
+        except ImportError:
+            self.skipTest("tools/server-bridge/tcp_insights.py not in this checkout")
+        from http.server import ThreadingHTTPServer
+        store = tcp_insights.Store("")
+        store.github({("v0.35.0", "TrueCombat-Platinum-Setup.exe"): 42})
+        srv = ThreadingHTTPServer(("127.0.0.1", 0), tcp_insights.make_handler(store, "ikey", [], "", tcp_insights.Limiter(), tcp_insights.GeoIP()))
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            self.portal.cfg["insights_api"] = "http://127.0.0.1:%d" % srv.server_address[1]
+            self.portal.cfg.pop("insights_key", None)
+            self.assertEqual(self.call("owner", "GET", "/api/insights?days=7")[0], 409)   # not linked yet
+            self.portal.cfg["insights_key"] = "wrong"
+            self.assertEqual(self.call("owner", "GET", "/api/insights?days=7")[0], 409)
+            self.portal.cfg["insights_key"] = "ikey"
+            self.assertEqual(self.call("moderator", "GET", "/api/insights")[0], 403)
+            code, body = self.call("owner", "GET", "/api/insights?days=7")
+            self.assertEqual(code, 200)
+            self.assertEqual((body["schema"], len(body["days"])), ("tcp-insights/1", 7))
+            self.assertEqual(body["github"]["releases"][0]["downloads"], 42)
+            self.assertEqual(len(self.call("owner", "GET", "/api/insights?days=12345")[1]["days"]), 30)
+        finally:
+            self.portal.cfg.pop("insights_key", None)
+            srv.shutdown()
+            srv.server_close()
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
