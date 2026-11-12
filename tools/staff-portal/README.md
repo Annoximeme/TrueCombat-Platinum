@@ -15,6 +15,25 @@ A private web console for the people who run the official and pickup servers, se
 | Audit log | Every action, sign-in and refused sign-in, with who, when, target and the server's answer |
 | Staff | Access follows Discord roles; the list adds people without the role, promotes to admin or locks someone out |
 | Health | CPU, memory, disk, every service's state, restarts and problems in the last 24 hours; restart a game server |
+| Punishment ladder | One Punish button per player: the portal picks the next step for the offence (warn, mute, kick, timed ban, permanent) from the player's history in the last 90 days |
+| Undo | Bans, kicks, mutes and moves can be undone for five minutes from the toast or the ban list |
+| Ban appeals | Every ban message carries a six-character code; players appeal at `/appeal` (no sign-in), staff accept or deny from Reports, the player checks the answer with the same code |
+| Alerts | Server down and back, reports piling up, suspicion scores, watchlist joins, possible ban dodgers, chat filter hits, moderator bans; in the portal and in a staff Discord channel through a webhook |
+| Suspicion score | 0-100 per player from anti-cheat detections, reports, automatic flags, accuracy, K/D, headshot rate and links to banned players; 60 and up raises an alert |
+| Stats review | Players whose stats stand out, with match history, one click to mark them checked |
+| Ban-dodger hints | A new identity on the anti-cheat account (strong) or address (weak) of a banned player |
+| Chat filter | Words with `*` wildcards or regular expressions; flag, warn, mute or kick, at most once a minute per player |
+| Team-kill and AFK watch | Two team kills in a match warn, three flag; idle players are flagged at 2 minutes and moved to spectators at 5 |
+| Watchlist | Watch a player with a reason; staff are alerted when they join any server |
+| Saved replies | Reasons and warnings staff reuse, picked from every dialog |
+| Linked Discord | The Discord account a player linked through the bot, shown on the player page; search by Discord id |
+| Demos | A report opens the server demo at the reported moment (needs `sv_autoDemo 1`) |
+| Schedule | Announcements, map changes and restarts at a set time, once or repeating |
+| Event mode | One switch for a private match: random password, no bots, no balance, no votes; switches back afterwards |
+| Live map | Top-down layout with every player's position, refreshed every two seconds (admins) |
+| Settings | Whitelisted server settings with labels, a full history and one-click rollback; "Keep" re-applies a value after restarts |
+| Two-step sign-in | Authenticator-app codes; required for admin and owner rights |
+| Weekly report | Monday 08:00 Belgian time: bans, reports, appeals, peaks and busiest staff, in the portal and the staff channel |
 
 ## Roles
 
@@ -26,7 +45,13 @@ A private web console for the people who run the official and pickup servers, se
 | Longer and permanent bans, lift bans | | ✓ | ✓ |
 | Change map, rotation, restart match, restart a server | | ✓ | ✓ |
 | IP addresses, audit log, staff list | | ✓ | ✓ |
-| Make or change admins | | | ✓ |
+| Punish, watchlist, saved replies, schedule announcements | ✓ | ✓ | ✓ |
+| Answer appeals, chat filter, event mode, settings, live map, stats review | | ✓ | ✓ |
+| Make or change admins, reset someone's two-step sign-in | | | ✓ |
+
+Admin and owner rights need two-step sign-in (`"require_2fa": true`, the default). Without it those accounts
+sign in as moderators until they set it up under their name in the menu. A lost phone:
+`python3 tcp_staff_portal.py --config /etc/tcp-staff-portal/config.json --reset-2fa DISCORD_ID`.
 
 Sign-in is Discord OAuth (`identify guilds.members.read`). The role comes from, highest first: `owners` in the
 config, the staff list in the portal (which can also revoke), then the Discord role ids in the config. Rights are
@@ -47,6 +72,12 @@ switches those buttons on per server; on an older server they explain why they a
 * Reports are read from `<home>/tcetest/reports` and `reports/sent` (the Discord bot moves posted reports there).
   The portal only reads them.
 * Stats and recent matches come from the stats service on 127.0.0.1:8090 (`player.json`, `search.json`).
+* Stats review and suspicion use the stats service's private `/staff/` routes (loopback only, `X-Staff-Token`).
+  `install.sh stats-link` creates the token and hands it to both services as a systemd credential.
+* Linked Discord accounts are read from the Discord bot's database, read-only.
+* Alerts go to the webhook in `/etc/tcp-staff-portal/staff-webhook` (empty file: portal only). Set
+  `alerts.ping_role_id` to ping a role on urgent ones and `alerts.kinds` to pick which kinds reach Discord.
+* Server demos are read from `<home>/tcetest/svdemos` (`demo_timezone` is the server's clock for the file names).
 * Restarting a game server goes through a polkit rule that allows `restart` on exactly the four game units.
 
 ## Bug reports
@@ -58,7 +89,7 @@ switches those buttons on per server; on an older server they explain why they a
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 15 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 25 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 
@@ -74,5 +105,9 @@ signs in from 127.0.0.1 without Discord. Never set either on the VPS.
    `/etc/tcp-staff-portal/config.json`.
 4. `sudo ./deploy/install.sh install` (rolls back by itself if the portal does not answer), then
    `sudo ./deploy/install.sh caddy`.
+5. Optional, each on its own: the staff channel webhook URL into `/etc/tcp-staff-portal/staff-webhook`;
+   `sudo ./deploy/install.sh stats-link` (restarts the stats service, rolls back if it does not answer);
+   `sv_autoDemo 1` in each game server's cfg for report demos.
+6. Owner and admins: set up two-step sign-in under your name, top left.
 
 Data lives in `/var/lib/tcp-staff-portal/portal.db` (SQLite). Chat is kept 30 days and sightings 90 days.

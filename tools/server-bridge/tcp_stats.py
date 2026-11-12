@@ -1253,12 +1253,50 @@ def handle_post(store, path, headers, body):
     return (200 if status == "stored" else 409), dict(info, status=status)
 
 
+def staff_token(path=""):
+    """The shared secret of the staff portal's routes: --staff-token-file, else the systemd credential 'staff-token'
+    (a LoadCredential= drop-in, so the service's command line stays as it is), else TCP_STATS_STAFF_TOKEN.
+    Empty = the routes are off."""
+    cred = os.environ.get("CREDENTIALS_DIRECTORY", "")
+    if not path and cred and (pathlib.Path(cred) / "staff-token").exists():
+        path = str(pathlib.Path(cred) / "staff-token")
+    if path:
+        try:
+            return pathlib.Path(path).read_text(encoding="utf-8").strip()
+        except OSError:
+            return ""
+    return os.environ.get("TCP_STATS_STAFF_TOKEN", "").strip()
+
+
+def handle_staff(store, method, path, headers, client, body, token):
+    """Staff portal routes: the review queue and voiding stats. Only from this machine, never through the
+    reverse proxy (which adds X-Forwarded-For), and only with the shared token. Anything else looks like 404."""
+    if not path.startswith("/staff/"):
+        return None
+    if (not token or client not in ("127.0.0.1", "::1") or headers.get("X-Forwarded-For")
+            or not hmac.compare_digest(str(headers.get("X-Staff-Token", "")), token)):
+        return 404, {"error": "not found"}
+    if method == "GET" and path == "/staff/review.json":
+        return 200, {"review": store.review_list(200)}
+    if method == "POST" and path in ("/staff/void", "/staff/unvoid"):
+        try:
+            d = json.loads(body or b"{}")
+            kind, ident = d.get("kind"), str(d.get("id", ""))
+            if kind not in ("match", "player") or not re.fullmatch(r"[0-9a-f]{16}", ident):
+                raise ValueError("void match|player <16-character id>")
+            n = store.void(kind, ident, str(d.get("reason", ""))) if path == "/staff/void" else store.unvoid(kind, ident)
+        except (ValueError, AttributeError) as exc:
+            return 400, {"error": str(exc)}
+        return 200, {"ok": True, "rebuilt": n}
+    return 404, {"error": "not found"}
+
+
 def sign(key_hex, body, stamp=None):
     stamp = str(int(stamp if stamp is not None else time.time()))
     return stamp, hmac.new(bytes.fromhex(key_hex), stamp.encode() + b"\n" + body, hashlib.sha256).hexdigest()
 
 
-def serve(store, listen, cors):
+def serve(store, listen, cors, token=""):
     from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
     from urllib.parse import parse_qs, urlparse
 
@@ -1273,7 +1311,8 @@ def serve(store, listen, cors):
             self.send_response(code)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
-            self.send_header("Cache-Control", "public, max-age=30" if self.command == "GET" else "no-store")
+            private = self.path.startswith("/staff/")
+            self.send_header("Cache-Control", "public, max-age=30" if self.command == "GET" and not private else "no-store")
             allowed = [o.strip() for o in cors.split(",")]
             origin = self.headers.get("Origin", "")
             if "*" in allowed:
@@ -1288,13 +1327,16 @@ def serve(store, listen, cors):
             u = urlparse(self.path)
             if u.path == "/health":
                 return self.reply(200, {"ok": True})
-            r = handle_get(store, u.path, parse_qs(u.query))
+            r = handle_staff(store, "GET", u.path, self.headers, self.client_address[0], b"", token) or \
+                handle_get(store, u.path, parse_qs(u.query))
             self.reply(*(r or (404, {"error": "not found"})))
 
         def do_POST(self):
             n = _int(self.headers.get("Content-Length"), 0, MAX_BODY + 1)
             body = self.rfile.read(n)
-            r = handle_post(store, urlparse(self.path).path, self.headers, body)
+            path = urlparse(self.path).path
+            r = handle_staff(store, "POST", path, self.headers, self.client_address[0], body, token) or \
+                handle_post(store, path, self.headers, body)
             self.reply(*(r or (404, {"error": "not found"})))
 
     host, _, port = listen.rpartition(":")
@@ -1313,6 +1355,7 @@ def main(argv=None):
     s = sub.add_parser("serve")
     s.add_argument("--listen", default="127.0.0.1:8091")
     s.add_argument("--cors", default="https://truecombat.eu,https://www.truecombat.eu")
+    s.add_argument("--staff-token-file", default="", help="shared secret for the staff portal's /staff/ routes (loopback only)")
     s.add_argument("--import-dir", default="", help="also import this folder every minute (trusted)")
     s.add_argument("--ratings-file", action="append", default=[],
                    help="keep this ratings.txt current for skill-based team balance (repeatable)")
@@ -1369,7 +1412,7 @@ def main(argv=None):
                         print("import failed:", exc, flush=True)
                     time.sleep(60)
             threading.Thread(target=loop, daemon=True).start()
-        serve(store, args.listen, args.cors)
+        serve(store, args.listen, args.cors, staff_token(args.staff_token_file))
 
 
 if __name__ == "__main__":

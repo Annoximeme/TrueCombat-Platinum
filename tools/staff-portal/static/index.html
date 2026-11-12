@@ -28,6 +28,19 @@
   </div>
 </div>
 
+<div id="mfa" class="signin" hidden>
+  <form class="signin-card" id="mfa-form">
+    <img src="/static/favicon.png" alt="" class="signin-logo" width="56" height="56">
+    <p class="eyebrow">Two-step sign-in</p>
+    <h1>Enter your code</h1>
+    <p class="muted">Open your authenticator app and type the six-digit code for TrueCombat Staff.</p>
+    <p id="mfa-msg" class="signin-msg" hidden></p>
+    <input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="123 456" class="code-input" required>
+    <button class="btn btn-primary btn-wide">Continue</button>
+    <p class="dim small">Lost your phone? Ask the owner to reset your two-step sign-in.</p>
+  </form>
+</div>
+
 <div id="app" class="app" hidden>
   <aside class="side">
     <a class="brand" href="#/servers">
@@ -35,18 +48,28 @@
       <span><b>STAFF</b> PORTAL</span>
     </a>
     <nav id="nav">
+      <span class="nav-group">Live</span>
       <a href="#/servers" data-page="servers">Servers</a>
       <a href="#/chat" data-page="chat">Live chat</a>
+      <a href="#/alerts" data-page="alerts">Alerts <span class="count" id="nav-alerts" hidden></span></a>
+      <span class="nav-group">Cases</span>
       <a href="#/reports" data-page="reports">Reports <span class="count" id="nav-reports" hidden></span></a>
       <a href="#/players" data-page="players">Players</a>
       <a href="#/bans" data-page="bans">Bans</a>
+      <a href="#/watchlist" data-page="watchlist">Watchlist</a>
+      <a href="#/review" data-page="review" data-perm="review">Stats review</a>
+      <span class="nav-group">Setup</span>
+      <a href="#/schedule" data-page="schedule">Schedule</a>
+      <a href="#/filter" data-page="filter">Chat filter</a>
+      <a href="#/replies" data-page="replies">Saved replies</a>
+      <a href="#/weekly" data-page="weekly" data-perm="weekly">Weekly report</a>
       <a href="#/audit" data-page="audit" data-perm="audit">Audit log</a>
       <a href="#/staff" data-page="staff" data-perm="staff.manage">Staff</a>
       <a href="#/health" data-page="health" data-perm="health">Health</a>
     </nav>
     <div class="me">
       <img id="me-avatar" alt="" width="32" height="32" hidden>
-      <div><b id="me-name"></b><span id="me-role" class="role"></span></div>
+      <button id="me-account" class="me-account" type="button" title="Account and two-step sign-in"><b id="me-name"></b><span id="me-role" class="role"></span></button>
       <button id="logout" class="link" type="button">Sign out</button>
     </div>
   </aside>
