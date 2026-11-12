@@ -1,0 +1,139 @@
+diff --git a/reference/etlegacy/src/client/cl_cvars.c b/reference/etlegacy/src/client/cl_cvars.c
+index 75c24f6..b7ca606 100644
+--- a/reference/etlegacy/src/client/cl_cvars.c
++++ b/reference/etlegacy/src/client/cl_cvars.c
+@@ -260,6 +260,8 @@ void CL_InitCvars()
+ 	Cvar_Get("name", DEFAULT_NAME, CVAR_USERINFO | CVAR_ARCHIVE_ND);
+ 	Cvar_Get("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE);
+ 	Cvar_Get("snaps", "20", CVAR_USERINFO | CVAR_ARCHIVE);
++	// TCP: tells the server this client keeps PACKET_BACKUP snapshots for delta decoding
++	Cvar_Get("snaphist", va("%i", PACKET_BACKUP), CVAR_USERINFO | CVAR_ROM);
+ 	Cvar_Get("etVersion", ET_VERSION, CVAR_USERINFO | CVAR_ROM);
+ 
+ 	Cvar_Get("password", "", CVAR_USERINFO);
+diff --git a/reference/etlegacy/src/client/client.h b/reference/etlegacy/src/client/client.h
+index 215a356..c0aff01 100644
+--- a/reference/etlegacy/src/client/client.h
++++ b/reference/etlegacy/src/client/client.h
+@@ -114,7 +114,7 @@ typedef struct
+ /// the parseEntities array must be large enough to hold PACKET_BACKUP frames of
+ /// entities, so that when a delta compressed message arives from the server
+ /// it can be un-deltad from the original
+-#define MAX_PARSE_ENTITIES  2048
++#define MAX_PARSE_ENTITIES  8192  // TCP: room for PACKET_BACKUP (64) frames of entities
+ 
+ /**
+  * @struct clientActive_t
+diff --git a/reference/etlegacy/src/qcommon/qcommon.h b/reference/etlegacy/src/qcommon/qcommon.h
+index b26e16b..337782f 100644
+--- a/reference/etlegacy/src/qcommon/qcommon.h
++++ b/reference/etlegacy/src/qcommon/qcommon.h
+@@ -150,7 +150,12 @@ NET
+  * @brief number of old messages that must be kept on client and
+  * server for delta comrpession and ping estimation
+  */
+-#define PACKET_BACKUP   32
++// TCP: 64 frames so 128 Hz snapshots keep 0.5 s of delta history. The window a server
++// actually uses per client is negotiated with the "snaphist" userinfo key (32 for older clients).
++#define PACKET_BACKUP   64
++#define TCP_DELTA_WINDOW_LEGACY 32
++// TCP: highest rate (bytes/s) a client may ask for; was 90000
++#define TCP_MAX_RATE    250000
+ #define PACKET_MASK (PACKET_BACKUP - 1)
+ 
+ /**
+diff --git a/reference/etlegacy/src/server/server.h b/reference/etlegacy/src/server/server.h
+index ea19281..afcc89e 100644
+--- a/reference/etlegacy/src/server/server.h
++++ b/reference/etlegacy/src/server/server.h
+@@ -258,6 +258,7 @@ typedef struct client_s
+ 	// NOTE: this is one-shot, multiple downloads would cause a www download to be attempted again
+ 
+ 	int deltaMessage;                       ///< frame last client usercmd message
++	int deltaWindow;                        ///< TCP: frames this client keeps for delta decoding (32 legacy, 64 new)
+ 	int nextReliableTime;                   ///< svs.time when another reliable command will be allowed
+ 	int nextReliableUserTime;               ///< svs.time when another userinfo change will be allowed
+ 	int lastPacketTime;                     ///< svs.time when packet was last received
+diff --git a/reference/etlegacy/src/server/sv_client.c b/reference/etlegacy/src/server/sv_client.c
+index 52a8389..4698c8d 100644
+--- a/reference/etlegacy/src/server/sv_client.c
++++ b/reference/etlegacy/src/server/sv_client.c
+@@ -1983,7 +1983,7 @@ void SV_UserinfoChanged(client_t *cl)
+ 	// internet public server, assume they don't need a rate choke
+ 	if (Sys_IsLANAddress(&cl->netchan.remoteAddress) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1)
+ 	{
+-		cl->rate = 99999;   // lans should not rate limit
++		cl->rate = TCP_MAX_RATE;   // lans should not rate limit
+ 	}
+ 	else
+ 	{
+@@ -1996,9 +1996,9 @@ void SV_UserinfoChanged(client_t *cl)
+ 			{
+ 				cl->rate = 1000;
+ 			}
+-			else if (cl->rate > 90000)
++			else if (cl->rate > TCP_MAX_RATE)
+ 			{
+-				cl->rate = 90000;
++				cl->rate = TCP_MAX_RATE;
+ 			}
+ 		}
+ 		else
+@@ -2019,6 +2019,10 @@ void SV_UserinfoChanged(client_t *cl)
+ 	}
+ 	*/
+ 
++	// TCP: snapshot history the client can decode deltas from
++	val             = Info_ValueForKey(cl->userinfo, "snaphist");
++	cl->deltaWindow = (Q_atoi(val) >= PACKET_BACKUP) ? PACKET_BACKUP : TCP_DELTA_WINDOW_LEGACY;
++
+ 	// snaps command
+ 	val = Info_ValueForKey(cl->userinfo, "snaps");
+ 	if (strlen(val))
+diff --git a/reference/etlegacy/src/server/sv_snapshot.c b/reference/etlegacy/src/server/sv_snapshot.c
+index 9711d26..d0fec4b 100644
+--- a/reference/etlegacy/src/server/sv_snapshot.c
++++ b/reference/etlegacy/src/server/sv_snapshot.c
+@@ -241,6 +241,15 @@ static void SV_EmitPacketEntities(client_t *client, clientSnapshot_t *from, clie
+ 	MSG_WriteBits(msg, (MAX_GENTITIES - 1), GENTITYNUM_BITS);       // end of packetentities
+ }
+ 
++/**
++ * @brief TCP: how many old frames this client can still decode a delta from.
++ * Older clients keep 32 snapshots, new ones (userinfo "snaphist" 64) keep PACKET_BACKUP.
++ */
++static int SV_DeltaWindow(const client_t *client)
++{
++	return client->deltaWindow >= PACKET_BACKUP ? PACKET_BACKUP : TCP_DELTA_WINDOW_LEGACY;
++}
++
+ #ifdef DEDICATED
+ /**
+ * @brief Writes delta updates of playerstates to the message.
+@@ -259,7 +268,7 @@ static void SV_ETTV_EmitPlayerstates(client_t *client, msg_t *msg)
+ 	{
+ 		Com_DPrintf("%s: Non-Delta request from client. (deltaMessage: %d, state: %d)\n", client->name, client->deltaMessage, client->state);
+ 	}
+-	else if (client->netchan.outgoingSequence - client->deltaMessage < (PACKET_BACKUP - 3))
++	else if (client->netchan.outgoingSequence - client->deltaMessage < (SV_DeltaWindow(client) - 3))
+ 	{
+ 		oldframe = client->ettvClientFrame[client->deltaMessage & PACKET_MASK];;
+ 	}
+@@ -355,7 +364,7 @@ static void SV_WriteSnapshotToClient(client_t *client, msg_t *msg)
+ 		oldframe  = NULL;
+ 		lastframe = 0;
+ 	}
+-	else if (client->netchan.outgoingSequence - client->deltaMessage >= (PACKET_BACKUP - 3))
++	else if (client->netchan.outgoingSequence - client->deltaMessage >= (SV_DeltaWindow(client) - 3))
+ 	{
+ 		// client hasn't gotten a good message through in a long time
+ 		Com_DPrintf("%s: Delta request from out of date packet.\n", client->name);
+@@ -1044,7 +1053,7 @@ int SV_RateMsec(client_t *client)
+ 		}
+ 	}
+ 
+-	rate = MIN(90000, MAX(1000, rate));
++	rate = MIN(TCP_MAX_RATE, MAX(1000, rate));
+ 
+ 	if (client->netchan.remoteAddress.type == NA_IP6)
+ 	{
