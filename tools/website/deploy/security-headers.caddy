@@ -45,3 +45,7 @@ header @tcp_manifest Content-Type "application/manifest+json"
 # the 404 page itself answers 404, not 200
 @tcp_soft404 path /404 /404.html
 error @tcp_soft404 404
+
+# the site is read-only: anything but GET and HEAD gets 405
+@tcp_write not method GET HEAD
+error @tcp_write 405
