@@ -1,0 +1,33 @@
+{
+  "format": "tcp-bugreport/1",
+  "category": "Bug",
+  "text": "The left door in the courtyard does not open from the inside.",
+  "map": "obj_railhouse",
+  "pos": [
+    224.0,
+    5536.0,
+    16.1
+  ],
+  "server": "203.0.113.10:27960",
+  "server_name": "TrueCombat Platinum | Example",
+  "build": "0.36.0-sandbox28",
+  "protocol": "tcp-native-capture-7",
+  "renderer": "dx12",
+  "time": 1794493521,
+  "ping": 38,
+  "fps": 144,
+  "hw": {
+    "gpu": "Example GPU 8GB",
+    "gpu_vendor": "Microsoft Direct3D 12",
+    "driver": "Direct3D 12, feature level 12_2",
+    "resolution": "2560x1440",
+    "cpu": "Example CPU 8-Core",
+    "memory_mb": "32768"
+  },
+  "console": "TCP_NATIVE_SPAWN slot=0 generation=1\n^3[RADIO]^7 Alpha: Enemy spotted!\nWrote screenshots/bugreport-20261112-160141.jpg\nTCP_NATIVE_BUGREPORT open\n",
+  "name": "^1Ex^7ample",
+  "guid": "0123456789ABCDEF0123456789ABCDEF",
+  "puid": "0002aaaabbbbccccddddeeeeffff0000",
+  "match": "3afa5d4bc570fecf",
+  "screenshot_jpg": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAJABADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDxeiiiu05z/9k="
+}

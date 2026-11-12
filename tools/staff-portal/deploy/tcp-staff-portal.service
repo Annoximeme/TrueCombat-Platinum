@@ -20,6 +20,11 @@ LoadCredential=rcon-pickup2:/etc/tcp-staff-portal/rcon-pickup2
 # Staff channel webhook for alerts (empty file = alerts stay in the portal) and the stats service's staff token.
 LoadCredential=staff-webhook:/etc/tcp-staff-portal/staff-webhook
 LoadCredential=stats-token:/etc/tcp-staff-portal/stats-token
+# Studio key of the website insights service (empty file = Insights page off).
+LoadCredential=insights-key:/etc/tcp-staff-portal/insights-key
+# The only place outside its own state the portal writes: the staff key list each game server reads.
+ReadWritePaths=-/var/lib/tcpgame/home/tcetest/staffkeys -/var/lib/tcpgame/home-unranked/tcetest/staffkeys
+ReadWritePaths=-/var/lib/tcpgame/home-pickup1/tcetest/staffkeys -/var/lib/tcpgame/home-pickup2/tcetest/staffkeys
 StateDirectory=tcp-staff-portal
 StateDirectoryMode=0750
 NoNewPrivileges=yes

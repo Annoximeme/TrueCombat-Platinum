@@ -43,7 +43,8 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.1.0"
+VERSION = "1.3.0"
+STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
 log = logging.getLogger("tcp-staff")
@@ -85,6 +86,7 @@ PERMS = {
     "cvars": "admin",
     "review": "admin",
     "weekly": "admin",
+    "insights": "admin",              # website visits, channels and downloads (tools/server-bridge/tcp_insights.py)
     "2fa.reset": "owner",
 }
 MOD_BAN_LIMIT = 24 * 60
@@ -258,6 +260,299 @@ def normalise_chat(text: str) -> str:
 
 
 # ----------------------------------------------------------------------------- two-step sign-in (RFC 6238 TOTP)
+
+# --- F12 bug reports ---------------------------------------------------------------------------------
+BUG_CATEGORIES = ("Bug", "Suggestion", "Feature")
+
+
+def bug_category(v) -> str:
+    v = str(v or "").strip().capitalize()
+    return v if v in BUG_CATEGORIES else "Bug"
+
+
+def clean_text(v, limit: int) -> str:
+    """Report text as sent, minus NULs and other control characters (tabs and line breaks kept), cut to limit."""
+    v = v if isinstance(v, str) else ""
+    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]", "", v)[:limit]
+
+
+def discord_plain(v: str) -> str:
+    """Player-written text for a Discord embed: no markdown, masked links, auto-links or mentions; reads as typed."""
+    v = re.sub(r"(?i)\b(https?|discord)(?=:)", lambda m: m.group(1) + "\u200b", str(v or ""))   # breaks auto-links
+    return re.sub(r"([\\*_~`|>\[\]()#<@-])", r"\\\1", v)
+
+
+def bug_fields(j: dict) -> tuple:
+    """The stored fields of a tcp-bugreport/1 report and its screenshot bytes (empty if none or not a JPEG)."""
+    def num(v, lo, hi):
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return None
+        return f if lo <= f <= hi and f == f else None
+    d = {"format": "tcp-bugreport/1", "category": bug_category(j.get("category")), "text": clean_text(j.get("text"), 16 * 1024)}
+    for k, n in (("map", 64), ("build", 64), ("renderer", 120), ("name", 64), ("match", 64), ("puid", 64),
+                 ("server_name", 64), ("protocol", 64)):
+        v = clean_text(j.get(k), n).strip()
+        if k in ("name", "server_name"):
+            v = re.sub(r"\^[^^]", "", v).strip()          # game colour codes
+        if v:
+            d[k if k != "server_name" else "server_label"] = v
+    server = str(j.get("server") or "").strip()
+    if re.fullmatch(r"[0-9A-Za-z.:\[\]-]{1,64}", server):
+        d["server"] = server
+    pos = j.get("pos")
+    if isinstance(pos, list) and len(pos) == 3 and all(num(c, -1e6, 1e6) is not None for c in pos):
+        d["pos"] = [round(float(c)) for c in pos]
+    for k, lo, hi in (("time", 0, 2 ** 40), ("ping", 0, 100000), ("fps", 0, 100000)):
+        v = num(j.get(k), lo, hi)
+        if v is not None:
+            d[k] = int(v)
+    hw = j.get("hw")
+    if isinstance(hw, dict):
+        d["hw"] = {clean_text(str(k), 40): clean_text(str(v), 200) for k, v in list(hw.items())[:24]}
+    console = re.sub(r"\^[^^\n]", "", clean_text(j.get("console"), 64 * 1024))
+    if console:
+        d["console"] = console
+    guid = clean_text(j.get("guid"), 64).strip()
+    if guid:
+        d["pid"] = player_pid(guid)          # the same id the servers and the stats service use; the raw guid is not kept
+    shot = b""
+    b64 = j.get("screenshot_jpg")
+    if isinstance(b64, str) and b64:
+        try:
+            shot = base64.b64decode(b64, validate=True)
+        except ValueError:
+            shot = b""
+        if len(shot) > 1024 * 1024 or not shot.startswith(b"\xff\xd8\xff"):
+            shot = b""
+    return d, shot
+
+
+# --- QR code (for the authenticator setup) -----------------------------------------------------
+# A small byte-mode QR encoder, error correction level M, after Project Nayuki's reference
+# implementation (MIT). Made here so the setup screen needs no outside service and the key never
+# leaves the portal; the page shows it as an inline SVG image.
+_QR_ECC_PER_BLOCK = (0, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26,
+                     26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28)
+_QR_BLOCKS = (0, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16,
+              17, 17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49)
+
+
+def _qr_raw_modules(ver: int) -> int:
+    n = (16 * ver + 128) * ver + 64
+    if ver >= 2:
+        a = ver // 7 + 2
+        n -= (25 * a - 10) * a - 55
+        if ver >= 7:
+            n -= 36
+    return n
+
+
+def _qr_data_codewords(ver: int) -> int:
+    return _qr_raw_modules(ver) // 8 - _QR_ECC_PER_BLOCK[ver] * _QR_BLOCKS[ver]
+
+
+def _qr_gf_mul(x: int, y: int) -> int:
+    z = 0
+    for i in reversed(range(8)):
+        z = (z << 1) ^ ((z >> 7) * 0x11D)
+        z ^= ((y >> i) & 1) * x
+    return z
+
+
+def _qr_rs_divisor(degree: int) -> list:
+    res = [0] * (degree - 1) + [1]
+    root = 1
+    for _ in range(degree):
+        for j in range(degree):
+            res[j] = _qr_gf_mul(res[j], root)
+            if j + 1 < degree:
+                res[j] ^= res[j + 1]
+        root = _qr_gf_mul(root, 0x02)
+    return res
+
+
+def _qr_rs_remainder(data, divisor) -> list:
+    res = [0] * len(divisor)
+    for b in data:
+        factor = b ^ res.pop(0)
+        res.append(0)
+        for i, coef in enumerate(divisor):
+            res[i] ^= _qr_gf_mul(coef, factor)
+    return res
+
+
+def qr_matrix(text: str) -> list:
+    """The QR symbol for text as rows of booleans (True = dark), without the quiet zone."""
+    data = text.encode("utf-8")
+    for ver in range(1, 41):
+        cap = _qr_data_codewords(ver) * 8
+        used = 4 + (8 if ver <= 9 else 16) + 8 * len(data)
+        if used <= cap:
+            break
+    else:
+        raise ValueError("text too long for a QR code")
+    bits = []
+    def put(val, n):
+        bits.extend((val >> i) & 1 for i in reversed(range(n)))
+    put(0x4, 4)
+    put(len(data), 8 if ver <= 9 else 16)
+    for b in data:
+        put(b, 8)
+    put(0, min(4, cap - len(bits)))
+    put(0, -len(bits) % 8)
+    pad = 0xEC
+    while len(bits) < cap:
+        put(pad, 8)
+        pad ^= 0xEC ^ 0x11
+    words = [int("".join(map(str, bits[i:i + 8])), 2) for i in range(0, len(bits), 8)]
+    # split into blocks, add error correction, interleave
+    nblocks, eccn = _QR_BLOCKS[ver], _QR_ECC_PER_BLOCK[ver]
+    raw = _qr_raw_modules(ver) // 8
+    nshort = nblocks - raw % nblocks
+    short_len = raw // nblocks
+    div = _qr_rs_divisor(eccn)
+    blocks, k = [], 0
+    for i in range(nblocks):
+        dlen = short_len - eccn + (0 if i < nshort else 1)
+        dat = words[k:k + dlen]
+        k += dlen
+        ecc = _qr_rs_remainder(dat, div)
+        if i < nshort:
+            dat = dat + [0]
+        blocks.append(dat + ecc)
+    final = []
+    for i in range(len(blocks[0])):
+        for j, blk in enumerate(blocks):
+            if i != short_len - eccn or j >= nshort:
+                final.append(blk[i])
+    size = ver * 4 + 17
+    mod = [[False] * size for _ in range(size)]
+    fn = [[False] * size for _ in range(size)]
+    def setf(x, y, dark):
+        mod[y][x] = dark
+        fn[y][x] = True
+    for i in range(size):  # timing
+        setf(6, i, i % 2 == 0)
+        setf(i, 6, i % 2 == 0)
+    for cx, cy in ((3, 3), (size - 4, 3), (3, size - 4)):  # finders
+        for dy in range(-4, 5):
+            for dx in range(-4, 5):
+                x, y = cx + dx, cy + dy
+                if 0 <= x < size and 0 <= y < size:
+                    setf(x, y, max(abs(dx), abs(dy)) not in (2, 4))
+    if ver > 1:  # alignment patterns
+        n = ver // 7 + 2
+        step = (ver * 8 + n * 3 + 5) // (n * 4 - 4) * 2
+        pos = [6] + [size - 7 - i * step for i in reversed(range(n - 1))]
+        for i, a in enumerate(pos):
+            for j, b in enumerate(pos):
+                if (i, j) in ((0, 0), (0, n - 1), (n - 1, 0)):
+                    continue
+                for dy in range(-2, 3):
+                    for dx in range(-2, 3):
+                        setf(a + dx, b + dy, max(abs(dx), abs(dy)) != 1)
+    def draw_format(mask):
+        d = (0 << 3) | mask  # level M = 00
+        rem = d
+        for _ in range(10):
+            rem = (rem << 1) ^ ((rem >> 9) * 0x537)
+        b = ((d << 10) | rem) ^ 0x5412
+        g = lambda i: ((b >> i) & 1) != 0
+        for i in range(6):
+            setf(8, i, g(i))
+        setf(8, 7, g(6)); setf(8, 8, g(7)); setf(7, 8, g(8))
+        for i in range(9, 15):
+            setf(14 - i, 8, g(i))
+        for i in range(8):
+            setf(size - 1 - i, 8, g(i))
+        for i in range(8, 15):
+            setf(8, size - 15 + i, g(i))
+        setf(8, size - 8, True)
+    draw_format(0)  # reserve the format areas
+    if ver >= 7:
+        rem = ver
+        for _ in range(12):
+            rem = (rem << 1) ^ ((rem >> 11) * 0x1F25)
+        b = (ver << 12) | rem
+        for i in range(18):
+            bit = ((b >> i) & 1) != 0
+            a, c = size - 11 + i % 3, i // 3
+            setf(a, c, bit)
+            setf(c, a, bit)
+    # data, in the zigzag order
+    i = 0
+    right = size - 1
+    while right >= 1:
+        if right == 6:
+            right = 5
+        for vert in range(size):
+            for j in range(2):
+                x = right - j
+                upward = ((right + 1) & 2) == 0
+                y = size - 1 - vert if upward else vert
+                if not fn[y][x] and i < len(final) * 8:
+                    mod[y][x] = ((final[i >> 3] >> (7 - (i & 7))) & 1) != 0
+                    i += 1
+        right -= 2
+    masks = (lambda x, y: (x + y) % 2 == 0, lambda x, y: y % 2 == 0, lambda x, y: x % 3 == 0,
+             lambda x, y: (x + y) % 3 == 0, lambda x, y: (x // 3 + y // 2) % 2 == 0,
+             lambda x, y: x * y % 2 + x * y % 3 == 0, lambda x, y: (x * y % 2 + x * y % 3) % 2 == 0,
+             lambda x, y: ((x + y) % 2 + x * y % 3) % 2 == 0)
+    def apply(m):
+        f = masks[m]
+        for y in range(size):
+            for x in range(size):
+                if not fn[y][x] and f(x, y):
+                    mod[y][x] = not mod[y][x]
+    def penalty():
+        p = 0
+        lines = mod + [list(c) for c in zip(*mod)]
+        for line in lines:  # runs of five or more, and finder-like patterns
+            run, prev = 0, None
+            for v in line:
+                if v == prev:
+                    run += 1
+                    if run == 5:
+                        p += 3
+                    elif run > 5:
+                        p += 1
+                else:
+                    run, prev = 1, v
+            s = "".join("1" if v else "0" for v in line)
+            for pat in ("10111010000", "00001011101"):
+                p += 40 * sum(1 for k in range(len(s) - 10) if s[k:k + 11] == pat)
+        for y in range(size - 1):  # 2x2 blocks
+            for x in range(size - 1):
+                if mod[y][x] == mod[y][x + 1] == mod[y + 1][x] == mod[y + 1][x + 1]:
+                    p += 3
+        dark = sum(map(sum, mod))
+        total = size * size
+        p += 10 * ((abs(dark * 20 - total * 10) + total - 1) // total - 1)
+        return p
+    best, best_p = 0, None
+    for m in range(8):
+        apply(m)
+        draw_format(m)
+        p = penalty()
+        if best_p is None or p < best_p:
+            best, best_p = m, p
+        apply(m)
+    apply(best)
+    draw_format(best)
+    return mod
+
+
+def qr_svg_data_uri(text: str) -> str:
+    """The QR code for text as a data: URI holding an SVG image, with a four-module quiet zone."""
+    m = qr_matrix(text)
+    n = len(m) + 8
+    path = "".join("M%d %dh1v1h-1z" % (x + 4, y + 4) for y, row in enumerate(m) for x, v in enumerate(row) if v)
+    svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" shape-rendering="crispEdges">'
+           '<rect width="%d" height="%d" fill="#fff"/><path fill="#000" d="%s"/></svg>') % (n, n, n, n, path)
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode("ascii")).decode("ascii")
+
 
 def totp_secret() -> str:
     return base64.b32encode(secrets.token_bytes(20)).decode().rstrip("=")
@@ -483,6 +778,10 @@ CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY, discord_id TEXT, name T
   csrf TEXT, created INTEGER, seen INTEGER, checked INTEGER, token TEXT, ip TEXT);
 CREATE TABLE IF NOT EXISTS staff(discord_id TEXT PRIMARY KEY, name TEXT, role TEXT, note TEXT, added_by TEXT,
   created INTEGER, last_login INTEGER);
+CREATE TABLE IF NOT EXISTS staff_keys(id TEXT PRIMARY KEY, discord_id TEXT, name TEXT, public TEXT, created INTEGER,
+  revoked INTEGER DEFAULT 0, revoked_by TEXT);
+CREATE INDEX IF NOT EXISTS staff_keys_owner ON staff_keys(discord_id);
+CREATE TABLE IF NOT EXISTS staff_key_codes(code_hash TEXT PRIMARY KEY, discord_id TEXT, name TEXT, expires INTEGER);
 CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER, discord_id TEXT, staff TEXT,
   role TEXT, action TEXT, server TEXT, target TEXT, target_pid TEXT, detail TEXT, ok INTEGER, result TEXT);
 CREATE INDEX IF NOT EXISTS audit_at ON audit(at);
@@ -1068,10 +1367,10 @@ class Watchers:
 
     COLOURS = {"server_down": 0xD63B3B, "server_up": 0x4FBF7A, "suspicion": 0xD63B3B, "dodger": 0xD63B3B,
                "reports": 0xE7A73C, "mod_ban": 0x5B9BD5, "watch": 0xE7A73C, "appeal": 0x5B9BD5, "filter": 0xE7A73C,
-               "teamkill": 0xE7A73C, "weekly": 0xFF9914}
+               "teamkill": 0xE7A73C, "weekly": 0xFF9914, "bugreport": 0x9AA3B3}
     LINKS = {"suspicion": "player", "dodger": "player", "reports": "reports", "watch": "player", "appeal": "reports",
              "mod_ban": "bans", "filter": "chat", "teamkill": "player", "server_down": "health", "server_up": "health",
-             "weekly": "weekly"}
+             "weekly": "weekly", "bugreport": "reports"}
 
     def alert_loop(self) -> None:
         import queue
@@ -1775,6 +2074,26 @@ class Operations:
         f, begin, size = best
         return {"file": f.name, "path": str(f), "offset_s": when - begin, "size": size, "server": srv.key, "at": when}
 
+    # -- website insights (tcp_insights.py on this machine; key from the systemd credential 'insights-key')
+    def insights(self, days: int) -> dict:
+        base = self.cfg.get("insights_api", "http://127.0.0.1:8094")
+        cred = os.environ.get("CREDENTIALS_DIRECTORY")
+        key = ""
+        if cred and (Path(cred) / "insights-key").exists():
+            key = (Path(cred) / "insights-key").read_text(encoding="utf-8").strip()
+        key = key or str(self.cfg.get("insights_key", "") or "")
+        if not base or not key:
+            raise ApiError(409, "Website insights are not connected yet (run install.sh insights-link on the VPS).")
+        req = urllib.request.Request("%s/insights/stats.json?days=%d" % (base.rstrip("/"), days),
+                                     headers={"Authorization": "Bearer " + key, "User-Agent": "TCPStaff"})
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read().decode())
+        except urllib.error.HTTPError as e:
+            raise ApiError(502 if e.code >= 500 else 409, "The insights service said: %s" % e.code) from e
+        except (urllib.error.URLError, OSError, ValueError) as e:
+            raise ApiError(502, "The insights service did not answer.") from e
+
     # -- stats review queue (the stats service's staff routes, loopback only)
     def stats_staff(self, method: str, route: str, body: dict | None = None):
         base = self.cfg.get("stats_api")
@@ -1839,6 +2158,7 @@ class Portal(Moderation, Watchers, Operations):
         data = Path(cfg.get("data_dir", "/var/lib/tcp-staff-portal"))
         data.mkdir(parents=True, exist_ok=True)
         self.store = Store(str(data / "portal.db"))
+        self.bugshots = data / "bugshots"
         self.servers = {s["key"]: GameServer(s, self.store) for s in cfg.get("servers", [])}
         self.order = [s["key"] for s in cfg.get("servers", [])]
         self.stop = threading.Event()
@@ -2087,18 +2407,30 @@ class Portal(Moderation, Watchers, Operations):
 
     def prune_loop(self) -> None:
         while not self.stop.is_set():
-            days = int(self.cfg.get("retention_days", 90))
-            cut = now() - days * 86400
-            self.store.x("DELETE FROM chat WHERE at<?", (now() - int(self.cfg.get("chat_days", 30)) * 86400,))
-            self.store.x("DELETE FROM sightings WHERE last_seen<?", (cut,))
-            self.store.x("DELETE FROM sessions WHERE seen<?", (now() - 86400,))
-            self.store.x("DELETE FROM flags WHERE at<?", (cut,))
-            self.store.x("DELETE FROM alerts WHERE at<?", (cut,))
-            self.store.x("DELETE FROM undo WHERE expires<?", (now() - 86400,))
-            self.store.x("DELETE FROM peaks WHERE day<?", (time.strftime("%Y-%m-%d", time.gmtime(cut)),))
-            self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
-            self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
+            try:                                   # one bad hour (a locked database, a full disk) never ends the loop
+                self.prune_once()
+            except Exception:  # noqa: BLE001
+                log.exception("hourly clean-up failed; trying again in an hour")
+            for job in (self.prune_bugshots, self.publish_staff_keys):
+                try:
+                    job()
+                except Exception:  # noqa: BLE001
+                    log.exception("%s failed", job.__name__)
             self.stop.wait(3600)
+
+    def prune_once(self) -> None:
+        days = int(self.cfg.get("retention_days", 90))
+        cut = now() - days * 86400
+        self.store.x("DELETE FROM chat WHERE at<?", (now() - int(self.cfg.get("chat_days", 30)) * 86400,))
+        self.store.x("DELETE FROM sightings WHERE last_seen<?", (cut,))
+        self.store.x("DELETE FROM sessions WHERE seen<?", (now() - 86400,))
+        self.store.x("DELETE FROM flags WHERE at<?", (cut,))
+        self.store.x("DELETE FROM alerts WHERE at<?", (cut,))
+        self.store.x("DELETE FROM undo WHERE expires<?", (now() - 86400,))
+        self.store.x("DELETE FROM peaks WHERE day<?", (time.strftime("%Y-%m-%d", time.gmtime(cut)),))
+        self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
+        self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
+        self.store.x("DELETE FROM staff_key_codes WHERE expires<?", (now(),))
 
     # ------------------------------------------------------------------ queries used by the API
     def server(self, key: str) -> GameServer:
@@ -2261,13 +2593,137 @@ class Portal(Moderation, Watchers, Operations):
         out["appeals"] = self.store.q("SELECT id, status, text, answer, created, answered_by FROM appeals WHERE pid=? ORDER BY id DESC", (pid,))
         return out
 
-    def _report_row(self, r: dict) -> dict:
+    def _report_row(self, r: dict, full: bool = False) -> dict:
         r = dict(r)
         try:
             r["data"] = json.loads(r["data"])
         except (TypeError, ValueError):
             r["data"] = {}
+        if r["source"] == "bug" and not full and isinstance(r["data"], dict):
+            # the list stays light: the console tail and hardware come with the single report
+            r["data"]["has_console"] = bool(r["data"].pop("console", ""))
+            r["data"].pop("hw", None)
         return r
+
+    def server_by_address(self, addr: str):
+        """Our server behind an ip:port a player was connected to, matched on the port and the public host or its IP."""
+        m = re.fullmatch(r"\[?([^\]]*?)\]?:(\d+)", addr.strip())
+        if not m:
+            return None
+        host, port = m.group(1).lower(), int(m.group(2))
+        for srv in self.servers.values():
+            pub = str(srv.cfg.get("public_address", ""))
+            phost, _, pport = pub.rpartition(":")
+            if not pport.isdigit() or int(pport) != port:
+                continue
+            if host == phost.lower() or host in self.public_ips(phost):
+                return srv
+        return None
+
+    def public_ips(self, host: str) -> set:
+        cache = getattr(self, "_ip_cache", {})
+        hit = cache.get(host)
+        if hit and hit[0] > time.time() - 3600:
+            return hit[1]
+        try:
+            ips = {a[4][0].lower() for a in socket.getaddrinfo(host, None)}
+        except OSError:
+            ips = set()
+        cache[host] = (time.time(), ips)
+        self._ip_cache = cache
+        return ips
+
+    def bugshots_bytes(self) -> int:
+        try:
+            return sum(f.stat().st_size for f in self.bugshots.glob("*.jpg")) if self.bugshots.is_dir() else 0
+        except OSError:
+            return 0
+
+    def bugshot_path(self, key: str) -> Path:
+        return self.bugshots / (re.sub(r"[^A-Za-z0-9_-]", "_", key) + ".jpg")
+
+    # ---------------------------------------------------------------- in-game staff badge keys
+    # Staff make their own key pair in the browser; the portal only ever sees the public half. The game servers
+    # read the list below (cvar g_staffKeyFile, 0.36.0+) next to the keys built into the game.
+    def staff_key_valid_sql(self) -> tuple:
+        idle = int(self.cfg.get("staff_key_idle_days", 60))
+        owners = sorted({str(x) for x in self.cfg.get("owners", [])})
+        sql = ("SELECT k.* FROM staff_keys k LEFT JOIN staff s ON s.discord_id=k.discord_id WHERE k.revoked=0 "
+               "AND COALESCE(s.role,'')<>'revoked'")
+        args = []
+        if idle > 0:
+            sql += " AND (COALESCE(s.last_login,0)>=? OR k.discord_id IN (%s))" % (",".join("?" * len(owners)) or "''")
+            args = [now() - idle * 86400] + owners
+        return sql + " ORDER BY k.created", args
+
+    def staff_key_lines(self) -> str:
+        sql, args = self.staff_key_valid_sql()
+        out = ["# TrueCombat Platinum staff keys, written by the staff portal. Do not edit by hand.",
+               "# TCPSTAFFKEY1 <key id> <role> <Ed25519 public key> <name>"]
+        for k in self.store.q(sql, args):
+            out.append("TCPSTAFFKEY1 %s 1 %s %s" % (k["id"], k["public"], k["name"]))
+        return "\n".join(out) + "\n"
+
+    def publish_staff_keys(self) -> list:
+        """Writes the key list for every server that has staff_keys_file and asks it to reload. Returns problems."""
+        text, problems = self.staff_key_lines(), []
+        for key in self.order:
+            srv = self.servers[key]
+            path = self.staff_keys_file(srv)
+            if not path:
+                continue
+            try:
+                if path.exists() and path.read_text(encoding="utf-8") == text:
+                    continue                     # unchanged: the server already has it
+                tmp = path.with_name(".%s.%s.tmp" % (path.name, secrets.token_hex(4)))
+                tmp.write_text(text, encoding="utf-8")
+                os.chmod(tmp, 0o644)
+                os.replace(tmp, path)
+            except OSError as e:
+                problems.append("%s: %s" % (srv.name, e))
+                log.warning("staff key list for %s not written: %s", srv.name, e)
+                continue
+            try:
+                srv.run("staffkeys_reload")
+            except Exception as e:  # noqa: BLE001 - an offline server reads the file when it starts
+                log.info("staff key reload on %s: %s", srv.name, e)
+        return problems
+
+    @staticmethod
+    def staff_keys_file(srv) -> Path | None:
+        """staff_keys_file from the config, else <game dir>/staffkeys/staffkeys.txt once install.sh made that folder."""
+        if srv.cfg.get("staff_keys_file"):
+            return Path(srv.cfg["staff_keys_file"])
+        if srv.cfg.get("reports_dir"):
+            d = Path(srv.cfg["reports_dir"]).parent / "staffkeys"
+            if d.is_dir():
+                return d / "staffkeys.txt"
+        return None
+
+    def create_staff_key(self, discord_id: str, name: str, pub: str) -> tuple:
+        """Replaces the person's key with a new public key; returns (key id, servers that did not take it)."""
+        self.store.x("UPDATE staff_keys SET revoked=?, revoked_by='replaced' WHERE discord_id=? AND revoked=0", (now(), discord_id))
+        kid = "k" + secrets.token_hex(5)
+        clean = re.sub(r"[^\w .|*\[\]()-]", "", name, flags=re.ASCII).strip()[:24] or "staff"
+        self.store.x("INSERT INTO staff_keys(id,discord_id,name,public,created) VALUES(?,?,?,?,?)", (kid, discord_id, clean, pub, now()))
+        return kid, self.publish_staff_keys()
+
+    def revoke_staff_keys(self, discord_id: str, by: str) -> int:
+        n = self.store.one("SELECT COUNT(*) n FROM staff_keys WHERE discord_id=? AND revoked=0", (discord_id,))["n"]
+        if n:
+            self.store.x("UPDATE staff_keys SET revoked=?, revoked_by=? WHERE discord_id=? AND revoked=0", (now(), by, discord_id))
+            self.store.audit({"discord_id": "", "name": "Staff keys"}, "staff key revoked", target=discord_id, detail=by)
+            self.publish_staff_keys()
+        return n
+
+    def prune_bugshots(self) -> None:
+        """Screenshots whose report is gone (closed reports are pruned after the retention time)."""
+        if not self.bugshots.is_dir():
+            return
+        keep = {self.bugshot_path(r["file"]).name for r in self.store.q("SELECT file FROM reports WHERE source='bug'")}
+        for f in self.bugshots.glob("*.jpg"):
+            if f.name not in keep and f.stat().st_mtime < time.time() - 3600:
+                f.unlink(missing_ok=True)
 
     def health(self) -> dict:
         t, cached = self.health_cache
@@ -2332,13 +2788,16 @@ class Portal(Moderation, Watchers, Operations):
         return hmac.new(key.encode(), ip.encode(), hashlib.sha256).hexdigest()[:12]
 
     # ------------------------------------------------------------------ rate limit (per key, per window)
-    def limited(self, key: str, limit: int, window: int) -> bool:
+    def limited(self, key: str, limit: int, window: int, peek: bool = False) -> bool:
+        """True when key used its limit within window; otherwise counts this use (peek: only looks)."""
         t = time.time()
         with self.rate_lock:
             hits = [x for x in self.rate.get(key, []) if t - x < window]
             if len(hits) >= limit:
                 self.rate[key] = hits
                 return True
+            if peek:
+                return False
             hits.append(t)
             self.rate[key] = hits
             if len(self.rate) > 5000:
@@ -2470,7 +2929,17 @@ def make_handler(portal: Portal):
                 n = int(self.headers.get("Content-Length") or 0)
             except ValueError as e:
                 raise ApiError(400, "Bad request.") from e
-            if n < 0 or n > limit:               # a negative length would read until the client stops sending
+            if n < 0:                            # a negative length would read until the client stops sending
+                raise ApiError(400, "Bad request.")
+            if n > limit:
+                if n <= 4 * 1024 * 1024:         # read a moderate overshoot away, so the client gets the answer
+                    left = n                     # instead of a reset connection; anything bigger is just cut off
+                    while left > 0:
+                        chunk = self.rfile.read(min(left, 65536))
+                        if not chunk:
+                            break
+                        left -= len(chunk)
+                    self._body_read = True
                 raise ApiError(413, "Too much data.")
             self._body_read = True
             return self.rfile.read(n) if n else b""
@@ -2511,6 +2980,7 @@ def make_handler(portal: Portal):
                 role = self.recheck(s)
                 if not role:
                     portal.store.x("DELETE FROM sessions WHERE id=?", (s["id"],))
+                    portal.revoke_staff_keys(s["discord_id"], "lost staff role")
                     return None
                 s["role"] = role
                 portal.store.x("UPDATE sessions SET role=?, checked=? WHERE id=?", (role, t, s["id"]))
@@ -2589,6 +3059,8 @@ def make_handler(portal: Portal):
                     return self.auth(method, path, qs)
                 if path == "/api/bugreport" and method == "POST":
                     return self.bugreport()
+                if path == "/api/staffkey/claim" and method == "POST":
+                    return self.staffkey_claim()
                 if path in ("/appeal", "/appeal/") and method == "GET":
                     return self.static("appeal.html")
                 if path.startswith("/appeal/"):
@@ -2685,25 +3157,82 @@ def make_handler(portal: Portal):
                 return self.json({"ok": True}, extra={"Set-Cookie": [self.set_cookie(cookie_name, "", 0)]})
             raise ApiError(404, "Not found.")
 
-        # -- public bug report intake (the launcher uploads F12 reports here when cl_bugReportUrl points at it)
+        # -- the launcher claims a one-time "Install in game" link: it sends the public half of a key pair it made
+        def staffkey_claim(self) -> None:
+            ip = self.client_ip()
+            if portal.limited("keyclaim:" + ip, 10, 3600):
+                raise ApiError(429, "Too many tries. Try again later.")
+            d = self.body_json()
+            code, pub = str(d.get("code", "")).lower(), str(d.get("public", "")).lower()
+            if not re.fullmatch(r"[0-9a-f]{32}", code) or not re.fullmatch(r"[0-9a-f]{64}", pub) or pub == "0" * 64:
+                raise ApiError(400, "Bad request.")
+            h = hashlib.sha256(code.encode()).hexdigest()
+            with portal.store.lock:
+                row = portal.store.one("SELECT * FROM staff_key_codes WHERE code_hash=?", (h,))
+                portal.store.x("DELETE FROM staff_key_codes WHERE code_hash=?", (h,))        # single use, right or wrong
+            if not row or row["expires"] < now():
+                raise ApiError(410, "This link has expired. Make a new one in the staff portal.")
+            # access ends sessions, so a link only works while the person who made it still has a portal session
+            staff = portal.store.one("SELECT role FROM staff WHERE discord_id=?", (row["discord_id"],))
+            if (staff and staff["role"] == "revoked") or not portal.store.one(
+                    "SELECT 1 x FROM sessions WHERE discord_id=?", (row["discord_id"],)):
+                raise ApiError(403, "This account no longer has staff access.")
+            if portal.limited("staffkey:" + row["discord_id"], 5, 86400):
+                raise ApiError(429, "Five keys were made for this account today. Try again tomorrow.")
+            kid, problems = portal.create_staff_key(row["discord_id"], row["name"], pub)
+            portal.store.audit({"discord_id": row["discord_id"], "name": row["name"]}, "staff key made", target=kid,
+                               detail="installed by the launcher")
+            self.json({"id": kid, "name": row["name"]}, 201)
+
+        # -- public bug report intake: F12 in game (0.36.0+) posts JSON "tcp-bugreport/1"; older tools post plain text
         def bugreport(self) -> None:
             ip = self.client_ip()
             if portal.limited("bug:" + ip, int(cfg.get("bugreport_per_hour", 6)), 3600) or portal.limited("bug:*", 300, 86400):
                 raise ApiError(429, "Too many reports from this address. Try again later.")
             if portal.store.one("SELECT COUNT(*) n FROM reports WHERE source='bug' AND status<>'closed'")["n"] >= int(cfg.get("bugreport_open_max", 1000)):
                 raise ApiError(503, "The bug report inbox is full. Try again later.")
-            raw = self.body(limit=int(cfg.get("bugreport_max_bytes", 96 * 1024)))
-            text = raw.decode("utf-8", "replace").replace("\x00", "")
+            ctype = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+            raw = self.body(limit=int(cfg.get("bugreport_max_bytes", 1600 * 1024)))
+            key = "bug/%d-%s" % (now(), secrets.token_hex(4))
+            shot = b""
+            if ctype == "application/json":
+                try:
+                    j = json.loads(raw.decode("utf-8"))
+                except (ValueError, UnicodeDecodeError) as e:
+                    raise ApiError(400, "Bad JSON.") from e
+                if not isinstance(j, dict) or j.get("format") != "tcp-bugreport/1":
+                    raise ApiError(400, "Unknown report format.")
+                data, shot = bug_fields(j)
+                text = data["text"]
+            else:
+                text = clean_text(raw.decode("utf-8", "replace"), 96 * 1024)
+                data = {"category": bug_category(self.headers.get("X-Report-Category", "")), "text": text}
             if len(text.strip()) < 10:
                 raise ApiError(400, "The report is empty.")
-            category = safe_arg(self.headers.get("X-Report-Category", ""), 20) or "Bug"
-            first = next((ln for ln in text.splitlines() if ln.strip()), "")[:120]
-            key = "bug/%d-%s" % (now(), secrets.token_hex(4))
+            data["summary"] = next((ln for ln in text.splitlines() if ln.strip()), "")[:120]
+            data["from"] = portal.ip_tag(ip)
+            if shot and portal.bugshots_bytes() + len(shot) > int(cfg.get("bugshot_max_mb", 500)) * 1024 * 1024:
+                shot = b""                       # disk guard: the report still arrives, without its picture
+                data["shot_dropped"] = True
+            if shot:
+                path = portal.bugshot_path(key)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(shot)
+                data["shot"] = True
+            if data.get("server"):
+                srv = portal.server_by_address(data["server"])
+                if srv:
+                    data["server_name"] = srv.name
+            pid = data.get("pid", "")
             portal.store.x("INSERT INTO reports(source,file,server,received,data,target_pid,target_name,status,updated) "
                            "VALUES('bug',?,?,?,?,?,?,'open',?)",
-                           (key, "", now(), json.dumps({"category": category, "text": text, "summary": first,
-                                                        "from": portal.ip_tag(ip)}),
-                            "", "", now()))
+                           (key, data.get("server_name", ""), now(), json.dumps(data), pid, data.get("name", ""), now()))
+            where = " on %s" % data["map"] if data.get("map") else ""
+            by = " from %s" % data["name"] if data.get("name") else ""
+            # one alert per report, but a player sending many in a row raises one alert per ten minutes
+            portal.alert("bugreport", discord_plain("%s report%s%s" % (data["category"], by, where)),
+                         discord_plain(data["summary"]) + ("\nBuild %s" % discord_plain(data["build"]) if data.get("build") else ""),
+                         key=("bugreport:" + pid) if pid else key, window=600 if pid else 0, pid=pid)
             self.json({"ok": True, "id": key}, 201)
 
         # -- API
@@ -2796,6 +3325,19 @@ def make_handler(portal: Portal):
                     "SELECT * FROM reports WHERE %s ORDER BY id DESC LIMIT 300" % where, args)]
                 counts = {r["status"]: r["n"] for r in portal.store.q("SELECT status, COUNT(*) n FROM reports GROUP BY status")}
                 return self.json({"reports": rows, "counts": counts})
+            if route == "reports/bug" and method == "GET":
+                self.need(s, "reports")
+                r = portal.store.one("SELECT * FROM reports WHERE id=? AND source='bug'", (int(qs.get("id") or 0),))
+                if not r:
+                    raise ApiError(404, "No such report.")
+                return self.json({"report": portal._report_row(r, full=True)})
+            if route == "reports/bugshot" and method == "GET":
+                self.need(s, "reports")
+                r = portal.store.one("SELECT file FROM reports WHERE id=? AND source='bug'", (int(qs.get("id") or 0),))
+                path = portal.bugshot_path(r["file"]) if r else None
+                if not path or not path.is_file():
+                    raise ApiError(404, "No screenshot.")
+                return self.send_file(path, path.name, "image/jpeg", cache="private, max-age=86400")
             if route == "reports/update" and method == "POST":
                 who = self.need(s, "reports")
                 d = self.body_json()
@@ -3065,6 +3607,14 @@ def make_handler(portal: Portal):
                 weeks = max(0, min(52, int(qs.get("weeks_ago") or 0)))
                 w = portal.weekly(now() - weeks * 7 * 86400)
                 return self.json(dict(w, text=portal.weekly_text(w)))
+            # website insights
+            if route == "insights" and G:
+                self.need(s, "insights")
+                try:
+                    days = int(qs.get("days") or 30)
+                except ValueError:
+                    days = 30
+                return self.json(portal.insights(days if days in (7, 30, 90, 365) else 30))
             # stats review queue
             if route == "review" and G:
                 self.need(s, "review")
@@ -3100,6 +3650,55 @@ def make_handler(portal: Portal):
                 portal.store.audit(who, "demo download", server=d["server"], detail="%s, from %ss" % (d["file"], d["offset_s"]))
                 return self.send_file(Path(d["path"]), d["file"])
             # two-step sign-in
+            # in-game staff badge keys
+            if route == "staffkey" and G:
+                who = self.need(s, "view")
+                k = portal.store.one("SELECT id, created FROM staff_keys WHERE discord_id=? AND revoked=0 ORDER BY created DESC",
+                                     (who["discord_id"],))
+                sql, args = portal.staff_key_valid_sql()
+                live = bool(k) and bool(portal.store.one("SELECT 1 x FROM (%s) WHERE id=?" % sql, args + [k["id"]]))
+                return self.json({"key": k, "active": live, "servers": sum(1 for x in portal.servers.values() if portal.staff_keys_file(x)),
+                                  "launcher": bool(cfg.get("launcher_key_install", False))})
+            if route == "staffkey" and P:
+                who = self.need(s, "view")
+                d = self.body_json()
+                pub = str(d.get("public", "")).lower()
+                if not re.fullmatch(r"[0-9a-f]{64}", pub) or pub == "0" * 64:
+                    raise ApiError(400, "That is not an Ed25519 public key.")
+                if portal.limited("staffkey:" + who["discord_id"], 5, 86400):
+                    raise ApiError(429, "You made five keys today. Try again tomorrow.")
+                kid, problems = portal.create_staff_key(who["discord_id"], who["name"], pub)
+                portal.store.audit(who, "staff key made", target=kid, detail="downloaded")
+                return self.json({"id": kid, "problems": problems}, 201)
+            if route == "staffkey/link" and P:
+                # "Install in game": a one-time link the launcher claims; the launcher makes the key pair itself
+                who = self.need(s, "view")
+                if portal.limited("staffkey:" + who["discord_id"], 5, 86400, peek=True):
+                    raise ApiError(429, "You made five keys today. Try again tomorrow.")
+                code = secrets.token_hex(16)
+                portal.store.x("DELETE FROM staff_key_codes WHERE discord_id=? OR expires<?", (who["discord_id"], now()))
+                portal.store.x("INSERT INTO staff_key_codes(code_hash,discord_id,name,expires) VALUES(?,?,?,?)",
+                               (hashlib.sha256(code.encode()).hexdigest(), who["discord_id"], who["name"], now() + STAFF_KEY_LINK_SECONDS))
+                return self.json({"link": "truecombat://staffkey/" + code, "expires": now() + STAFF_KEY_LINK_SECONDS})
+            if route == "staffkeys" and G:
+                self.need(s, "staff.manage")
+                sql, args = portal.staff_key_valid_sql()
+                live = {r["id"] for r in portal.store.q(sql, args)}
+                rows = portal.store.q("SELECT id, discord_id, name, created FROM staff_keys WHERE revoked=0 ORDER BY created DESC")
+                return self.json({"keys": [dict(r, active=r["id"] in live) for r in rows],
+                                  "idle_days": int(cfg.get("staff_key_idle_days", 60))})
+            if route == "staffkey/revoke" and P:
+                who = self.need(s, "view")
+                d = self.body_json()
+                k = portal.store.one("SELECT * FROM staff_keys WHERE id=? AND revoked=0", (str(d.get("id", "")),))
+                if not k:
+                    raise ApiError(404, "No such key.")
+                if k["discord_id"] != who["discord_id"]:
+                    self.need(s, "staff.manage")
+                portal.store.x("UPDATE staff_keys SET revoked=?, revoked_by=? WHERE id=?", (now(), who["name"], k["id"]))
+                portal.publish_staff_keys()
+                portal.store.audit(who, "staff key revoked", target=k["id"], detail=k["name"])
+                return self.json({"ok": True})
             if route == "2fa" and G:
                 if not s:
                     raise ApiError(401, "Please sign in.")
@@ -3114,8 +3713,9 @@ def make_handler(portal: Portal):
                                "DO UPDATE SET secret=excluded.secret, enabled=0, created=excluded.created, last_step=0",
                                (who["discord_id"], secret_b32, now()))
                 label = urllib.parse.quote("TrueCombat Staff:%s" % who["name"])
-                return self.json({"secret": secret_b32, "uri": "otpauth://totp/%s?secret=%s&issuer=%s&digits=6&period=30" % (
-                    label, secret_b32, urllib.parse.quote("TrueCombat Staff"))})
+                uri = "otpauth://totp/%s?secret=%s&issuer=%s&digits=6&period=30" % (
+                    label, secret_b32, urllib.parse.quote("TrueCombat Staff"))
+                return self.json({"secret": secret_b32, "uri": uri, "qr": qr_svg_data_uri(uri)})
             if route in ("2fa/enable", "2fa/verify", "2fa/disable") and P:
                 if not s:
                     raise ApiError(401, "Please sign in.")
@@ -3154,18 +3754,19 @@ def make_handler(portal: Portal):
                 return self.json({"ok": True})
             raise ApiError(404, "Not found.")
 
-        def send_file(self, path: Path, name: str) -> None:
+        def send_file(self, path: Path, name: str, ctype: str = "", cache: str = "no-store") -> None:
             try:
                 f = path.open("rb")
             except OSError as e:
-                raise ApiError(404, "The demo file could not be read.") from e
+                raise ApiError(404, "The file could not be read.") from e
             with f:
                 size = os.fstat(f.fileno()).st_size
                 self.send_response(200)
-                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Type", ctype or "application/octet-stream")
                 self.send_header("Content-Length", str(size))
-                self.send_header("Content-Disposition", 'attachment; filename="%s"' % re.sub(r'[^A-Za-z0-9_.-]', "_", name))
-                self.send_header("Cache-Control", "no-store")
+                self.send_header("Content-Disposition", '%s; filename="%s"' % ("inline" if ctype else "attachment",
+                                                                               re.sub(r'[^A-Za-z0-9_.-]', "_", name)))
+                self.send_header("Cache-Control", cache)
                 for k, v in SECURITY_HEADERS.items():
                     self.send_header(k, v)
                 self.end_headers()
@@ -3274,6 +3875,7 @@ def make_handler(portal: Portal):
                            (did, safe_arg(d.get("name", ""), 40), stored, safe_arg(d.get("note", ""), 120), who["name"], now()))
             if role == "revoked":
                 portal.store.x("DELETE FROM sessions WHERE discord_id=?", (did,))
+                portal.revoke_staff_keys(did, "access removed by " + who["name"])
             else:
                 portal.store.x("UPDATE sessions SET checked=0 WHERE discord_id=?", (did,))
             portal.store.audit(who, "staff " + role, target=did, detail=safe_arg(d.get("note", ""), 120))
