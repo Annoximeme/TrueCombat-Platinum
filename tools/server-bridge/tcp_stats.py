@@ -41,7 +41,9 @@ import sqlite3
 import threading
 import time
 
-COLOR = re.compile(r"\^[0-9A-Za-z]")
+# Any ET colour code: ^ and one printable character other than ^ (ColorIndex = (c - 48) & 31,
+# so ^: ^< ^= ^> ^? ^@ are colours too, not only digits and letters).
+COLOR = re.compile(r"\^[^\^\s]")
 SCHEMA_VERSION = 1
 MAX_BODY = 256 * 1024
 CLOCK_SKEW = 300            # seconds a signed upload may be off
