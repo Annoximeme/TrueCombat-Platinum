@@ -77,7 +77,7 @@ switches those buttons on per server; on an older server they explain why they a
 * Stats review and suspicion use the stats service's private `/staff/` routes (loopback only, `X-Staff-Token`).
   `install.sh stats-link` creates the token and hands it to both services as a systemd credential.
 * Linked Discord accounts are read from the Discord bot's database, read-only.
-* The Insights page (admins) reads `/insights/stats.json` from the website insights service on 127.0.0.1:8093
+* The Insights page (admins) reads `/insights/stats.json` from the website insights service on 127.0.0.1:8094
   (`tools/server-bridge/tcp_insights.py`). `install.sh insights-link` copies that service's studio key into the
   portal's `insights-key` credential; an empty file leaves the page saying it is not connected.
 * Alerts go to the webhook in `/etc/tcp-staff-portal/staff-webhook` (empty file: portal only). Set

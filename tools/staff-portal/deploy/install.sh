@@ -196,7 +196,7 @@ insights_link() {
   install -d -m 0750 -o root -g tcpstaff "$ETC"
   install -m 0600 -o root -g root /etc/tcp-insights/key "$ETC/insights-key"
   H=$(mktemp); chmod 0600 "$H"; printf 'Authorization: Bearer %s\n' "$(cat "$ETC/insights-key")" > "$H"
-  if curl -fsS -H @"$H" "http://127.0.0.1:8093/insights/stats.json?days=7" >/dev/null; then
+  if curl -fsS -H @"$H" "http://127.0.0.1:8094/insights/stats.json?days=7" >/dev/null; then
     rm -f "$H"; say "insights service linked"
   else
     rm -f "$H"; say "the insights service did not answer with this key; is tcp-insights running?"; exit 1
