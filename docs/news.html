@@ -89,8 +89,82 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.34.1" data-ver="v0.34.1" open>
-        <summary><span class="ver">v0.34.1<span class="latest">Latest</span></span><span class="sum">Instant replay clips, a per-life damage report, fairer teams in long matches and a fix for offline bot matches. Update through the launcher.</span><span class="meta">#56 · 0.34.1-sandbox26 · 9 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.35.0" data-ver="v0.35.0" open>
+        <summary><span class="ver">v0.35.0<span class="latest">Latest</span></span><span class="sum">Easy Anti-Cheat, a rebuilt launcher, an in-game server browser, a proper warm-up, grenade cooking and a long list of movement, weapon and map fixes from the latest playtest. Update through the launcher, or install fresh with TrueCombat-Platinum-Setup.exe.</span><span class="meta">#57 · 0.35.0-sandbox27 · 12 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Easy anti-cheat</h3><ul>
+            <li>TrueCombat: Platinum now ships with Easy Anti-Cheat. PLAY starts the game through the Easy Anti-Cheat bootstrapper, and the installer sets up the anti-cheat service once (Windows asks for permission).</li>
+            <li>Servers that require anti-cheat show a green shield in the in-game server list and an EASY ANTI-CHEAT tag in the launcher; servers with anti-cheat switched on but not required show ANTI-CHEAT ON. The connect screen states the server's anti-cheat status.</li>
+            <li>Anti-cheat sign-in uses a TrueCombat identity created on your PC. No account or sign-up is needed.</li>
+          </ul></section>
+          <section><h3>Launcher 2.0</h3><ul>
+            <li>Redesigned launcher with English, German, French and Polish text.</li>
+            <li>Server cards show the game mode, verified community servers and when the list was last checked.</li>
+            <li>truecombat:// join links open the game and connect straight to the server. A second copy of the game no longer takes these links over from your installed copy.</li>
+            <li>A name set in the game, including colour codes, is no longer replaced by the launcher on the next start. A name typed in the launcher still takes priority. Names can be up to 35 characters.</li>
+            <li>The Controls page now includes the Walk key (Caps Lock by default).</li>
+          </ul></section>
+          <section><h3>Server browser and warm-up</h3><ul>
+            <li>FIND SERVERS in the main menu and the Esc menu opens the in-game server browser: browse, filter and join servers without returning to the launcher.</li>
+            <li>Warm-up is now a practice phase before the first round: you spawn straight away, respawn one second after dying, and can try weapons, change your loadout and talk to other players. The match starts after a 30-second countdown once two players are present (server hosts: g_warmup). Warm-up kills and deaths do not count.</li>
+          </ul></section>
+          <section><h3>Movement</h3><ul>
+            <li>Jumping onto low objects works as in the original game: standing next to an object such as a dumpster, the jump is no longer reduced, so you can climb on it. Higher ledges are still climbed with the ledge climb.</li>
+            <li>Aiming down sights now slows you down as in the original game.</li>
+            <li>Footsteps and head bob follow the original timing. Crouched footsteps are slower and quieter, and walking, aiming and leaning are quiet.</li>
+            <li>You can no longer fire while sprinting. The weapon is ready again a quarter of a second after you stop.</li>
+          </ul></section>
+          <section><h3>Gameplay</h3><ul>
+            <li>Grenade cooking, as in TC:E 0.49b: hold fire to prime a grenade and release to throw it with the remaining fuse. Hold it too long and it leaves your hand just before it goes off. You cannot switch weapons while a grenade is primed.</li>
+            <li>Bolt-action rifles (R93, SR-8): the bolt is now worked after you release the trigger, with its own sound, before the next shot can be fired.</li>
+            <li>Jump landings follow the original recovery rules: a hard landing or a landing from a jump briefly reduces how high you can jump again.</li>
+            <li>Fall damage now hits the legs instead of the body. The total damage is unchanged.</li>
+            <li>Grenade blasts check line of sight to several points on the target, so cover protects you properly.</li>
+            <li>Flashbangs now blind bots as well as players.</li>
+            <li>Explosions are no longer muffled by walls and floors near the blast.</li>
+            <li>Suppressed weapons are harder for bots to hear.</li>
+            <li>New toggle options for sprint and walk (cg_toggleSprint, cg_toggleWalk), next to the existing crouch toggle.</li>
+          </ul></section>
+          <section><h3>Doors</h3><ul>
+            <li>Doors show a use icon under the crosshair when you can open them, and play their opening and closing sounds.</li>
+            <li>Opening a door while walking or crouched opens it slowly and quietly. Doors can no longer be reversed halfway through a swing.</li>
+          </ul></section>
+          <section><h3>Weapons</h3><ul>
+            <li>Players and bots now visibly shoulder their weapon when aiming down sights.</li>
+            <li>The M4 and the M4 SOPMOD are separate entries in the weapon list again.</li>
+            <li>The AKS-74U charging handle is textured correctly.</li>
+            <li>When spectating, weapon sounds and firing animations match what the player hears and sees.</li>
+          </ul></section>
+          <section><h3>Maps</h3><ul>
+            <li>Removed the invisible capture-point posts that blocked movement outside Flag Capture, including the one at the Delta bomb site.</li>
+          </ul></section>
+          <section><h3>Online play</h3><ul>
+            <li>Server hosts can set a join password (g_password). Players without the right password are refused with a clear message.</li>
+            <li>Team selection: bots no longer count toward team size limits, every team switch is confirmed, and a team picked while the map is still loading is kept, including for the next map.</li>
+            <li>Teams are no longer reshuffled at the first round of a new map. Automatic balance only steps in when the teams are really uneven and moves bots before players.</li>
+            <li>Rejoin within five minutes and keep your team and score.</li>
+            <li>Timed bans with a reason shown to the banned player, a ping limit for servers (g_maxPing), pickup-match teams, and a connection quality icon on the scoreboard. cg_netGraph 1 or 2 shows ping, packet loss and jitter.</li>
+            <li>Match reports now record connection quality and leaves. Player addresses are never stored.</li>
+          </ul></section>
+          <section><h3>Interface</h3><ul>
+            <li>Chat works again: T for all players, Y for your team.</li>
+            <li>V opens the voice command menu.</li>
+            <li>New MOUSE &amp; VIEW page in the Esc menu: sensitivity (with typed values for high and low DPI mice), aim and scope sensitivity, field of view (80 to 110, cg_fov), mouse smoothing and acceleration.</li>
+            <li>Report a bug from inside the game: press F12 or use REPORT A BUG in the Esc menu. The report includes your recent console log.</li>
+            <li>Kill feed lines stay on screen for 15 seconds. Adjust with cg_killFeedTime.</li>
+            <li>Player names in the deployment menu now show colour codes ^8 and ^9 correctly.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Fixed grenades firing again when fire was held after the last grenade was thrown.</li>
+            <li>Fixed players respawning with outdated movement timing after a respawn.</li>
+            <li>The connect screen no longer shows unrelated engine release messages.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.35.0-sandbox27">GitHub ↗</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.34.1" data-ver="v0.34.1">
+        <summary><span class="ver">v0.34.1</span><span class="sum">Instant replay clips, a per-life damage report, fairer teams in long matches and a fix for offline bot matches. Update through the launcher.</span><span class="meta">#56 · 0.34.1-sandbox26 · 9 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>New</h3><ul>
             <li>Instant replay: press F8 (or type /clip) to save the last 30 seconds of play as a clip in demos/clips. Watch it with /demo clips/&lt;name&gt;. Clip length is set with cl_replaySeconds; cl_replay 0 turns the feature off.</li>
