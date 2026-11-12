@@ -1,0 +1,102 @@
+# Reference copy of the live /etc/caddy/Caddyfile on the VPS, as of 2026-11-12,
+# after the upgrade to Caddy 2.11.9 and the website audit hardening.
+# This file is not installed by any script. It records what the server runs so that
+# a future install or rebuild can start from it instead of undoing it.
+# Keep it in sync: whenever the Caddyfile on the VPS changes, copy it here in the same change.
+# The two imported snippets are the files next to this one:
+#   security-headers.caddy  ->  /etc/caddy/security-headers.caddy
+#   clean-urls.caddy        ->  /etc/caddy/clean-urls.caddy
+
+{
+	servers {
+		# a request must name the same host in TLS (SNI) and in the Host header
+		strict_sni_host on
+	}
+}
+
+api.truecombat.eu {
+	encode gzip
+	header -Server
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	header X-Content-Type-Options nosniff
+	# browsers only send OPTIONS as a CORS preflight; the insights and devlog services answer
+	# their own preflights, everything else gets an empty 204 (no CORS grant)
+	@preflight {
+		method OPTIONS
+		not path /insights/* /devlog/*
+	}
+	handle @preflight {
+		respond 204
+	}
+	handle /kofi/* {
+		reverse_proxy 127.0.0.1:8091
+	}
+	handle /devlog/* {
+		reverse_proxy 127.0.0.1:8092
+	}
+	handle /insights/* {
+		reverse_proxy 127.0.0.1:8094
+	}
+	handle /funding.json {
+		reverse_proxy 127.0.0.1:8091
+	}
+	handle /eos/* {
+		reverse_proxy 127.0.0.1:8093
+	}
+	handle {
+		reverse_proxy 127.0.0.1:8090
+	}
+}
+
+truecombat.eu {
+	import /etc/caddy/security-headers.caddy
+	import /etc/caddy/clean-urls.caddy
+	root * /var/www/truecombat
+	encode zstd gzip
+	header -Server
+	header X-Content-Type-Options nosniff
+	header Referrer-Policy strict-origin-when-cross-origin
+	# dot files stay private, except the standard /.well-known/ folder (security.txt)
+	@hidden {
+		path /.*
+		not path /.well-known/*
+	}
+	respond @hidden 404
+	@assets path /img/* /press/* *.css *.js
+	header @assets Cache-Control "public, max-age=3600"
+	file_server
+	handle_errors {
+		# errors are never cached long (a missing font or image must not stick as a 404)
+		header Cache-Control "no-cache"
+		@404 expression {err.status_code} == 404
+		handle @404 {
+			rewrite * /404.html
+			file_server
+		}
+		@405 expression {err.status_code} == 405
+		handle @405 {
+			header Allow "GET, HEAD"
+			respond "405 Method Not Allowed" 405
+		}
+		handle {
+			respond "{err.status_code} {err.status_text}" {err.status_code}
+		}
+	}
+}
+
+www.truecombat.eu {
+	header -Server
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	redir https://truecombat.eu{uri} permanent
+}
+
+# Staff portal. Appended to /etc/caddy/Caddyfile by install.sh --caddy (after a backup and caddy validate).
+staff.truecombat.eu {
+	encode zstd gzip
+	header -Server
+	# the portal sends its own HSTS; replace it (deferred) so there is exactly one, with includeSubDomains
+	header >Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	@preflight method OPTIONS
+	respond @preflight 204
+	reverse_proxy 127.0.0.1:8097
+}
