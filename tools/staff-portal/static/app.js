@@ -221,8 +221,14 @@ async function staffKeyDialog() {
   const k = await api("staffkey");
   const state = !k.key ? '<p><span class="tag">None</span> You have no staff key yet.</p>'
     : `<p><span class="tag ${k.active ? "ok" : "bad"}">${k.active ? "Active" : "Not active"}</span> Key made ${when(k.key.created)}.${k.active ? "" : " Sign in to the portal regularly to keep it active."}</p>`;
+  const renew = k.key ? " A new key cancels the old one straight away." : "";
+  if (!k.launcher) {   // until the launcher that installs keys is out: the key file is the way
+    return modal({ title: "Staff badge in game", sub: "Your staff key shows your staff badge and orange name on our servers.", ok: k.key ? "Get a new key" : "Get my staff key",
+      body: state + `<p class="muted">The key is made in this browser and downloads as <b>staff.key</b>. The portal never sees the secret part, so keep the file to yourself.${renew}</p>`,
+      onOk: async () => { setTimeout(() => staffKeyDownload().catch((err) => toast(err.message, true)), 0); } });
+  }
   modal({ title: "Staff badge in game", sub: "Your staff key shows your staff badge and orange name on our servers.", ok: "Install in game",
-    body: state + `<p class="muted">Install in game hands the job to the TrueCombat Platinum launcher on this PC: it makes the key and puts it in your game's profile folder. The secret part never leaves your PC.${k.key ? " A new key cancels the old one straight away." : ""}</p>
+    body: state + `<p class="muted">Install in game hands the job to the TrueCombat Platinum launcher on this PC: it makes the key and puts it in your game's profile folder. The secret part never leaves your PC.${renew}</p>
       <p class="small">No launcher on this PC? <button type="button" class="linkish" data-download>Download the key file instead</button>.</p>`,
     onOk: async () => {
       const r = await api("staffkey/link", {});

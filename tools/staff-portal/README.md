@@ -118,7 +118,8 @@ from 0.36.0 read that list next to the keys built into the game (see `game/STAFF
 use). The launcher (2.1+, see `launcher/STAFF-KEY-INSTALL.md`) makes the key pair itself, claims the link at
 `POST /api/staffkey/claim` with the public half and writes `profile\staff.key`, so the secret never leaves
 that PC. A claim only works while the person who made the link still has a portal session. Downloading the
-file stays available as a fallback.
+file stays available as a fallback. Turn it on with `"launcher_key_install": true` once launcher 2.1 is released;
+until then the portal offers the download only.
 
 A key stops working when a newer one is made, when an admin revokes it (Staff page), when the person
 loses staff access (revoked in the portal or Discord role removed, seen at their next portal visit), or
