@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-playtest-fixes.jpg">
 <meta property="article:published_time" content="2026-11-09">
 <meta property="article:section" content="Roadmap">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"What the playtests told us","description":"Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.","datePublished":"2026-11-09","dateModified":"2026-11-09","inLanguage":"en","articleSection":"Roadmap","timeRequired":"PT5M","image":"https://truecombat.eu/img/og-devlog-playtest-fixes.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-playtest-fixes","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"What the playtests told us","description":"Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.","datePublished":"2026-11-09","dateModified":"2026-11-12","inLanguage":"en","articleSection":"Roadmap","timeRequired":"PT7M","image":"https://truecombat.eu/img/og-devlog-playtest-fixes.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-playtest-fixes","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
 <!--alt-->
 <link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -54,7 +54,7 @@
       <li><a href="leaderboards">Leaderboards</a></li>
       <li><a href="competitive">Competitive</a></li>
       <li><a href="news">News</a></li>
-      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-11">Devlog</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-12">Devlog</a></li>
     </ul>
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
@@ -72,12 +72,12 @@
 <!--/nav-->
 
 <main id="top">
-<article class="post" data-post="playtest-fixes" data-min="5">
+<article class="post" data-post="playtest-fixes" data-min="7">
   <header class="page-head post-head">
     <div class="head-art" style="--art: url(img/media-grenade.webp); --art-s: url(img/media-grenade-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog">All devlog posts</a>
-      <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>5 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="playtest-fixes" hidden></span></p>
+      <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>7 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="playtest-fixes" hidden></span></p>
       <h1>What the playtests told us</h1>
       <p class="lede">Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.</p>
     </div>
@@ -100,50 +100,51 @@
       <div class="prose">
 <p>The best test of a shooter is a full server of people who know how it is supposed to feel. Our most recent community playtests gave us exactly that, and the verdict was honest: the foundations are there, but too many small things still feel wrong next to the original. This post lists every issue that came out of those sessions, the order we will tackle them in, and where they sit next to the work we described in <a href="devlog-whats-next">What we are working on next</a>.</p>
 <p>The result is a long list of fixes, and they are lined up for the next patch. It will not have a date until it is ready: each fix ships once it passes the full test gate, and we will update this post as items land. Every update brings Platinum a step closer to the enhanced, better game we set out to make.</p>
+<aside class="callout"><p>Update, 12 November: most of this list shipped in 0.35.0. Each item below now says where it stands. <a href="devlog-inside-035">Inside 0.35.0</a> explains how the fixes were made and what did not make it.</p></aside>
 <aside class="callout"><p>Gunplay comes first. Until every shot lands where you aim and does what it should, nothing else on this list matters as much.</p></aside>
 <h2 id="gunplay">Gunplay</h2>
 <p>This is the most important group, and the one we hear about most.</p>
 <ul>
-  <li><strong>Hits at range.</strong> Shots at longer distances do not always register on a target that was clearly under the crosshair. We will check every hitbox against the player model at range, with and without lag compensation, on a real internet connection.</li>
-  <li><strong>Bullets not landing at the aim point.</strong> Some weapons, the SIG among them, put rounds slightly off from where the crosshair sits. We will not stop at the weapons that were reported: every gun in the roster gets the same check, so the fix is complete rather than case by case.</li>
-  <li><strong>Spread and aim per weapon.</strong> Each weapon's spread, its growth while firing and how it behaves aimed down sights will be compared against the original values, weapon by weapon.</li>
-  <li><strong>Damage.</strong> The damage model for rifles, SMGs, pistols and sniper rifles gets a full review, including how damage falls off with distance and body part.</li>
-  <li><strong>Bolt-action rhythm.</strong> The bolt-action sniper rifle cycles too quickly between shots. It will get back the original pace, which is a large part of what makes the rifle feel deliberate.</li>
-  <li><strong>Grenade throw firing the gun.</strong> Throwing a grenade can fire your weapon at the same moment. This is a plain bug and will be fixed as part of the first batch.</li>
+  <li><strong>Hits at range.</strong> Shots at longer distances do not always register on a target that was clearly under the crosshair. We will check every hitbox against the player model at range, with and without lag compensation, on a real internet connection. <em>Update, 12 November: 0.35.0 fixes hits on leaning players and lost shots right after a respawn. One remaining case, shots at prone players, was found after the release and is being fixed.</em></li>
+  <li><strong>Bullets not landing at the aim point.</strong> Some weapons, the SIG among them, put rounds slightly off from where the crosshair sits. We will not stop at the weapons that were reported: every gun in the roster gets the same check, so the fix is complete rather than case by case. <em>Update: the weapon-by-weapon audit is under way. The causes found so far are the leaning and respawn fixes in 0.35.0.</em></li>
+  <li><strong>Spread and aim per weapon.</strong> Each weapon's spread, its growth while firing and how it behaves aimed down sights will be compared against the original values, weapon by weapon. <em>Update: checked. Every weapon's spread matches the original values, and aiming down sights now slows you down as in the original.</em></li>
+  <li><strong>Damage.</strong> The damage model for rifles, SMGs, pistols and sniper rifles gets a full review, including how damage falls off with distance and body part. <em>Update: checked. The damage values match the original tables. Fall damage now hits the legs instead of the body.</em></li>
+  <li><strong>Bolt-action rhythm.</strong> The bolt-action sniper rifle cycles too quickly between shots. It will get back the original pace, which is a large part of what makes the rifle feel deliberate. <em>Fixed in 0.35.0.</em></li>
+  <li><strong>Grenade throw firing the gun.</strong> Throwing a grenade can fire your weapon at the same moment. This is a plain bug and will be fixed as part of the first batch. <em>Fixed in 0.35.0, together with grenade cooking.</em></li>
 </ul>
 <p>Every weapon change will be verified with an automated test that fires each gun at fixed targets and distances and compares the result with the original game, so a fix for one weapon cannot quietly break another.</p>
 <h2 id="maps">Maps</h2>
 <ul>
-  <li><strong>Invisible walls.</strong> Players found invisible collision in places where nothing should block you, most noticeably around the small house at the bomb site on Delta.</li>
-  <li><strong>Textures.</strong> Some surfaces show the wrong texture. Rather than patch the spots that were reported, we will walk through every map, surface by surface, and correct whatever does not match.</li>
+  <li><strong>Invisible walls.</strong> Players found invisible collision in places where nothing should block you, most noticeably around the small house at the bomb site on Delta. <em>Fixed in 0.35.0 on every map: they were capture-point posts from Flag Capture, left solid in the other modes.</em></li>
+  <li><strong>Textures.</strong> Some surfaces show the wrong texture. Rather than patch the spots that were reported, we will walk through every map, surface by surface, and correct whatever does not match. <em>Update: every map was checked surface by surface and no missing textures were found. Placeholder textures on weapon parts are fixed in 0.35.0.</em></li>
 </ul>
 <h2 id="movement-and-sound">Movement and sound</h2>
 <ul>
-  <li><strong>Jump distance.</strong> Jumps do not carry as far as they did in the original. Movement is something TC:E players feel instantly, so this gets measured against the original rather than tuned by eye.</li>
-  <li><strong>Crouch-walking.</strong> Moving while crouched is too fast and too loud, and the view bobs too much. All three will be brought back in line.</li>
-  <li><strong>Your own footsteps.</strong> Your own footsteps are sometimes missing altogether. We will find out why and fix it.</li>
-  <li><strong>Weapon sounds.</strong> Some weapons play the wrong sound. Every weapon's firing and handling sounds will be checked against the original set.</li>
-  <li><strong>Sound while spectating.</strong> Gunfire sounds wrong when you watch another player. Spectating should sound exactly like playing.</li>
+  <li><strong>Jump distance.</strong> Jumps do not carry as far as they did in the original. Movement is something TC:E players feel instantly, so this gets measured against the original rather than tuned by eye. <em>Fixed in 0.35.0. Standing jumps onto low objects and the landing recovery now match the original.</em></li>
+  <li><strong>Crouch-walking.</strong> Moving while crouched is too fast and too loud, and the view bobs too much. All three will be brought back in line. <em>Fixed in 0.35.0.</em></li>
+  <li><strong>Your own footsteps.</strong> Your own footsteps are sometimes missing altogether. We will find out why and fix it. <em>Update: footstep timing was rebuilt from the original in 0.35.0. One more cause, linked to the sprint and walk toggles, is found and being tested.</em></li>
+  <li><strong>Weapon sounds.</strong> Some weapons play the wrong sound. Every weapon's firing and handling sounds will be checked against the original set. <em>Update: explosions are no longer muffled by nearby walls in 0.35.0. If a weapon still sounds wrong to you, press F12 in the game and tell us which one.</em></li>
+  <li><strong>Sound while spectating.</strong> Gunfire sounds wrong when you watch another player. Spectating should sound exactly like playing. <em>Fixed in 0.35.0.</em></li>
 </ul>
 <h2 id="menus-and-match-flow">Menus and match flow</h2>
 <ul>
-  <li><strong>Options in the pause menu.</strong> The Esc menu has no settings yet. You will be able to change mouse sensitivity and other options in the middle of a match, without leaving the game.</li>
-  <li><strong>Warm-up.</strong> The warm-up phase before a match is meant for picking your loadout and talking with the players who are joining. Right now it does not work the way it should, and we will rework it.</li>
-  <li><strong>Instant replay.</strong> Two small fixes from the last update: a clip saved during warm-up can come out shorter than expected, and the confirmation always says 30 seconds whatever the actual length.</li>
+  <li><strong>Options in the pause menu.</strong> The Esc menu has no settings yet. You will be able to change mouse sensitivity and other options in the middle of a match, without leaving the game. <em>Fixed in 0.35.0 with the new MOUSE &amp; VIEW page.</em></li>
+  <li><strong>Warm-up.</strong> The warm-up phase before a match is meant for picking your loadout and talking with the players who are joining. Right now it does not work the way it should, and we will rework it. <em>Fixed in 0.35.0. Warm-up is now a practice round.</em></li>
+  <li><strong>Instant replay.</strong> Two small fixes from the last update: a clip saved during warm-up can come out shorter than expected, and the confirmation always says 30 seconds whatever the actual length. <em>Not in 0.35.0. Being worked on.</em></li>
 </ul>
 <h2 id="bots">Bots</h2>
 <ul>
-  <li><strong>Aiming down sights and leaning.</strong> Bots never aim down sights and never lean, which makes them easy to read. They will learn both.</li>
-  <li><strong>Routes.</strong> Bots take the same routes too often. They will vary them more, and later learn from the routes real players take on each map.</li>
+  <li><strong>Aiming down sights and leaning.</strong> Bots never aim down sights and never lean, which makes them easy to read. They will learn both. <em>Update: since 0.35.0, bots visibly shoulder their weapon when they aim. When to aim and lean is part of the bot work in progress.</em></li>
+  <li><strong>Routes.</strong> Bots take the same routes too often. They will vary them more, and later learn from the routes real players take on each map. <em>In progress, as part of the bot work described in <a href="devlog-the-road-ahead">The road ahead, in full</a>.</em></li>
 </ul>
 <h2 id="smaller-items">Smaller items</h2>
 <ul>
-  <li><strong>In-game bug reports.</strong> A <code>/bug</code> command and a "Report a bug" entry in the Esc menu. Your report reaches the team with a screenshot, your position on the map and the technical details needed to reproduce it. After this round of testing, that is a tool we clearly want ourselves.</li>
-  <li><strong>Staff badge.</strong> The badge that marks team members in game will get a more refined look.</li>
+  <li><strong>In-game bug reports.</strong> A <code>/bug</code> command and a "Report a bug" entry in the Esc menu. Your report reaches the team with a screenshot, your position on the map and the technical details needed to reproduce it. After this round of testing, that is a tool we clearly want ourselves. <em>Shipped in 0.35.0: press F12, or REPORT A BUG in the pause menu.</em></li>
+  <li><strong>Staff badge.</strong> The badge that marks team members in game will get a more refined look. <em>Not in 0.35.0.</em></li>
 </ul>
 <h2 id="alongside-this">Alongside this</h2>
 <p>The playtest fixes come first, but the rest of the plan has not gone anywhere. Most of the online play work is built and waiting for its real-world test: connection quality on the scoreboard, a ping limit and rejoin protection on Ranked, one-click join from the website and Discord, pickup games on Discord, better admin tools, and IPv6 support for players and servers.</p>
-<p>After that come the larger features: 2D match replays with automatic highlights, location-aware pings, a post-match coach, heatmaps and a public balance view, weekly contracts and seasons, friends and party join, and bots that adapt to the players on the server. <a href="devlog-whats-next">What we are working on next</a> covers all of them in more detail. Easy Anti-Cheat is still waiting for its final verification and will ship once that is complete.</p>
+<p>After that come the larger features: 2D match replays with automatic highlights, location-aware pings, a post-match coach, heatmaps and a public balance view, weekly contracts and seasons, friends and party join, and bots that adapt to the players on the server. <a href="devlog-whats-next">What we are working on next</a> covers all of them in more detail. Easy Anti-Cheat is still waiting for its final verification and will ship once that is complete. <em>Update: Easy Anti-Cheat shipped in 0.35.0 and the official servers now require it. The game side of the online play work above shipped in the same update.</em></p>
 <h2 id="thank-you">Thank you</h2>
 <p>Every item above came from players who took the time to play, notice and tell us. That is exactly the kind of testing we cannot do on our own, and it is why the next patch carries as many fixes as it does. If you spot something else, or if one of these issues matters more to you than the rest, tell us on <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. The <a href="./#roadmap">roadmap</a> shows what has landed as we go.</p>
       </div>
