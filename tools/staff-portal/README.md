@@ -77,6 +77,9 @@ switches those buttons on per server; on an older server they explain why they a
 * Stats review and suspicion use the stats service's private `/staff/` routes (loopback only, `X-Staff-Token`).
   `install.sh stats-link` creates the token and hands it to both services as a systemd credential.
 * Linked Discord accounts are read from the Discord bot's database, read-only.
+* The Insights page (admins) reads `/insights/stats.json` from the website insights service on 127.0.0.1:8093
+  (`tools/server-bridge/tcp_insights.py`). `install.sh insights-link` copies that service's studio key into the
+  portal's `insights-key` credential; an empty file leaves the page saying it is not connected.
 * Alerts go to the webhook in `/etc/tcp-staff-portal/staff-webhook` (empty file: portal only). Set
   `alerts.ping_role_id` to ping a role on urgent ones and `alerts.kinds` to pick which kinds reach Discord.
 * Server demos are read from `<home>/tcetest/svdemos` (`demo_timezone` is the server's clock for the file names).
@@ -148,7 +151,9 @@ signs in from 127.0.0.1 without Discord. Never set either on the VPS.
    for the stats review queue, first deploy the updated `tools/server-bridge/tcp_stats.py` and `tcp_bridge.py`
    (they add the `/staff/` routes), then `sudo ./deploy/install.sh stats-link` (restarts the stats service, rolls
    back if it does not answer);
-   `sv_autoDemo 1` in each game server's cfg for report demos.
+   `sv_autoDemo 1` in each game server's cfg for report demos;
+   for the Insights page, install the insights service (`tools/server-bridge/deploy/install-insights.sh`), then
+   `sudo ./deploy/install.sh insights-link`.
 6. Owner and admins: set up two-step sign-in under your name, bottom left.
 
 Data lives in `/var/lib/tcp-staff-portal/portal.db` (SQLite). It also holds two-step sign-in secrets and the Discord

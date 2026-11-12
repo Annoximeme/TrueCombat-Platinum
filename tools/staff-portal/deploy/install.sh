@@ -5,6 +5,7 @@
 #   sudo ./deploy/install.sh install             code, user, service, credentials, polkit rule (not Caddy)
 #   sudo ./deploy/install.sh caddy               adds staff.truecombat.eu to Caddy (backup + validate + reload)
 #   sudo ./deploy/install.sh stats-link          lets the portal use the stats service's review queue (token + drop-in, restarts tcp-bridge)
+#   sudo ./deploy/install.sh insights-link       lets the portal read the website insights service (copies its studio key)
 #   sudo ./deploy/install.sh uninstall           stops and removes the service (keeps data and config)
 #
 # Before install: put the Discord OAuth client secret in /etc/tcp-staff-portal/client-secret (one line),
@@ -49,6 +50,7 @@ inspect() {
   say "secret:  $( filled $ETC/client-secret && echo present || echo 'MISSING: Discord client secret')"
   say "webhook: $( filled $ETC/staff-webhook && echo present || echo 'none (alerts stay in the portal)')"
   say "stats:   $( filled $ETC/stats-token && echo 'review queue linked' || echo 'review queue not linked (install.sh stats-link)')"
+  say "insights: $( filled $ETC/insights-key && echo 'linked' || echo 'not linked (install.sh insights-link)')"
   say "botdb:   $( [ -f $BOTDB/bot.db ] && echo "$BOTDB/bot.db (linked Discord accounts)" || echo 'no Discord bot database')"
   for entry in $SERVERS; do
     key=${entry%%:*}; home=${entry#*:}
@@ -85,7 +87,7 @@ install_portal() {
   chown root:root "$ETC/client-secret"; chmod 0600 "$ETC/client-secret"
   if grep -q 'DISCORD_' "$ETC/config.json"; then say "fill owners, client_id and guild_id in $ETC/config.json first"; exit 1; fi
   # optional credentials: an empty file switches the feature off
-  for f in staff-webhook stats-token; do
+  for f in staff-webhook stats-token insights-key; do
     [ -f "$ETC/$f" ] || : > "$ETC/$f"
     chown root:root "$ETC/$f"; chmod 0600 "$ETC/$f"
   done
@@ -187,6 +189,21 @@ stats_link() {
   systemctl restart $UNIT 2>/dev/null || true
 }
 
+# The website insights service keeps its studio key in /etc/tcp-insights/key; the portal gets a copy as a credential.
+insights_link() {
+  need_root
+  filled /etc/tcp-insights/key || { say "no /etc/tcp-insights/key: install the insights service first (tools/server-bridge/deploy/install-insights.sh)"; exit 1; }
+  install -d -m 0750 -o root -g tcpstaff "$ETC"
+  install -m 0600 -o root -g root /etc/tcp-insights/key "$ETC/insights-key"
+  H=$(mktemp); chmod 0600 "$H"; printf 'Authorization: Bearer %s\n' "$(cat "$ETC/insights-key")" > "$H"
+  if curl -fsS -H @"$H" "http://127.0.0.1:8093/insights/stats.json?days=7" >/dev/null; then
+    rm -f "$H"; say "insights service linked"
+  else
+    rm -f "$H"; say "the insights service did not answer with this key; is tcp-insights running?"; exit 1
+  fi
+  systemctl restart $UNIT 2>/dev/null || true
+}
+
 uninstall() {
   need_root
   systemctl disable --now $UNIT 2>/dev/null || true
@@ -200,6 +217,7 @@ case "$MODE" in
   install) install_portal ;;
   caddy) add_caddy ;;
   stats-link) stats_link ;;
+  insights-link) insights_link ;;
   uninstall) uninstall ;;
-  *) say "usage: $0 inspect|install|caddy|stats-link|uninstall"; exit 2 ;;
+  *) say "usage: $0 inspect|install|caddy|stats-link|insights-link|uninstall"; exit 2 ;;
 esac

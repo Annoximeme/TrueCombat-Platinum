@@ -43,7 +43,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.2.2"
+VERSION = "1.3.0"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -86,6 +86,7 @@ PERMS = {
     "cvars": "admin",
     "review": "admin",
     "weekly": "admin",
+    "insights": "admin",              # website visits, channels and downloads (tools/server-bridge/tcp_insights.py)
     "2fa.reset": "owner",
 }
 MOD_BAN_LIMIT = 24 * 60
@@ -2073,6 +2074,26 @@ class Operations:
         f, begin, size = best
         return {"file": f.name, "path": str(f), "offset_s": when - begin, "size": size, "server": srv.key, "at": when}
 
+    # -- website insights (tcp_insights.py on this machine; key from the systemd credential 'insights-key')
+    def insights(self, days: int) -> dict:
+        base = self.cfg.get("insights_api", "http://127.0.0.1:8093")
+        cred = os.environ.get("CREDENTIALS_DIRECTORY")
+        key = ""
+        if cred and (Path(cred) / "insights-key").exists():
+            key = (Path(cred) / "insights-key").read_text(encoding="utf-8").strip()
+        key = key or str(self.cfg.get("insights_key", "") or "")
+        if not base or not key:
+            raise ApiError(409, "Website insights are not connected yet (run install.sh insights-link on the VPS).")
+        req = urllib.request.Request("%s/insights/stats.json?days=%d" % (base.rstrip("/"), days),
+                                     headers={"Authorization": "Bearer " + key, "User-Agent": "TCPStaff"})
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return json.loads(r.read().decode())
+        except urllib.error.HTTPError as e:
+            raise ApiError(502 if e.code >= 500 else 409, "The insights service said: %s" % e.code) from e
+        except (urllib.error.URLError, OSError, ValueError) as e:
+            raise ApiError(502, "The insights service did not answer.") from e
+
     # -- stats review queue (the stats service's staff routes, loopback only)
     def stats_staff(self, method: str, route: str, body: dict | None = None):
         base = self.cfg.get("stats_api")
@@ -3586,6 +3607,14 @@ def make_handler(portal: Portal):
                 weeks = max(0, min(52, int(qs.get("weeks_ago") or 0)))
                 w = portal.weekly(now() - weeks * 7 * 86400)
                 return self.json(dict(w, text=portal.weekly_text(w)))
+            # website insights
+            if route == "insights" and G:
+                self.need(s, "insights")
+                try:
+                    days = int(qs.get("days") or 30)
+                except ValueError:
+                    days = 30
+                return self.json(portal.insights(days if days in (7, 30, 90, 365) else 30))
             # stats review queue
             if route == "review" and G:
                 self.need(s, "review")
