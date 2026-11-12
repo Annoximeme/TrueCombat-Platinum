@@ -115,6 +115,11 @@ var TCP_API = 'https://api.truecombat.eu';
   /* mobile menu closes after a pick */
   var menu = document.getElementById('menu');
   if (menu) menu.addEventListener('click', function (e) { if (e.target.tagName === 'A') menu.open = false; });
+  /* ...and on Escape or a click outside it, handing focus back to the menu button */
+  if (menu) {
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu.open) { menu.open = false; var sm = menu.querySelector('summary'); if (sm) sm.focus(); } });
+    document.addEventListener('click', function (e) { if (menu.open && !menu.contains(e.target)) menu.open = false; });
+  }
 
   /* language menu closes on a click elsewhere or Escape */
   var langs = document.querySelector('.nav-langs');
@@ -980,6 +985,10 @@ var TCP_API = 'https://api.truecombat.eu';
     lb.addEventListener('click', function (e) { if (e.target === lb) close(); });
     document.addEventListener('keydown', function (e) {
       if (lb.hidden) return;
+      if (e.key === 'Tab') {  /* keep focus inside the viewer while it is open */
+        var f = $all('button', lb).filter(function (b) { return !b.hidden && b.offsetParent; }), i = f.indexOf(document.activeElement);
+        if (f.length) { e.preventDefault(); f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus(); }
+      }
       if (e.key === 'Escape') close();
       if (e.key === 'ArrowLeft') open(at - 1);
       if (e.key === 'ArrowRight') open(at + 1);

@@ -4,8 +4,9 @@
 
 header {
 	# scripts, styles, fonts and images come from the site itself; the live data comes from
-	# api.truecombat.eu and the patch notes from the GitHub API
-	Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.truecombat.eu https://api.github.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+	# api.truecombat.eu, the patch notes from the GitHub API, and the trailer plays from
+	# youtube-nocookie.com only after a click
+	Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://api.truecombat.eu https://api.github.com; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
 	X-Frame-Options DENY
 	Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
 	Cross-Origin-Opener-Policy same-origin
