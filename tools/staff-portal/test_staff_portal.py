@@ -869,5 +869,62 @@ class PortalTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             tsp.qr_matrix("x" * 3000)
 
+    def test_31_f12_bug_report(self):
+        import base64
+        jpg = b"\xff\xd8\xff\xe0" + b"\0" * 2000 + b"\xff\xd9"
+        self.portal.servers["one"].cfg["public_address"] = "127.0.0.1:27960"
+        sample = {"format": "tcp-bugreport/1", "category": "bug", "text": "Grenade went through the wall\nat the bomb site.",
+                  "map": "obj_snow", "pos": [120.5, -64, 32], "server": "127.0.0.1:27960", "build": "0.36.0-sandbox28",
+                  "renderer": "DX12 RTX 4080 SUPER", "time": 1789000000, "ping": 38, "fps": 240,
+                  "hw": {"cpu": "Ryzen 7 7800X3D", "ram": "32 GB"}, "console": "line\x07 one\nline two\n" * 50,
+                  "screenshot_jpg": base64.b64encode(jpg).decode(), "name": "Viper", "guid": GUID, "puid": "0002abc", "match": "m-77"}
+        def post(body, ctype="application/json"):
+            self.portal.rate.pop("bug:127.0.0.1", None)
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request("POST", "/api/bugreport", body=body, headers={"Content-Type": ctype})
+            r = c.getresponse()
+            out = r.status, json.loads(r.read() or b"{}")
+            c.close()
+            return out
+        st, d = post(json.dumps(sample))
+        self.assertEqual(st, 201)
+        st, lst = self.call("moderator", "GET", "/api/reports?status=open&source=bug")
+        r = [x for x in lst["reports"] if x["file"] == d["id"]][0]
+        self.assertEqual(r["target_pid"], PID)                              # linked to the player's profile
+        self.assertEqual(r["data"]["server_name"], "Official #1")
+        self.assertEqual(r["data"]["category"], "Bug")
+        self.assertEqual(r["data"]["pos"], [120, -64, 32])
+        self.assertTrue(r["data"]["shot"] and r["data"]["has_console"])
+        self.assertNotIn("console", r["data"])                              # the list stays light
+        self.assertNotIn("guid", r["data"])                                 # the raw guid is never stored
+        st, full = self.call("moderator", "GET", "/api/reports/bug?id=%d" % r["id"])
+        self.assertIn("line one", full["report"]["data"]["console"])        # control characters removed
+        self.assertEqual(full["report"]["data"]["hw"]["cpu"], "Ryzen 7 7800X3D")
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/api/reports/bugshot?id=%d" % r["id"], headers={"Cookie": self.sessions["moderator"]["cookie"]})
+        resp = c.getresponse()
+        self.assertEqual((resp.status, resp.getheader("Content-Type"), resp.read()), (200, "image/jpeg", jpg))
+        c.close()
+        self.assertEqual(self.call(None, "GET", "/api/reports/bugshot?id=%d" % r["id"])[0], 401)
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='bugreport' AND key=?", (d["id"],)))
+        # a non-JPEG screenshot is dropped, the report still arrives; junk is refused
+        st, d2 = post(json.dumps(dict(sample, screenshot_jpg=base64.b64encode(b"<svg/>").decode(), server="evil host")))
+        self.assertEqual(st, 201)
+        r2 = self.portal.store.one("SELECT data FROM reports WHERE file=?", (d2["id"],))
+        self.assertNotIn("shot", json.loads(r2["data"]))
+        self.assertNotIn("server", json.loads(r2["data"]))
+        self.assertEqual(post(json.dumps({"format": "other", "text": "x" * 20}))[0], 400)
+        self.assertEqual(post("{not json")[0], 400)
+        self.assertEqual(post(json.dumps(dict(sample, text="hi")))[0], 400)
+        self.assertEqual(post(json.dumps(dict(sample, console="x" * 1700 * 1024)))[0], 413)
+        st, d3 = post("Old style plain text report about the menu.", "text/plain")
+        self.assertEqual(st, 201)
+        # closed and pruned reports take their screenshot with them
+        self.portal.store.x("DELETE FROM reports WHERE file=?", (d["id"],))
+        shot = self.portal.bugshot_path(d["id"])
+        os.utime(shot, (time.time() - 7200, time.time() - 7200))
+        self.portal.prune_bugshots()
+        self.assertFalse(shot.exists())
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
