@@ -105,10 +105,22 @@ and hardware; a short alert goes to the staff Discord (kind `bugreport`) linking
 screenshot. Screenshots live in `<data_dir>/bugshots` and go with their report when closed reports are
 pruned. Plain-text posts with `X-Report-Category` still work for older tools.
 
+## Staff badge keys
+
+Every staff member gets their own in-game staff key under their name (top left) › Staff badge in game.
+The browser makes the Ed25519 key pair and downloads `staff.key` (`TCPSTAFF1 <id> <seed>`). Only the
+public half reaches the portal. The portal writes the public keys to `<game dir>/staffkeys/staffkeys.txt`
+for every server (or `staff_keys_file` per server) and sends `staffkeys_reload` over rcon. Game servers
+from 0.36.0 read that list next to the keys built into the game (see `game/STAFF-KEYS-INTEGRATION.md`).
+
+A key stops working when a newer one is made, when an admin revokes it (Staff page), when the person
+loses staff access (revoked in the portal or Discord role removed, seen at their next portal visit), or
+after `staff_key_idle_days` (default 60, 0 = never) without signing in to the portal.
+
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 31 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 32 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 

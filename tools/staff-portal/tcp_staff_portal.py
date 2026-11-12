@@ -767,6 +767,9 @@ CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY, discord_id TEXT, name T
   csrf TEXT, created INTEGER, seen INTEGER, checked INTEGER, token TEXT, ip TEXT);
 CREATE TABLE IF NOT EXISTS staff(discord_id TEXT PRIMARY KEY, name TEXT, role TEXT, note TEXT, added_by TEXT,
   created INTEGER, last_login INTEGER);
+CREATE TABLE IF NOT EXISTS staff_keys(id TEXT PRIMARY KEY, discord_id TEXT, name TEXT, public TEXT, created INTEGER,
+  revoked INTEGER DEFAULT 0, revoked_by TEXT);
+CREATE INDEX IF NOT EXISTS staff_keys_owner ON staff_keys(discord_id);
 CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER, discord_id TEXT, staff TEXT,
   role TEXT, action TEXT, server TEXT, target TEXT, target_pid TEXT, detail TEXT, ok INTEGER, result TEXT);
 CREATE INDEX IF NOT EXISTS audit_at ON audit(at);
@@ -2385,6 +2388,7 @@ class Portal(Moderation, Watchers, Operations):
             self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
             try:
                 self.prune_bugshots()
+                self.publish_staff_keys()
             except OSError as e:
                 log.warning("bug report screenshot clean-up failed: %s", e)
             self.stop.wait(3600)
@@ -2592,6 +2596,70 @@ class Portal(Moderation, Watchers, Operations):
 
     def bugshot_path(self, key: str) -> Path:
         return self.bugshots / (re.sub(r"[^A-Za-z0-9_-]", "_", key) + ".jpg")
+
+    # ---------------------------------------------------------------- in-game staff badge keys
+    # Staff make their own key pair in the browser; the portal only ever sees the public half. The game servers
+    # read the list below (cvar g_staffKeyFile, 0.36.0+) next to the keys built into the game.
+    def staff_key_valid_sql(self) -> tuple:
+        idle = int(self.cfg.get("staff_key_idle_days", 60))
+        owners = sorted({str(x) for x in self.cfg.get("owners", [])})
+        sql = ("SELECT k.* FROM staff_keys k LEFT JOIN staff s ON s.discord_id=k.discord_id WHERE k.revoked=0 "
+               "AND COALESCE(s.role,'')<>'revoked'")
+        args = []
+        if idle > 0:
+            sql += " AND (COALESCE(s.last_login,0)>=? OR k.discord_id IN (%s))" % (",".join("?" * len(owners)) or "''")
+            args = [now() - idle * 86400] + owners
+        return sql + " ORDER BY k.created", args
+
+    def staff_key_lines(self) -> str:
+        sql, args = self.staff_key_valid_sql()
+        out = ["# TrueCombat Platinum staff keys, written by the staff portal. Do not edit by hand.",
+               "# TCPSTAFFKEY1 <key id> <role> <Ed25519 public key> <name>"]
+        for k in self.store.q(sql, args):
+            out.append("TCPSTAFFKEY1 %s 1 %s %s" % (k["id"], k["public"], k["name"]))
+        return "\n".join(out) + "\n"
+
+    def publish_staff_keys(self) -> list:
+        """Writes the key list for every server that has staff_keys_file and asks it to reload. Returns problems."""
+        text, problems = self.staff_key_lines(), []
+        for key in self.order:
+            srv = self.servers[key]
+            path = self.staff_keys_file(srv)
+            if not path:
+                continue
+            try:
+                if not path.exists() or path.read_text(encoding="utf-8") != text:
+                    tmp = path.with_name(".%s.%s.tmp" % (path.name, secrets.token_hex(4)))
+                    tmp.write_text(text, encoding="utf-8")
+                    os.chmod(tmp, 0o644)
+                    os.replace(tmp, path)
+            except OSError as e:
+                problems.append("%s: %s" % (srv.name, e))
+                log.warning("staff key list for %s not written: %s", srv.name, e)
+                continue
+            try:
+                srv.run("staffkeys_reload")
+            except Exception as e:  # noqa: BLE001 - an offline server reads the file when it starts
+                log.info("staff key reload on %s: %s", srv.name, e)
+        return problems
+
+    @staticmethod
+    def staff_keys_file(srv) -> Path | None:
+        """staff_keys_file from the config, else <game dir>/staffkeys/staffkeys.txt once install.sh made that folder."""
+        if srv.cfg.get("staff_keys_file"):
+            return Path(srv.cfg["staff_keys_file"])
+        if srv.cfg.get("reports_dir"):
+            d = Path(srv.cfg["reports_dir"]).parent / "staffkeys"
+            if d.is_dir():
+                return d / "staffkeys.txt"
+        return None
+
+    def revoke_staff_keys(self, discord_id: str, by: str) -> int:
+        n = self.store.one("SELECT COUNT(*) n FROM staff_keys WHERE discord_id=? AND revoked=0", (discord_id,))["n"]
+        if n:
+            self.store.x("UPDATE staff_keys SET revoked=?, revoked_by=? WHERE discord_id=? AND revoked=0", (now(), by, discord_id))
+            self.publish_staff_keys()
+        return n
 
     def prune_bugshots(self) -> None:
         """Screenshots whose report is gone (closed reports are pruned after the retention time)."""
@@ -2844,6 +2912,7 @@ def make_handler(portal: Portal):
                 role = self.recheck(s)
                 if not role:
                     portal.store.x("DELETE FROM sessions WHERE id=?", (s["id"],))
+                    portal.revoke_staff_keys(s["discord_id"], "lost staff role")
                     return None
                 s["role"] = role
                 portal.store.x("UPDATE sessions SET role=?, checked=? WHERE id=?", (role, t, s["id"]))
@@ -3471,6 +3540,50 @@ def make_handler(portal: Portal):
                 portal.store.audit(who, "demo download", server=d["server"], detail="%s, from %ss" % (d["file"], d["offset_s"]))
                 return self.send_file(Path(d["path"]), d["file"])
             # two-step sign-in
+            # in-game staff badge keys
+            if route == "staffkey" and G:
+                who = self.need(s, "view")
+                k = portal.store.one("SELECT id, created FROM staff_keys WHERE discord_id=? AND revoked=0 ORDER BY created DESC",
+                                     (who["discord_id"],))
+                sql, args = portal.staff_key_valid_sql()
+                live = bool(k) and bool(portal.store.one("SELECT 1 x FROM (%s) WHERE id=?" % sql, args + [k["id"]]))
+                return self.json({"key": k, "active": live, "servers": sum(1 for x in portal.servers.values() if portal.staff_keys_file(x))})
+            if route == "staffkey" and P:
+                who = self.need(s, "view")
+                d = self.body_json()
+                pub = str(d.get("public", "")).lower()
+                if not re.fullmatch(r"[0-9a-f]{64}", pub) or pub == "0" * 64:
+                    raise ApiError(400, "That is not an Ed25519 public key.")
+                if portal.limited("staffkey:" + who["discord_id"], 5, 86400):
+                    raise ApiError(429, "You made five keys today. Try again tomorrow.")
+                portal.store.x("UPDATE staff_keys SET revoked=?, revoked_by='replaced' WHERE discord_id=? AND revoked=0",
+                               (now(), who["discord_id"]))
+                kid = "k" + secrets.token_hex(5)
+                name = re.sub(r"[^\w .|*\[\]()-]", "", who["name"], flags=re.ASCII).strip()[:24] or "staff"
+                portal.store.x("INSERT INTO staff_keys(id,discord_id,name,public,created) VALUES(?,?,?,?,?)",
+                               (kid, who["discord_id"], name, pub, now()))
+                problems = portal.publish_staff_keys()
+                portal.store.audit(who, "staff key made", target=kid)
+                return self.json({"id": kid, "problems": problems}, 201)
+            if route == "staffkeys" and G:
+                self.need(s, "staff.manage")
+                sql, args = portal.staff_key_valid_sql()
+                live = {r["id"] for r in portal.store.q(sql, args)}
+                rows = portal.store.q("SELECT id, discord_id, name, created FROM staff_keys WHERE revoked=0 ORDER BY created DESC")
+                return self.json({"keys": [dict(r, active=r["id"] in live) for r in rows],
+                                  "idle_days": int(cfg.get("staff_key_idle_days", 60))})
+            if route == "staffkey/revoke" and P:
+                who = self.need(s, "view")
+                d = self.body_json()
+                k = portal.store.one("SELECT * FROM staff_keys WHERE id=? AND revoked=0", (str(d.get("id", "")),))
+                if not k:
+                    raise ApiError(404, "No such key.")
+                if k["discord_id"] != who["discord_id"]:
+                    self.need(s, "staff.manage")
+                portal.store.x("UPDATE staff_keys SET revoked=?, revoked_by=? WHERE id=?", (now(), who["name"], k["id"]))
+                portal.publish_staff_keys()
+                portal.store.audit(who, "staff key revoked", target=k["id"], detail=k["name"])
+                return self.json({"ok": True})
             if route == "2fa" and G:
                 if not s:
                     raise ApiError(401, "Please sign in.")
@@ -3647,6 +3760,7 @@ def make_handler(portal: Portal):
                            (did, safe_arg(d.get("name", ""), 40), stored, safe_arg(d.get("note", ""), 120), who["name"], now()))
             if role == "revoked":
                 portal.store.x("DELETE FROM sessions WHERE discord_id=?", (did,))
+                portal.revoke_staff_keys(did, "access removed by " + who["name"])
             else:
                 portal.store.x("UPDATE sessions SET checked=0 WHERE discord_id=?", (did,))
             portal.store.audit(who, "staff " + role, target=did, detail=safe_arg(d.get("note", ""), 120))
