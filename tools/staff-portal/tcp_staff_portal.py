@@ -534,6 +534,12 @@ CREATE TABLE IF NOT EXISTS peaks(day TEXT, server TEXT, peak INTEGER, PRIMARY KE
 CREATE TABLE IF NOT EXISTS appeals(id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT, ban_id INTEGER, pid TEXT, name TEXT, text TEXT,
   contact TEXT, created INTEGER, status TEXT DEFAULT 'open', answer TEXT, answered_by TEXT, updated INTEGER, from_hash TEXT);
 CREATE INDEX IF NOT EXISTS appeals_code ON appeals(code);
+CREATE INDEX IF NOT EXISTS reports_target ON reports(target_pid);
+CREATE INDEX IF NOT EXISTS bans_pid ON bans(pid);
+CREATE INDEX IF NOT EXISTS mutes_pid ON mutes(pid, active);
+CREATE INDEX IF NOT EXISTS warnings_pid ON warnings(pid);
+CREATE INDEX IF NOT EXISTS sightings_puid ON sightings(puid);
+CREATE INDEX IF NOT EXISTS alerts_at ON alerts(at);
 CREATE TABLE IF NOT EXISTS undo(audit_id INTEGER PRIMARY KEY, kind TEXT, ref INTEGER, by_id TEXT, expires INTEGER, done INTEGER DEFAULT 0);
 """
 
@@ -543,6 +549,7 @@ MIGRATIONS = [
     "ALTER TABLE sessions ADD COLUMN mfa INTEGER DEFAULT 0",
     "ALTER TABLE chat ADD COLUMN flag TEXT",
     "ALTER TABLE mutes ADD COLUMN server TEXT",
+    "CREATE INDEX IF NOT EXISTS bans_code ON bans(appeal_code)",
 ]
 
 
@@ -1049,8 +1056,15 @@ class Watchers:
     def webhook_url(self) -> str:
         cred = os.environ.get("CREDENTIALS_DIRECTORY")
         if cred and (Path(cred) / "staff-webhook").exists():
-            return (Path(cred) / "staff-webhook").read_text(encoding="utf-8").strip()
-        return str(self.cfg.get("alerts", {}).get("webhook_url", "") or "")
+            url = (Path(cred) / "staff-webhook").read_text(encoding="utf-8").strip()
+        else:
+            url = str(self.cfg.get("alerts", {}).get("webhook_url", "") or "")
+        # alerts carry player names and IP hints: only ever to Discord over https (tests may point at loopback)
+        if url and not re.match(r"^https://(?:canary\.|ptb\.)?discord(?:app)?\.com/api/webhooks/\d+/[\w-]+$", url):
+            if not (os.environ.get("TCP_STAFF_DEV") == "1" and url.startswith("http://127.0.0.1:")):
+                log.warning("staff webhook ignored: not a Discord webhook URL")
+                return ""
+        return url
 
     COLOURS = {"server_down": 0xD63B3B, "server_up": 0x4FBF7A, "suspicion": 0xD63B3B, "dodger": 0xD63B3B,
                "reports": 0xE7A73C, "mod_ban": 0x5B9BD5, "watch": 0xE7A73C, "appeal": 0x5B9BD5, "filter": 0xE7A73C,
@@ -1429,7 +1443,8 @@ class Operations:
         if not answer:
             raise ApiError(400, "Write the answer the player will read.")
         b = self.store.one("SELECT * FROM bans WHERE id=?", (a["ban_id"],))
-        if b and b["by_id"] and b["by_id"] == who.get("discord_id") and who.get("role") != "owner":
+        if b and b["by_id"] and b["by_id"] == who.get("discord_id"):
+            # the appeal page promises a reviewer who was not involved; the owner can still lift the ban from the Bans page
             raise ApiError(403, "You made this ban. Another admin answers the appeal, as the appeal page promises.")
         if decision == "accept":
             if b and b["active"]:
@@ -1515,11 +1530,25 @@ class Operations:
             if not re.fullmatch(r"[A-Za-z0-9_]{1,40}", k) or not CVAR_VALUE.match(v):
                 raise ApiError(500, "The event preset in the config has a bad entry: %s" % k)
         saved = {}
-        for k in preset:
+        for k in list(preset):
             val = srv.cvar(k)
-            saved[k] = val if val is not None else ""
+            if val is None:                      # a setting this server does not have: leave it alone, never create it
+                del preset[k]
+                continue
+            saved[k] = val
+        applied = []
+        try:
+            for k, v in preset.items():
+                srv.set_cvar(k, v)
+                applied.append(k)
+        except RconError as e:
+            for k in applied:                    # put back what already changed, so no password is left without an event
+                try:
+                    srv.set_cvar(k, saved[k])
+                except RconError:
+                    pass
+            raise ApiError(502, "The server stopped answering while event mode was switching on, so nothing was changed. Try again.") from e
         for k, v in preset.items():
-            srv.set_cvar(k, v)
             self.store.x("INSERT INTO cvar_changes(server,cvar,old,new,at,by_name,kind) VALUES(?,?,?,?,?,?,'event')",
                          (srv.key, k, saved[k], v if k != "g_password" else "(event password)", now(), who["name"]))
         self.store.x("INSERT INTO events(server,started,by_name,saved,preset,note) VALUES(?,?,?,?,?,?)",
@@ -2032,6 +2061,18 @@ class Portal(Moderation, Watchers, Operations):
         return done
 
     def _lift_everywhere(self, b: dict) -> dict:
+        out = self._unban_everywhere(b)
+        # "unban <ip>" also lifts another active ban on the same address (or GUID, or anti-cheat account): put those back
+        for other in self.store.q("SELECT * FROM bans WHERE active=1 AND id<>? AND ((ip<>'' AND ip=?) OR (guid<>'' AND guid=?) "
+                                  "OR (puid<>'' AND puid=?))", (b["id"], b.get("ip") or "", b.get("guid") or "", b.get("puid") or "")):
+            for s in self.servers.values():
+                try:
+                    self._apply_ban(s, other, slot=None)
+                except RconError:
+                    pass                     # the next sync puts it back
+        return out
+
+    def _unban_everywhere(self, b: dict) -> dict:
         out = {}
         for s in self.servers.values():
             res = []
@@ -2393,7 +2434,10 @@ def make_handler(portal: Portal):
             return ip
 
         def send(self, status: int, body: bytes, ctype: str, extra: dict | None = None) -> None:
-            unread = int(self.headers.get("Content-Length") or 0) and not getattr(self, "_body_read", False)
+            try:
+                unread = int(self.headers.get("Content-Length") or 0) != 0 and not getattr(self, "_body_read", False)
+            except ValueError:
+                unread = True
             self.send_response(status)
             if unread:                       # an early refusal left the body in the stream: never reuse it
                 self.close_connection = True
@@ -2422,8 +2466,11 @@ def make_handler(portal: Portal):
             self.send(302, b"", "text/plain", {"Location": to, "Set-Cookie": cookies or []})
 
         def body(self, limit: int = 65536) -> bytes:
-            n = int(self.headers.get("Content-Length") or 0)
-            if n > limit:
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError as e:
+                raise ApiError(400, "Bad request.") from e
+            if n < 0 or n > limit:               # a negative length would read until the client stops sending
                 raise ApiError(413, "Too much data.")
             self._body_read = True
             return self.rfile.read(n) if n else b""
@@ -2758,6 +2805,8 @@ def make_handler(portal: Portal):
                 status = d.get("status")
                 if status not in ("open", "claimed", "closed"):
                     raise ApiError(400, "Unknown status.")
+                if r["source"] == "appeal" and status != "claimed":
+                    raise ApiError(409, "Answer the appeal with Accept or Deny; the player reads that answer.")
                 resolution = str(d.get("resolution") or "").strip()[:500]
                 portal.store.x("UPDATE reports SET status=?, claimed_by=?, resolution=?, updated=? WHERE id=?",
                                (status, who["name"] if status != "open" else None, resolution or r["resolution"], now(), r["id"]))
