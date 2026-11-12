@@ -80,6 +80,7 @@
 
 ## Devlog
 
+- [Inside 0.35.0, our biggest update yet](https://truecombat.eu/devlog-inside-035): Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.
 - [Every fight on the record](https://truecombat.eu/devlog-every-fight-counts): Player profiles are about to get a lot deeper, and unranked servers count too. Here is what we track, and the rules that keep every number honest.
 - [The road ahead, in full](https://truecombat.eu/devlog-the-road-ahead): The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.
 - [Counting readers without tracking anyone](https://truecombat.eu/devlog-reads-and-ratings): Every devlog post now ends with a star rating, and we can finally see which posts people read. Here is how we built that without cookies, without analytics and without storing anything that points back to you.

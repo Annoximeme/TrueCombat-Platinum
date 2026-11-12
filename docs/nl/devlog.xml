@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/nl/devlog"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog</id>
-  <updated>2026-11-11T12:00:00Z</updated>
+  <updated>2026-11-12T12:00:00Z</updated>
+  <entry>
+    <title>Achter de schermen van 0.35.0, onze grootste update tot nu toe</title>
+    <link href="https://truecombat.eu/nl/devlog-inside-035"/>
+    <id>https://truecombat.eu/nl/devlog-inside-035</id>
+    <published>2026-11-12T12:00:00Z</published>
+    <updated>2026-11-12T12:00:00Z</updated>
+    <category term="Release"/>
+    <summary>Easy Anti-Cheat zonder account, een launcher die van nul af is herbouwd, spelersstatistieken uit elk geverifieerd potje en het grootste deel van de playtestfixes. Dit is de lange versie: wat er veranderde, waarom we het zo bouwden, hoe we het testten en wat de update niet haalde.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Elk gevecht in de boeken</title>
     <link href="https://truecombat.eu/nl/devlog-every-fight-counts"/>
@@ -60,7 +70,7 @@
     <link href="https://truecombat.eu/nl/devlog-playtest-fixes"/>
     <id>https://truecombat.eu/nl/devlog-playtest-fixes</id>
     <published>2026-11-09T12:00:00Z</published>
-    <updated>2026-11-09T12:00:00Z</updated>
+    <updated>2026-11-12T12:00:00Z</updated>
     <category term="Roadmap"/>
     <summary>Onze laatste communityplaytests leverden een duidelijke lijst problemen op, met de gunplay voorop. Een grote reeks fixes staat klaar voor de volgende patch. Hier staat alles wat we vonden, in welke volgorde we het oplossen en hoe het past bij de rest van het werk dat eraan komt.</summary>
     <author><name>Team Terminus</name></author>
