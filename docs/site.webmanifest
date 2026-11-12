@@ -17,21 +17,27 @@
       "src": "img/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Servers",
-      "url": "/servers.html"
+      "url": "/servers"
     },
     {
       "name": "Leaderboards",
-      "url": "/leaderboards.html"
+      "url": "/leaderboards"
     },
     {
       "name": "Patch notes",
-      "url": "/news.html"
+      "url": "/news"
     }
   ]
 }
