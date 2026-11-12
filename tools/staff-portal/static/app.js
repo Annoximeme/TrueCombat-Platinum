@@ -174,16 +174,18 @@ async function refreshAlertCount() {
   } catch (e) { /* ignore */ }
 }
 
+const STAFF_KEY_ROW = '<p class="staffkey-row"><button type="button" class="btn btn-small" data-staffkey>Staff badge in game</button> <span class="dim small">Get the key file that shows you as staff on our servers.</span></p>';
 function accountDialog() {
+  setTimeout(() => { $("#modal-body").onclick = (e) => { if (e.target.closest("[data-staffkey]")) staffKeyDialog().catch((err) => toast(err.message, true)); }; }, 0);
   const me = S.me;
   const status = me.mfa_on ? '<p><span class="tag ok">On</span> Two-step sign-in protects this account.</p>'
     : `<p><span class="tag ${me.mfa_required ? "bad" : ""}">Off</span> ${me.mfa_required ? "Admin tools stay locked until you turn it on." : "Optional for moderators, and recommended."}</p>`;
   if (me.mfa_on) {
     return modal({ title: "Your account", sub: me.name + " · " + me.role, ok: me.mfa_required ? "Close" : "Turn off", danger: !me.mfa_required,
-      body: status + (me.mfa_required ? "" : '<label>Code from your app, to turn it off</label><input name="code" inputmode="numeric" maxlength="7">'),
+      body: status + STAFF_KEY_ROW + (me.mfa_required ? "" : '<label>Code from your app, to turn it off</label><input name="code" inputmode="numeric" maxlength="7">'),
       onOk: async (f) => { if (me.mfa_required) return; await api("2fa/disable", { code: f.code }); toast("Two-step sign-in is off."); setTimeout(() => location.reload(), 800); } });
   }
-  modal({ title: "Your account", sub: me.name + " · " + me.role, ok: "Set up two-step sign-in", body: status + '<p class="muted">You need an authenticator app such as Google Authenticator, Microsoft Authenticator, 1Password or Aegis.</p>',
+  modal({ title: "Your account", sub: me.name + " · " + me.role, ok: "Set up two-step sign-in", body: status + '<p class="muted">You need an authenticator app such as Google Authenticator, Microsoft Authenticator, 1Password or Aegis.</p>' + STAFF_KEY_ROW,
     onOk: async () => {
       const r = await api("2fa/setup", {});
       setTimeout(() => modal({ title: "Set up two-step sign-in", ok: "Turn on",
@@ -193,6 +195,42 @@ function accountDialog() {
           <p class="small"><a href="${esc(r.uri)}">Open in an authenticator app on this device</a></p>
           <label>Code from the app</label><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>`,
         onOk: async (f) => { await api("2fa/enable", { code: f.code }); toast("Two-step sign-in is on."); setTimeout(() => location.reload(), 800); } }), 0);
+    } });
+}
+
+/* in-game staff badge: the key pair is made here in the browser; only the public half goes to the portal */
+async function makeStaffKey() {
+  if (!crypto.subtle || !crypto.subtle.generateKey) throw new Error("This browser cannot make keys. Use an up-to-date Chrome, Edge, Firefox or Safari.");
+  let pair;
+  try { pair = await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]); }
+  catch (e) { throw new Error("This browser cannot make Ed25519 keys yet. Update it, or use an up-to-date Chrome, Edge, Firefox or Safari."); }
+  const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const pub = hex(await crypto.subtle.exportKey("raw", pair.publicKey));
+  const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", pair.privateKey));
+  const seed = hex(pkcs8.slice(pkcs8.length - 32));
+  const r = await api("staffkey", { public: pub });
+  const blob = new Blob([`TCPSTAFF1 ${r.id} ${seed}\r\n`], { type: "application/octet-stream" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "staff.key";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  return r;
+}
+
+async function staffKeyDialog() {
+  const k = await api("staffkey");
+  const state = !k.key ? '<p><span class="tag">None</span> You have no staff key yet.</p>'
+    : `<p><span class="tag ${k.active ? "ok" : "bad"}">${k.active ? "Active" : "Not active"}</span> Key made ${when(k.key.created)}.${k.active ? "" : " Sign in to the portal regularly to keep it active."}</p>`;
+  modal({ title: "Staff badge in game", sub: "Your staff key shows your staff badge and orange name on our servers.", ok: k.key ? "Get a new key" : "Get my staff key",
+    body: state + `<p class="muted">The key is made in this browser and downloads as <b>staff.key</b>. The portal never sees the secret part, so keep the file to yourself.${k.key ? " Getting a new key cancels the old one straight away." : ""}</p>`,
+    onOk: async () => {
+      const r = await makeStaffKey();
+      setTimeout(() => modal({ title: "Install your staff key", ok: "Done",
+        body: `<ol class="steps"><li>Move the downloaded <b>staff.key</b> into the <b>profile</b> folder of your game, for example <span class="mono">C:\\Games\\TrueCombat Platinum\\profile</span>.</li>
+          <li>Start the game. It locks the key to your Windows account the first time it reads it.</li>
+          <li>Join one of our servers: your name shows in staff orange on the scoreboard.</li></ol>
+          <p class="muted">Don't share the file. If it leaks or you change PC, just get a new key here.</p>${r.problems && r.problems.length ? `<p class="error">Some servers did not take the new key yet: ${esc(r.problems.join("; "))}</p>` : ""}`,
+        onOk: () => {} }), 0);
     } });
 }
 
@@ -709,7 +747,9 @@ function pageAudit(main) {
 function pageStaff(main) {
   main.innerHTML = `<div class="head"><div><p class="eyebrow">Access</p><h1>Staff</h1>
     <p class="muted">Discord roles grant access automatically. Use this list to add someone without the role, raise them to admin, or shut someone out.</p></div>
-    <div class="actions"><button class="btn btn-primary" id="s-add">Add or change</button></div></div><div class="panel table-wrap" id="s-list"></div>`;
+    <div class="actions"><button class="btn btn-primary" id="s-add">Add or change</button></div></div><div class="panel table-wrap" id="s-list"></div>
+    <div class="head"><div><h2>Staff keys in game</h2><p class="muted">Each staff member gets their own key under their name, top left. A key stops working when it is revoked, when someone loses staff access, or after a long time without signing in to the portal.</p></div></div>
+    <div class="panel table-wrap" id="s-keys"></div>`;
   const edit = (row = {}) => modal({ title: row.discord_id ? "Change " + (row.name || row.discord_id) : "Add staff", ok: "Save",
     sub: S.me.role === "owner" ? "" : "Only the owner can make or change admins.",
     body: `<label>Discord user id</label><input name="discord_id" value="${esc(row.discord_id || "")}" placeholder="183662139000000000" inputmode="numeric">
@@ -719,6 +759,19 @@ function pageStaff(main) {
     onOk: async (f) => { await api("staff", f); toast("Saved."); draw(); } });
   $("#s-add").onclick = () => edit();
   $("#s-list").onclick = (e) => { const b = e.target.closest("button[data-i]"); if (b) edit(draw.rows[+b.dataset.i]); };
+  $("#s-keys").onclick = (e) => {
+    const b = e.target.closest("button[data-revoke]"); if (!b) return;
+    modal({ title: "Revoke staff key", sub: b.dataset.name, ok: "Revoke", danger: true, body: "<p>Their staff badge stops on our servers right away. They can make a new key while they still have portal access.</p>",
+      onOk: async () => { await api("staffkey/revoke", { id: b.dataset.revoke }); toast("Key revoked."); drawKeys(); } });
+  };
+  async function drawKeys() {
+    const r = await api("staffkeys").catch((e) => { toast(e.message, true); return null; });
+    if (!r) return;
+    $("#s-keys").innerHTML = r.keys.length ? `<table><tr><th>Name</th><th>Key</th><th>Made</th><th>State</th><th></th></tr>${r.keys.map((k) => `
+      <tr><td>${esc(k.name)}</td><td class="mono">${esc(k.id)}</td><td>${when(k.created)}</td><td>${k.active ? '<span class="tag ok">Active</span>' : `<span class="tag bad">Not active</span> <span class="dim small">no sign-in for ${r.idle_days} days</span>`}</td>
+      <td><button class="btn btn-small btn-danger" data-revoke="${esc(k.id)}" data-name="${esc(k.name)}">Revoke</button></td></tr>`).join("")}</table>` : '<p class="empty">No staff keys made in the portal yet.</p>';
+  }
+  drawKeys();
   async function draw() {
     const r = await api("staff").catch((e) => { toast(e.message, true); return null; });
     if (!r) return;

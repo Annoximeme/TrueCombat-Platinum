@@ -109,6 +109,10 @@ install_portal() {
       setfacl -m u:tcpstaff:rx "$d"; setfacl -d -m u:tcpstaff:r "$d"
       find "$d" -maxdepth 1 -type f -name '*.json' -exec setfacl -m u:tcpstaff:r {} +
     done
+    # staff badge keys made in the portal: the portal writes the list, the game server reads it (0.36.0+)
+    d="$home/tcetest/staffkeys"
+    [ -d "$d" ] || install -d -m 0755 -o tcpgame -g tcpgame "$d"
+    setfacl -m u:tcpstaff:rwx "$d"
     # server demos (only written while sv_autoDemo is on): staff download the one that covers a report
     d="$home/tcetest/svdemos"
     [ -d "$d" ] || install -d -m 0775 -o tcpgame -g tcpgame "$d"

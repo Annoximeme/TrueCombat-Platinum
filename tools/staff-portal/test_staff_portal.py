@@ -22,6 +22,16 @@ os.environ["TCP_STAFF_DEV"] = "1"
 import tcp_staff_portal as tsp  # noqa: E402
 
 GUID = "0123456789ABCDEF0123456789ABCDEF"
+
+
+def wait_for(check, timeout=8.0):
+    """Polls until check() is true (background loops run on their own clock), then gives up quietly."""
+    end = time.time() + timeout
+    while time.time() < end:
+        if check():
+            return True
+        time.sleep(0.1)
+    return False
 PID = tsp.player_pid(GUID)
 
 
@@ -488,7 +498,8 @@ class PortalTest(unittest.TestCase):
         self.assertFalse(self.call("moderator", "POST", "/api/filters/test", {"text": "snoobly"})[1]["matches"])
         with self.chatlog.open("a") as f:
             f.write("  1001 TCP_NATIVE_SAY slot=0 team=0 you are all N00BS\n")
-        time.sleep(1.5)
+        wait_for(lambda: "mute 0 15 Insult" in self.game.commands and
+                 self.portal.store.one("SELECT id FROM audit WHERE staff='Chat filter'"))
         self.assertIn("mute 0 15 Insult", self.game.commands)
         st, d = self.call("moderator", "GET", "/api/filters")
         self.assertEqual(d["flagged"][0]["flag"], "Insult")
@@ -501,7 +512,7 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(self.call("moderator", "POST", "/api/watchlist", {"pid": PID, "reason": "aim looks odd"})[0], 200)
         self.portal.watch_cache.clear()
         self.portal.online.clear()
-        time.sleep(1.5)
+        wait_for(lambda: self.portal.store.one("SELECT id FROM alerts WHERE kind='watch' AND pid=?", (PID,)))
         self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='watch' AND pid=?", (PID,)))
         st, d = self.call("moderator", "GET", "/api/servers")
         viper = [p for p in d["servers"][0]["players"] if p.get("pid") == PID][0]
@@ -925,6 +936,53 @@ class PortalTest(unittest.TestCase):
         os.utime(shot, (time.time() - 7200, time.time() - 7200))
         self.portal.prune_bugshots()
         self.assertFalse(shot.exists())
+
+    def test_32_staff_keys(self):
+        keyfile = Path(self.tmp.name) / "staffkeys.txt"
+        self.portal.servers["one"].cfg["staff_keys_file"] = str(keyfile)
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=moderator&name=Keyholder&id=555000000000000001")
+        r = c.getresponse(); r.read(); c.close()
+        cookie = r.getheader("Set-Cookie").split(";")[0]
+        me = self.call(None, "GET", "/api/me", cookie=cookie)[1]
+        self.sessions["keyholder"] = {"cookie": cookie, "csrf": me["csrf"]}
+        def as_mod(method, path, body=None):
+            return self.call("keyholder", method, path, body)
+        self.assertIsNone(as_mod("GET", "/api/staffkey")[1]["key"])
+        self.assertEqual(as_mod("POST", "/api/staffkey", {"public": "zz"})[0], 400)
+        self.assertEqual(as_mod("POST", "/api/staffkey", {"public": "0" * 64})[0], 400)
+        st, k1 = as_mod("POST", "/api/staffkey", {"public": "ab" * 32})
+        self.assertEqual(st, 201)
+        self.assertRegex(k1["id"], r"^k[0-9a-f]{10}$")
+        text = keyfile.read_text()
+        self.assertIn("TCPSTAFFKEY1 %s 1 %s Keyholder" % (k1["id"], "ab" * 32), text)
+        self.assertIn("staffkeys_reload", self.game.commands)                     # the server reloads at once
+        st, k = as_mod("GET", "/api/staffkey")
+        self.assertTrue(k["active"] and k["key"]["id"] == k1["id"] and k["servers"] == 1)
+        # a new key replaces the old one
+        st, k2 = as_mod("POST", "/api/staffkey", {"public": "cd" * 32})
+        text = keyfile.read_text()
+        self.assertNotIn(k1["id"], text)
+        self.assertIn(k2["id"], text)
+        # one moderator can't revoke another's key; an admin can, and so can the owner of the key
+        st, other = self.call("moderator", "POST", "/api/staffkey", {"public": "ef" * 32})
+        self.assertEqual(as_mod("POST", "/api/staffkey/revoke", {"id": other["id"]})[0], 403)
+        st, lst = self.call("admin", "GET", "/api/staffkeys")
+        self.assertEqual({x["id"] for x in lst["keys"]}, {k2["id"], other["id"]})
+        self.assertEqual(self.call("admin", "POST", "/api/staffkey/revoke", {"id": other["id"]})[0], 200)
+        self.assertNotIn(other["id"], keyfile.read_text())
+        # not signing in for a long time makes a key inactive
+        self.portal.store.x("UPDATE staff SET last_login=? WHERE discord_id='555000000000000001'", (int(time.time()) - 90 * 86400,))
+        self.portal.publish_staff_keys()
+        self.assertNotIn(k2["id"], keyfile.read_text())
+        self.portal.store.x("UPDATE staff SET last_login=? WHERE discord_id='555000000000000001'", (int(time.time()),))
+        self.portal.publish_staff_keys()
+        self.assertIn(k2["id"], keyfile.read_text())
+        # removing someone's access revokes their key
+        self.assertEqual(self.call("admin", "POST", "/api/staff", {"discord_id": "555000000000000001", "role": "revoked", "name": "Keyholder"})[0], 200)
+        self.assertNotIn(k2["id"], keyfile.read_text())
+        self.assertFalse(self.portal.store.one("SELECT 1 x FROM staff_keys WHERE revoked=0 AND discord_id='555000000000000001'"))
+        self.call("admin", "POST", "/api/staff", {"discord_id": "555000000000000001", "role": "discord"})
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

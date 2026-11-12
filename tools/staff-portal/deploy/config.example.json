@@ -18,6 +18,7 @@
   "retention_days": 90,
   "chat_days": 30,
   "bugreport_per_hour": 6,
+  "staff_key_idle_days": 60,
   "require_2fa": true,
   "appeals": true,
   "demo_timezone": "UTC",
