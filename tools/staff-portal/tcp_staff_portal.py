@@ -43,7 +43,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
 log = logging.getLogger("tcp-staff")
@@ -258,6 +258,231 @@ def normalise_chat(text: str) -> str:
 
 
 # ----------------------------------------------------------------------------- two-step sign-in (RFC 6238 TOTP)
+
+# --- QR code (for the authenticator setup) -----------------------------------------------------
+# A small byte-mode QR encoder, error correction level M, after Project Nayuki's reference
+# implementation (MIT). Made here so the setup screen needs no outside service and the key never
+# leaves the portal; the page shows it as an inline SVG image.
+_QR_ECC_PER_BLOCK = (0, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26,
+                     26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28)
+_QR_BLOCKS = (0, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16,
+              17, 17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49)
+
+
+def _qr_raw_modules(ver: int) -> int:
+    n = (16 * ver + 128) * ver + 64
+    if ver >= 2:
+        a = ver // 7 + 2
+        n -= (25 * a - 10) * a - 55
+        if ver >= 7:
+            n -= 36
+    return n
+
+
+def _qr_data_codewords(ver: int) -> int:
+    return _qr_raw_modules(ver) // 8 - _QR_ECC_PER_BLOCK[ver] * _QR_BLOCKS[ver]
+
+
+def _qr_gf_mul(x: int, y: int) -> int:
+    z = 0
+    for i in reversed(range(8)):
+        z = (z << 1) ^ ((z >> 7) * 0x11D)
+        z ^= ((y >> i) & 1) * x
+    return z
+
+
+def _qr_rs_divisor(degree: int) -> list:
+    res = [0] * (degree - 1) + [1]
+    root = 1
+    for _ in range(degree):
+        for j in range(degree):
+            res[j] = _qr_gf_mul(res[j], root)
+            if j + 1 < degree:
+                res[j] ^= res[j + 1]
+        root = _qr_gf_mul(root, 0x02)
+    return res
+
+
+def _qr_rs_remainder(data, divisor) -> list:
+    res = [0] * len(divisor)
+    for b in data:
+        factor = b ^ res.pop(0)
+        res.append(0)
+        for i, coef in enumerate(divisor):
+            res[i] ^= _qr_gf_mul(coef, factor)
+    return res
+
+
+def qr_matrix(text: str) -> list:
+    """The QR symbol for text as rows of booleans (True = dark), without the quiet zone."""
+    data = text.encode("utf-8")
+    for ver in range(1, 41):
+        cap = _qr_data_codewords(ver) * 8
+        used = 4 + (8 if ver <= 9 else 16) + 8 * len(data)
+        if used <= cap:
+            break
+    else:
+        raise ValueError("text too long for a QR code")
+    bits = []
+    def put(val, n):
+        bits.extend((val >> i) & 1 for i in reversed(range(n)))
+    put(0x4, 4)
+    put(len(data), 8 if ver <= 9 else 16)
+    for b in data:
+        put(b, 8)
+    put(0, min(4, cap - len(bits)))
+    put(0, -len(bits) % 8)
+    pad = 0xEC
+    while len(bits) < cap:
+        put(pad, 8)
+        pad ^= 0xEC ^ 0x11
+    words = [int("".join(map(str, bits[i:i + 8])), 2) for i in range(0, len(bits), 8)]
+    # split into blocks, add error correction, interleave
+    nblocks, eccn = _QR_BLOCKS[ver], _QR_ECC_PER_BLOCK[ver]
+    raw = _qr_raw_modules(ver) // 8
+    nshort = nblocks - raw % nblocks
+    short_len = raw // nblocks
+    div = _qr_rs_divisor(eccn)
+    blocks, k = [], 0
+    for i in range(nblocks):
+        dlen = short_len - eccn + (0 if i < nshort else 1)
+        dat = words[k:k + dlen]
+        k += dlen
+        ecc = _qr_rs_remainder(dat, div)
+        if i < nshort:
+            dat = dat + [0]
+        blocks.append(dat + ecc)
+    final = []
+    for i in range(len(blocks[0])):
+        for j, blk in enumerate(blocks):
+            if i != short_len - eccn or j >= nshort:
+                final.append(blk[i])
+    size = ver * 4 + 17
+    mod = [[False] * size for _ in range(size)]
+    fn = [[False] * size for _ in range(size)]
+    def setf(x, y, dark):
+        mod[y][x] = dark
+        fn[y][x] = True
+    for i in range(size):  # timing
+        setf(6, i, i % 2 == 0)
+        setf(i, 6, i % 2 == 0)
+    for cx, cy in ((3, 3), (size - 4, 3), (3, size - 4)):  # finders
+        for dy in range(-4, 5):
+            for dx in range(-4, 5):
+                x, y = cx + dx, cy + dy
+                if 0 <= x < size and 0 <= y < size:
+                    setf(x, y, max(abs(dx), abs(dy)) not in (2, 4))
+    if ver > 1:  # alignment patterns
+        n = ver // 7 + 2
+        step = (ver * 8 + n * 3 + 5) // (n * 4 - 4) * 2
+        pos = [6] + [size - 7 - i * step for i in reversed(range(n - 1))]
+        for i, a in enumerate(pos):
+            for j, b in enumerate(pos):
+                if (i, j) in ((0, 0), (0, n - 1), (n - 1, 0)):
+                    continue
+                for dy in range(-2, 3):
+                    for dx in range(-2, 3):
+                        setf(a + dx, b + dy, max(abs(dx), abs(dy)) != 1)
+    def draw_format(mask):
+        d = (0 << 3) | mask  # level M = 00
+        rem = d
+        for _ in range(10):
+            rem = (rem << 1) ^ ((rem >> 9) * 0x537)
+        b = ((d << 10) | rem) ^ 0x5412
+        g = lambda i: ((b >> i) & 1) != 0
+        for i in range(6):
+            setf(8, i, g(i))
+        setf(8, 7, g(6)); setf(8, 8, g(7)); setf(7, 8, g(8))
+        for i in range(9, 15):
+            setf(14 - i, 8, g(i))
+        for i in range(8):
+            setf(size - 1 - i, 8, g(i))
+        for i in range(8, 15):
+            setf(8, size - 15 + i, g(i))
+        setf(8, size - 8, True)
+    draw_format(0)  # reserve the format areas
+    if ver >= 7:
+        rem = ver
+        for _ in range(12):
+            rem = (rem << 1) ^ ((rem >> 11) * 0x1F25)
+        b = (ver << 12) | rem
+        for i in range(18):
+            bit = ((b >> i) & 1) != 0
+            a, c = size - 11 + i % 3, i // 3
+            setf(a, c, bit)
+            setf(c, a, bit)
+    # data, in the zigzag order
+    i = 0
+    right = size - 1
+    while right >= 1:
+        if right == 6:
+            right = 5
+        for vert in range(size):
+            for j in range(2):
+                x = right - j
+                upward = ((right + 1) & 2) == 0
+                y = size - 1 - vert if upward else vert
+                if not fn[y][x] and i < len(final) * 8:
+                    mod[y][x] = ((final[i >> 3] >> (7 - (i & 7))) & 1) != 0
+                    i += 1
+        right -= 2
+    masks = (lambda x, y: (x + y) % 2 == 0, lambda x, y: y % 2 == 0, lambda x, y: x % 3 == 0,
+             lambda x, y: (x + y) % 3 == 0, lambda x, y: (x // 3 + y // 2) % 2 == 0,
+             lambda x, y: x * y % 2 + x * y % 3 == 0, lambda x, y: (x * y % 2 + x * y % 3) % 2 == 0,
+             lambda x, y: ((x + y) % 2 + x * y % 3) % 2 == 0)
+    def apply(m):
+        f = masks[m]
+        for y in range(size):
+            for x in range(size):
+                if not fn[y][x] and f(x, y):
+                    mod[y][x] = not mod[y][x]
+    def penalty():
+        p = 0
+        lines = mod + [list(c) for c in zip(*mod)]
+        for line in lines:  # runs of five or more, and finder-like patterns
+            run, prev = 0, None
+            for v in line:
+                if v == prev:
+                    run += 1
+                    if run == 5:
+                        p += 3
+                    elif run > 5:
+                        p += 1
+                else:
+                    run, prev = 1, v
+            s = "".join("1" if v else "0" for v in line)
+            for pat in ("10111010000", "00001011101"):
+                p += 40 * sum(1 for k in range(len(s) - 10) if s[k:k + 11] == pat)
+        for y in range(size - 1):  # 2x2 blocks
+            for x in range(size - 1):
+                if mod[y][x] == mod[y][x + 1] == mod[y + 1][x] == mod[y + 1][x + 1]:
+                    p += 3
+        dark = sum(map(sum, mod))
+        total = size * size
+        p += 10 * ((abs(dark * 20 - total * 10) + total - 1) // total - 1)
+        return p
+    best, best_p = 0, None
+    for m in range(8):
+        apply(m)
+        draw_format(m)
+        p = penalty()
+        if best_p is None or p < best_p:
+            best, best_p = m, p
+        apply(m)
+    apply(best)
+    draw_format(best)
+    return mod
+
+
+def qr_svg_data_uri(text: str) -> str:
+    """The QR code for text as a data: URI holding an SVG image, with a four-module quiet zone."""
+    m = qr_matrix(text)
+    n = len(m) + 8
+    path = "".join("M%d %dh1v1h-1z" % (x + 4, y + 4) for y, row in enumerate(m) for x, v in enumerate(row) if v)
+    svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" shape-rendering="crispEdges">'
+           '<rect width="%d" height="%d" fill="#fff"/><path fill="#000" d="%s"/></svg>') % (n, n, n, n, path)
+    return "data:image/svg+xml;base64," + base64.b64encode(svg.encode("ascii")).decode("ascii")
+
 
 def totp_secret() -> str:
     return base64.b32encode(secrets.token_bytes(20)).decode().rstrip("=")
@@ -3114,8 +3339,9 @@ def make_handler(portal: Portal):
                                "DO UPDATE SET secret=excluded.secret, enabled=0, created=excluded.created, last_step=0",
                                (who["discord_id"], secret_b32, now()))
                 label = urllib.parse.quote("TrueCombat Staff:%s" % who["name"])
-                return self.json({"secret": secret_b32, "uri": "otpauth://totp/%s?secret=%s&issuer=%s&digits=6&period=30" % (
-                    label, secret_b32, urllib.parse.quote("TrueCombat Staff"))})
+                uri = "otpauth://totp/%s?secret=%s&issuer=%s&digits=6&period=30" % (
+                    label, secret_b32, urllib.parse.quote("TrueCombat Staff"))
+                return self.json({"secret": secret_b32, "uri": uri, "qr": qr_svg_data_uri(uri)})
             if route in ("2fa/enable", "2fa/verify", "2fa/disable") and P:
                 if not s:
                     raise ApiError(401, "Please sign in.")

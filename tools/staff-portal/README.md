@@ -32,7 +32,7 @@ A private web console for the people who run the official and pickup servers, se
 | Event mode | One switch for a private match: random password, no bots, no balance, no votes; switches back afterwards |
 | Live map | Top-down layout with every player's position, refreshed every two seconds; admins only, audited, and closed to anyone whose linked account is playing on that server |
 | Settings | Whitelisted server settings with labels, a full history and one-click rollback; "Keep" re-applies a value after restarts |
-| Two-step sign-in | Authenticator-app codes; required for admin and owner rights |
+| Two-step sign-in | Authenticator-app codes, set up by scanning a QR code drawn by the portal itself; required for admin and owner rights |
 | Weekly report | Monday 08:00 Belgian time: bans, reports, appeals, peaks and busiest staff, in the portal and the staff channel |
 
 ## Roles
@@ -91,7 +91,7 @@ switches those buttons on per server; on an older server they explain why they a
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 26 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 30 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 

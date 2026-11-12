@@ -227,3 +227,5 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .appeal-result { margin-top: 18px; padding: 14px; border-radius: var(--r); background: var(--bg); border: 1px solid var(--line); }
 .appeal-result.ok { border-color: #2b5c3d; }
 .appeal-result.bad { border-color: #6b2a2a; }
+.qr { text-align: center; margin: 4px 0 14px; }
+.qr img { display: inline-block; width: 200px; height: 200px; background: #fff; padding: 0; border-radius: var(--r); image-rendering: pixelated; }
