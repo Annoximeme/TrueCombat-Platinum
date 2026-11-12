@@ -32,7 +32,7 @@ A private web console for the people who run the official and pickup servers, se
 | Event mode | One switch for a private match: random password, no bots, no balance, no votes; switches back afterwards |
 | Live map | Top-down layout with every player's position, refreshed every two seconds; admins only, audited, and closed to anyone whose linked account is playing on that server |
 | Settings | Whitelisted server settings with labels, a full history and one-click rollback; "Keep" re-applies a value after restarts |
-| Two-step sign-in | Authenticator-app codes; required for admin and owner rights |
+| Two-step sign-in | Authenticator-app codes, set up by scanning a QR code drawn by the portal itself; required for admin and owner rights |
 | Weekly report | Monday 08:00 Belgian time: bans, reports, appeals, peaks and busiest staff, in the portal and the staff channel |
 
 ## Roles
@@ -77,6 +77,9 @@ switches those buttons on per server; on an older server they explain why they a
 * Stats review and suspicion use the stats service's private `/staff/` routes (loopback only, `X-Staff-Token`).
   `install.sh stats-link` creates the token and hands it to both services as a systemd credential.
 * Linked Discord accounts are read from the Discord bot's database, read-only.
+* The Insights page (admins) reads `/insights/stats.json` from the website insights service on 127.0.0.1:8094
+  (`tools/server-bridge/tcp_insights.py`). `install.sh insights-link` copies that service's studio key into the
+  portal's `insights-key` credential; an empty file leaves the page saying it is not connected.
 * Alerts go to the webhook in `/etc/tcp-staff-portal/staff-webhook` (empty file: portal only). Set
   `alerts.ping_role_id` to ping a role on urgent ones and `alerts.kinds` to pick which kinds reach Discord.
 * Server demos are read from `<home>/tcetest/svdemos` (`demo_timezone` is the server's clock for the file names).
@@ -84,14 +87,51 @@ switches those buttons on per server; on an older server they explain why they a
 
 ## Bug reports
 
-`POST https://staff.truecombat.eu/api/bugreport` takes the plain-text report the game writes on F12
-(`X-Report-Category: Bug|Suggestion|Feature`), at most 6 an hour per address and 96 KB each. Set
-`cl_bugReportUrl` to that address once the launcher uploads `bugreports/pending.txt`.
+From 0.36.0, F12 in game sends the report straight to `POST https://staff.truecombat.eu/api/bugreport`
+(the game's `cl_bugReportEndpoint`) as one JSON body, `"format": "tcp-bugreport/1"`:
+
+| Field | |
+|---|---|
+| `category` | `Bug`, `Suggestion` or `Feature` |
+| `text` | what the player wrote (16 KB kept) |
+| `map`, `pos` [x, y, z], `server` (ip:port, empty offline), `match` | where it happened |
+| `build`, `renderer`, `ping`, `fps`, `time`, `hw` {…} | the player's setup |
+| `console` | the last ~200 console lines (64 KB kept) |
+| `name`, `guid`, `puid` | who sent it; `guid` is turned into the player id and not stored |
+| `screenshot_jpg` | base64 JPEG, at most 1 MB; anything that isn't a JPEG is dropped |
+
+The body may be up to 1.6 MB. Answers: `201 {"ok": true, "id": …}`, `400` bad body, `413` too big, `429` over
+6 an hour per address, `503` inbox full. The game keeps a local copy whenever the answer isn't 2xx.
+
+Reports land under Reports › Bug reports with the screenshot, the context, and a button for the console
+and hardware; a short alert goes to the staff Discord (kind `bugreport`) linking to the inbox, without the
+screenshot. Screenshots live in `<data_dir>/bugshots` and go with their report when closed reports are
+pruned, and stop being kept once they fill `bugshot_max_mb` (500). Player text in the Discord alert is
+escaped, so it can't carry links or mentions. Plain-text posts with `X-Report-Category` still work for older tools.
+
+## Staff badge keys
+
+Every staff member gets their own in-game staff key under their name (bottom left) › Staff badge in game.
+The browser makes the Ed25519 key pair and downloads `staff.key` (`TCPSTAFF1 <id> <seed>`). Only the
+public half reaches the portal. The portal writes the public keys to `<game dir>/staffkeys/staffkeys.txt`
+for every server (or `staff_keys_file` per server) and sends `staffkeys_reload` over rcon. Game servers
+from 0.36.0 read that list next to the keys built into the game (see `game/STAFF-KEYS-INTEGRATION.md`).
+
+**Install in game** (the default) opens a one-time `truecombat://staffkey/<code>` link (10 minutes, single
+use). The launcher (2.1+, see `launcher/STAFF-KEY-INSTALL.md`) makes the key pair itself, claims the link at
+`POST /api/staffkey/claim` with the public half and writes `profile\staff.key`, so the secret never leaves
+that PC. A claim only works while the person who made the link still has a portal session. Downloading the
+file stays available as a fallback. Turn it on with `"launcher_key_install": true` once launcher 2.1 is released;
+until then the portal offers the download only.
+
+A key stops working when a newer one is made, when an admin revokes it (Staff page), when the person
+loses staff access (revoked in the portal or Discord role removed, seen at their next portal visit), or
+after `staff_key_idle_days` (default 60, 0 = never) without signing in to the portal.
 
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 26 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 34 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 
@@ -111,8 +151,10 @@ signs in from 127.0.0.1 without Discord. Never set either on the VPS.
    for the stats review queue, first deploy the updated `tools/server-bridge/tcp_stats.py` and `tcp_bridge.py`
    (they add the `/staff/` routes), then `sudo ./deploy/install.sh stats-link` (restarts the stats service, rolls
    back if it does not answer);
-   `sv_autoDemo 1` in each game server's cfg for report demos.
-6. Owner and admins: set up two-step sign-in under your name, top left.
+   `sv_autoDemo 1` in each game server's cfg for report demos;
+   for the Insights page, install the insights service (`tools/server-bridge/deploy/install-insights.sh`), then
+   `sudo ./deploy/install.sh insights-link`.
+6. Owner and admins: set up two-step sign-in under your name, bottom left.
 
 Data lives in `/var/lib/tcp-staff-portal/portal.db` (SQLite). It also holds two-step sign-in secrets and the Discord
 sign-in tokens of open sessions, so a backup of it belongs in the private backup repository only. Chat is kept 30 days and sightings 90 days.

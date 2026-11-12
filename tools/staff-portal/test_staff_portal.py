@@ -22,6 +22,16 @@ os.environ["TCP_STAFF_DEV"] = "1"
 import tcp_staff_portal as tsp  # noqa: E402
 
 GUID = "0123456789ABCDEF0123456789ABCDEF"
+
+
+def wait_for(check, timeout=8.0):
+    """Polls until check() is true (background loops run on their own clock), then gives up quietly."""
+    end = time.time() + timeout
+    while time.time() < end:
+        if check():
+            return True
+        time.sleep(0.1)
+    return False
 PID = tsp.player_pid(GUID)
 
 
@@ -368,7 +378,7 @@ class PortalTest(unittest.TestCase):
     def test_10_chat_feed(self):
         with self.chatlog.open("a") as f:
             f.write("  1000 TCP_NATIVE_SAY slot=0 team=1 enemy at the gate\n")
-        time.sleep(1.2)
+        wait_for(lambda: any(l["text"] == "enemy at the gate" for l in self.call("moderator", "GET", "/api/chat?server=one")[1]["lines"]))
         st, d = self.call("moderator", "GET", "/api/chat?server=one")
         texts = [(l["name"], l["text"], l["kind"]) for l in d["lines"]]
         self.assertIn(("Viper", "enemy at the gate", "team"), texts)
@@ -488,7 +498,8 @@ class PortalTest(unittest.TestCase):
         self.assertFalse(self.call("moderator", "POST", "/api/filters/test", {"text": "snoobly"})[1]["matches"])
         with self.chatlog.open("a") as f:
             f.write("  1001 TCP_NATIVE_SAY slot=0 team=0 you are all N00BS\n")
-        time.sleep(1.5)
+        wait_for(lambda: "mute 0 15 Insult" in self.game.commands and
+                 self.portal.store.one("SELECT id FROM audit WHERE staff='Chat filter'"))
         self.assertIn("mute 0 15 Insult", self.game.commands)
         st, d = self.call("moderator", "GET", "/api/filters")
         self.assertEqual(d["flagged"][0]["flag"], "Insult")
@@ -501,7 +512,7 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(self.call("moderator", "POST", "/api/watchlist", {"pid": PID, "reason": "aim looks odd"})[0], 200)
         self.portal.watch_cache.clear()
         self.portal.online.clear()
-        time.sleep(1.5)
+        wait_for(lambda: self.portal.store.one("SELECT id FROM alerts WHERE kind='watch' AND pid=?", (PID,)))
         self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='watch' AND pid=?", (PID,)))
         st, d = self.call("moderator", "GET", "/api/servers")
         viper = [p for p in d["servers"][0]["players"] if p.get("pid") == PID][0]
@@ -510,7 +521,7 @@ class PortalTest(unittest.TestCase):
         self.portal.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_id,by_name,active) VALUES(?,?,?,?,?,?,?,?,?,?,1)",
                             ("aaaaaaaaaaaaaaaa", "G2", "198.51.100.1", "0002aabbccddeeff00112233445566778", "OldViper", "aimbot", 1, 0, "1", "t"))
         self.portal.watch_cache.clear()
-        time.sleep(1.5)
+        wait_for(lambda: self.portal.store.one("SELECT 1 x FROM flags WHERE pid=? AND kind='ban dodger'", (PID,)))
         f = self.portal.store.one("SELECT * FROM flags WHERE pid=? AND kind='ban dodger'", (PID,))
         self.assertIn("OldViper", f["detail"])
         st, p = self.call("moderator", "GET", "/api/player/" + PID)
@@ -630,6 +641,7 @@ class PortalTest(unittest.TestCase):
             st, d = self.call("admin", "POST", "/api/2fa/setup", {})
             secret = d["secret"]
             self.assertTrue(d["uri"].startswith("otpauth://totp/"))
+            self.assertTrue(d["qr"].startswith("data:image/svg+xml;base64,"))   # drawn here: the CSP allows data: images only
             self.assertEqual(self.call("admin", "POST", "/api/2fa/enable", {"code": "000000"})[0], 400)
             code = totp_now(secret)
             self.assertEqual(self.call("admin", "POST", "/api/2fa/enable", {"code": code})[0], 200)
@@ -840,6 +852,239 @@ class PortalTest(unittest.TestCase):
             self.assertTrue(self.portal.webhook_url())
         finally:
             alerts["webhook_url"] = saved
+
+    def test_30_qr_code(self):
+        uri = "otpauth://totp/TrueCombat%20Staff%3AViper?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&issuer=TrueCombat%20Staff&digits=6&period=30"
+        for text, size in (("A", 21), (uri, 4 * 8 + 17), ("x" * 200, 4 * 10 + 17)):
+            m = tsp.qr_matrix(text)
+            self.assertEqual(len(m), size)
+            self.assertEqual(tsp.qr_matrix(text), m)                           # the same text always gives the same symbol
+            for cx, cy in ((0, 0), (size - 7, 0), (0, size - 7)):              # three finder patterns
+                ring = [m[cy + i][cx] for i in range(7)]
+                self.assertEqual(ring, [True] * 7)
+                self.assertTrue(m[cy + 3][cx + 3] and not m[cy + 1][cx + 1])
+            self.assertEqual([m[6][x] for x in range(8, size - 8)], [x % 2 == 0 for x in range(8, size - 8)])   # timing
+            # format bits: undo the mask, check the BCH code and that the level is M (00)
+            bits = [m[i][8] for i in (0, 1, 2, 3, 4, 5, 7, 8)] + [m[8][7]] + [m[8][14 - i] for i in range(9, 15)]
+            word = sum(1 << i for i, b in enumerate(bits) if b) ^ 0x5412
+            data = word >> 10
+            rem = data
+            for _ in range(10):
+                rem = (rem << 1) ^ ((rem >> 9) * 0x537)
+            self.assertEqual(word, (data << 10) | rem)
+            self.assertEqual(data >> 3, 0)
+        svg = tsp.qr_svg_data_uri(uri)
+        import base64
+        body = base64.b64decode(svg.split(",", 1)[1]).decode()
+        self.assertIn('viewBox="0 0 57 57"', body)                              # 49 modules plus the quiet zone
+        with self.assertRaises(ValueError):
+            tsp.qr_matrix("x" * 3000)
+
+    def test_31_f12_bug_report(self):
+        import base64
+        jpg = b"\xff\xd8\xff\xe0" + b"\0" * 2000 + b"\xff\xd9"
+        self.portal.servers["one"].cfg["public_address"] = "127.0.0.1:27960"
+        sample = {"format": "tcp-bugreport/1", "category": "bug", "text": "Grenade went through the wall\nat the bomb site.",
+                  "map": "obj_snow", "pos": [120.5, -64, 32], "server": "127.0.0.1:27960", "build": "0.36.0-sandbox28",
+                  "renderer": "DX12 RTX 4080 SUPER", "time": 1789000000, "ping": 38, "fps": 240,
+                  "hw": {"cpu": "Ryzen 7 7800X3D", "ram": "32 GB"}, "console": "line\x07 one\nline two\n" * 50,
+                  "screenshot_jpg": base64.b64encode(jpg).decode(), "name": "Viper", "guid": GUID, "puid": "0002abc", "match": "m-77"}
+        def post(body, ctype="application/json"):
+            self.portal.rate.pop("bug:127.0.0.1", None)
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request("POST", "/api/bugreport", body=body, headers={"Content-Type": ctype})
+            r = c.getresponse()
+            out = r.status, json.loads(r.read() or b"{}")
+            c.close()
+            return out
+        st, d = post(json.dumps(sample))
+        self.assertEqual(st, 201)
+        st, lst = self.call("moderator", "GET", "/api/reports?status=open&source=bug")
+        r = [x for x in lst["reports"] if x["file"] == d["id"]][0]
+        self.assertEqual(r["target_pid"], PID)                              # linked to the player's profile
+        self.assertEqual(r["data"]["server_name"], "Official #1")
+        self.assertEqual(r["data"]["category"], "Bug")
+        self.assertEqual(r["data"]["pos"], [120, -64, 32])
+        self.assertTrue(r["data"]["shot"] and r["data"]["has_console"])
+        self.assertNotIn("console", r["data"])                              # the list stays light
+        self.assertNotIn("guid", r["data"])                                 # the raw guid is never stored
+        st, full = self.call("moderator", "GET", "/api/reports/bug?id=%d" % r["id"])
+        self.assertIn("line one", full["report"]["data"]["console"])        # control characters removed
+        self.assertEqual(full["report"]["data"]["hw"]["cpu"], "Ryzen 7 7800X3D")
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/api/reports/bugshot?id=%d" % r["id"], headers={"Cookie": self.sessions["moderator"]["cookie"]})
+        resp = c.getresponse()
+        self.assertEqual((resp.status, resp.getheader("Content-Type"), resp.read()), (200, "image/jpeg", jpg))
+        self.assertIn("max-age", resp.getheader("Cache-Control"))          # the inbox refresh doesn't fetch it again
+        c.close()
+        self.assertEqual(self.call(None, "GET", "/api/reports/bugshot?id=%d" % r["id"])[0], 401)
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE kind='bugreport' AND key=?", ("bugreport:" + PID,)))
+        n = self.portal.store.one("SELECT COUNT(*) n FROM alerts WHERE kind='bugreport'")["n"]
+        self.assertEqual(post(json.dumps(sample))[0], 201)                      # same player again: no second alert yet
+        self.assertEqual(self.portal.store.one("SELECT COUNT(*) n FROM alerts WHERE kind='bugreport'")["n"], n)
+        # player text can't smuggle links or mentions into the staff Discord
+        st, d4 = post(json.dumps(dict(sample, text="[free skins](https://evil.example) @everyone", screenshot_jpg="", guid="")))
+        a = self.portal.store.one("SELECT title, text FROM alerts WHERE key=?", (d4["id"],))
+        self.assertNotIn("](", a["text"])
+        self.assertNotIn("https://", a["text"])
+        self.assertIn("\\@everyone", a["text"])
+        # screenshot storage has a ceiling; past it the report still arrives without its picture
+        self.portal.cfg["bugshot_max_mb"] = 0
+        try:
+            st, d5 = post(json.dumps(sample))
+            self.assertEqual(st, 201)
+            r5 = json.loads(self.portal.store.one("SELECT data FROM reports WHERE file=?", (d5["id"],))["data"])
+            self.assertTrue(r5.get("shot_dropped") and not r5.get("shot"))
+        finally:
+            self.portal.cfg.pop("bugshot_max_mb", None)
+        # a non-JPEG screenshot is dropped, the report still arrives; junk is refused
+        st, d2 = post(json.dumps(dict(sample, screenshot_jpg=base64.b64encode(b"<svg/>").decode(), server="evil host")))
+        self.assertEqual(st, 201)
+        r2 = self.portal.store.one("SELECT data FROM reports WHERE file=?", (d2["id"],))
+        self.assertNotIn("shot", json.loads(r2["data"]))
+        self.assertNotIn("server", json.loads(r2["data"]))
+        self.assertEqual(post(json.dumps({"format": "other", "text": "x" * 20}))[0], 400)
+        self.assertEqual(post("{not json")[0], 400)
+        self.assertEqual(post(json.dumps(dict(sample, text="hi")))[0], 400)
+        self.assertEqual(post(json.dumps(dict(sample, console="x" * 1700 * 1024)))[0], 413)
+        st, d3 = post("Old style plain text report about the menu.", "text/plain")
+        self.assertEqual(st, 201)
+        # closed and pruned reports take their screenshot with them
+        self.portal.store.x("DELETE FROM reports WHERE file=?", (d["id"],))
+        shot = self.portal.bugshot_path(d["id"])
+        os.utime(shot, (time.time() - 7200, time.time() - 7200))
+        self.portal.prune_bugshots()
+        self.assertFalse(shot.exists())
+
+    def test_32_staff_keys(self):
+        keyfile = Path(self.tmp.name) / "staffkeys.txt"
+        self.portal.servers["one"].cfg["staff_keys_file"] = str(keyfile)
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=moderator&name=Keyholder&id=555000000000000001")
+        r = c.getresponse(); r.read(); c.close()
+        cookie = r.getheader("Set-Cookie").split(";")[0]
+        me = self.call(None, "GET", "/api/me", cookie=cookie)[1]
+        self.sessions["keyholder"] = {"cookie": cookie, "csrf": me["csrf"]}
+        def as_mod(method, path, body=None):
+            return self.call("keyholder", method, path, body)
+        self.assertIsNone(as_mod("GET", "/api/staffkey")[1]["key"])
+        self.assertEqual(as_mod("POST", "/api/staffkey", {"public": "zz"})[0], 400)
+        self.assertEqual(as_mod("POST", "/api/staffkey", {"public": "0" * 64})[0], 400)
+        st, k1 = as_mod("POST", "/api/staffkey", {"public": "ab" * 32})
+        self.assertEqual(st, 201)
+        self.assertRegex(k1["id"], r"^k[0-9a-f]{10}$")
+        text = keyfile.read_text()
+        self.assertIn("TCPSTAFFKEY1 %s 1 %s Keyholder" % (k1["id"], "ab" * 32), text)
+        self.assertIn("staffkeys_reload", self.game.commands)                     # the server reloads at once
+        st, k = as_mod("GET", "/api/staffkey")
+        self.assertTrue(k["active"] and k["key"]["id"] == k1["id"] and k["servers"] == 1)
+        # a new key replaces the old one
+        st, k2 = as_mod("POST", "/api/staffkey", {"public": "cd" * 32})
+        text = keyfile.read_text()
+        self.assertNotIn(k1["id"], text)
+        self.assertIn(k2["id"], text)
+        # one moderator can't revoke another's key; an admin can, and so can the owner of the key
+        st, other = self.call("moderator", "POST", "/api/staffkey", {"public": "ef" * 32})
+        self.assertEqual(as_mod("POST", "/api/staffkey/revoke", {"id": other["id"]})[0], 403)
+        st, lst = self.call("admin", "GET", "/api/staffkeys")
+        self.assertEqual({x["id"] for x in lst["keys"]}, {k2["id"], other["id"]})
+        self.assertEqual(self.call("admin", "POST", "/api/staffkey/revoke", {"id": other["id"]})[0], 200)
+        self.assertNotIn(other["id"], keyfile.read_text())
+        # not signing in for a long time makes a key inactive
+        self.portal.store.x("UPDATE staff SET last_login=? WHERE discord_id='555000000000000001'", (int(time.time()) - 90 * 86400,))
+        self.portal.publish_staff_keys()
+        self.assertNotIn(k2["id"], keyfile.read_text())
+        self.portal.store.x("UPDATE staff SET last_login=? WHERE discord_id='555000000000000001'", (int(time.time()),))
+        self.portal.publish_staff_keys()
+        self.assertIn(k2["id"], keyfile.read_text())
+        # removing someone's access revokes their key
+        self.assertEqual(self.call("admin", "POST", "/api/staff", {"discord_id": "555000000000000001", "role": "revoked", "name": "Keyholder"})[0], 200)
+        self.assertNotIn(k2["id"], keyfile.read_text())
+        self.assertFalse(self.portal.store.one("SELECT 1 x FROM staff_keys WHERE revoked=0 AND discord_id='555000000000000001'"))
+        self.call("admin", "POST", "/api/staff", {"discord_id": "555000000000000001", "role": "discord"})
+
+    def test_33_launcher_installs_staff_key(self):
+        keyfile = Path(self.tmp.name) / "staffkeys.txt"
+        self.portal.servers["one"].cfg["staff_keys_file"] = str(keyfile)
+        self.portal.rate.pop("staffkey:dev-admin", None)
+        st, r = self.call("admin", "POST", "/api/staffkey/link", {})
+        self.assertEqual(st, 200)
+        self.assertRegex(r["link"], r"^truecombat://staffkey/[0-9a-f]{32}$")
+        code = r["link"].rsplit("/", 1)[1]
+        def claim(body):
+            self.portal.rate.pop("keyclaim:127.0.0.1", None)
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request("POST", "/api/staffkey/claim", body=json.dumps(body), headers={"Content-Type": "application/json"})
+            resp = c.getresponse()
+            out = resp.status, json.loads(resp.read() or b"{}")
+            c.close()
+            return out
+        self.assertEqual(claim({"code": code, "public": "nope"})[0], 400)          # malformed: the code survives
+        st, k = claim({"code": code, "public": "12" * 32})
+        self.assertEqual(st, 201)
+        self.assertIn("TCPSTAFFKEY1 %s 1 %s" % (k["id"], "12" * 32), keyfile.read_text())
+        self.assertEqual(claim({"code": code, "public": "34" * 32})[0], 410)        # single use
+        self.assertEqual(self.call("admin", "GET", "/api/staffkey")[1]["key"]["id"], k["id"])
+        # an expired link does nothing
+        st, r = self.call("admin", "POST", "/api/staffkey/link", {})
+        self.portal.store.x("UPDATE staff_key_codes SET expires=?", (int(time.time()) - 1,))
+        self.assertEqual(claim({"code": r["link"].rsplit("/", 1)[1], "public": "56" * 32})[0], 410)
+        # a link made before someone lost access does nothing either
+        st, r = self.call("admin", "POST", "/api/staffkey/link", {})
+        saved = self.portal.store.q("SELECT * FROM sessions WHERE discord_id='dev-admin'")
+        self.portal.store.x("DELETE FROM sessions WHERE discord_id='dev-admin'")
+        try:
+            self.assertEqual(claim({"code": r["link"].rsplit("/", 1)[1], "public": "78" * 32})[0], 403)
+        finally:
+            for row in saved:
+                self.portal.store.x("INSERT INTO sessions(%s) VALUES(%s)" % (",".join(row.keys()), ",".join("?" * len(row))), tuple(row))
+
+    def test_34_game_sample_report(self):
+        """The exact sample the 0.36.0 game sends (tools/bugreport/sample.json on the game branch)."""
+        body = (Path(__file__).resolve().parent / "test_bugreport_sample.json").read_bytes()
+        self.portal.rate.pop("bug:127.0.0.1", None)
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("POST", "/api/bugreport", body=body, headers={"Content-Type": "application/json; charset=utf-8",
+                                                               "User-Agent": "TrueCombat-Platinum-BugReport/1"})
+        r = c.getresponse()
+        out = json.loads(r.read())
+        c.close()
+        self.assertEqual(r.status, 201)
+        d = json.loads(self.portal.store.one("SELECT data FROM reports WHERE file=?", (out["id"],))["data"])
+        self.assertEqual(d["name"], "Example")                                   # colour codes gone
+        self.assertEqual(d["server_label"], "TrueCombat Platinum | Example")    # not ours: kept as reported
+        self.assertTrue(d["shot"] and d["console"] and d["hw"] and d["match"] and d["puid"])
+        self.assertNotIn("^3", d["console"])
+    def test_insights_page_reads_the_insights_service(self):
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "server-bridge"))
+        try:
+            import tcp_insights
+        except ImportError:
+            self.skipTest("tools/server-bridge/tcp_insights.py not in this checkout")
+        from http.server import ThreadingHTTPServer
+        store = tcp_insights.Store("")
+        store.github({("v0.35.0", "TrueCombat-Platinum-Setup.exe"): 42})
+        srv = ThreadingHTTPServer(("127.0.0.1", 0), tcp_insights.make_handler(store, "ikey", [], "", tcp_insights.Limiter(), tcp_insights.GeoIP()))
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        try:
+            self.portal.cfg["insights_api"] = "http://127.0.0.1:%d" % srv.server_address[1]
+            self.portal.cfg.pop("insights_key", None)
+            self.assertEqual(self.call("owner", "GET", "/api/insights?days=7")[0], 409)   # not linked yet
+            self.portal.cfg["insights_key"] = "wrong"
+            self.assertEqual(self.call("owner", "GET", "/api/insights?days=7")[0], 409)
+            self.portal.cfg["insights_key"] = "ikey"
+            self.assertEqual(self.call("moderator", "GET", "/api/insights")[0], 403)
+            code, body = self.call("owner", "GET", "/api/insights?days=7")
+            self.assertEqual(code, 200)
+            self.assertEqual((body["schema"], len(body["days"])), ("tcp-insights/1", 7))
+            self.assertEqual(body["github"]["releases"][0]["downloads"], 42)
+            self.assertEqual(len(self.call("owner", "GET", "/api/insights?days=12345")[1]["days"]), 30)
+        finally:
+            self.portal.cfg.pop("insights_key", None)
+            srv.shutdown()
+            srv.server_close()
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

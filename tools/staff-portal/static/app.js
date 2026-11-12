@@ -174,25 +174,99 @@ async function refreshAlertCount() {
   } catch (e) { /* ignore */ }
 }
 
+const STAFF_KEY_ROW = '<p class="staffkey-row"><button type="button" class="btn btn-small" data-staffkey>Staff badge in game</button> <span class="dim small">Get the key file that shows you as staff on our servers.</span></p>';
 function accountDialog() {
+  setTimeout(() => { $("#modal-body").onclick = (e) => { if (e.target.closest("[data-staffkey]")) staffKeyDialog().catch((err) => toast(err.message, true)); }; }, 0);
   const me = S.me;
   const status = me.mfa_on ? '<p><span class="tag ok">On</span> Two-step sign-in protects this account.</p>'
     : `<p><span class="tag ${me.mfa_required ? "bad" : ""}">Off</span> ${me.mfa_required ? "Admin tools stay locked until you turn it on." : "Optional for moderators, and recommended."}</p>`;
   if (me.mfa_on) {
     return modal({ title: "Your account", sub: me.name + " · " + me.role, ok: me.mfa_required ? "Close" : "Turn off", danger: !me.mfa_required,
-      body: status + (me.mfa_required ? "" : '<label>Code from your app, to turn it off</label><input name="code" inputmode="numeric" maxlength="7">'),
+      body: status + STAFF_KEY_ROW + (me.mfa_required ? "" : '<label>Code from your app, to turn it off</label><input name="code" inputmode="numeric" maxlength="7">'),
       onOk: async (f) => { if (me.mfa_required) return; await api("2fa/disable", { code: f.code }); toast("Two-step sign-in is off."); setTimeout(() => location.reload(), 800); } });
   }
-  modal({ title: "Your account", sub: me.name + " · " + me.role, ok: "Set up two-step sign-in", body: status + '<p class="muted">You need an authenticator app such as Google Authenticator, Microsoft Authenticator, 1Password or Aegis.</p>',
+  modal({ title: "Your account", sub: me.name + " · " + me.role, ok: "Set up two-step sign-in", body: status + '<p class="muted">You need an authenticator app such as Google Authenticator, Microsoft Authenticator, 1Password or Aegis.</p>' + STAFF_KEY_ROW,
     onOk: async () => {
       const r = await api("2fa/setup", {});
       setTimeout(() => modal({ title: "Set up two-step sign-in", ok: "Turn on",
-        sub: "Add this key to your authenticator app, then type the code it shows.",
-        body: `<label>Key</label><div class="secret">${esc(r.secret.replace(/(.{4})/g, "$1 ").trim())}</div>
+        sub: "Scan the code with your authenticator app, then type the code it shows.",
+        body: `<div class="qr"><img src="${esc(r.qr)}" width="200" height="200" alt="QR code for your authenticator app"></div>
+          <label>Can't scan? Type this key instead</label><div class="secret">${esc(r.secret.replace(/(.{4})/g, "$1 ").trim())}</div>
           <p class="small"><a href="${esc(r.uri)}">Open in an authenticator app on this device</a></p>
           <label>Code from the app</label><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>`,
         onOk: async (f) => { await api("2fa/enable", { code: f.code }); toast("Two-step sign-in is on."); setTimeout(() => location.reload(), 800); } }), 0);
     } });
+}
+
+/* in-game staff badge: the key pair is made here in the browser; only the public half goes to the portal */
+async function makeStaffKey() {
+  if (!crypto.subtle || !crypto.subtle.generateKey) throw new Error("This browser cannot make keys. Use an up-to-date Chrome, Edge, Firefox or Safari.");
+  let pair;
+  try { pair = await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]); }
+  catch (e) { throw new Error("This browser cannot make Ed25519 keys yet. Update it, or use an up-to-date Chrome, Edge, Firefox or Safari."); }
+  const hex = (buf) => [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  const pub = hex(await crypto.subtle.exportKey("raw", pair.publicKey));
+  const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", pair.privateKey));
+  const seed = hex(pkcs8.slice(pkcs8.length - 32));
+  const r = await api("staffkey", { public: pub });
+  const blob = new Blob([`TCPSTAFF1 ${r.id} ${seed}\r\n`], { type: "application/octet-stream" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "staff.key";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  return r;
+}
+
+async function staffKeyDialog() {
+  const k = await api("staffkey");
+  const state = !k.key ? '<p><span class="tag">None</span> You have no staff key yet.</p>'
+    : `<p><span class="tag ${k.active ? "ok" : "bad"}">${k.active ? "Active" : "Not active"}</span> Key made ${when(k.key.created)}.${k.active ? "" : " Sign in to the portal regularly to keep it active."}</p>`;
+  const renew = k.key ? " A new key cancels the old one straight away." : "";
+  if (!k.launcher) {   // until the launcher that installs keys is out: the key file is the way
+    return modal({ title: "Staff badge in game", sub: "Your staff key shows your staff badge and orange name on our servers.", ok: k.key ? "Get a new key" : "Get my staff key",
+      body: state + `<p class="muted">The key is made in this browser and downloads as <b>staff.key</b>. The portal never sees the secret part, so keep the file to yourself.${renew}</p>`,
+      onOk: async () => { setTimeout(() => staffKeyDownload().catch((err) => toast(err.message, true)), 0); } });
+  }
+  modal({ title: "Staff badge in game", sub: "Your staff key shows your staff badge and orange name on our servers.", ok: "Install in game",
+    body: state + `<p class="muted">Install in game hands the job to the TrueCombat Platinum launcher on this PC: it makes the key and puts it in your game's profile folder. The secret part never leaves your PC.${renew}</p>
+      <p class="small">No launcher on this PC? <button type="button" class="linkish" data-download>Download the key file instead</button>.</p>`,
+    onOk: async () => {
+      const r = await api("staffkey/link", {});
+      const before = k.key ? k.key.id : "";
+      location.href = r.link;
+      setTimeout(() => launcherWait(before), 0);
+    } });
+  $("#modal-body").onclick = (e) => { if (e.target.closest("[data-download]")) staffKeyDownload().catch((err) => toast(err.message, true)); };
+}
+
+function launcherWait(before) {
+  modal({ title: "Installing your staff key", ok: "Close",
+    body: `<p id="kw-state"><span class="tag">Waiting</span> Your launcher should open and install the key. Allow it if your browser asks to open TrueCombat Platinum.</p>
+      <p class="muted small">Needs launcher 2.1 or newer. Nothing happening? Update the launcher, or use "Download the key file instead".</p>`,
+    onOk: () => {} });
+  const started = Date.now();
+  const tick = async () => {
+    if ($("#modal").hidden || Date.now() - started > 180000) return;
+    const k = await api("staffkey").catch(() => null);
+    if (k && k.key && k.key.id !== before) {
+      const el = $("#kw-state");
+      if (el) el.innerHTML = '<span class="tag ok">Installed</span> Your key is in the game. Start TrueCombat Platinum and join one of our servers.';
+      return;
+    }
+    setTimeout(tick, 2500);
+  };
+  setTimeout(tick, 2500);
+}
+
+async function staffKeyDownload() {
+  const r = await makeStaffKey();
+  modal({ title: "Install your staff key", ok: "Done",
+    body: `<ol class="steps"><li>Move the downloaded <b>staff.key</b> into the <b>profile</b> folder of your game, for example <span class="mono">C:\\Games\\TrueCombat Platinum\\profile</span>.</li>
+      <li>Start the game. It locks the key to your Windows account the first time it reads it.</li>
+      <li>Join one of our servers: your name shows in staff orange on the scoreboard.</li></ol>
+      <p class="small">No download? <a href="${makeStaffKey.url}" download="staff.key">Save staff.key</a>. This link works only until you close the portal.</p>
+      <p class="muted">Don't share the file. If it leaks or you change PC, just get a new key here.</p>${r.problems && r.problems.length ? `<p class="error">Some servers did not take the new key yet: ${esc(r.problems.join("; "))}</p>` : ""}`,
+    onOk: () => {} });
 }
 
 function every(fn, ms, page) {
@@ -213,6 +287,7 @@ async function refreshReportCount() {
 }
 
 function route() {
+  closeModal();                 // a dialog belongs to the page it was opened on
   S.timers.forEach(clearInterval);
   S.timers = [];
   const parts = (location.hash || "#/servers").slice(2).split("/");
@@ -224,7 +299,7 @@ function route() {
   const pages = { servers: pageServers, server: pageServer, chat: pageChat, reports: pageReports, players: pagePlayers,
     player: pagePlayer, bans: pageBans, audit: pageAudit, staff: pageStaff, health: pageHealth, alerts: pageAlerts,
     watchlist: pageWatchlist, review: pageReview, schedule: pageSchedule, filter: pageFilter, replies: pageReplies,
-    weekly: pageWeekly, settings: pageSettings };
+    weekly: pageWeekly, settings: pageSettings, insights: pageInsights };
   let arg = "";
   try { arg = decodeURIComponent(parts[1] || ""); } catch (e) { arg = ""; }      // a broken link opens the page, not a blank screen
   (pages[page] || pageServers)(main, arg);
@@ -489,6 +564,8 @@ function pageReports(main) {
   $("#r-list").onclick = async (e) => {
     const demo = e.target.closest("button[data-demo]");
     if (demo) return showDemo(demo);
+    const bug = e.target.closest("button[data-bug]");
+    if (bug) return bugDetails(+bug.dataset.bug).catch((err) => toast(err.message, true));
     const ap = e.target.closest("button[data-appeal]");
     if (ap) return appealDialog(+ap.dataset.appeal, ap.dataset.decision, ap.dataset.name, draw);
     const b = e.target.closest("button[data-id]"); if (!b) return;
@@ -520,9 +597,23 @@ function reportCard(r) {
       ${r.resolution ? `<p class="muted">${esc(r.resolution)}</p>` : ""}</div>`;
   }
   if (r.source === "bug") {
-    return `<div class="panel"><div class="head"><div><div class="tags">${status}<span class="tag">${esc(d.category || "Bug")}</span></div>
-      <h2>${esc(d.summary || "Bug report")}</h2><span class="muted">Received ${when(r.received)}</span></div><div class="actions">${buttons}</div></div>
-      <div class="report-body">${esc(d.text || "")}</div>${r.resolution ? `<p class="muted">Resolution: ${esc(r.resolution)}</p>` : ""}</div>`;
+    const who = d.name ? (r.target_pid ? `<a href="#/player/${esc(r.target_pid)}">${esc(d.name)}</a>` : esc(d.name)) : "";
+    const facts = [
+      d.map ? ["Map", esc(d.map) + (d.pos ? ` <span class="dim">at ${d.pos.map((n) => esc(n)).join(", ")}</span>` : "")] : null,
+      d.server ? ["Server", esc(d.server) + (d.server_name ? "" : d.server_label ? ` <span class="dim">· ${esc(d.server_label)} (not one of ours)</span>` : "")] : (d.format ? ["Server", "Not on a server"] : null),
+      d.build ? ["Build", esc(d.build) + (d.renderer ? ` <span class="dim">· ${esc(d.renderer)}</span>` : "") + (d.protocol ? ` <span class="dim">· ${esc(d.protocol)}</span>` : "")] : null,
+      d.ping != null || d.fps != null ? ["Ping, fps", `${d.ping ?? "–"} ms · ${d.fps ?? "–"} fps`] : null,
+      d.time ? ["Taken", when(d.time)] : null,
+      d.match ? ["Match", esc(d.match)] : null,
+      d.puid ? ["Anti-cheat id", `<span class="mono">${esc(d.puid)}</span>`] : null,
+    ].filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+    const extra = d.has_console ? `<button class="btn btn-small" data-bug="${r.id}">Console and hardware</button>` : "";
+    return `<div class="panel"><div class="head"><div><div class="tags">${status}<span class="tag">${esc(d.category || "Bug")}</span>${d.server_name ? `<span class="tag">${esc(d.server_name)}</span>` : ""}</div>
+      <h2>${esc(d.summary || "Bug report")}</h2><span class="muted">${who ? "From " + who + " · " : ""}received ${when(r.received)}</span></div><div class="actions">${buttons}</div></div>
+      <div class="report-body">${esc(d.text || "")}</div>
+      ${d.shot ? `<a class="bugshot" href="/api/reports/bugshot?id=${r.id}" target="_blank" rel="noopener"><img src="/api/reports/bugshot?id=${r.id}" alt="Screenshot taken with the report" loading="lazy"></a>` : ""}
+      ${facts ? `<dl class="kv">${facts}</dl>` : ""}${extra ? `<div class="tags">${extra}</div>` : ""}
+      ${r.resolution ? `<p class="muted">Resolution: ${esc(r.resolution)}</p>` : ""}</div>`;
   }
   const who = d.reported || {}, by = d.reporter || {};
   const acc = who.shots ? Math.round((100 * who.hits) / who.shots) + "%" : "–";
@@ -535,6 +626,14 @@ function reportCard(r) {
     <dl class="kv"><dt>This map</dt><dd>${who.kills ?? 0} kills · ${who.deaths ?? 0} deaths · ${who.team_kills ?? 0} team kills</dd>
       <dt>Accuracy</dt><dd>${acc}${who.headshots != null ? " · " + who.headshots + " headshots" : ""}</dd>
       ${r.resolution ? `<dt>Resolution</dt><dd>${esc(r.resolution)}</dd>` : ""}</dl></div>`;
+}
+
+async function bugDetails(id) {
+  const d = (await api("reports/bug?id=" + id)).report.data;
+  const hw = d.hw ? Object.entries(d.hw).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("") : "";
+  modal({ title: "Console and hardware", sub: d.summary || "Bug report", ok: "Close",
+    body: (hw ? `<dl class="kv">${hw}</dl>` : "") + `<label>Last console lines</label><div class="report-body console">${esc(d.console || "None sent.")}</div>`,
+    onOk: () => {} });
 }
 
 /* ------------------------------------------------------------------ players */
@@ -684,7 +783,9 @@ function pageAudit(main) {
 function pageStaff(main) {
   main.innerHTML = `<div class="head"><div><p class="eyebrow">Access</p><h1>Staff</h1>
     <p class="muted">Discord roles grant access automatically. Use this list to add someone without the role, raise them to admin, or shut someone out.</p></div>
-    <div class="actions"><button class="btn btn-primary" id="s-add">Add or change</button></div></div><div class="panel table-wrap" id="s-list"></div>`;
+    <div class="actions"><button class="btn btn-primary" id="s-add">Add or change</button></div></div><div class="panel table-wrap" id="s-list"></div>
+    <div class="head"><div><h2>Staff keys in game</h2><p class="muted">Each staff member gets their own key under their name, bottom left. A key stops working when it is revoked, when someone loses staff access, or after a long time without signing in to the portal.</p></div></div>
+    <div class="panel table-wrap" id="s-keys"></div>`;
   const edit = (row = {}) => modal({ title: row.discord_id ? "Change " + (row.name || row.discord_id) : "Add staff", ok: "Save",
     sub: S.me.role === "owner" ? "" : "Only the owner can make or change admins.",
     body: `<label>Discord user id</label><input name="discord_id" value="${esc(row.discord_id || "")}" placeholder="183662139000000000" inputmode="numeric">
@@ -694,6 +795,19 @@ function pageStaff(main) {
     onOk: async (f) => { await api("staff", f); toast("Saved."); draw(); } });
   $("#s-add").onclick = () => edit();
   $("#s-list").onclick = (e) => { const b = e.target.closest("button[data-i]"); if (b) edit(draw.rows[+b.dataset.i]); };
+  $("#s-keys").onclick = (e) => {
+    const b = e.target.closest("button[data-revoke]"); if (!b) return;
+    modal({ title: "Revoke staff key", sub: b.dataset.name, ok: "Revoke", danger: true, body: "<p>Their staff badge stops on our servers right away. They can make a new key while they still have portal access.</p>",
+      onOk: async () => { await api("staffkey/revoke", { id: b.dataset.revoke }); toast("Key revoked."); drawKeys(); } });
+  };
+  async function drawKeys() {
+    const r = await api("staffkeys").catch((e) => { toast(e.message, true); return null; });
+    if (!r) return;
+    $("#s-keys").innerHTML = r.keys.length ? `<table><tr><th>Name</th><th>Key</th><th>Made</th><th>State</th><th></th></tr>${r.keys.map((k) => `
+      <tr><td>${esc(k.name)}</td><td class="mono">${esc(k.id)}</td><td>${when(k.created)}</td><td>${k.active ? '<span class="tag ok">Active</span>' : `<span class="tag bad">Not active</span> <span class="dim small">no sign-in for ${r.idle_days} days</span>`}</td>
+      <td><button class="btn btn-small btn-danger" data-revoke="${esc(k.id)}" data-name="${esc(k.name)}">Revoke</button></td></tr>`).join("")}</table>` : '<p class="empty">No staff keys made in the portal yet.</p>';
+  }
+  drawKeys();
   async function draw() {
     const r = await api("staff").catch((e) => { toast(e.message, true); return null; });
     if (!r) return;
@@ -1064,6 +1178,64 @@ function pageWeekly(main) {
     ].join("")}</div>
     <div class="grid grid-2"><div class="panel"><h3>Staff activity</h3>${w.staff.length ? `<table><tr><th>Staff</th><th class="num">Actions</th></tr>${w.staff.map((x) => `<tr><td>${esc(x.staff)} <span class="role">${esc(x.role)}</span></td><td class="num">${x.n}</td></tr>`).join("")}</table>` : '<p class="empty">No staff actions.</p>'}</div>
     <div class="panel"><h3>As posted in Discord</h3><div class="text-block small">${md(w.text)}</div></div></div>`;
+  }
+  draw();
+}
+
+/* ------------------------------------------------------------------ website insights */
+function pageInsights(main) {
+  main.innerHTML = `<div class="head"><div><p class="eyebrow">Community</p><h1>Insights</h1><p class="muted">Website visits, the channels that bring them and the downloads they lead to. Daily totals only: no cookies, no IP addresses, nothing per person. Visitors are counted once per day, so a week's visitors add up daily counts.</p></div>
+    <div class="tabs" id="in-tabs"><button class="btn btn-small" data-d="7">7 days</button><button class="btn btn-small on" data-d="30">30 days</button><button class="btn btn-small" data-d="90">90 days</button><button class="btn btn-small" data-d="365">Year</button></div></div>
+    <div id="in"></div>`;
+  $("#in-tabs").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; for (const x of $("#in-tabs").children) x.classList.toggle("on", x === b); draw(+b.dataset.d); };
+  const n = (v) => Number(v || 0).toLocaleString("en-GB");
+  const pct = (a, b) => (b ? (100 * a / b).toFixed(1) + "%" : "–");
+  function chart(days, visitors, downloads) {
+    const W = 760, H = 150, max = Math.max(1, ...visitors), bw = W / days.length;
+    const bars = visitors.map((v, i) => {
+      const h = Math.round((H - 18) * v / max), d = Math.round((H - 18) * (downloads[i] || 0) / max);
+      return `<g><title>${esc(days[i])}: ${v} visitors, ${downloads[i] || 0} downloads</title>
+        <rect class="in-v" x="${(i * bw + 1).toFixed(1)}" y="${H - 14 - h}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${h}"></rect>
+        <rect class="in-d" x="${(i * bw + 1).toFixed(1)}" y="${H - 14 - d}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${d}"></rect></g>`;
+    }).join("");
+    return `<svg class="in-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Visitors and downloads per day">${bars}
+      <text class="in-axis" x="0" y="${H - 2}">${esc(days[0])}</text><text class="in-axis" x="${W}" y="${H - 2}" text-anchor="end">${esc(days[days.length - 1])}</text>
+      <text class="in-axis" x="0" y="10">${max}</text></svg>
+      <p class="dim small"><span class="in-key in-v"></span> visitors <span class="in-key in-d"></span> downloads</p>`;
+  }
+  function table(rows, cols, empty) {
+    if (!rows || !rows.length) return `<p class="empty">${empty}</p>`;
+    return `<table><tr>${cols.map((c) => `<th${c.num ? ' class="num"' : ""}>${c.label}</th>`).join("")}</tr>${rows.map((r) =>
+      `<tr>${cols.map((c) => `<td${c.num ? ' class="num"' : ""}>${c.fmt ? c.fmt(r) : esc(r[c.key])}</td>`).join("")}</tr>`).join("")}</table>`;
+  }
+  async function draw(days = 30) {
+    let r;
+    try { r = await api("insights?days=" + days); } catch (e) { $("#in").innerHTML = `<p class="empty">${esc(e.message)}</p>`; return; }
+    const t = r.totals, gh = r.github || { releases: [], daily: [] };
+    const ghTotal = gh.releases.reduce((a, x) => a + x.downloads, 0), ghPeriod = (gh.daily || []).reduce((a, x) => a + x, 0);
+    const tile = (label, value, note = "") => `<div class="card"><div class="meta">${label}</div><div class="stat">${value}</div><div class="dim small">${note}</div></div>`;
+    const name = { key: "name", label: "Name" };
+    const vis = { label: "Visitors", num: true, fmt: (x) => n(x.visitors) };
+    const views = { label: "Views", num: true, fmt: (x) => n(x.views) };
+    const dls = { label: "Downloads", num: true, fmt: (x) => n(x.downloads) };
+    const conv = { label: "Download rate", num: true, fmt: (x) => pct(x.downloads, x.visitors) };
+    $("#in").innerHTML = `<div class="tiles">${[
+      tile("Visitors", n(t.visitors), "daily unique, added up"),
+      tile("Page views", n(t.views), t.visitors ? (t.views / t.visitors).toFixed(1) + " per visitor" : ""),
+      tile("Download clicks", n(t.downloads), pct(t.downloads, t.visitors) + " of visitors"),
+      tile("GitHub downloads", n(ghPeriod), n(ghTotal) + " all time, every release"),
+    ].join("")}</div>
+    <div class="panel"><h3>Per day</h3>${chart(r.days, r.series.visitors, r.series.downloads)}</div>
+    <div class="grid grid-2">
+      <div class="panel table-wrap"><h3>Channels</h3><p class="dim small">From the campaign tag of a truecombat.eu/go link, else the referring site, else direct.</p>${table(r.sources, [name, vis, views, dls, conv], "No visits yet.")}</div>
+      <div class="panel table-wrap"><h3>Campaigns</h3><p class="dim small">source / medium / campaign / content</p>${table(r.campaigns, [name, vis, dls, conv], "No campaign links used yet.")}</div>
+      <div class="panel table-wrap"><h3>Pages</h3>${table(r.pages, [name, views, vis, dls], "No page views yet.")}</div>
+      <div class="panel table-wrap"><h3>Referring sites</h3>${table(r.referrers, [name, vis], "No referring sites yet.")}</div>
+      <div class="panel table-wrap"><h3>Countries</h3>${table(r.countries, [name, vis], "No visits yet.")}</div>
+      <div class="panel table-wrap"><h3>Screens and languages</h3>${table(r.devices, [name, vis], "No visits yet.")}${table(r.langs, [{ key: "name", label: "Language" }, vis], "")}</div>
+      <div class="panel table-wrap"><h3>GitHub release downloads</h3><p class="dim small">Public counts read every six hours; includes launcher and updater downloads of the installer.</p>${table(gh.releases.slice(0, 12), [{ key: "tag", label: "Release" }, { label: "Downloads", num: true, fmt: (x) => n(x.downloads) }], "Not read yet.")}</div>
+    </div>
+    <p class="dim small">Updated ${esc(r.updated)}. Country lookup: IP to Country Lite by DB-IP (CC BY 4.0).</p>`;
   }
   draw();
 }
