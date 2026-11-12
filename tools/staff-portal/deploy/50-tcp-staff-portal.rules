@@ -1,0 +1,12 @@
+// The staff portal may restart the game servers, and nothing else.
+// Installed to /etc/polkit-1/rules.d/ by install.sh.
+polkit.addRule(function (action, subject) {
+    if (action.id !== "org.freedesktop.systemd1.manage-units" || subject.user !== "tcpstaff") {
+        return polkit.Result.NOT_HANDLED;
+    }
+    var units = ["tcp-official.service", "tcp-official2.service", "tcp-pickup1.service", "tcp-pickup2.service"];
+    if (units.indexOf(action.lookup("unit")) >= 0 && action.lookup("verb") === "restart") {
+        return polkit.Result.YES;
+    }
+    return polkit.Result.NOT_HANDLED;
+});

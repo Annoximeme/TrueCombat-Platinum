@@ -1,0 +1,6 @@
+# Staff portal. Appended to /etc/caddy/Caddyfile by install.sh --caddy (after a backup and caddy validate).
+staff.truecombat.eu {
+	encode zstd gzip
+	header -Server
+	reverse_proxy 127.0.0.1:8097
+}
