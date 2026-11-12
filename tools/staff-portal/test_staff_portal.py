@@ -630,6 +630,7 @@ class PortalTest(unittest.TestCase):
             st, d = self.call("admin", "POST", "/api/2fa/setup", {})
             secret = d["secret"]
             self.assertTrue(d["uri"].startswith("otpauth://totp/"))
+            self.assertTrue(d["qr"].startswith("data:image/svg+xml;base64,"))   # drawn here: the CSP allows data: images only
             self.assertEqual(self.call("admin", "POST", "/api/2fa/enable", {"code": "000000"})[0], 400)
             code = totp_now(secret)
             self.assertEqual(self.call("admin", "POST", "/api/2fa/enable", {"code": code})[0], 200)
@@ -840,6 +841,33 @@ class PortalTest(unittest.TestCase):
             self.assertTrue(self.portal.webhook_url())
         finally:
             alerts["webhook_url"] = saved
+
+    def test_30_qr_code(self):
+        uri = "otpauth://totp/TrueCombat%20Staff%3AViper?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&issuer=TrueCombat%20Staff&digits=6&period=30"
+        for text, size in (("A", 21), (uri, 4 * 8 + 17), ("x" * 200, 4 * 10 + 17)):
+            m = tsp.qr_matrix(text)
+            self.assertEqual(len(m), size)
+            self.assertEqual(tsp.qr_matrix(text), m)                           # the same text always gives the same symbol
+            for cx, cy in ((0, 0), (size - 7, 0), (0, size - 7)):              # three finder patterns
+                ring = [m[cy + i][cx] for i in range(7)]
+                self.assertEqual(ring, [True] * 7)
+                self.assertTrue(m[cy + 3][cx + 3] and not m[cy + 1][cx + 1])
+            self.assertEqual([m[6][x] for x in range(8, size - 8)], [x % 2 == 0 for x in range(8, size - 8)])   # timing
+            # format bits: undo the mask, check the BCH code and that the level is M (00)
+            bits = [m[i][8] for i in (0, 1, 2, 3, 4, 5, 7, 8)] + [m[8][7]] + [m[8][14 - i] for i in range(9, 15)]
+            word = sum(1 << i for i, b in enumerate(bits) if b) ^ 0x5412
+            data = word >> 10
+            rem = data
+            for _ in range(10):
+                rem = (rem << 1) ^ ((rem >> 9) * 0x537)
+            self.assertEqual(word, (data << 10) | rem)
+            self.assertEqual(data >> 3, 0)
+        svg = tsp.qr_svg_data_uri(uri)
+        import base64
+        body = base64.b64decode(svg.split(",", 1)[1]).decode()
+        self.assertIn('viewBox="0 0 57 57"', body)                              # 49 modules plus the quiet zone
+        with self.assertRaises(ValueError):
+            tsp.qr_matrix("x" * 3000)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

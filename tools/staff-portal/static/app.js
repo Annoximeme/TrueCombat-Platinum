@@ -187,8 +187,9 @@ function accountDialog() {
     onOk: async () => {
       const r = await api("2fa/setup", {});
       setTimeout(() => modal({ title: "Set up two-step sign-in", ok: "Turn on",
-        sub: "Add this key to your authenticator app, then type the code it shows.",
-        body: `<label>Key</label><div class="secret">${esc(r.secret.replace(/(.{4})/g, "$1 ").trim())}</div>
+        sub: "Scan the code with your authenticator app, then type the code it shows.",
+        body: `<div class="qr"><img src="${esc(r.qr)}" width="200" height="200" alt="QR code for your authenticator app"></div>
+          <label>Can't scan? Type this key instead</label><div class="secret">${esc(r.secret.replace(/(.{4})/g, "$1 ").trim())}</div>
           <p class="small"><a href="${esc(r.uri)}">Open in an authenticator app on this device</a></p>
           <label>Code from the app</label><input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>`,
         onOk: async (f) => { await api("2fa/enable", { code: f.code }); toast("Two-step sign-in is on."); setTimeout(() => location.reload(), 800); } }), 0);
