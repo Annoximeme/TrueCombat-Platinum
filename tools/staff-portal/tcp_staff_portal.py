@@ -81,7 +81,7 @@ PERMS = {
     "appeals.answer": "admin",
     "schedule": "admin",
     "event": "admin",
-    "livemap": "moderator",
+    "livemap": "admin",               # positions are wallhack information: admins only, and not while playing there
     "cvars": "admin",
     "review": "admin",
     "weekly": "admin",
@@ -985,6 +985,9 @@ class Watchers:
         if not pattern or len(pattern) > 200:
             raise ValueError("Write a word or pattern of up to 200 characters.")
         if kind == "regex":
+            # every chat line runs through these: refuse nested repeats like (a+)+ that can take forever
+            if re.search(r"\((?:[^()\\]|\\.)*[+*}](?:[^()\\]|\\.)*\)\s*[+*{]", pattern):
+                raise ValueError("Repeats inside a repeated group can stall the chat feed. Simplify the pattern.")
             return re.compile(pattern, re.I)
         if kind != "word":
             raise ValueError("Unknown filter type.")
@@ -1425,8 +1428,10 @@ class Operations:
         answer = str(answer or "").strip()[:1000]
         if not answer:
             raise ApiError(400, "Write the answer the player will read.")
+        b = self.store.one("SELECT * FROM bans WHERE id=?", (a["ban_id"],))
+        if b and b["by_id"] and b["by_id"] == who.get("discord_id") and who.get("role") != "owner":
+            raise ApiError(403, "You made this ban. Another admin answers the appeal, as the appeal page promises.")
         if decision == "accept":
-            b = self.store.one("SELECT * FROM bans WHERE id=?", (a["ban_id"],))
             if b and b["active"]:
                 self.lift_ban(who, b, "appeal accepted")
         status = "accepted" if decision == "accept" else "denied"
@@ -1469,6 +1474,12 @@ class Operations:
         t = now()
         for job in self.store.q("SELECT * FROM schedule WHERE active=1 AND next_at<=?", (t,)):
             who = {"discord_id": job["by_id"], "name": job["by_name"], "role": "system"}
+            owner = job["by_id"] in {str(x) for x in self.cfg.get("owners", [])}
+            staff = self.store.one("SELECT role FROM staff WHERE discord_id=?", (job["by_id"],))
+            if not owner and staff and staff["role"] == "revoked":
+                self.store.x("UPDATE schedule SET active=0, last_result=? WHERE id=?", ("cancelled: %s no longer has staff access" % job["by_name"], job["id"]))
+                self.store.audit(SYSTEM, "schedule cancel", server=job["server"], detail="#%d %s: creator revoked" % (job["id"], job["action"]))
+                continue
             keys = self.order if job["server"] == "*" else [job["server"]] if job["server"] in self.servers else []
             try:
                 if not keys:
@@ -1532,6 +1543,10 @@ class Operations:
                               now(), who["name"]))
             except RconError:
                 failed.append(k)
+        if failed:
+            # keep the event (and its saved values) so a second Stop can finish the job; never strand a server on the event password
+            self.store.audit(who, "event stop", server=srv.key, detail="server did not answer", ok=False, result=", ".join(failed))
+            raise ApiError(502, "The server did not take %s back. Event mode stays on; try Stop again in a moment." % ", ".join(failed))
         self.store.x("DELETE FROM events WHERE server=?", (srv.key,))
         self.store.audit(who, "event stop", server=srv.key, detail="restored %d settings" % (len(saved) - len(failed)),
                          ok=not failed, result=", ".join(failed))
@@ -1818,7 +1833,11 @@ class Portal(Moderation, Watchers, Operations):
             for kind, title, text in DEFAULT_TEMPLATES:
                 self.store.x("INSERT INTO templates(kind,title,text,created,by_name) VALUES(?,?,?,?,?)", (kind, title, text, now(), "Portal"))
             self.meta("templates_seeded", "1")
-        for d in cfg.get("owners", []):
+        owners = [str(d) for d in cfg.get("owners", [])]
+        # someone taken out of "owners" loses owner rights at once, not only at their next Discord check
+        self.store.x("UPDATE staff SET role=NULL WHERE role='owner' AND discord_id NOT IN (%s)" % ",".join("?" * len(owners)), owners)
+        self.store.x("DELETE FROM sessions WHERE role='owner' AND discord_id NOT IN (%s)" % ",".join("?" * len(owners)), owners)
+        for d in owners:
             self.store.x("INSERT INTO staff(discord_id,name,role,note,added_by,created) VALUES(?,?,?,?,?,?) "
                          "ON CONFLICT(discord_id) DO UPDATE SET role='owner'",
                          (str(d), "", "owner", "from config", "config", now()))
@@ -2262,6 +2281,11 @@ class Portal(Moderation, Watchers, Operations):
             pass
         return row
 
+    def ip_tag(self, ip: str) -> str:
+        """A stable tag for an address that cannot be turned back into it (keyed, unlike a plain hash of an IPv4)."""
+        key = self.meta("ip_tag_key") or self.meta("ip_tag_key", secrets.token_hex(32))
+        return hmac.new(key.encode(), ip.encode(), hashlib.sha256).hexdigest()[:12]
+
     # ------------------------------------------------------------------ rate limit (per key, per window)
     def limited(self, key: str, limit: int, window: int) -> bool:
         t = time.time()
@@ -2315,7 +2339,7 @@ def resolve_role(portal: Portal, discord_id: str, member_roles: list) -> str | N
     row = portal.store.one("SELECT role FROM staff WHERE discord_id=?", (discord_id,))
     if row and row["role"] == "revoked":
         return None
-    best = row["role"] if row and row["role"] in RANK else None
+    best = row["role"] if row and row["role"] in ("moderator", "admin") else None     # owner only ever from the config
     if str(discord_id) in {str(x) for x in portal.cfg.get("owners", [])}:
         best = "owner"
     roles = {str(r) for r in member_roles or []}
@@ -2350,6 +2374,7 @@ def make_handler(portal: Portal):
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "TCPStaff"
+        timeout = 30                       # a client that stops sending frees its thread
         sys_version = ""
         protocol_version = "HTTP/1.1"
 
@@ -2624,7 +2649,7 @@ def make_handler(portal: Portal):
             portal.store.x("INSERT INTO reports(source,file,server,received,data,target_pid,target_name,status,updated) "
                            "VALUES('bug',?,?,?,?,?,?,'open',?)",
                            (key, "", now(), json.dumps({"category": category, "text": text, "summary": first,
-                                                        "from": hashlib.sha256(ip.encode()).hexdigest()[:12]}),
+                                                        "from": portal.ip_tag(ip)}),
                             "", "", now()))
             self.json({"ok": True, "id": key}, 201)
 
@@ -2797,6 +2822,8 @@ def make_handler(portal: Portal):
                     Watchers.compile_filter(d.get("pattern", ""), kind)
                 except re.error as e:
                     raise ApiError(400, "That pattern does not work: %s" % e) from e
+                except ValueError as e:
+                    raise ApiError(400, str(e)) from e
                 minutes = duration_minutes(d.get("length") or "10m") if action == "mute" else 0
                 vals = (str(d["pattern"]).strip()[:200], kind, action, minutes, safe_arg(d.get("note", ""), 60), 1 if d.get("active", True) else 0)
                 if d.get("id"):
@@ -2967,6 +2994,9 @@ def make_handler(portal: Portal):
             if route == "positions" and G:
                 who = self.need(s, "livemap")
                 srv = portal.server(qs.get("server"))
+                mine = {x["pid"] for x in portal.discord_links(discord_id=who["discord_id"]) or []} if who["discord_id"].isdigit() else set()
+                if mine & {p.get("pid") for p in srv.view().get("players", []) if not p.get("spectator")}:
+                    raise ApiError(403, "You are playing on this server. The live map stays closed until you leave or spectate.")
                 mark = (s["id"], srv.key)
                 if mark not in portal.map_views:
                     portal.map_views.add(mark)
@@ -3081,7 +3111,7 @@ def make_handler(portal: Portal):
         # -- public ban appeals: the only pages a player can reach
         def appeal(self, method: str, path: str, qs: dict) -> None:
             ip = self.client_ip()
-            sender = hashlib.sha256(("appeal:" + ip).encode()).hexdigest()[:12]
+            sender = portal.ip_tag(ip)
             if path == "/appeal/status" and method == "GET":
                 if portal.limited("appeal-status:" + ip, 30, 3600):
                     raise ApiError(429, "Too many lookups. Try again later.")
@@ -3171,7 +3201,8 @@ def make_handler(portal: Portal):
             if role == "admin" and who["role"] != "owner":
                 raise ApiError(403, "Only the owner can make admins.")
             current = portal.store.one("SELECT role FROM staff WHERE discord_id=?", (did,))
-            if current and current["role"] == "admin" and who["role"] != "owner":
+            live = portal.store.one("SELECT 1 x FROM sessions WHERE discord_id=? AND role IN ('admin','owner')", (did,))
+            if ((current and current["role"] == "admin") or live) and who["role"] != "owner":
                 raise ApiError(403, "Only the owner can change an admin.")
             stored = None if role == "discord" else role
             portal.store.x("INSERT INTO staff(discord_id,name,role,note,added_by,created) VALUES(?,?,?,?,?,?) "

@@ -16,8 +16,8 @@ A private web console for the people who run the official and pickup servers, se
 | Staff | Access follows Discord roles; the list adds people without the role, promotes to admin or locks someone out |
 | Health | CPU, memory, disk, every service's state, restarts and problems in the last 24 hours; restart a game server |
 | Punishment ladder | One Punish button per player: the portal picks the next step for the offence (warn, mute, kick, timed ban, permanent) from the player's history in the last 90 days |
-| Undo | Bans, kicks, mutes and moves can be undone for five minutes from the toast or the ban list |
-| Ban appeals | Every ban message carries a six-character code; players appeal at `/appeal` (no sign-in), staff accept or deny from Reports, the player checks the answer with the same code |
+| Undo | Bans and mutes can be undone for five minutes from the toast or the ban list (a kick or a team move has nothing to undo) |
+| Ban appeals | Every ban message carries a six-character code; players appeal at `/appeal` (no sign-in), an admin who did not make the ban accepts or denies it from Reports (the owner may answer any), the player checks the answer with the same code |
 | Alerts | Server down and back, reports piling up, suspicion scores, watchlist joins, possible ban dodgers, chat filter hits, moderator bans; in the portal and in a staff Discord channel through a webhook |
 | Suspicion score | 0-100 per player from anti-cheat detections, reports, automatic flags, accuracy, K/D, headshot rate and links to banned players; 60 and up raises an alert |
 | Stats review | Players whose stats stand out, with match history, one click to mark them checked |
@@ -30,7 +30,7 @@ A private web console for the people who run the official and pickup servers, se
 | Demos | A report opens the server demo at the reported moment (needs `sv_autoDemo 1`) |
 | Schedule | Announcements, map changes and restarts at a set time, once or repeating |
 | Event mode | One switch for a private match: random password, no bots, no balance, no votes; switches back afterwards |
-| Live map | Top-down layout with every player's position, refreshed every two seconds (admins) |
+| Live map | Top-down layout with every player's position, refreshed every two seconds; admins only, audited, and closed to anyone whose linked account is playing on that server |
 | Settings | Whitelisted server settings with labels, a full history and one-click rollback; "Keep" re-applies a value after restarts |
 | Two-step sign-in | Authenticator-app codes; required for admin and owner rights |
 | Weekly report | Monday 08:00 Belgian time: bans, reports, appeals, peaks and busiest staff, in the portal and the staff channel |
@@ -48,6 +48,8 @@ A private web console for the people who run the official and pickup servers, se
 | Punish, watchlist, saved replies, schedule announcements | ✓ | ✓ | ✓ |
 | Answer appeals, chat filter, event mode, settings, live map, stats review | | ✓ | ✓ |
 | Make or change admins, reset someone's two-step sign-in | | | ✓ |
+
+Owners come only from `owners` in the config: taking someone out of that list ends their owner rights at the next start.
 
 Admin and owner rights need two-step sign-in (`"require_2fa": true`, the default). Without it those accounts
 sign in as moderators until they set it up under their name in the menu. A lost phone:
@@ -89,7 +91,7 @@ switches those buttons on per server; on an older server they explain why they a
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 25 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 26 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 
@@ -106,8 +108,11 @@ signs in from 127.0.0.1 without Discord. Never set either on the VPS.
 4. `sudo ./deploy/install.sh install` (rolls back by itself if the portal does not answer), then
    `sudo ./deploy/install.sh caddy`.
 5. Optional, each on its own: the staff channel webhook URL into `/etc/tcp-staff-portal/staff-webhook`;
-   `sudo ./deploy/install.sh stats-link` (restarts the stats service, rolls back if it does not answer);
+   for the stats review queue, first deploy the updated `tools/server-bridge/tcp_stats.py` and `tcp_bridge.py`
+   (they add the `/staff/` routes), then `sudo ./deploy/install.sh stats-link` (restarts the stats service, rolls
+   back if it does not answer);
    `sv_autoDemo 1` in each game server's cfg for report demos.
 6. Owner and admins: set up two-step sign-in under your name, top left.
 
-Data lives in `/var/lib/tcp-staff-portal/portal.db` (SQLite). Chat is kept 30 days and sightings 90 days.
+Data lives in `/var/lib/tcp-staff-portal/portal.db` (SQLite). It also holds two-step sign-in secrets and the Discord
+sign-in tokens of open sessions, so a backup of it belongs in the private backup repository only. Chat is kept 30 days and sightings 90 days.

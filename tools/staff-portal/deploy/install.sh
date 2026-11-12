@@ -166,9 +166,13 @@ stats_link() {
   systemctl daemon-reload
   systemctl restart tcp-bridge.service
   sleep 2
-  if curl -fsS -H "X-Staff-Token: $(cat "$ETC/stats-token")" http://127.0.0.1:8090/staff/review.json >/dev/null; then
+  # the token goes in a header file, not on the command line where any user could see it in ps
+  H=$(mktemp); chmod 0600 "$H"; printf 'X-Staff-Token: %s\n' "$(cat "$ETC/stats-token")" > "$H"
+  if curl -fsS -H @"$H" http://127.0.0.1:8090/staff/review.json >/dev/null; then
+    rm -f "$H"
     say "stats service linked: review queue answers"
   else
+    rm -f "$H"
     say "the stats service did not answer /staff/review.json; is the new tcp_stats.py deployed? Removing the drop-in."
     rm -f /etc/systemd/system/tcp-bridge.service.d/staff-portal.conf; systemctl daemon-reload; systemctl restart tcp-bridge.service
     exit 1

@@ -272,7 +272,7 @@ function pageServer(main, key) {
     <div class="grid grid-2">
       <div><div class="panel"><div class="table-wrap"><table id="players"></table></div></div>
         <div class="panel"><h3>Server control</h3><div id="controls" class="tags"></div></div>
-        ${can("livemap") ? '<div class="panel"><div class="head"><h3>Live map</h3><button class="btn btn-small" id="map-toggle">Show live map</button></div><p class="dim small" id="map-note">Positions of every player, refreshed every two seconds. Opening it is recorded in the audit log.</p><div id="livemap"></div></div>' : ""}</div>
+        ${can("livemap") ? '<div class="panel"><div class="head"><h3>Live map</h3><button class="btn btn-small" id="map-toggle">Show live map</button></div><p class="dim small" id="map-note">Positions of every player, refreshed every two seconds. Opening it is recorded in the audit log, and it stays closed while you play on this server.</p><div id="livemap"></div></div>' : ""}</div>
       <div class="panel chat"><h3>Chat</h3><div class="chat-log" id="chat-log"></div>
         ${can("chat.reply") ? '<form class="chat-form" id="chat-form"><input name="text" maxlength="200" placeholder="Reply as staff" autocomplete="off"><button class="btn btn-primary">Send</button></form>' : ""}</div>
     </div>`;
