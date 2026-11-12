@@ -10,6 +10,8 @@
      [data-compare] [data-post-filter] [data-copy-link]   devlog sliders, topic filter and copy-link button
      [data-post] [data-rate] [data-post-stat]             devlog reads and star ratings (tools/server-bridge/tcp_devlog.py, no cookies)
      [data-search-open]           opens the site search (also Ctrl+K and /), index in js/search-<lang>.json
+   Every page also sends one cookie-free page view, and download clicks, to tools/server-bridge/tcp_insights.py
+   (no cookies, nothing stored in the browser; skipped for Global Privacy Control and Do Not Track).
    Set TCP_API to the bridge's public https URL once it is hosted. Empty means "offline". */
 var TCP_API = 'https://api.truecombat.eu';
 
@@ -1442,6 +1444,40 @@ var TCP_API = 'https://api.truecombat.eu';
       var wio = new IntersectionObserver(function (entries) { entries.forEach(function (en) { if (en.isIntersecting || en.boundingClientRect.top < 0) { en.target.classList.add('in'); wio.unobserve(en.target); } }); }, { rootMargin: '0px 0px -12% 0px' });
       $all('.vf img, .shot-wide img').forEach(function (im) { if (im.getBoundingClientRect().top < (window.innerHeight || 800)) return; im.classList.add('wipe'); wio.observe(im); });
     }
+  })();
+
+  /* cookie-free insights: one page view per page load and one event per download click (tools/server-bridge/tcp_insights.py).
+     Nothing is stored in the browser. Campaign tags (utm_*) are read once and then removed from the address bar,
+     so a copied link does not carry them on. Global Privacy Control and Do Not Track switch it off entirely. */
+  (function () {
+    var host = location.hostname;
+    if (!TCP_API || !/(^|\.)truecombat\.eu$/.test(host)) return;
+    if (navigator.globalPrivacyControl === true || navigator.doNotTrack === '1' || window.doNotTrack === '1') return;
+    var base = TCP_API.replace(/\/$/, '') + '/insights/';
+    function send(path, obj) {
+      try { fetch(base + path, { method: 'POST', body: JSON.stringify(obj), headers: { 'Content-Type': 'text/plain' }, keepalive: true, credentials: 'omit' }).catch(function () {}); } catch (e) { /* never break the page */ }
+    }
+    var q = {}, keep = [];
+    location.search.replace(/^\?/, '').split('&').forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf('='), k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i)), v = i < 0 ? '' : kv.slice(i + 1);
+      if (/^utm_(source|medium|campaign|content)$/.test(k)) { try { q[k] = decodeURIComponent(v.replace(/\+/g, ' ')); } catch (e) { q[k] = ''; } }
+      else keep.push(kv);
+    });
+    var hit = { p: location.pathname, r: document.referrer || '', l: lang, w: window.screen ? screen.width : 0 };
+    if (q.utm_source) { hit.s = q.utm_source; hit.m = q.utm_medium || ''; hit.c = q.utm_campaign || ''; hit.t = q.utm_content || ''; }
+    send('hit', hit);
+    if (Object.keys(q).length && window.history && history.replaceState) {
+      try { history.replaceState(history.state, '', location.pathname + (keep.length ? '?' + keep.join('&') : '') + location.hash); } catch (e) { /* ignore */ }
+    }
+    document.addEventListener('click', function (e) {
+      var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+      if (!a) return;
+      var href = a.getAttribute('href') || '';
+      if (!a.hasAttribute('data-download') && !/\/releases\/download\//.test(href)) return;
+      var kind = /\.exe(\?|$)/i.test(href) ? 'installer' : /\.zip(\?|$)/i.test(href) ? 'zip' : 'other';
+      send('event', { e: 'download', k: kind, p: location.pathname });
+    }, true);
   })();
 
   /* regions that scroll sideways on small screens (tables, the screenshot strip) must be reachable with the keyboard */

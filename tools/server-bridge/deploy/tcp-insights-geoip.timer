@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh the country list for tcp-insights once a month
+
+[Timer]
+OnCalendar=*-*-05 04:20:00
+Persistent=true
+RandomizedDelaySec=1h
+
+[Install]
+WantedBy=timers.target
