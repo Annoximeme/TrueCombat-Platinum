@@ -20,7 +20,7 @@
 <meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-playtest-fixes.jpg">
 <meta property="article:published_time" content="2026-11-09">
 <meta property="article:section" content="Roadmap">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Wat de playtests ons leerden","description":"Onze laatste communityplaytests leverden een duidelijke lijst problemen op, met de gunplay voorop. Een grote reeks fixes staat klaar voor de volgende patch. Hier staat alles wat we vonden, in welke volgorde we het oplossen en hoe het past bij de rest van het werk dat eraan komt.","datePublished":"2026-11-09","dateModified":"2026-11-09","inLanguage":"nl","articleSection":"Roadmap","timeRequired":"PT5M","image":"https://truecombat.eu/img/og-devlog-playtest-fixes.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-playtest-fixes","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Wat de playtests ons leerden","description":"Onze laatste communityplaytests leverden een duidelijke lijst problemen op, met de gunplay voorop. Een grote reeks fixes staat klaar voor de volgende patch. Hier staat alles wat we vonden, in welke volgorde we het oplossen en hoe het past bij de rest van het werk dat eraan komt.","datePublished":"2026-11-09","dateModified":"2026-11-12","inLanguage":"nl","articleSection":"Roadmap","timeRequired":"PT7M","image":"https://truecombat.eu/img/og-devlog-playtest-fixes.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-playtest-fixes","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
 <!--alt-->
 <link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -54,7 +54,7 @@
       <li><a href="leaderboards">Ranglijsten</a></li>
       <li><a href="competitive">Competitief</a></li>
       <li><a href="news">Nieuws</a></li>
-      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-11">Devlog</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-12">Devlog</a></li>
     </ul>
     <details class="menu" id="menu">
       <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
@@ -72,12 +72,12 @@
 <!--/nav-->
 
 <main id="top">
-<article class="post" data-post="playtest-fixes" data-min="5">
+<article class="post" data-post="playtest-fixes" data-min="7">
   <header class="page-head post-head">
     <div class="head-art" style="--art: url(../img/media-grenade.webp); --art-s: url(../img/media-grenade-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog">Alle devlogartikelen</a>
-      <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 nov 2026</time><span>5 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="playtest-fixes" hidden></span></p>
+      <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 nov 2026</time><span>7 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="playtest-fixes" hidden></span></p>
       <h1>Wat de playtests ons leerden</h1>
       <p class="lede">Onze laatste communityplaytests leverden een duidelijke lijst problemen op, met de gunplay voorop. Een grote reeks fixes staat klaar voor de volgende patch. Hier staat alles wat we vonden, in welke volgorde we het oplossen en hoe het past bij de rest van het werk dat eraan komt.</p>
     </div>
@@ -100,50 +100,51 @@
       <div class="prose">
 <p>De beste test voor een shooter is een volle server met mensen die weten hoe het hoort te voelen. Onze recentste communityplaytests gaven ons precies dat, en het oordeel was eerlijk: de basis staat, maar te veel kleine dingen voelen nog anders dan in het origineel. In deze post staat elk probleem dat uit die sessies kwam, de volgorde waarin we ze aanpakken en waar ze staan naast het werk uit <a href="devlog-whats-next">Waar we hierna aan werken</a>.</p>
 <p>Het resultaat is een lange lijst fixes, en die staan klaar voor de volgende patch. Een datum krijgt die pas als hij klaar is: elke fix komt uit zodra hij door de volledige testronde komt, en we werken deze post bij naarmate er punten klaar zijn. Elke update brengt Platinum een stap dichter bij het vernieuwde, betere spel dat we voor ogen hebben.</p>
+<aside class="callout"><p>Update, 12 november: het grootste deel van deze lijst zit in 0.35.0. Bij elk punt hieronder staat nu hoe het ervoor staat. <a href="devlog-inside-035">Achter de schermen van 0.35.0</a> legt uit hoe de fixes tot stand kwamen en wat de update niet haalde.</p></aside>
 <aside class="callout"><p>Gunplay komt eerst. Zolang niet elk schot landt waar je richt en doet wat het moet doen, is niets anders op deze lijst even belangrijk.</p></aside>
 <h2 id="gunplay">Gunplay</h2>
 <p>Dit is de belangrijkste groep, en de groep waarover we het meest horen.</p>
 <ul>
-  <li><strong>Treffers op afstand.</strong> Schoten op grotere afstand registreren niet altijd op een doelwit dat duidelijk onder het vizier stond. We controleren elke hitbox tegenover het spelermodel op afstand, met en zonder lagcompensatie, op een echte internetverbinding.</li>
-  <li><strong>Kogels die niet landen waar je richt.</strong> Sommige wapens, waaronder de SIG, schieten net naast het punt waar het vizier staat. We stoppen niet bij de gemelde wapens: elk wapen in het arsenaal krijgt dezelfde controle, zodat de fix volledig is en niet geval per geval.</li>
-  <li><strong>Spreiding en richten per wapen.</strong> De spreiding van elk wapen, hoe die toeneemt tijdens het vuren en hoe het wapen zich gedraagt bij richten via het vizier, vergelijken we wapen per wapen met de originele waarden.</li>
-  <li><strong>Schade.</strong> Het schademodel voor geweren, SMG's, pistolen en sluipschuttersgeweren krijgt een volledige controle, inclusief hoe de schade afneemt met de afstand en per lichaamsdeel.</li>
-  <li><strong>Het ritme van de grendel.</strong> Het sluipschuttersgeweer met grendel herlaadt te snel tussen twee schoten. Het krijgt het originele tempo terug, en dat is een groot deel van wat het geweer zo bedachtzaam doet aanvoelen.</li>
-  <li><strong>Granaat gooien vuurt je wapen af.</strong> Een granaat gooien kan tegelijk je wapen afvuren. Dit is gewoon een bug en wordt in de eerste ronde opgelost.</li>
+  <li><strong>Treffers op afstand.</strong> Schoten op grotere afstand registreren niet altijd op een doelwit dat duidelijk onder het vizier stond. We controleren elke hitbox tegenover het spelermodel op afstand, met en zonder lagcompensatie, op een echte internetverbinding. <em>Update, 12 november: 0.35.0 lost treffers op leunende spelers en verloren schoten vlak na een respawn op. Eén resterend geval, schoten op liggende spelers, werd na de release gevonden en wordt opgelost.</em></li>
+  <li><strong>Kogels die niet landen waar je richt.</strong> Sommige wapens, waaronder de SIG, schieten net naast het punt waar het vizier staat. We stoppen niet bij de gemelde wapens: elk wapen in het arsenaal krijgt dezelfde controle, zodat de fix volledig is en niet geval per geval. <em>Update: de controle wapen per wapen loopt. De oorzaken die we tot nu toe vonden, zijn de fixes voor leunen en respawnen in 0.35.0.</em></li>
+  <li><strong>Spreiding en richten per wapen.</strong> De spreiding van elk wapen, hoe die toeneemt tijdens het vuren en hoe het wapen zich gedraagt bij richten via het vizier, vergelijken we wapen per wapen met de originele waarden. <em>Update: gecontroleerd. De spreiding van elk wapen klopt met de originele waarden, en richten via het vizier vertraagt je nu zoals in het origineel.</em></li>
+  <li><strong>Schade.</strong> Het schademodel voor geweren, SMG's, pistolen en sluipschuttersgeweren krijgt een volledige controle, inclusief hoe de schade afneemt met de afstand en per lichaamsdeel. <em>Update: gecontroleerd. De schadewaarden kloppen met de originele tabellen. Valschade treft nu de benen in plaats van het lichaam.</em></li>
+  <li><strong>Het ritme van de grendel.</strong> Het sluipschuttersgeweer met grendel herlaadt te snel tussen twee schoten. Het krijgt het originele tempo terug, en dat is een groot deel van wat het geweer zo bedachtzaam doet aanvoelen. <em>Opgelost in 0.35.0.</em></li>
+  <li><strong>Granaat gooien vuurt je wapen af.</strong> Een granaat gooien kan tegelijk je wapen afvuren. Dit is gewoon een bug en wordt in de eerste ronde opgelost. <em>Opgelost in 0.35.0, samen met het koken van granaten.</em></li>
 </ul>
 <p>Elke wapenwijziging wordt gecontroleerd met een automatische test die elk wapen op vaste doelen en afstanden afvuurt en het resultaat met het originele spel vergelijkt, zodat een fix voor het ene wapen niet ongemerkt een ander breekt.</p>
 <h2 id="maps">Maps</h2>
 <ul>
-  <li><strong>Onzichtbare muren.</strong> Spelers vonden onzichtbare obstakels op plekken waar niets je zou mogen tegenhouden, vooral rond het kleine huis bij de bomsite op Delta.</li>
-  <li><strong>Textures.</strong> Sommige oppervlakken tonen de verkeerde texture. In plaats van alleen de gemelde plekken te verbeteren, lopen we elke map oppervlak voor oppervlak door en corrigeren we alles wat niet klopt.</li>
+  <li><strong>Onzichtbare muren.</strong> Spelers vonden onzichtbare obstakels op plekken waar niets je zou mogen tegenhouden, vooral rond het kleine huis bij de bomsite op Delta. <em>Opgelost in 0.35.0 op elke map: het waren palen van veroveringspunten uit Flag Capture, die in de andere modi solide bleven.</em></li>
+  <li><strong>Textures.</strong> Sommige oppervlakken tonen de verkeerde texture. In plaats van alleen de gemelde plekken te verbeteren, lopen we elke map oppervlak voor oppervlak door en corrigeren we alles wat niet klopt. <em>Update: elke map werd oppervlak per oppervlak gecontroleerd, zonder ontbrekende textures. Plaatsvervangende textures op wapenonderdelen zijn opgelost in 0.35.0.</em></li>
 </ul>
 <h2 id="bewegen-en-geluid">Bewegen en geluid</h2>
 <ul>
-  <li><strong>Springafstand.</strong> Sprongen komen niet zo ver als in het origineel. Beweging voelt een TC:E-speler meteen, dus dit meten we tegenover het origineel in plaats van het op gevoel af te stellen.</li>
-  <li><strong>Gehurkt lopen.</strong> Gehurkt bewegen is te snel en te luid, en het beeld wiebelt te veel. Alle drie worden weer rechtgezet.</li>
-  <li><strong>Je eigen voetstappen.</strong> Je eigen voetstappen ontbreken soms helemaal. We zoeken uit waarom en lossen het op.</li>
-  <li><strong>Wapengeluiden.</strong> Sommige wapens spelen het verkeerde geluid. Van elk wapen controleren we de vuur- en hanteergeluiden tegenover de originele set.</li>
-  <li><strong>Geluid als toeschouwer.</strong> Geweervuur klinkt verkeerd als je een andere speler volgt. Toekijken moet precies zo klinken als zelf spelen.</li>
+  <li><strong>Springafstand.</strong> Sprongen komen niet zo ver als in het origineel. Beweging voelt een TC:E-speler meteen, dus dit meten we tegenover het origineel in plaats van het op gevoel af te stellen. <em>Opgelost in 0.35.0. Sprongen vanuit stilstand op lage objecten en het herstel na een landing kloppen nu met het origineel.</em></li>
+  <li><strong>Gehurkt lopen.</strong> Gehurkt bewegen is te snel en te luid, en het beeld wiebelt te veel. Alle drie worden weer rechtgezet. <em>Opgelost in 0.35.0.</em></li>
+  <li><strong>Je eigen voetstappen.</strong> Je eigen voetstappen ontbreken soms helemaal. We zoeken uit waarom en lossen het op. <em>Update: de timing van voetstappen werd in 0.35.0 opnieuw opgebouwd vanuit het origineel. Nog een oorzaak, rond de schakelaars voor sprinten en wandelen, is gevonden en wordt getest.</em></li>
+  <li><strong>Wapengeluiden.</strong> Sommige wapens spelen het verkeerde geluid. Van elk wapen controleren we de vuur- en hanteergeluiden tegenover de originele set. <em>Update: explosies klinken in 0.35.0 niet meer gedempt door muren in de buurt. Klinkt een wapen voor jou nog verkeerd, druk dan op F12 in het spel en vertel ons welk.</em></li>
+  <li><strong>Geluid als toeschouwer.</strong> Geweervuur klinkt verkeerd als je een andere speler volgt. Toekijken moet precies zo klinken als zelf spelen. <em>Opgelost in 0.35.0.</em></li>
 </ul>
 <h2 id="menu-s-en-matchverloop">Menu's en matchverloop</h2>
 <ul>
-  <li><strong>Opties in het pauzemenu.</strong> Het Esc-menu heeft nog geen instellingen. Je zult midden in een match je muisgevoeligheid en andere opties kunnen aanpassen, zonder het spel te verlaten.</li>
-  <li><strong>Opwarmfase.</strong> De opwarmfase voor een match is bedoeld om je loadout te kiezen en te praten met de spelers die binnenkomen. Nu werkt die niet zoals het hoort, en we werken hem opnieuw uit.</li>
-  <li><strong>Instant replay.</strong> Twee kleine fixes uit de vorige update: een clip die je tijdens de opwarmfase opslaat, kan korter uitvallen dan verwacht, en de bevestiging zegt altijd 30 seconden, wat de echte lengte ook is.</li>
+  <li><strong>Opties in het pauzemenu.</strong> Het Esc-menu heeft nog geen instellingen. Je zult midden in een match je muisgevoeligheid en andere opties kunnen aanpassen, zonder het spel te verlaten. <em>Opgelost in 0.35.0 met de nieuwe pagina MOUSE &amp; VIEW.</em></li>
+  <li><strong>Opwarmfase.</strong> De opwarmfase voor een match is bedoeld om je loadout te kiezen en te praten met de spelers die binnenkomen. Nu werkt die niet zoals het hoort, en we werken hem opnieuw uit. <em>Opgelost in 0.35.0. De opwarmfase is nu een oefenronde.</em></li>
+  <li><strong>Instant replay.</strong> Twee kleine fixes uit de vorige update: een clip die je tijdens de opwarmfase opslaat, kan korter uitvallen dan verwacht, en de bevestiging zegt altijd 30 seconden, wat de echte lengte ook is. <em>Niet in 0.35.0. Wordt aan gewerkt.</em></li>
 </ul>
 <h2 id="bots">Bots</h2>
 <ul>
-  <li><strong>Richten via het vizier en leunen.</strong> Bots richten nooit via het vizier en leunen nooit, waardoor ze makkelijk te lezen zijn. Ze leren allebei.</li>
-  <li><strong>Routes.</strong> Bots nemen te vaak dezelfde routes. Ze gaan meer afwisselen, en leren later van de routes die echte spelers op elke map nemen.</li>
+  <li><strong>Richten via het vizier en leunen.</strong> Bots richten nooit via het vizier en leunen nooit, waardoor ze makkelijk te lezen zijn. Ze leren allebei. <em>Update: sinds 0.35.0 brengen bots hun wapen zichtbaar naar de schouder als ze richten. Wanneer ze richten en leunen, hoort bij het botwerk dat loopt.</em></li>
+  <li><strong>Routes.</strong> Bots nemen te vaak dezelfde routes. Ze gaan meer afwisselen, en leren later van de routes die echte spelers op elke map nemen. <em>Loopt, als deel van het botwerk uit <a href="devlog-the-road-ahead">De weg vooruit, voluit</a>.</em></li>
 </ul>
 <h2 id="kleinere-punten">Kleinere punten</h2>
 <ul>
-  <li><strong>Bugmeldingen in het spel.</strong> Een <code>/bug</code>-commando en een knop "Een bug melden" in het Esc-menu. Je melding komt bij het team aan met een screenshot, je positie op de map en de technische details die nodig zijn om het probleem na te spelen. Na deze testronde is dat een tool die we zelf ook duidelijk willen.</li>
-  <li><strong>Staffbadge.</strong> De badge die teamleden in het spel herkenbaar maakt, krijgt een verfijnder uiterlijk.</li>
+  <li><strong>Bugmeldingen in het spel.</strong> Een <code>/bug</code>-commando en een knop "Een bug melden" in het Esc-menu. Je melding komt bij het team aan met een screenshot, je positie op de map en de technische details die nodig zijn om het probleem na te spelen. Na deze testronde is dat een tool die we zelf ook duidelijk willen. <em>Uitgebracht in 0.35.0: druk op F12, of op REPORT A BUG in het pauzemenu.</em></li>
+  <li><strong>Staffbadge.</strong> De badge die teamleden in het spel herkenbaar maakt, krijgt een verfijnder uiterlijk. <em>Niet in 0.35.0.</em></li>
 </ul>
 <h2 id="daarnaast">Daarnaast</h2>
 <p>De playtestfixes komen eerst, maar de rest van het plan is niet verdwenen. Het meeste werk voor online spelen is gebouwd en wacht op zijn test in de echte wereld: verbindingskwaliteit op het scorebord, een pinglimiet en bescherming bij opnieuw verbinden op Ranked, met één klik meedoen vanaf de website en Discord, pick-ups op Discord, betere admintools en IPv6-ondersteuning voor spelers en servers.</p>
-<p>Daarna volgen de grotere functies: 2D-replays van matches met automatische hoogtepunten, pings met locatie, een coach na de match, heatmaps en een publiek balansoverzicht, wekelijkse contracten en seizoenen, vrienden en samen in een party meedoen, en bots die zich aanpassen aan de spelers op de server. <a href="devlog-whats-next">Waar we hierna aan werken</a> beschrijft ze allemaal uitgebreider. Easy Anti-Cheat wacht nog op zijn laatste controle en komt uit zodra die rond is.</p>
+<p>Daarna volgen de grotere functies: 2D-replays van matches met automatische hoogtepunten, pings met locatie, een coach na de match, heatmaps en een publiek balansoverzicht, wekelijkse contracten en seizoenen, vrienden en samen in een party meedoen, en bots die zich aanpassen aan de spelers op de server. <a href="devlog-whats-next">Waar we hierna aan werken</a> beschrijft ze allemaal uitgebreider. Easy Anti-Cheat wacht nog op zijn laatste controle en komt uit zodra die rond is. <em>Update: Easy Anti-Cheat zit in 0.35.0 en de officiële servers vereisen het nu. Het spelgedeelte van het werk aan online spelen hierboven zat in dezelfde update.</em></p>
 <h2 id="bedankt">Bedankt</h2>
 <p>Elk punt hierboven komt van spelers die de tijd namen om te spelen, op te letten en het ons te vertellen. Dat soort testen kunnen we niet alleen, en daarom bevat de volgende patch zoveel fixes. Zie je nog iets, of is een van deze problemen voor jou belangrijker dan de rest, laat het ons weten op <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. De <a href="./#roadmap">roadmap</a> toont wat er klaar is naarmate we vorderen.</p>
       </div>

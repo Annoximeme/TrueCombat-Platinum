@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/devlog"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog</id>
-  <updated>2026-11-11T12:00:00Z</updated>
+  <updated>2026-11-12T12:00:00Z</updated>
+  <entry>
+    <title>Inside 0.35.0, our biggest update yet</title>
+    <link href="https://truecombat.eu/devlog-inside-035"/>
+    <id>https://truecombat.eu/devlog-inside-035</id>
+    <published>2026-11-12T12:00:00Z</published>
+    <updated>2026-11-12T12:00:00Z</updated>
+    <category term="Release"/>
+    <summary>Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Every fight on the record</title>
     <link href="https://truecombat.eu/devlog-every-fight-counts"/>
@@ -60,7 +70,7 @@
     <link href="https://truecombat.eu/devlog-playtest-fixes"/>
     <id>https://truecombat.eu/devlog-playtest-fixes</id>
     <published>2026-11-09T12:00:00Z</published>
-    <updated>2026-11-09T12:00:00Z</updated>
+    <updated>2026-11-12T12:00:00Z</updated>
     <category term="Roadmap"/>
     <summary>Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.</summary>
     <author><name>Team Terminus</name></author>

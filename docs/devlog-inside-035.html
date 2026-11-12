@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inside 0.35.0, our biggest update yet · TrueCombat: Platinum</title>
+<meta name="description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-inside-035">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-inside-035">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Inside 0.35.0, our biggest update yet">
+<meta property="og:description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-inside-035.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-inside-035.jpg">
+<meta property="article:published_time" content="2026-11-12">
+<meta property="article:section" content="Release">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Inside 0.35.0, our biggest update yet","description":"Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.","datePublished":"2026-11-12","dateModified":"2026-11-12","inLanguage":"en","articleSection":"Release","timeRequired":"PT13M","image":"https://truecombat.eu/img/og-devlog-inside-035.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-inside-035","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Inside 0.35.0, our biggest update yet">
+<meta name="twitter:description" content="Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Inside 0.35.0, our biggest update yet","item":"https://truecombat.eu/devlog-inside-035"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-inside-035">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-inside-035">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-inside-035">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=2d1a1c7ae7">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news">News</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-12">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-inside-035" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-inside-035" hreflang="nl" lang="nl">Nederlands</a></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg><span>Support</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="inside-035" data-min="13">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(img/media-village-hd.webp); --art-s: url(img/media-village-hd-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Shipped in v0.35.0</span><time datetime="2026-11-12">12 Nov 2026</time><span>13 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="inside-035" hidden></span></p>
+      <h1>Inside 0.35.0, our biggest update yet</h1>
+      <p class="lede">Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#easy-anti-cheat">Easy Anti-Cheat</a></li>
+          <li><a href="#launcher-2-0">Launcher 2.0</a></li>
+          <li><a href="#player-stats-from-every-verified-match">Player stats from every verified match</a></li>
+          <li><a href="#the-playtest-fixes">The playtest fixes</a></li>
+          <li><a href="#how-it-was-tested">How it was tested</a></li>
+          <li><a href="#what-did-not-make-it">What did not make it</a></li>
+          <li><a href="#thank-you">Thank you</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Version 0.35.0 went live on the morning of 12 November, at 07:39 Belgian time. It is the largest update TrueCombat: Platinum has had so far, and it was shaped more by you than any update before it. Most of what is in it started as a line in <a href="devlog-playtest-fixes">What the playtests told us</a>, a message on Discord or a clip from a match.</p>
+<p>The patch notes list every change. This post goes behind them. It explains the four big pieces of the update, the decisions behind them, and how we tested them, and it is honest about the items that did not make the cut. It is a long read, so use the contents list to jump to what interests you.</p>
+<aside class="callout"><p>Updating is the same as always: the launcher picks up 0.35.0 by itself. The first time anti-cheat is set up on your PC, Windows asks once for permission to install its service. That prompt is expected.</p></aside>
+<h2 id="easy-anti-cheat">Easy Anti-Cheat</h2>
+<p>From this update on, TrueCombat: Platinum ships with Easy Anti-Cheat. When you press PLAY, the launcher starts the game through the anti-cheat bootstrapper, and the anti-cheat service checks the game while it runs. The service is installed once, by the installer or on the first start, and that is the one administrator prompt you will see.</p>
+<p>All four official servers, Ranked, Unranked and both pickup servers, now require it. They were switched over in the hours after the release went out, and a clean copy of the published game was confirmed connecting to them with protection active.</p>
+<h3>No account, still</h3>
+<p>Anti-cheat for an online game needs to know who is playing, so that a ban sticks to a player and not to a single session. The usual answer is to make everyone sign in with an account from the anti-cheat provider. We did not want that. Platinum has never asked you to create an account, and an anti-cheat system was not going to be the reason to start.</p>
+<p>Our first plan was to use an identity tied to your PC. It worked in testing right up to the last step, where Epic's service refused it: anti-cheat requires a proper sign-in, and an identity that only says which machine you are on is not accepted. So we built our own sign-in instead.</p>
+<p>It works like this. The first time you play, the game creates a private identity key on your PC. When you start a protected session, the game proves to our sign-in service that it holds that key, without ever sending the key itself. Our service then hands Epic a short-lived token that says "this is the same player as last time". Epic accepts it, and the anti-cheat session starts. To you, all of this is invisible. There is no form, no password and no email address. The only thing that ever leaves your PC is a scrambled ID that cannot be traced back to you.</p>
+<p>The launcher's new Profile page lets you back that identity up and restore it. Do that before you reinstall Windows or move to a new PC, and keep the backup file private: it is what carries your name on the leaderboards and your match history.</p>
+<h3>What it checks</h3>
+<p>The anti-cheat service only runs while the protected game is running. It checks that the game's own files are the ones we shipped and watches the game process for tampering. In our final tests, a protected copy of the published build connected normally, a copy with one modified interface file was refused, and an unprotected client on a server that requires anti-cheat was removed within forty seconds.</p>
+<p>One detail that matters for updates: the launcher itself is deliberately left out of the file check. The launcher updates itself between game releases, and we did not want a launcher update to lock you out of servers until the next full release.</p>
+<h3>Where you see it</h3>
+<p>Servers that require anti-cheat show a green shield in the in-game server list and an EASY ANTI-CHEAT tag in the launcher. Servers that have it switched on but do not require it show ANTI-CHEAT ON. The connect screen tells you which kind of server you are joining. Community servers choose for themselves whether they use it.</p>
+<h2 id="launcher-2-0">Launcher 2.0</h2>
+<p>The launcher is the first thing you see and the last thing anyone thinks about, until it gets in the way. The old one had grown page by page over many updates. Version 2.0 is a clean rebuild of the whole interface, with everything that had been added over time put where it belongs.</p>
+<figure class="wide">
+  <img src="img/devlog/launcher-2-play.webp" alt="The Play page of Launcher 2.0" width="1280" height="720" loading="lazy">
+  <figcaption>The new Play page: news, your servers and your next match, one click away.</figcaption>
+</figure>
+<ul>
+  <li><strong>A new layout.</strong> A navigation rail on the left and a full-screen Play page with the latest news, your servers and a practice match one click away.</li>
+  <li><strong>A real server browser.</strong> Every server in a sortable list with live player counts, ping and anti-cheat status. Quick filters hide full or empty servers, or show only ranked servers or servers without bots. Community servers that run the official build carry a Verified tag.</li>
+  <li><strong>Profile, Replays and Host.</strong> Your rank, rating and recent ranked matches, your recorded matches, and a page to host your own server.</li>
+  <li><strong>Settings that are actually launcher settings.</strong> Minimise to the tray, come back after a match, start with Windows, accent colour, interface size, a download speed limit and more.</li>
+  <li><strong>Four languages.</strong> English, German, French and Polish.</li>
+  <li><strong>The small things.</strong> Full keyboard control, sharp text on every monitor and scale, a Verify and Repair button for your game files, and a What's New page after each update.</li>
+</ul>
+<p>Two long-standing annoyances are gone as well. A name you set in the game, colour codes included, is no longer overwritten by the launcher on the next start. And join links from the website and Discord now always open your installed copy of the game, not a second copy you may have lying around for testing.</p>
+<h3>How it was tested</h3>
+<p>A launcher touches your files, your settings and your network, so it gets its own test gate before every release. For 2.0 that meant 54 screenshot checks across every page and language to catch layout breaks, 61 deliberately broken and malicious join links to make sure none of them can do anything they should not, and the full self-update cycle from older launchers, run fourteen times. The installer was tested separately with the anti-cheat service setup.</p>
+<h2 id="player-stats-from-every-verified-match">Player stats from every verified match</h2>
+<p>Player profiles on truecombat.eu now record every verified match on the official servers, ranked and unranked, and they record a lot more of it: accuracy, hit locations, opening kills, clutches, multi-kills, rivals and per-map records. <a href="devlog-every-fight-counts">Every fight on the record</a> explains what is tracked and the rules that keep it honest, so this is the short version.</p>
+<p>The important change in 0.35.0 is that the rules are now enforced. A match only counts when the server had anti-cheat on from the first second to the last. Only fights between real players count: nothing you do to a bot, or a bot does to you, lands on your record. Warm-up and idle time are left out. Detailed stats went live on both official servers about forty minutes after the release, as soon as they were running with anti-cheat required.</p>
+<p>Your skill rating still only moves on the Ranked server. Matches from before this update stay on your profile with the totals we recorded at the time.</p>
+<h2 id="the-playtest-fixes">The playtest fixes</h2>
+<p><a href="devlog-playtest-fixes">What the playtests told us</a> listed every problem from our community playtests. Most of that list is fixed in 0.35.0. We have updated that post item by item, so here we want to explain how the work was done, because the most useful thing we learned was not what was broken, but how to tell.</p>
+<h3>Measure first, then fix</h3>
+<p>Platinum's game code is a native rebuild, not the original TC:E code, and a rebuild can drift from the original in ways nobody notices until a room full of veterans plays it. So for every reported problem, the first step was not a fix. It was a measurement against original TC:E 0.49b.</p>
+<p>That changed several fixes. Take jumping. Players told us jumps did not carry like the original. Our first suspect was a rule that shortens a moving jump. When we measured it against 0.49b, that rule turned out to be exactly right. The real differences were elsewhere: the original lets you take a full-power standing jump onto a low object such as a dumpster or the container on Delta, and it briefly limits how high you can jump right after a hard landing. Platinum had neither. Both are back, and the jump onto a low ledge went from falling short to clearing it.</p>
+<p>Crouch-walking was the same story. It felt fast, loud and bouncy because footsteps and head bob ran at two and a half times the original rate while crouched. Rebuilding the timing for every stance from the original fixed all three complaints at once. Walking, aiming and leaning are now quiet, as they were in TC:E.</p>
+<h3>Gunplay</h3>
+<ul>
+  <li><strong>Spread and damage.</strong> We audited every weapon's spread and damage values against the original tables. They already matched. That told us to look elsewhere for the hits that did not land, and the next two fixes are what we found.</li>
+  <li><strong>Hits on leaning players.</strong> The game on your screen and the server disagreed slightly about where a leaning player's body was. Shots at a leaning target now land where you see them.</li>
+  <li><strong>Your first shots after respawning.</strong> Online, the first moves and shots after a respawn could be thrown away. In a simulated match on a bad connection, the number of lost inputs after a respawn dropped from up to fourteen to at most five, and nineteen of twenty-one test shots counted, with the misses at the very edge of the head and legs.</li>
+  <li><strong>Bolt-action rifles.</strong> The R93 and SR-8 now work the bolt after you release the trigger, with its own sound, before the next shot. The rifle has its deliberate rhythm back.</li>
+  <li><strong>Grenades.</strong> You can cook a grenade again: hold fire to prime it, release to throw it with the remaining fuse. Throwing your last grenade no longer fires your gun. Blasts check line of sight to several points on your body, so cover works, and explosions are no longer muffled by nearby walls.</li>
+  <li><strong>No firing while sprinting.</strong> As in the original, the weapon is ready a quarter of a second after you stop sprinting.</li>
+  <li><strong>Aiming down sights</strong> now slows you down as it should, and players and bots visibly shoulder their weapon while aiming.</li>
+</ul>
+<h3>Maps</h3>
+<p>The invisible wall at the small house on the Delta bomb site turned out to be a capture-point post from the Flag Capture mode, left solid in every other mode. Every map has these, so we removed them in all modes outside Flag Capture rather than fixing Delta alone. We also went through every map, surface by surface, looking for missing textures, and found none. Separately, some weapon parts showed a placeholder texture, the AKS-74U charging handle among them, and those are fixed. If you still see a surface that looks wrong, press F12 while you look at it.</p>
+<p>Doors now behave like the original: a use icon when you can open one, the original sounds, and a slow, quiet opening when you are walking or crouched.</p>
+<h3>Menus, chat and match flow</h3>
+<ul>
+  <li><strong>Options in the pause menu.</strong> A new MOUSE &amp; VIEW page: sensitivity with exact typed values for high and low DPI mice, separate aim and scope sensitivity, field of view from 80 to 110, smoothing and acceleration.</li>
+  <li><strong>Report a bug from the game.</strong> Press F12, or REPORT A BUG in the pause menu, and describe what happened. The report is saved with a screenshot and your recent console log. Our next playtests will run through it.</li>
+  <li><strong>Chat and voice commands.</strong> T and Y open the chat box again, and V opens the voice command menu.</li>
+  <li><strong>Team selection.</strong> Bots no longer count against team limits, every switch is confirmed, and a team picked while the map loads is kept, including for the next map. Automatic balance only steps in when teams really are uneven, and moves bots before people.</li>
+  <li><strong>Warm-up.</strong> Warm-up is now a practice round. You spawn straight away, respawn a second after dying, can try every weapon and change your loadout, and the match starts after a 30-second countdown once two players are in. Nothing in warm-up counts.</li>
+  <li><strong>Find Servers.</strong> The in-game server browser is now in the main menu and the pause menu, so you can change servers without going back to the launcher.</li>
+</ul>
+<h3>Online play</h3>
+<p>The third round of online play work arrived in this update too. Join buttons on the website and in Discord open the game straight into the server. If it is full, the launcher waits for a slot and joins by itself. A short connection check before joining turns on extra packet protection if your route is losing packets. The scoreboard shows connection bars next to every ping, and <code>cg_netGraph 1</code> or <code>2</code> shows ping, packet loss and jitter while you play.</p>
+<p>If you drop out of a match, you can rejoin within five minutes and keep your team and score. On Ranked, leaving a match you are losing now costs the full rating change, and the server limits how far back in time it rewinds the world to check a hit: at most 200 milliseconds. Without that limit, a player on a very slow connection could hit you well after you had reached cover on your own screen.</p>
+<p>Server hosts get a join password that is actually enforced, timed bans with the reason shown to the player, and a ping limit. Under the hood, the game, the server and the server list now handle IPv6, and our server list can be reached over IPv6. That matters more each year as providers run out of the older address type.</p>
+<h2 id="how-it-was-tested">How it was tested</h2>
+<p>Every release goes through the same gate: a full regression of the game and the dedicated server on both DirectX 12 and OpenGL, the launcher and the installer. 0.35.0 passed all seventeen game and server checks on the final build, plus the launcher, installer and anti-cheat checks above. Each movement and gunplay fix also got its own measurement against the original, as described above, so a fix for one thing cannot quietly undo another. The build was frozen in the early hours of 12 November, packaged, signed for the anti-cheat and published a few hours later.</p>
+<h2 id="what-did-not-make-it">What did not make it</h2>
+<p>Not everything on the playtest list is in this update, and we would rather say so than let it go quiet.</p>
+<ul>
+  <li><strong>Prone hits.</strong> Our weapon-by-weapon aim audit continued after the release and found one more case: shots at players lying prone do not always register. The cause is known and the fix is being tested.</li>
+  <li><strong>Red dot sight.</strong> The dot in the red dot sight is too small and too dim. It needs a change to how the sight is drawn, not just a texture.</li>
+  <li><strong>Instant replay.</strong> The two small replay fixes from the last update, the short clip in warm-up and the wrong length in the confirmation, are not in 0.35.0.</li>
+  <li><strong>Bots.</strong> Bots now visibly shoulder their weapon when they aim, but teaching them when to aim, when to lean and how to vary their routes is a larger piece of work. It is described in <a href="devlog-the-road-ahead">The road ahead, in full</a>.</li>
+  <li><strong>The staff badge refresh</strong> is not in this update either.</li>
+</ul>
+<p>All of these are being worked on. As always, they ship when they pass the same gate as everything above, and not before.</p>
+<h2 id="thank-you">Thank you</h2>
+<p>This update exists because people played, noticed and told us. Some of the most useful reports were a single sentence: "the jump onto the container on Delta doesn't work". That one sentence led to a measurement, the measurement to the real cause, and the cause to a fix that changed how the whole game moves.</p>
+<p>If something in 0.35.0 feels wrong, press F12 in the game, or tell us on <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. The <a href="./#roadmap">roadmap</a> shows what comes next.</p>
+      </div>
+      <div class="post-rate" data-rate="inside-035" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-every-fight-counts"><small>Older post</small>Every fight on the record</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Competitive">
+        <a class="post-art" href="devlog-every-fight-counts" tabindex="-1" aria-hidden="true"><img src="img/map-stadtrand-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Competitive</span><span class="state shipped">Shipped in v0.35.0</span><time datetime="2026-11-11">11 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="every-fight-counts" hidden></span></p>
+          <h2><a href="devlog-every-fight-counts">Every fight on the record</a></h2>
+          <p>Player profiles are about to get a lot deeper, and unranked servers count too. Here is what we track, and the rules that keep every number honest.</p>
+          <a class="more" href="devlog-every-fight-counts">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Roadmap">
+        <a class="post-art" href="devlog-the-road-ahead" tabindex="-1" aria-hidden="true"><img src="img/map-delta-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-11">11 Nov 2026</time><span>17 min read</span><span class="post-stat" data-post-stat="the-road-ahead" hidden></span></p>
+          <h2><a href="devlog-the-road-ahead">The road ahead, in full</a></h2>
+          <p>The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.</p>
+          <a class="more" href="devlog-the-road-ahead">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=36fa7c6143"></script>
+</body>
+</html>
