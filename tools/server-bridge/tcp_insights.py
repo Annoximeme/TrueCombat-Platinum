@@ -32,7 +32,7 @@ download counts of the release assets every six hours.
 Python 3.8+ standard library only. Run it behind the same HTTPS proxy as the
 stats bridge, for example with Caddy on api.truecombat.eu:
 
-  handle /insights/* { reverse_proxy 127.0.0.1:8093 }
+  handle /insights/* { reverse_proxy 127.0.0.1:8094 }
 """
 import argparse
 import array
@@ -531,7 +531,7 @@ def make_handler(store, key, cors, site_root, limiter, geoip):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--db", default="", help="SQLite file (empty = in memory)")
-    ap.add_argument("--listen", default="127.0.0.1:8093")
+    ap.add_argument("--listen", default="127.0.0.1:8094")
     ap.add_argument("--key-file", default="", help="file holding the studio key for /insights/stats.json")
     ap.add_argument("--site-root", default="", help="folder with the site's .html pages; only those pages are counted")
     ap.add_argument("--geoip", default="", help="DB-IP Lite country CSV (.csv or .csv.gz); empty = no countries")
