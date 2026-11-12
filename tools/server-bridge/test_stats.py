@@ -182,6 +182,10 @@ check("season window and season sort", wide["players"] and xs == sorted(xs, reve
 check("7 day board and bad since are safe", get("/leaderboard.json?period=7d")["period"] == "7d"
       and get("/leaderboard.json?since=garbage")["period"] == "all")
 
+# Every ET colour code is stripped from names, symbol codes included (launcher name colours, in-game /name).
+check("colour codes stripped", tcp_stats.clean("^1Ra^Zzi^<C") == "RaziC" and tcp_stats.clean("^:Bob^?") == "Bob"
+      and tcp_stats.clean("^7Plain") == "Plain", tcp_stats.clean("^1Ra^Zzi^<C"))
+
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))
 sys.exit(1 if failed else 0)

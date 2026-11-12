@@ -41,7 +41,9 @@ from urllib.parse import parse_qs, urlparse
 import tcp_stats
 
 OOB = b"\xff\xff\xff\xff"
-COLOR = re.compile(r"\^[0-9A-Za-z]")
+# Any ET colour code: ^ and one printable character other than ^ (ColorIndex = (c - 48) & 31,
+# so ^: ^< ^= ^> ^? ^@ are colours too, not only digits and letters).
+COLOR = re.compile(r"\^[^\^\s]")
 # Labels for g_gametype numbers. Empty on purpose: a server that sets the
 # serverinfo cvar tcp_mode (e.g. "Team elimination") is shown with that name,
 # otherwise pass --modes "2=Elimination,3=Team elimination" once the numbers are fixed.
