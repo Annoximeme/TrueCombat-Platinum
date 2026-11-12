@@ -235,3 +235,12 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .staffkey-row { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 ol.steps { padding-left: 20px; display: grid; gap: 8px; }
 .linkish { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
+
+/* website insights */
+.in-chart { width: 100%; height: auto; display: block; }
+.in-chart .in-v { fill: var(--line-hi); }
+.in-chart .in-d { fill: var(--amber); }
+.in-axis { fill: var(--dim); font: 11px var(--f-mono); }
+.in-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; vertical-align: -1px; }
+.in-key.in-v { background: var(--line-hi); }
+.in-key.in-d { background: var(--amber); }

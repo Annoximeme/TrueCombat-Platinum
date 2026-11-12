@@ -299,7 +299,7 @@ function route() {
   const pages = { servers: pageServers, server: pageServer, chat: pageChat, reports: pageReports, players: pagePlayers,
     player: pagePlayer, bans: pageBans, audit: pageAudit, staff: pageStaff, health: pageHealth, alerts: pageAlerts,
     watchlist: pageWatchlist, review: pageReview, schedule: pageSchedule, filter: pageFilter, replies: pageReplies,
-    weekly: pageWeekly, settings: pageSettings };
+    weekly: pageWeekly, settings: pageSettings, insights: pageInsights };
   let arg = "";
   try { arg = decodeURIComponent(parts[1] || ""); } catch (e) { arg = ""; }      // a broken link opens the page, not a blank screen
   (pages[page] || pageServers)(main, arg);
@@ -1178,6 +1178,64 @@ function pageWeekly(main) {
     ].join("")}</div>
     <div class="grid grid-2"><div class="panel"><h3>Staff activity</h3>${w.staff.length ? `<table><tr><th>Staff</th><th class="num">Actions</th></tr>${w.staff.map((x) => `<tr><td>${esc(x.staff)} <span class="role">${esc(x.role)}</span></td><td class="num">${x.n}</td></tr>`).join("")}</table>` : '<p class="empty">No staff actions.</p>'}</div>
     <div class="panel"><h3>As posted in Discord</h3><div class="text-block small">${md(w.text)}</div></div></div>`;
+  }
+  draw();
+}
+
+/* ------------------------------------------------------------------ website insights */
+function pageInsights(main) {
+  main.innerHTML = `<div class="head"><div><p class="eyebrow">Community</p><h1>Insights</h1><p class="muted">Website visits, the channels that bring them and the downloads they lead to. Daily totals only: no cookies, no IP addresses, nothing per person. Visitors are counted once per day, so a week's visitors add up daily counts.</p></div>
+    <div class="tabs" id="in-tabs"><button class="btn btn-small" data-d="7">7 days</button><button class="btn btn-small on" data-d="30">30 days</button><button class="btn btn-small" data-d="90">90 days</button><button class="btn btn-small" data-d="365">Year</button></div></div>
+    <div id="in"></div>`;
+  $("#in-tabs").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; for (const x of $("#in-tabs").children) x.classList.toggle("on", x === b); draw(+b.dataset.d); };
+  const n = (v) => Number(v || 0).toLocaleString("en-GB");
+  const pct = (a, b) => (b ? (100 * a / b).toFixed(1) + "%" : "–");
+  function chart(days, visitors, downloads) {
+    const W = 760, H = 150, max = Math.max(1, ...visitors), bw = W / days.length;
+    const bars = visitors.map((v, i) => {
+      const h = Math.round((H - 18) * v / max), d = Math.round((H - 18) * (downloads[i] || 0) / max);
+      return `<g><title>${esc(days[i])}: ${v} visitors, ${downloads[i] || 0} downloads</title>
+        <rect class="in-v" x="${(i * bw + 1).toFixed(1)}" y="${H - 14 - h}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${h}"></rect>
+        <rect class="in-d" x="${(i * bw + 1).toFixed(1)}" y="${H - 14 - d}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${d}"></rect></g>`;
+    }).join("");
+    return `<svg class="in-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Visitors and downloads per day">${bars}
+      <text class="in-axis" x="0" y="${H - 2}">${esc(days[0])}</text><text class="in-axis" x="${W}" y="${H - 2}" text-anchor="end">${esc(days[days.length - 1])}</text>
+      <text class="in-axis" x="0" y="10">${max}</text></svg>
+      <p class="dim small"><span class="in-key in-v"></span> visitors <span class="in-key in-d"></span> downloads</p>`;
+  }
+  function table(rows, cols, empty) {
+    if (!rows || !rows.length) return `<p class="empty">${empty}</p>`;
+    return `<table><tr>${cols.map((c) => `<th${c.num ? ' class="num"' : ""}>${c.label}</th>`).join("")}</tr>${rows.map((r) =>
+      `<tr>${cols.map((c) => `<td${c.num ? ' class="num"' : ""}>${c.fmt ? c.fmt(r) : esc(r[c.key])}</td>`).join("")}</tr>`).join("")}</table>`;
+  }
+  async function draw(days = 30) {
+    let r;
+    try { r = await api("insights?days=" + days); } catch (e) { $("#in").innerHTML = `<p class="empty">${esc(e.message)}</p>`; return; }
+    const t = r.totals, gh = r.github || { releases: [], daily: [] };
+    const ghTotal = gh.releases.reduce((a, x) => a + x.downloads, 0), ghPeriod = (gh.daily || []).reduce((a, x) => a + x, 0);
+    const tile = (label, value, note = "") => `<div class="card"><div class="meta">${label}</div><div class="stat">${value}</div><div class="dim small">${note}</div></div>`;
+    const name = { key: "name", label: "Name" };
+    const vis = { label: "Visitors", num: true, fmt: (x) => n(x.visitors) };
+    const views = { label: "Views", num: true, fmt: (x) => n(x.views) };
+    const dls = { label: "Downloads", num: true, fmt: (x) => n(x.downloads) };
+    const conv = { label: "Download rate", num: true, fmt: (x) => pct(x.downloads, x.visitors) };
+    $("#in").innerHTML = `<div class="tiles">${[
+      tile("Visitors", n(t.visitors), "daily unique, added up"),
+      tile("Page views", n(t.views), t.visitors ? (t.views / t.visitors).toFixed(1) + " per visitor" : ""),
+      tile("Download clicks", n(t.downloads), pct(t.downloads, t.visitors) + " of visitors"),
+      tile("GitHub downloads", n(ghPeriod), n(ghTotal) + " all time, every release"),
+    ].join("")}</div>
+    <div class="panel"><h3>Per day</h3>${chart(r.days, r.series.visitors, r.series.downloads)}</div>
+    <div class="grid grid-2">
+      <div class="panel table-wrap"><h3>Channels</h3><p class="dim small">From the campaign tag of a truecombat.eu/go link, else the referring site, else direct.</p>${table(r.sources, [name, vis, views, dls, conv], "No visits yet.")}</div>
+      <div class="panel table-wrap"><h3>Campaigns</h3><p class="dim small">source / medium / campaign / content</p>${table(r.campaigns, [name, vis, dls, conv], "No campaign links used yet.")}</div>
+      <div class="panel table-wrap"><h3>Pages</h3>${table(r.pages, [name, views, vis, dls], "No page views yet.")}</div>
+      <div class="panel table-wrap"><h3>Referring sites</h3>${table(r.referrers, [name, vis], "No referring sites yet.")}</div>
+      <div class="panel table-wrap"><h3>Countries</h3>${table(r.countries, [name, vis], "No visits yet.")}</div>
+      <div class="panel table-wrap"><h3>Screens and languages</h3>${table(r.devices, [name, vis], "No visits yet.")}${table(r.langs, [{ key: "name", label: "Language" }, vis], "")}</div>
+      <div class="panel table-wrap"><h3>GitHub release downloads</h3><p class="dim small">Public counts read every six hours; includes launcher and updater downloads of the installer.</p>${table(gh.releases.slice(0, 12), [{ key: "tag", label: "Release" }, { label: "Downloads", num: true, fmt: (x) => n(x.downloads) }], "Not read yet.")}</div>
+    </div>
+    <p class="dim small">Updated ${esc(r.updated)}. Country lookup: IP to Country Lite by DB-IP (CC BY 4.0).</p>`;
   }
   draw();
 }
