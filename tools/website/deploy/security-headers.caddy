@@ -16,3 +16,32 @@ header {
 # (images, css and js keep the existing one-hour rule in the Caddyfile)
 @tcp_fonts path /fonts/*
 header @tcp_fonts Cache-Control "public, max-age=2592000"
+
+# ---- audit round 1 (2026-11-12) ----
+# HTTPS only, for every subdomain, for a year
+header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+# fonts: only real files get the long cache, so a mistyped font URL is not cached as a 404
+@tcp_fonts_missing {
+	path /fonts/*
+	not file
+}
+header @tcp_fonts_missing >Cache-Control "no-store"
+
+# pages always check back, so a deploy shows at once (the ETag makes the check cheap)
+@tcp_pages not path *.css *.js *.webp *.png *.jpg *.jpeg *.gif *.svg *.ico *.woff2 *.woff *.json *.xml *.txt *.zip *.webmanifest *.atom
+header @tcp_pages >Cache-Control "no-cache"
+
+# style.css?v=<hash> and site.js?v=<hash> change name when they change: cache for a year
+@tcp_versioned {
+	path *.css *.js
+	query v=*
+}
+header @tcp_versioned >Cache-Control "public, max-age=31536000, immutable"
+
+@tcp_manifest path /site.webmanifest
+header @tcp_manifest Content-Type "application/manifest+json"
+
+# the 404 page itself answers 404, not 200
+@tcp_soft404 path /404 /404.html
+error @tcp_soft404 404
