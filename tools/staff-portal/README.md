@@ -84,14 +84,31 @@ switches those buttons on per server; on an older server they explain why they a
 
 ## Bug reports
 
-`POST https://staff.truecombat.eu/api/bugreport` takes the plain-text report the game writes on F12
-(`X-Report-Category: Bug|Suggestion|Feature`), at most 6 an hour per address and 96 KB each. Set
-`cl_bugReportUrl` to that address once the launcher uploads `bugreports/pending.txt`.
+From 0.36.0, F12 in game sends the report straight to `POST https://staff.truecombat.eu/api/bugreport`
+(the game's `cl_bugReportEndpoint`) as one JSON body, `"format": "tcp-bugreport/1"`:
+
+| Field | |
+|---|---|
+| `category` | `Bug`, `Suggestion` or `Feature` |
+| `text` | what the player wrote (16 KB kept) |
+| `map`, `pos` [x, y, z], `server` (ip:port, empty offline), `match` | where it happened |
+| `build`, `renderer`, `ping`, `fps`, `time`, `hw` {…} | the player's setup |
+| `console` | the last ~200 console lines (64 KB kept) |
+| `name`, `guid`, `puid` | who sent it; `guid` is turned into the player id and not stored |
+| `screenshot_jpg` | base64 JPEG, at most 1 MB; anything that isn't a JPEG is dropped |
+
+The body may be up to 1.6 MB. Answers: `201 {"ok": true, "id": …}`, `400` bad body, `413` too big, `429` over
+6 an hour per address, `503` inbox full. The game keeps a local copy whenever the answer isn't 2xx.
+
+Reports land under Reports › Bug reports with the screenshot, the context, and a button for the console
+and hardware; a short alert goes to the staff Discord (kind `bugreport`) linking to the inbox, without the
+screenshot. Screenshots live in `<data_dir>/bugshots` and go with their report when closed reports are
+pruned. Plain-text posts with `X-Report-Category` still work for older tools.
 
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 30 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 31 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 

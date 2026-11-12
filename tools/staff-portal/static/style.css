@@ -229,3 +229,6 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .appeal-result.bad { border-color: #6b2a2a; }
 .qr { text-align: center; margin: 4px 0 14px; }
 .qr img { display: inline-block; width: 200px; height: 200px; background: #fff; padding: 0; border-radius: var(--r); image-rendering: pixelated; }
+.bugshot { display: block; margin: 10px 0; }
+.bugshot img { display: block; max-width: 100%; max-height: 360px; border-radius: var(--r); border: 1px solid var(--line); }
+.report-body.console { max-height: 50vh; }

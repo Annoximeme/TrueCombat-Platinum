@@ -259,6 +259,65 @@ def normalise_chat(text: str) -> str:
 
 # ----------------------------------------------------------------------------- two-step sign-in (RFC 6238 TOTP)
 
+# --- F12 bug reports ---------------------------------------------------------------------------------
+BUG_CATEGORIES = ("Bug", "Suggestion", "Feature")
+
+
+def bug_category(v) -> str:
+    v = str(v or "").strip().capitalize()
+    return v if v in BUG_CATEGORIES else "Bug"
+
+
+def clean_text(v, limit: int) -> str:
+    """Report text as sent, minus NULs and other control characters (tabs and line breaks kept), cut to limit."""
+    v = v if isinstance(v, str) else ""
+    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", v)[:limit]
+
+
+def bug_fields(j: dict) -> tuple:
+    """The stored fields of a tcp-bugreport/1 report and its screenshot bytes (empty if none or not a JPEG)."""
+    def num(v, lo, hi):
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return None
+        return f if lo <= f <= hi and f == f else None
+    d = {"format": "tcp-bugreport/1", "category": bug_category(j.get("category")), "text": clean_text(j.get("text"), 16 * 1024)}
+    for k, n in (("map", 64), ("build", 64), ("renderer", 120), ("name", 64), ("match", 64), ("puid", 64)):
+        v = clean_text(j.get(k), n).strip()
+        if v:
+            d[k] = v
+    server = str(j.get("server") or "").strip()
+    if re.fullmatch(r"[0-9A-Za-z.:\[\]-]{1,64}", server):
+        d["server"] = server
+    pos = j.get("pos")
+    if isinstance(pos, list) and len(pos) == 3 and all(num(c, -1e6, 1e6) is not None for c in pos):
+        d["pos"] = [round(float(c)) for c in pos]
+    for k, lo, hi in (("time", 0, 2 ** 40), ("ping", 0, 100000), ("fps", 0, 100000)):
+        v = num(j.get(k), lo, hi)
+        if v is not None:
+            d[k] = int(v)
+    hw = j.get("hw")
+    if isinstance(hw, dict):
+        d["hw"] = {clean_text(str(k), 40): clean_text(str(v), 200) for k, v in list(hw.items())[:24]}
+    console = clean_text(j.get("console"), 64 * 1024)
+    if console:
+        d["console"] = console
+    guid = clean_text(j.get("guid"), 64).strip()
+    if guid:
+        d["pid"] = player_pid(guid)          # the same id the servers and the stats service use; the raw guid is not kept
+    shot = b""
+    b64 = j.get("screenshot_jpg")
+    if isinstance(b64, str) and b64:
+        try:
+            shot = base64.b64decode(b64, validate=True)
+        except ValueError:
+            shot = b""
+        if len(shot) > 1024 * 1024 or not shot.startswith(b"\xff\xd8\xff"):
+            shot = b""
+    return d, shot
+
+
 # --- QR code (for the authenticator setup) -----------------------------------------------------
 # A small byte-mode QR encoder, error correction level M, after Project Nayuki's reference
 # implementation (MIT). Made here so the setup screen needs no outside service and the key never
@@ -1293,10 +1352,10 @@ class Watchers:
 
     COLOURS = {"server_down": 0xD63B3B, "server_up": 0x4FBF7A, "suspicion": 0xD63B3B, "dodger": 0xD63B3B,
                "reports": 0xE7A73C, "mod_ban": 0x5B9BD5, "watch": 0xE7A73C, "appeal": 0x5B9BD5, "filter": 0xE7A73C,
-               "teamkill": 0xE7A73C, "weekly": 0xFF9914}
+               "teamkill": 0xE7A73C, "weekly": 0xFF9914, "bugreport": 0x9AA3B3}
     LINKS = {"suspicion": "player", "dodger": "player", "reports": "reports", "watch": "player", "appeal": "reports",
              "mod_ban": "bans", "filter": "chat", "teamkill": "player", "server_down": "health", "server_up": "health",
-             "weekly": "weekly"}
+             "weekly": "weekly", "bugreport": "reports"}
 
     def alert_loop(self) -> None:
         import queue
@@ -2064,6 +2123,7 @@ class Portal(Moderation, Watchers, Operations):
         data = Path(cfg.get("data_dir", "/var/lib/tcp-staff-portal"))
         data.mkdir(parents=True, exist_ok=True)
         self.store = Store(str(data / "portal.db"))
+        self.bugshots = data / "bugshots"
         self.servers = {s["key"]: GameServer(s, self.store) for s in cfg.get("servers", [])}
         self.order = [s["key"] for s in cfg.get("servers", [])]
         self.stop = threading.Event()
@@ -2323,6 +2383,10 @@ class Portal(Moderation, Watchers, Operations):
             self.store.x("DELETE FROM peaks WHERE day<?", (time.strftime("%Y-%m-%d", time.gmtime(cut)),))
             self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
             self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
+            try:
+                self.prune_bugshots()
+            except OSError as e:
+                log.warning("bug report screenshot clean-up failed: %s", e)
             self.stop.wait(3600)
 
     # ------------------------------------------------------------------ queries used by the API
@@ -2486,13 +2550,57 @@ class Portal(Moderation, Watchers, Operations):
         out["appeals"] = self.store.q("SELECT id, status, text, answer, created, answered_by FROM appeals WHERE pid=? ORDER BY id DESC", (pid,))
         return out
 
-    def _report_row(self, r: dict) -> dict:
+    def _report_row(self, r: dict, full: bool = False) -> dict:
         r = dict(r)
         try:
             r["data"] = json.loads(r["data"])
         except (TypeError, ValueError):
             r["data"] = {}
+        if r["source"] == "bug" and not full and isinstance(r["data"], dict):
+            # the list stays light: the console tail and hardware come with the single report
+            r["data"]["has_console"] = bool(r["data"].pop("console", ""))
+            r["data"].pop("hw", None)
         return r
+
+    def server_by_address(self, addr: str):
+        """Our server behind an ip:port a player was connected to, matched on the port and the public host or its IP."""
+        m = re.fullmatch(r"\[?([^\]]*?)\]?:(\d+)", addr.strip())
+        if not m:
+            return None
+        host, port = m.group(1).lower(), int(m.group(2))
+        for srv in self.servers.values():
+            pub = str(srv.cfg.get("public_address", ""))
+            phost, _, pport = pub.rpartition(":")
+            if not pport.isdigit() or int(pport) != port:
+                continue
+            if host == phost.lower() or host in self.public_ips(phost):
+                return srv
+        return None
+
+    def public_ips(self, host: str) -> set:
+        cache = getattr(self, "_ip_cache", {})
+        hit = cache.get(host)
+        if hit and hit[0] > time.time() - 3600:
+            return hit[1]
+        try:
+            ips = {a[4][0].lower() for a in socket.getaddrinfo(host, None)}
+        except OSError:
+            ips = set()
+        cache[host] = (time.time(), ips)
+        self._ip_cache = cache
+        return ips
+
+    def bugshot_path(self, key: str) -> Path:
+        return self.bugshots / (re.sub(r"[^A-Za-z0-9_-]", "_", key) + ".jpg")
+
+    def prune_bugshots(self) -> None:
+        """Screenshots whose report is gone (closed reports are pruned after the retention time)."""
+        if not self.bugshots.is_dir():
+            return
+        keep = {self.bugshot_path(r["file"]).name for r in self.store.q("SELECT file FROM reports WHERE source='bug'")}
+        for f in self.bugshots.glob("*.jpg"):
+            if f.name not in keep and f.stat().st_mtime < time.time() - 3600:
+                f.unlink(missing_ok=True)
 
     def health(self) -> dict:
         t, cached = self.health_cache
@@ -2910,25 +3018,50 @@ def make_handler(portal: Portal):
                 return self.json({"ok": True}, extra={"Set-Cookie": [self.set_cookie(cookie_name, "", 0)]})
             raise ApiError(404, "Not found.")
 
-        # -- public bug report intake (the launcher uploads F12 reports here when cl_bugReportUrl points at it)
+        # -- public bug report intake: F12 in game (0.36.0+) posts JSON "tcp-bugreport/1"; older tools post plain text
         def bugreport(self) -> None:
             ip = self.client_ip()
             if portal.limited("bug:" + ip, int(cfg.get("bugreport_per_hour", 6)), 3600) or portal.limited("bug:*", 300, 86400):
                 raise ApiError(429, "Too many reports from this address. Try again later.")
             if portal.store.one("SELECT COUNT(*) n FROM reports WHERE source='bug' AND status<>'closed'")["n"] >= int(cfg.get("bugreport_open_max", 1000)):
                 raise ApiError(503, "The bug report inbox is full. Try again later.")
-            raw = self.body(limit=int(cfg.get("bugreport_max_bytes", 96 * 1024)))
-            text = raw.decode("utf-8", "replace").replace("\x00", "")
+            ctype = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+            raw = self.body(limit=int(cfg.get("bugreport_max_bytes", 1600 * 1024)))
+            key = "bug/%d-%s" % (now(), secrets.token_hex(4))
+            shot = b""
+            if ctype == "application/json":
+                try:
+                    j = json.loads(raw.decode("utf-8"))
+                except (ValueError, UnicodeDecodeError) as e:
+                    raise ApiError(400, "Bad JSON.") from e
+                if not isinstance(j, dict) or j.get("format") != "tcp-bugreport/1":
+                    raise ApiError(400, "Unknown report format.")
+                data, shot = bug_fields(j)
+                text = data["text"]
+            else:
+                text = clean_text(raw.decode("utf-8", "replace"), 96 * 1024)
+                data = {"category": bug_category(self.headers.get("X-Report-Category", "")), "text": text}
             if len(text.strip()) < 10:
                 raise ApiError(400, "The report is empty.")
-            category = safe_arg(self.headers.get("X-Report-Category", ""), 20) or "Bug"
-            first = next((ln for ln in text.splitlines() if ln.strip()), "")[:120]
-            key = "bug/%d-%s" % (now(), secrets.token_hex(4))
+            data["summary"] = next((ln for ln in text.splitlines() if ln.strip()), "")[:120]
+            data["from"] = portal.ip_tag(ip)
+            if shot:
+                path = portal.bugshot_path(key)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(shot)
+                data["shot"] = True
+            if data.get("server"):
+                srv = portal.server_by_address(data["server"])
+                if srv:
+                    data["server_name"] = srv.name
+            pid = data.get("pid", "")
             portal.store.x("INSERT INTO reports(source,file,server,received,data,target_pid,target_name,status,updated) "
                            "VALUES('bug',?,?,?,?,?,?,'open',?)",
-                           (key, "", now(), json.dumps({"category": category, "text": text, "summary": first,
-                                                        "from": portal.ip_tag(ip)}),
-                            "", "", now()))
+                           (key, data.get("server_name", ""), now(), json.dumps(data), pid, data.get("name", ""), now()))
+            where = " on %s" % data["map"] if data.get("map") else ""
+            by = " from %s" % data["name"] if data.get("name") else ""
+            portal.alert("bugreport", "%s report%s%s" % (data["category"], by, where),
+                         data["summary"] + ("\nBuild %s" % data["build"] if data.get("build") else ""), key=key, pid=pid)
             self.json({"ok": True, "id": key}, 201)
 
         # -- API
@@ -3021,6 +3154,19 @@ def make_handler(portal: Portal):
                     "SELECT * FROM reports WHERE %s ORDER BY id DESC LIMIT 300" % where, args)]
                 counts = {r["status"]: r["n"] for r in portal.store.q("SELECT status, COUNT(*) n FROM reports GROUP BY status")}
                 return self.json({"reports": rows, "counts": counts})
+            if route == "reports/bug" and method == "GET":
+                self.need(s, "reports")
+                r = portal.store.one("SELECT * FROM reports WHERE id=? AND source='bug'", (int(qs.get("id") or 0),))
+                if not r:
+                    raise ApiError(404, "No such report.")
+                return self.json({"report": portal._report_row(r, full=True)})
+            if route == "reports/bugshot" and method == "GET":
+                self.need(s, "reports")
+                r = portal.store.one("SELECT file FROM reports WHERE id=? AND source='bug'", (int(qs.get("id") or 0),))
+                path = portal.bugshot_path(r["file"]) if r else None
+                if not path or not path.is_file():
+                    raise ApiError(404, "No screenshot.")
+                return self.send_file(path, path.name, "image/jpeg")
             if route == "reports/update" and method == "POST":
                 who = self.need(s, "reports")
                 d = self.body_json()
@@ -3380,17 +3526,18 @@ def make_handler(portal: Portal):
                 return self.json({"ok": True})
             raise ApiError(404, "Not found.")
 
-        def send_file(self, path: Path, name: str) -> None:
+        def send_file(self, path: Path, name: str, ctype: str = "") -> None:
             try:
                 f = path.open("rb")
             except OSError as e:
-                raise ApiError(404, "The demo file could not be read.") from e
+                raise ApiError(404, "The file could not be read.") from e
             with f:
                 size = os.fstat(f.fileno()).st_size
                 self.send_response(200)
-                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Type", ctype or "application/octet-stream")
                 self.send_header("Content-Length", str(size))
-                self.send_header("Content-Disposition", 'attachment; filename="%s"' % re.sub(r'[^A-Za-z0-9_.-]', "_", name))
+                self.send_header("Content-Disposition", '%s; filename="%s"' % ("inline" if ctype else "attachment",
+                                                                               re.sub(r'[^A-Za-z0-9_.-]', "_", name)))
                 self.send_header("Cache-Control", "no-store")
                 for k, v in SECURITY_HEADERS.items():
                     self.send_header(k, v)

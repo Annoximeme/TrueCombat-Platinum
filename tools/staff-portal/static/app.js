@@ -490,6 +490,8 @@ function pageReports(main) {
   $("#r-list").onclick = async (e) => {
     const demo = e.target.closest("button[data-demo]");
     if (demo) return showDemo(demo);
+    const bug = e.target.closest("button[data-bug]");
+    if (bug) return bugDetails(+bug.dataset.bug).catch((err) => toast(err.message, true));
     const ap = e.target.closest("button[data-appeal]");
     if (ap) return appealDialog(+ap.dataset.appeal, ap.dataset.decision, ap.dataset.name, draw);
     const b = e.target.closest("button[data-id]"); if (!b) return;
@@ -521,9 +523,23 @@ function reportCard(r) {
       ${r.resolution ? `<p class="muted">${esc(r.resolution)}</p>` : ""}</div>`;
   }
   if (r.source === "bug") {
-    return `<div class="panel"><div class="head"><div><div class="tags">${status}<span class="tag">${esc(d.category || "Bug")}</span></div>
-      <h2>${esc(d.summary || "Bug report")}</h2><span class="muted">Received ${when(r.received)}</span></div><div class="actions">${buttons}</div></div>
-      <div class="report-body">${esc(d.text || "")}</div>${r.resolution ? `<p class="muted">Resolution: ${esc(r.resolution)}</p>` : ""}</div>`;
+    const who = d.name ? (r.target_pid ? `<a href="#/player/${esc(r.target_pid)}">${esc(d.name)}</a>` : esc(d.name)) : "";
+    const facts = [
+      d.map ? ["Map", esc(d.map) + (d.pos ? ` <span class="dim">at ${d.pos.map((n) => esc(n)).join(", ")}</span>` : "")] : null,
+      d.server ? ["Server", esc(d.server)] : (d.format ? ["Server", "Not on a server"] : null),
+      d.build ? ["Build", esc(d.build) + (d.renderer ? ` <span class="dim">· ${esc(d.renderer)}</span>` : "")] : null,
+      d.ping != null || d.fps != null ? ["Ping, fps", `${d.ping ?? "–"} ms · ${d.fps ?? "–"} fps`] : null,
+      d.time ? ["Taken", when(d.time)] : null,
+      d.match ? ["Match", esc(d.match)] : null,
+      d.puid ? ["Anti-cheat id", `<span class="mono">${esc(d.puid)}</span>`] : null,
+    ].filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+    const extra = d.has_console ? `<button class="btn btn-small" data-bug="${r.id}">Console and hardware</button>` : "";
+    return `<div class="panel"><div class="head"><div><div class="tags">${status}<span class="tag">${esc(d.category || "Bug")}</span>${d.server_name ? `<span class="tag">${esc(d.server_name)}</span>` : ""}</div>
+      <h2>${esc(d.summary || "Bug report")}</h2><span class="muted">${who ? "From " + who + " · " : ""}received ${when(r.received)}</span></div><div class="actions">${buttons}</div></div>
+      <div class="report-body">${esc(d.text || "")}</div>
+      ${d.shot ? `<a class="bugshot" href="/api/reports/bugshot?id=${r.id}" target="_blank" rel="noopener"><img src="/api/reports/bugshot?id=${r.id}" alt="Screenshot taken with the report" loading="lazy"></a>` : ""}
+      ${facts ? `<dl class="kv">${facts}</dl>` : ""}${extra ? `<div class="tags">${extra}</div>` : ""}
+      ${r.resolution ? `<p class="muted">Resolution: ${esc(r.resolution)}</p>` : ""}</div>`;
   }
   const who = d.reported || {}, by = d.reporter || {};
   const acc = who.shots ? Math.round((100 * who.hits) / who.shots) + "%" : "–";
@@ -536,6 +552,14 @@ function reportCard(r) {
     <dl class="kv"><dt>This map</dt><dd>${who.kills ?? 0} kills · ${who.deaths ?? 0} deaths · ${who.team_kills ?? 0} team kills</dd>
       <dt>Accuracy</dt><dd>${acc}${who.headshots != null ? " · " + who.headshots + " headshots" : ""}</dd>
       ${r.resolution ? `<dt>Resolution</dt><dd>${esc(r.resolution)}</dd>` : ""}</dl></div>`;
+}
+
+async function bugDetails(id) {
+  const d = (await api("reports/bug?id=" + id)).report.data;
+  const hw = d.hw ? Object.entries(d.hw).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("") : "";
+  modal({ title: "Console and hardware", sub: d.summary || "Bug report", ok: "Close",
+    body: (hw ? `<dl class="kv">${hw}</dl>` : "") + `<label>Last console lines</label><div class="report-body console">${esc(d.console || "None sent.")}</div>`,
+    onOk: () => {} });
 }
 
 /* ------------------------------------------------------------------ players */
