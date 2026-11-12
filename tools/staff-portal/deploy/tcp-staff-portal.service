@@ -1,0 +1,44 @@
+[Unit]
+Description=TrueCombat: Platinum staff portal
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tcpstaff
+Group=tcpstaff
+SupplementaryGroups=systemd-journal
+ExecStart=/usr/bin/python3 /opt/tcp/staff-portal/tcp_staff_portal.py --config /etc/tcp-staff-portal/config.json
+Restart=on-failure
+RestartSec=5
+# Secrets arrive as credentials: readable by this service only, never in the config file.
+LoadCredential=client-secret:/etc/tcp-staff-portal/client-secret
+LoadCredential=rcon-official1:/etc/tcp-staff-portal/rcon-official1
+LoadCredential=rcon-official2:/etc/tcp-staff-portal/rcon-official2
+LoadCredential=rcon-pickup1:/etc/tcp-staff-portal/rcon-pickup1
+LoadCredential=rcon-pickup2:/etc/tcp-staff-portal/rcon-pickup2
+StateDirectory=tcp-staff-portal
+StateDirectoryMode=0750
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+UMask=0027
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target
