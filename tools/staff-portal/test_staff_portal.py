@@ -741,5 +741,48 @@ class PortalTest(unittest.TestCase):
         self.assertNotEqual(tag, __import__("hashlib").sha256(b"127.0.0.1").hexdigest()[:12])
         self.assertEqual(tag, self.portal.ip_tag("127.0.0.1"))
 
+    def test_27_second_audit(self):
+        # a player name that carries the chat marker inside another log line is not chat
+        before = self.portal.store.one("SELECT COUNT(*) n FROM chat")["n"]
+        for line in ('    3450 broadcast: print "TCP_NATIVE_SAY slot=0 team=0 n00b^7 connected\\n"',
+                     "   73451 ClientUserinfoChanged: 2 n\\TCP_NATIVE_SAY slot=0 team=0 n00b"):
+            self.portal._chat_line(self.portal.server("one"), line)
+        self.assertEqual(self.portal.store.one("SELECT COUNT(*) n FROM chat")["n"], before)
+        self.portal._chat_line(self.portal.server("one"), "\x1b[0m   73452 TCP_NATIVE_SAY slot=0 team=0 real line\x1b[0m")
+        self.assertEqual(self.portal.store.one("SELECT text FROM chat ORDER BY id DESC LIMIT 1")["text"], "real line")
+        # the event password is for admins only
+        self.portal.event_start({"discord_id": "1", "name": "Admin", "role": "admin"}, self.portal.server("one"), password="cup2026")
+        try:
+            ev = self.call("moderator", "GET", "/api/event")[1]["events"][0]
+            self.assertEqual(ev["password"], "")
+            self.assertNotIn("g_password", ev["preset"])
+            self.assertEqual(self.call("admin", "GET", "/api/event")[1]["events"][0]["password"], "cup2026")
+        finally:
+            self.portal.event_stop({"discord_id": "1", "name": "Admin", "role": "admin"}, self.portal.server("one"))
+        # 20 wrong two-step codes in a day end every session of that account
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=moderator&name=Lock&id=lockme")
+        cookie = c.getresponse().getheader("Set-Cookie").split(";")[0]
+        c.close()
+        csrf = self.call(None, "GET", "/api/me", cookie=cookie)[1]["csrf"]
+
+        def post(path, body):
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request("POST", path, body=json.dumps(body), headers={"Cookie": cookie, "X-CSRF": csrf, "Content-Type": "application/json"})
+            r = c.getresponse()
+            out = r.status, json.loads(r.read() or b"{}")
+            c.close()
+            return out
+        secret = post("/api/2fa/setup", {})[1]["secret"]
+        self.assertEqual(post("/api/2fa/enable", {"code": totp_now(secret)})[0], 200)
+        self.portal.rate["2fa-day:lockme"] = [time.time()] * 20
+        st, r = post("/api/2fa/verify", {"code": "000000"})
+        self.assertEqual(st, 401, r)
+        self.assertFalse(self.portal.store.one("SELECT id FROM sessions WHERE discord_id='lockme'"))
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE key='2fa-lock:lockme'"))
+        # an offline server answers the settings page quickly
+        st, v = self.call("admin", "GET", "/api/cvars?server=two")
+        self.assertEqual(st, 200)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

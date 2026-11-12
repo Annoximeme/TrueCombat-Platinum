@@ -1591,16 +1591,16 @@ class Operations:
         overrides = {r["cvar"]: r for r in self.store.q("SELECT * FROM cvar_overrides WHERE server=?", (srv.key,))}
         e = self.store.one("SELECT * FROM events WHERE server=?", (srv.key,))
         event = json.loads(e["preset"]) if e else {}
-        rows = []
+        rows, down = [], False
         for name, label in self.cvar_list().items():
             try:
-                val = srv.cvar(name)
+                val = None if down else srv.cvar(name)
             except RconError:
-                val = None
+                val, down = None, True             # one missed answer: do not wait 1.5 s for each of the others
             rows.append({"name": name, "label": label, "value": val, "kept": overrides.get(name, {}).get("value"),
                          "event": name in event})
         hist = self.store.q("SELECT * FROM cvar_changes WHERE server=? ORDER BY id DESC LIMIT 60", (srv.key,))
-        return {"cvars": rows, "history": hist}
+        return {"cvars": rows, "history": hist, "offline": down}
 
     def cvar_set(self, who: dict, srv: GameServer, name: str, value: str, keep: bool, kind: str = "set") -> dict:
         if name not in self.cvar_list():
@@ -1877,7 +1877,10 @@ class Portal(Moderation, Watchers, Operations):
             self.stop.wait(max(0.5, every - (time.time() - started)))
 
     # chat comes from the game's own log line: TCP_NATIVE_SAY slot=N team=T text
-    SAY = re.compile(r"TCP_NATIVE_SAY slot=(\d+) team=(\d+) (.*)$")
+    # Anchored: the marker must open the line (after the console's time stamp). Player names show up inside other log
+    # lines, and a name such as "TCP_NATIVE_SAY slot=3 team=0 n00b" must never pass for slot 3 saying something.
+    SAY = re.compile(r"^\s*(?:[\d:.]+\s+)?TCP_NATIVE_SAY slot=(\d+) team=(\d+) (.*)$")
+    ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
     def chat_loop(self, server: GameServer) -> None:
         src = server.cfg.get("log_file")
@@ -1889,8 +1892,8 @@ class Portal(Moderation, Watchers, Operations):
             self.stop.wait(3600)
 
     def _chat_line(self, server: GameServer, line: str) -> None:
-        line = plain(line).rstrip()
-        m = self.SAY.search(line)
+        line = plain(self.ANSI.sub("", line)).rstrip()
+        m = self.SAY.match(line)
         if m:
             slot, team, text = int(m.group(1)), int(m.group(2)), m.group(3)
             p = server.slot_player(slot) or {}
@@ -2053,6 +2056,7 @@ class Portal(Moderation, Watchers, Operations):
             self.store.x("DELETE FROM undo WHERE expires<?", (now() - 86400,))
             self.store.x("DELETE FROM peaks WHERE day<?", (time.strftime("%Y-%m-%d", time.gmtime(cut)),))
             self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
+            self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
             self.stop.wait(3600)
 
     # ------------------------------------------------------------------ queries used by the API
@@ -2639,6 +2643,8 @@ def make_handler(portal: Portal):
             ip = self.client_ip()
             if portal.limited("bug:" + ip, int(cfg.get("bugreport_per_hour", 6)), 3600) or portal.limited("bug:*", 300, 86400):
                 raise ApiError(429, "Too many reports from this address. Try again later.")
+            if portal.store.one("SELECT COUNT(*) n FROM reports WHERE source='bug' AND status<>'closed'")["n"] >= int(cfg.get("bugreport_open_max", 1000)):
+                raise ApiError(503, "The bug report inbox is full. Try again later.")
             raw = self.body(limit=int(cfg.get("bugreport_max_bytes", 96 * 1024)))
             text = raw.decode("utf-8", "replace").replace("\x00", "")
             if len(text.strip()) < 10:
@@ -2963,7 +2969,9 @@ def make_handler(portal: Portal):
                 rows = portal.store.q("SELECT server, started, by_name, preset, note FROM events")
                 for r in rows:
                     r["preset"] = json.loads(r["preset"] or "{}")
-                    r["password"] = r["preset"].get("g_password", "")
+                    r["password"] = r["preset"].get("g_password", "") if allowed(s["role"], "event") else ""
+                    if not allowed(s["role"], "event"):
+                        r["preset"].pop("g_password", None)
                 return self.json({"events": rows})
             if route == "event" and P:
                 who = self.need(s, "event")
@@ -3072,6 +3080,13 @@ def make_handler(portal: Portal):
                 step = totp_match(row["secret"], self.body_json().get("code"), row["last_step"])
                 if not step:
                     portal.store.audit(s, "2fa failed", detail=self.client_ip(), ok=False)
+                    if portal.limited("2fa-day:" + s["discord_id"], 20, 86400):
+                        # 5 tries per 5 minutes still adds up over days: 20 misses in a day signs the account out everywhere
+                        portal.store.x("DELETE FROM sessions WHERE discord_id=?", (s["discord_id"],))
+                        portal.alert("mod_ban", "Two-step sign-in locked for %s" % s["name"],
+                                     "20 wrong codes in a day from %s. All of this account's sessions were ended." % self.client_ip(),
+                                     key="2fa-lock:" + s["discord_id"], window=3600, urgent=True)
+                        raise ApiError(401, "Too many wrong codes. You have been signed out everywhere; an alert went to staff.")
                     raise ApiError(400, "That code is not right. Check the time on your phone and try the next code.")
                 if route == "2fa/disable":
                     portal.store.x("DELETE FROM totp WHERE discord_id=?", (s["discord_id"],))
