@@ -5,7 +5,7 @@ After=network-online.target
 [Service]
 User=tcpsvc
 Group=tcpsvc
-ExecStart=/usr/bin/python3 /opt/tcp/server-bridge/tcp_insights.py --db /var/lib/tcp-insights/insights.db --key-file ${CREDENTIALS_DIRECTORY}/key --site-root /var/www/truecombat --geoip /var/lib/tcp-insights/geo.csv.gz --github-repo Annoximeme/TrueCombat-Platinum --listen 127.0.0.1:8093
+ExecStart=/usr/bin/python3 /opt/tcp/server-bridge/tcp_insights.py --db /var/lib/tcp-insights/insights.db --key-file ${CREDENTIALS_DIRECTORY}/key --site-root /var/www/truecombat --geoip /var/lib/tcp-insights/geo.csv.gz --github-repo Annoximeme/TrueCombat-Platinum --listen 127.0.0.1:8094
 LoadCredential=key:/etc/tcp-insights/key
 Restart=on-failure
 RestartSec=5
