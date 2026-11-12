@@ -25,6 +25,8 @@ SERVERS="official1:/var/lib/tcpgame/home official2:/var/lib/tcpgame/home-unranke
 BOTDB=/var/lib/tcp-discord-bot
 
 say() { printf '%s\n' "$*"; }
+# a file counts as filled only when it holds something other than white space (an empty line is not a secret)
+filled() { [ -f "$1" ] && grep -q '[^[:space:]]' "$1"; }
 need_root() { [ "$(id -u)" = 0 ] || { say "run as root (sudo)"; exit 1; }; }
 
 # The last 'set rconpassword "..."' in the server's cfg files (official-private.cfg first).
@@ -44,9 +46,9 @@ inspect() {
   say "new:     $(sed -n 's/^VERSION = "\(.*\)"/version \1/p' "$HERE/tcp_staff_portal.py")"
   say "user:    $(id tcpstaff 2>/dev/null || echo 'tcpstaff (will be created)')"
   say "config:  $( [ -f $ETC/config.json ] && echo present || echo 'missing (created from the example)')"
-  say "secret:  $( [ -s $ETC/client-secret ] && echo present || echo 'MISSING: Discord client secret')"
-  say "webhook: $( [ -s $ETC/staff-webhook ] && echo present || echo 'none (alerts stay in the portal)')"
-  say "stats:   $( [ -s $ETC/stats-token ] && echo 'review queue linked' || echo 'review queue not linked (install.sh stats-link)')"
+  say "secret:  $( filled $ETC/client-secret && echo present || echo 'MISSING: Discord client secret')"
+  say "webhook: $( filled $ETC/staff-webhook && echo present || echo 'none (alerts stay in the portal)')"
+  say "stats:   $( filled $ETC/stats-token && echo 'review queue linked' || echo 'review queue not linked (install.sh stats-link)')"
   say "botdb:   $( [ -f $BOTDB/bot.db ] && echo "$BOTDB/bot.db (linked Discord accounts)" || echo 'no Discord bot database')"
   for entry in $SERVERS; do
     key=${entry%%:*}; home=${entry#*:}
@@ -78,7 +80,8 @@ install_portal() {
 
   install -d -m 0750 -o root -g tcpstaff "$ETC"
   [ -f "$ETC/config.json" ] || install -m 0640 -o root -g tcpstaff "$HERE/deploy/config.example.json" "$ETC/config.json"
-  [ -s "$ETC/client-secret" ] || { say "put the Discord client secret in $ETC/client-secret first"; exit 1; }
+  chown root:tcpstaff "$ETC/config.json"; chmod 0640 "$ETC/config.json"     # also when the file was written by hand first
+  filled "$ETC/client-secret" || { say "put the Discord client secret in $ETC/client-secret first"; exit 1; }
   chown root:root "$ETC/client-secret"; chmod 0600 "$ETC/client-secret"
   if grep -q 'DISCORD_' "$ETC/config.json"; then say "fill owners, client_id and guild_id in $ETC/config.json first"; exit 1; fi
   # optional credentials: an empty file switches the feature off
@@ -157,7 +160,7 @@ add_caddy() {
 stats_link() {
   need_root
   install -d -m 0750 -o root -g tcpstaff "$ETC"
-  if [ ! -s "$ETC/stats-token" ]; then
+  if ! filled "$ETC/stats-token"; then
     umask 077; head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > "$ETC/stats-token"; umask 022
   fi
   chown root:root "$ETC/stats-token"; chmod 0600 "$ETC/stats-token"
