@@ -2076,7 +2076,7 @@ class Operations:
 
     # -- website insights (tcp_insights.py on this machine; key from the systemd credential 'insights-key')
     def insights(self, days: int) -> dict:
-        base = self.cfg.get("insights_api", "http://127.0.0.1:8093")
+        base = self.cfg.get("insights_api", "http://127.0.0.1:8094")
         cred = os.environ.get("CREDENTIALS_DIRECTORY")
         key = ""
         if cred and (Path(cred) / "insights-key").exists():
