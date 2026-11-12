@@ -1,0 +1,80 @@
+{
+ "obj_delta": {
+  "image": "layout-delta.webp",
+  "w": 1102,
+  "h": 1400,
+  "mins": [
+   158.0,
+   -370.0
+  ],
+  "maxs": [
+   3164.0,
+   3450.0
+  ]
+ },
+ "obj_northport": {
+  "image": "layout-northport.webp",
+  "w": 1400,
+  "h": 762,
+  "mins": [
+   -3844.0,
+   -3220.0
+  ],
+  "maxs": [
+   2668.0,
+   324.0
+  ]
+ },
+ "obj_railhouse": {
+  "image": "layout-railhouse.webp",
+  "w": 897,
+  "h": 1400,
+  "mins": [
+   -1668.0,
+   -260.0
+  ],
+  "maxs": [
+   2316.0,
+   5956.0
+  ]
+ },
+ "obj_snow": {
+  "image": "layout-snow.webp",
+  "w": 1050,
+  "h": 1400,
+  "mins": [
+   -348.0,
+   -2764.0
+  ],
+  "maxs": [
+   3428.0,
+   2270.0
+  ]
+ },
+ "obj_stadtrand": {
+  "image": "layout-stadtrand.webp",
+  "w": 1269,
+  "h": 1400,
+  "mins": [
+   -3290.0,
+   -2442.0
+  ],
+  "maxs": [
+   424.0,
+   1654.0
+  ]
+ },
+ "obj_village": {
+  "image": "layout-village.webp",
+  "w": 1272,
+  "h": 1400,
+  "mins": [
+   -2462.0,
+   -3732.0
+  ],
+  "maxs": [
+   2088.0,
+   1276.0
+  ]
+ }
+}

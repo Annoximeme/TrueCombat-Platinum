@@ -1,0 +1,56 @@
+{
+  "public_url": "https://staff.truecombat.eu",
+  "host": "127.0.0.1",
+  "port": 8097,
+  "data_dir": "/var/lib/tcp-staff-portal",
+  "site": "https://truecombat.eu",
+  "stats_api": "http://127.0.0.1:8090",
+  "owners": ["DISCORD_USER_ID_OF_THE_OWNER"],
+  "discord": {
+    "client_id": "DISCORD_APPLICATION_ID",
+    "guild_id": "DISCORD_SERVER_ID",
+    "admin_role_ids": [],
+    "moderator_role_ids": []
+  },
+  "maps": ["obj_village", "obj_railhouse", "obj_snow", "obj_delta", "obj_northport", "obj_stadtrand"],
+  "poll_seconds": 3,
+  "ban_sync_seconds": 300,
+  "retention_days": 90,
+  "chat_days": 30,
+  "bugreport_per_hour": 6,
+  "require_2fa": true,
+  "appeals": true,
+  "demo_timezone": "UTC",
+  "discord_bot_db": "/var/lib/tcp-discord-bot/bot.db",
+  "alerts": {
+    "ping_role_id": "",
+    "kinds": ["server_down", "server_up", "suspicion", "dodger", "watch", "reports", "filter", "teamkill", "mod_ban", "appeal", "weekly"]
+  },
+  "suspicion_alert": 60,
+  "afk_flag_seconds": 120,
+  "afk_spectate_seconds": 300,
+  "tk_warn_at": 2,
+  "tk_flag_at": 3,
+  "ladder_days": 90,
+  "servers": [
+    {"key": "official1", "name": "Official #1 Ranked", "kind": "official", "host": "127.0.0.1", "port": 27960,
+     "public_address": "truecombat.eu:27960", "unit": "tcp-official.service", "rcon_credential": "rcon-official1",
+     "reports_dir": "/var/lib/tcpgame/home/tcetest/reports"},
+    {"key": "official2", "name": "Official #2 Unranked", "kind": "official", "host": "127.0.0.1", "port": 27961,
+     "public_address": "truecombat.eu:27961", "unit": "tcp-official2.service", "rcon_credential": "rcon-official2",
+     "reports_dir": "/var/lib/tcpgame/home-unranked/tcetest/reports"},
+    {"key": "pickup1", "name": "Pickup #1", "kind": "pickup", "host": "127.0.0.1", "port": 27963,
+     "public_address": "truecombat.eu:27963", "unit": "tcp-pickup1.service", "rcon_credential": "rcon-pickup1",
+     "reports_dir": "/var/lib/tcpgame/home-pickup1/tcetest/reports"},
+    {"key": "pickup2", "name": "Pickup #2", "kind": "pickup", "host": "127.0.0.1", "port": 27964,
+     "public_address": "truecombat.eu:27964", "unit": "tcp-pickup2.service", "rcon_credential": "rcon-pickup2",
+     "reports_dir": "/var/lib/tcpgame/home-pickup2/tcetest/reports"}
+  ],
+  "services": [
+    {"key": "master", "name": "Master server", "unit": "platinum-master.service"},
+    {"key": "bridge", "name": "Stats and server list", "unit": "tcp-bridge.service"},
+    {"key": "eos", "name": "Anti-cheat sign-in", "unit": "tcp-eos-auth.service"},
+    {"key": "bot", "name": "Discord bot", "unit": "tcp-discord-bot.service"},
+    {"key": "caddy", "name": "Web server", "unit": "caddy.service"}
+  ]
+}
