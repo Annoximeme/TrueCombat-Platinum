@@ -74,7 +74,7 @@ var TCP_API = 'https://api.truecombat.eu';
       acctPasskeyUnsupported: 'This browser does not support passkeys.', acctPasskeyCancelled: 'Cancelled. Nothing was changed.', acctPasskeyName: 'Passkey',
       acctLfsOn: 'Until {t}', acctLfsOff: 'Off', acctPanicSure: 'Press again to unlink every PC', acctPanicDone: 'Every PC is unlinked, your passkeys are removed and you are signed out everywhere.',
       acctBanned: 'Your account is suspended {until}. While it is, your profile is hidden and you cannot link PCs.', acctBannedUntil: 'until {d}', acctBannedForever: 'until further notice',
-      acctBannedWhy: 'Reason: {r}', badgeClean: 'Clean record', badgeTrusted: 'Trusted', badgeCleanTip: 'A month on the servers, 20 matches, no sanction in 90 days',
+      acctBannedWhy: 'Reason: {r}', teamTip: 'Member of Team Terminus, the studio behind TrueCombat: Platinum', badgeClean: 'Clean record', badgeTrusted: 'Trusted', badgeCleanTip: 'A month on the servers, 20 matches, no sanction in 90 days',
       badgeTrustedTip: 'Two months and 50 matches with a clean record. Can take a reserved slot on official servers', acctFormerly: 'Formerly {names}',
       lfsLooking: 'Looking for a squad', lfsUntil: 'until {t}', medalsOf: '{n} of {of}', medalEarned: 'earned {d}', medalMatch: 'in this match',
       rivalRecord: '{w} won, {l} lost', shareCard: 'Save share card', shareSaved: 'Saved', shareFor: 'Match report on truecombat.eu'
@@ -135,7 +135,7 @@ var TCP_API = 'https://api.truecombat.eu';
       acctPasskeyUnsupported: 'Deze browser ondersteunt geen passkeys.', acctPasskeyCancelled: 'Geannuleerd. Er is niets gewijzigd.', acctPasskeyName: 'Passkey',
       acctLfsOn: 'Tot {t}', acctLfsOff: 'Uit', acctPanicSure: 'Druk nogmaals om elke pc te ontkoppelen', acctPanicDone: 'Elke pc is ontkoppeld, je passkeys zijn verwijderd en je bent overal afgemeld.',
       acctBanned: 'Je account is geschorst {until}. Zolang dat duurt is je profiel verborgen en kun je geen pc koppelen.', acctBannedUntil: 'tot {d}', acctBannedForever: 'tot nader bericht',
-      acctBannedWhy: 'Reden: {r}', badgeClean: 'Schoon blazoen', badgeTrusted: 'Vertrouwd', badgeCleanTip: 'Een maand op de servers, 20 potjes, geen sanctie in 90 dagen',
+      acctBannedWhy: 'Reden: {r}', teamTip: 'Lid van Team Terminus, de studio achter TrueCombat: Platinum', badgeClean: 'Schoon blazoen', badgeTrusted: 'Vertrouwd', badgeCleanTip: 'Een maand op de servers, 20 potjes, geen sanctie in 90 dagen',
       badgeTrustedTip: 'Twee maanden en 50 potjes met een schoon blazoen. Mag een gereserveerde plek innemen op officiële servers', acctFormerly: 'Voorheen {names}',
       lfsLooking: 'Op zoek naar een squad', lfsUntil: 'tot {t}', medalsOf: '{n} van {of}', medalEarned: 'behaald op {d}', medalMatch: 'in dit potje',
       rivalRecord: '{w} gewonnen, {l} verloren', shareCard: 'Deelkaart opslaan', shareSaved: 'Opgeslagen', shareFor: 'Wedstrijdverslag op truecombat.eu'
@@ -686,6 +686,13 @@ var TCP_API = 'https://api.truecombat.eu';
       function () { done({ id: '', acct: null, missing: true }); });
   });
 
+  /* Team Terminus: the Twin T mark and the ribbon on a team member's profile (membership is set on the server) */
+  var TWIN_T = '<svg class="tt-mark" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 3H7V14L5 11V6H2Z M16 3H9V14L11 11V6H14Z"/></svg>';
+  function teamHTML(t) {
+    if (!t || !t.role) return '';
+    var studio = /^(de|fr|pl)$/.test(lang) ? '../studio#roster' : 'studio#roster';   // the studio page is English and Dutch only
+    return '<a class="tt-ribbon" href="' + studio + '" title="' + esc(L.teamTip) + '">' + TWIN_T + '<span class="tt-name">Team Terminus</span><span class="tt-role">' + esc(t.role) + '</span></a>';
+  }
   function badgesHTML(list) {
     list = list || [];
     var b = list.indexOf('trusted') >= 0 ? 'trusted' : list.indexOf('clean') >= 0 ? 'clean' : '';
@@ -785,7 +792,7 @@ var TCP_API = 'https://api.truecombat.eu';
           (a.banned.reason ? ' ' + L.acctBannedWhy.replace('{r}', a.banned.reason) : '');
       }
       var bl = q('[data-acct-badges]'), former = (a.formerly || []).length ? '<span class="acct-formerly">' + esc(L.acctFormerly.replace('{names}', a.formerly.join(', '))) + '</span>' : '';
-      bl.innerHTML = badgesHTML(a.badges) + former;
+      bl.innerHTML = teamHTML(a.team) + badgesHTML(a.badges) + former;
       bl.hidden = !bl.innerHTML;
       q('[data-acct-weekly]').checked = !!a.weekly;
 
@@ -988,7 +995,7 @@ var TCP_API = 'https://api.truecombat.eu';
       document.title = (acct ? acct.name : p.name) + ' · ' + L.profile + ' · TrueCombat: Platinum';
       q('[data-pf-name]').textContent = p.name;
       function extras(a) {      // badge, former names and "looking for a squad" under the name
-        var html = '';
+        var html = teamHTML(a.team) ? '<p class="pf-team">' + teamHTML(a.team) + '</p>' : '';
         var b = badgesHTML(a.badges);
         if (b) html += '<p class="pf-badges">' + b + '</p>';
         if ((a.formerly || []).length) html += '<p class="acct-formerly">' + esc(L.acctFormerly.replace('{names}', a.formerly.join(', '))) + '</p>';
@@ -998,11 +1005,11 @@ var TCP_API = 'https://api.truecombat.eu';
       }
       if (acct) {
         q('[data-pf-name]').innerHTML = esc(acct.name) + ' ' + TICK;
-        extras(acct);
         if (acct.discord && acct.discord.name) {
           q('[data-pf-name]').insertAdjacentHTML('afterend', '<p class="acct-discord-line">' + (acct.discord.avatar ? '<img src="' + esc(acct.discord.avatar) +
             '" alt="" width="22" height="22" loading="lazy">' : '') + '<span>' + esc(acct.discord.name) + '</span> <span class="muted">' + L.acctOnDiscord + '</span></p>');
         }
+        extras(acct);      // after the Discord line, so the team ribbon sits right under the name
       } else {
         acctNames().then(function (names) {      // an account's own id: show its name and move to the short address
           if (!names[id]) return;

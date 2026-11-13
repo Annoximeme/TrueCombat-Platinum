@@ -15,7 +15,7 @@ What it gives the player:
   * a reserved name: game servers read a list of hashed name skeletons and the key ids allowed to use them.
 
 Routes (all under /api/account, behind Caddy on the main site so the session cookie is first-party):
-  GET  login, callback, me, check?name=, link/status?code=, export, profile?u=, names.json, reserved.txt
+  GET  login, callback, me, check?name=, link/status?code=, export, profile?u=, names.json, team.json, reserved.txt
   POST logout, signup, name, settings, link/start, claim (from the launcher), unlink, delete
   GET  /internal/... loopback-only, shared token: account lookup for the Discord bot and the staff portal
 
@@ -957,6 +957,26 @@ class Accounts:
                 out[account_pid(a["id"])] = b
         return out
 
+    # -- Team Terminus: the studio's own people get a ribbon on their profile
+    def team_role(self, a: dict) -> str:
+        """The role shown on a team member's profile. Membership comes from config "team" (Discord id -> role), so it
+        follows the Discord sign-in and can't be claimed by picking a name."""
+        team = self.cfg.get("team") or {}
+        role = team.get(str(a.get("discord_id") or "")) if isinstance(team, dict) else None
+        if not role or self.ban_of(account=a["id"]):
+            return ""
+        return str(role)[:60]
+
+    def team_json(self) -> list:
+        """Public team accounts, for the studio page: name, role and stats id, in config order."""
+        team = self.cfg.get("team") or {}
+        out = []
+        for did in (team if isinstance(team, dict) else {}):
+            a = self.by_discord(str(did))
+            if a and a["visibility"] == "public" and self.team_role(a):
+                out.append({"name": a["name"], "role": self.team_role(a), "statsId": account_pid(a["id"])})
+        return out
+
     def formerly(self, acct_id: str) -> list:
         return [r["display"] for r in self.store.all("SELECT display FROM name_history WHERE account=? AND until>? ORDER BY until DESC",
                                                      (acct_id, now()))]
@@ -1011,6 +1031,8 @@ class Accounts:
             "lookingForSquad": {"until": a["lfs_until"], "note": a["lfs_note"] or ""} if (a["lfs_until"] or 0) > t else None,
             "formerly": self.formerly(a["id"]),
         }
+        if self.team_role(a):
+            out["account"]["team"] = {"name": "Team Terminus", "role": self.team_role(a)}
         ban = self.ban_of(account=a["id"])
         if ban:
             out["account"]["banned"] = {"reason": ban["reason"] or "", "until": ban["until"]}
@@ -1023,6 +1045,8 @@ class Accounts:
         t = now()
         out = {"name": a["name"], "verified": True, "created": a["created"], "statsId": account_pid(a["id"]),
                "pcs": len(self.keys_of(a["id"], active_only=True)), "badges": self.badges(a), "formerly": self.formerly(a["id"])}
+        if self.team_role(a):
+            out["team"] = {"name": "Team Terminus", "role": self.team_role(a)}
         if (a["lfs_until"] or 0) > t:
             out["lookingForSquad"] = {"until": a["lfs_until"], "note": a["lfs_note"] or ""}
         if a["show_discord"] and a["discord_name"]:
@@ -1581,6 +1605,9 @@ def make_handler(acc: Accounts):
             if not p:
                 raise ApiError(404, "No public profile with that name.")
             self.json(p, extra={"Cache-Control": "public, max-age=60", "Access-Control-Allow-Origin": "*"})
+
+        def get_team_json(self, qs):
+            self.json(acc.team_json(), extra={"Cache-Control": "public, max-age=300", "Access-Control-Allow-Origin": "*"})
 
         def get_names_json(self, qs):
             self.json(acc.names_json(), extra={"Cache-Control": "public, max-age=120", "Access-Control-Allow-Origin": "*"})

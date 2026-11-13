@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Achter de schermen van 0.36.0, de update die je hoort · TrueCombat: Platinum</title>
+<meta name="description" content="Voicechat, teampings, bots die de map lezen, een volledig vernieuwde audio en optioneel 128 updates per seconde.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-inside-036">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-inside-036">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Achter de schermen van 0.36.0, de update die je hoort">
+<meta property="og:description" content="Voicechat, teampings, bots die de map lezen, een volledig vernieuwde audio en optioneel 128 updates per seconde.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-inside-036.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-inside-036.jpg">
+<meta property="article:published_time" content="2026-11-13">
+<meta property="article:section" content="Release">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Achter de schermen van 0.36.0, de update die je hoort","description":"Voicechat, teampings, bots die de map lezen, een volledig vernieuwde audio en optioneel 128 updates per seconde. Dit is de lange versie: wat er veranderde, waarom we het zo bouwden, hoe we het testten en wat er nog komt.","datePublished":"2026-11-13","dateModified":"2026-11-13","inLanguage":"nl","articleSection":"Release","timeRequired":"PT13M","image":"https://truecombat.eu/img/og-devlog-inside-036.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-inside-036","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Achter de schermen van 0.36.0, de update die je hoort">
+<meta name="twitter:description" content="Voicechat, teampings, bots die de map lezen, een volledig vernieuwde audio en optioneel 128 updates per seconde.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Achter de schermen van 0.36.0, de update die je hoort","item":"https://truecombat.eu/nl/devlog-inside-036"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-inside-036">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-inside-036">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-inside-036">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=9cba1b76e3">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Wapens</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Gids</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Ranglijsten</a></li>
+      <li><a href="competitive">Competitief</a></li>
+      <li><a href="news">Nieuws</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-13">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Zoeken</button><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="media">Media</a><a href="guide">Gids</a><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Steun ons</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq">Vragen</a><a href="press">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-inside-036" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-inside-036" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Steun ons</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="inside-036" data-min="13">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/media-village-yard.webp); --art-s: url(../img/media-village-yard-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.36.0</span><time datetime="2026-11-13">13 nov 2026</time><span>13 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="inside-036" hidden></span></p>
+      <h1>Achter de schermen van 0.36.0, de update die je hoort</h1>
+      <p class="lede">Voicechat, teampings, bots die de map lezen, een volledig vernieuwde audio en optioneel 128 updates per seconde. Dit is de lange versie: wat er veranderde, waarom we het zo bouwden, hoe we het testten en wat er nog komt.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#voicechat">Voicechat</a></li>
+          <li><a href="#teampings">Teampings</a></li>
+          <li><a href="#bots-die-de-map-lezen">Bots die de map lezen</a></li>
+          <li><a href="#de-audio-volledig-vernieuwd">De audio, volledig vernieuwd</a></li>
+          <li><a href="#online-spelen-64-of-128-updates-per-seconde">Online spelen: 64 of 128 updates per seconde</a></li>
+          <li><a href="#naamkleuren">Naamkleuren</a></li>
+          <li><a href="#een-installatiemap-die-even-groot-blijft">Een installatiemap die even groot blijft</a></li>
+          <li><a href="#f12-rapporten-rechtstreeks-naar-ons">F12-rapporten, rechtstreeks naar ons</a></li>
+          <li><a href="#beveiliging">Beveiliging</a></li>
+          <li><a href="#fixes">Fixes</a></li>
+          <li><a href="#hoe-we-het-testten">Hoe we het testten</a></li>
+          <li><a href="#wat-de-update-niet-haalde">Wat de update niet haalde</a></li>
+          <li><a href="#bedankt">Bedankt</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Versie 0.36.0 is uit, één dag na 0.35.0. Dat is geen toeval. Veel van het werk in deze update was bijna klaar toen 0.35.0 verscheen, en we kozen ervoor om het nog een dag extra te testen in plaats van het in de vorige release te proppen.</p>
+<p>0.35.0 ging over vertrouwen: anti-cheat, geverifieerde statistieken, een launcher waarop je kunt rekenen. 0.36.0 gaat over gevoel. Het verandert hoe de game klinkt, hoe je team communiceert, hoe de bots bewegen en hoe vaak je game iets van de server hoort. De patch notes sommen elke wijziging op. Deze post legt de grote onderdelen uit, de keuzes erachter en hoe we ze testten, en hij is eerlijk over wat de update niet haalde.</p>
+<div class="callout"><p>De launcher haalt 0.36.0 zelf binnen. Je instellingen blijven behouden. Wil je de nieuwe 128 updates per seconde proberen, dan vind je die onder Options &gt; System &gt; Network updates.</p></div>
+<h2 id="voicechat">Voicechat</h2>
+<p>TrueCombat was altijd al een game van callouts, en tot nu toe gebeurden die in aparte voice-apps. Vanaf 0.36.0 zit voicechat in de game zelf.</p>
+<p>Het werkt als een squadradio. Hou <strong>H</strong> ingedrukt om via de radio met je team te praten. Tegenstanders horen dat nooit, waar ze ook staan. Hou <strong>N</strong> ingedrukt om hardop te spreken. Iedereen in je buurt hoort dat, ook de vijand, dus een fluistering achter een muur kan je verraden. We hielden die twee bewust gescheiden. Alleen een teamkanaal maakt van elke speler een perfecte communicator over de hele map. Alleen lokale stem maakt samenwerken onmogelijk. Samen geven ze je elke keer een keuze als je iets zegt.</p>
+<figure class="wide">
+  <img src="../img/media-village-yard.webp" alt="Een vuurgevecht op het erf van Village" width="1280" height="720" loading="lazy">
+  <figcaption>Callouts zoals deze gebeuren nu in de game zelf: teamradio op H, lokale stem op N.</figcaption>
+</figure>
+<p>De radio heeft een licht radio-effect dat je kunt uitschakelen. Onder <strong>Options &gt; Voice</strong> kies je je microfoon, de versterking, push-to-talk of spraakactivatie met een instelbare drempel, en een lijst op het scherm van wie er praat. Met een microfoontest hoor je je eigen stem terug zonder iets te versturen. Je kunt afzonderlijke spelers dempen via het mute-menu, of het hele vijandelijke team.</p>
+<p>Voice gebruikt Opus, dezelfde open codec waarop de meeste moderne voice-apps draaien, zodat het helder blijft bij een bescheiden bandbreedte. Servers beslissen zelf of ze voice inschakelen. Op de officiële servers staat het aan.</p>
+<h3>Hoe we het testten</h3>
+<p>Voice is moeilijk te testen zonder een kamer vol mensen, dus bouwden we een test die er een speelt. Geautomatiseerde clients verbinden met een server, spreken vaste zinnen in op elk kanaal, en de test controleert wie wat hoort. De teamradio moet elke teamgenoot bereiken en niemand van het andere team. Lokale stem moet iedereen bereiken die dichtbij genoeg is, aan beide kanten. Ook de snelle chat uit het V-menu moet bij de juiste mensen aankomen. Die laatste controle vond vlak voor de freeze nog een echte bug: in Practice en free-for-all behandelde de game elke speler als toeschouwer en weigerde het V-menu. Dat is opgelost in deze release.</p>
+<p>Wat de test ons niet kan vertellen, is hoe jouw microfoon klinkt via jouw headset in een echt potje. Daar hebben we jou voor nodig. Klinkt er iets niet goed, druk dan op F12 in de game en laat het ons weten.</p>
+<h2 id="teampings">Teampings</h2>
+<p>Niet elke callout heeft een stem nodig. Druk op de <strong>middelste muisknop</strong> om een plek te markeren voor je team, of richt op een tegenstander om hem aan te wijzen. Je teamgenoten zien de markering vijf seconden, met een korte melding. Pings werken alleen in teammodi, en ze zijn beperkt zodat een nerveuze teamgenoot je scherm er niet mee kan volstoppen. Wil je de markeringen van anderen helemaal niet zien, dan verbergt <code>cg_pings 0</code> ze.</p>
+<h2 id="bots-die-de-map-lezen">Bots die de map lezen</h2>
+<p>Bots in Platinum waren altijd goed in één ding: richten. In alles wat een speler als een speler laat overkomen, waren ze een stuk zwakker. Ze namen elke ronde dezelfde route, liepen in een rij door deuropeningen, en draaiden zich om en vuurden zodra je in beeld kwam. 0.36.0 is de eerste grote stap om dat te veranderen.</p>
+<ul>
+  <li><strong>Ze lezen de map.</strong> Bots verspreiden zich nu over de verschillende routes naar een doel in plaats van elkaar te volgen. Ze nemen deuropeningen één voor één, vertragen om hoeken te checken en richten via het vizier als ze een hoek bewaken.</li>
+  <li><strong>Ze hebben even tijd nodig om je te zien.</strong> Een bot reageert niet meer op het moment dat je in zijn zicht komt. Hoe snel hij je opmerkt, hangt af van de afstand, het licht, of je beweegt, en of je staat, hurkt of ligt. Wie over een open straat sprint, valt op. Wie door een donkere tuin kruipt, vaak niet.</li>
+  <li><strong>Ze kamperen niet meer bij spawns.</strong> Bots houden de uitgangen van je spawn niet meer bezet.</li>
+  <li><strong>Ze hebben een persoonlijkheid.</strong> Elke bot komt nu uit een selectie van 32, elk met een eigen naam, een speelstijl ergens tussen roekeloos en voorzichtig, en favoriete wapens.</li>
+  <li><strong>Ze praten.</strong> Bots melden vijandelijke posities met de naam van de plek in de teamchat, en laten weten wanneer de bom geplant is of een vlag genomen is. Wil je dat ze stiller zijn, dan regelt <code>bot_chat</code> hoeveel ze zeggen.</li>
+  <li><strong>Ze luisteren.</strong> Typ "follow me", "hold here" of "push" in de teamchat en bots in de buurt reageren. Vraag een bot of hij een bot is, en hij zegt altijd de waarheid.</li>
+  <li><strong>Ze houden potjes spannend.</strong> Zijn er echte spelers in de game, dan passen bots hun niveau aan zodat de stand dicht bij elkaar blijft. Met <code>bot_adaptive 0</code> zetten serverbeheerders dat uit als ze een vaste moeilijkheid verkiezen.</li>
+</ul>
+<p>We testten de bots zoals we alles testen: in volledige botpotjes op elke map, met vaste controles voor routes, deuropeningen, reactietijd en chat, en met een echte speler in de game. Die laatste test toonde één ding dat nog niet goed zit. Bots proberen uit de vuurlijn van een teamgenoot te stappen, maar als een muur de kant blokkeert die ze kiezen, gaan ze te traag opzij. De oplossing wordt getest voor de volgende update.</p>
+<h2 id="de-audio-volledig-vernieuwd">De audio, volledig vernieuwd</h2>
+<p>Geluid is de helft van een tactische shooter. Je hoort een speler voor je hem ziet, en je hoort waar hij is. De originele engine was gebouwd voor de hardware van 2003, en dat merkte je: in een druk vuurgevecht vielen geluiden gewoon weg zodra er te veel tegelijk speelden, en vaak waren dat net de geluiden die je nodig had.</p>
+<p>0.36.0 bouwt de mix van de grond af opnieuw op.</p>
+<ul>
+  <li><strong>Twee keer zoveel geluiden tegelijk.</strong> De game kan nu twee keer zoveel geluiden tegelijk afspelen. Moet hij toch kiezen, dan kiest hij bewust: vijandelijke voetstappen en geweervuur winnen het van achtergrondgeluid en vallende hulzen.</li>
+  <li><strong>Een evenwichtige mix.</strong> Elk geluid in de game werd gemeten en op volume gebracht, categorie per categorie, zodat een pistool niet meer per ongeluk luider is dan een geweer. Een limiter op de uitgang voorkomt dat luide momenten vervormen.</li>
+  <li><strong>Geweervuur krijgt het podium.</strong> Schoten en explosies dichtbij dempen de rest van de mix even, zodat ze erdoor komen zoals het hoort. Je kunt instellen hoe sterk dat effect is.</li>
+  <li><strong>Natuurlijke variatie.</strong> Voetstappen, geweervuur, inslagen en hulzen variëren nu licht in toonhoogte, zodat de tiende voetstap niet meer klinkt als een kopie van de eerste.</li>
+  <li><strong>Kogels die je hoort.</strong> Kogels die vlak langs je gaan, knallen en suizen voorbij. Je weet dat er op je geschoten wordt, en ongeveer van waar, nog voor je een inslag ziet.</li>
+  <li><strong>De nasleep van een explosie.</strong> Een explosie dichtbij dempt je gehoor even en komt binnen met een lage dreun. Het fluiten in je oren is nu een zachtere toon. De originele piep blijft beschikbaar voor wie die verkiest.</li>
+</ul>
+<p>Alles wat nieuw is, heeft een instelling op de nieuwe pagina <strong>Options &gt; Audio</strong>.</p>
+<h2 id="online-spelen-64-of-128-updates-per-seconde">Online spelen: 64 of 128 updates per seconde</h2>
+<p>Dit is de wijziging die de meeste spelers nooit in een menu zullen zien, en de wijziging die we het langst hebben gemeten.</p>
+<p>Je game ziet de andere spelers niet rechtstreeks. Hij ziet een reeks snapshots van de server, elk een beeld van de wereld op één moment, en vult de gaten daartussen zelf in. Hoe meer snapshots er per seconde binnenkomen, hoe beter wat jij ziet overeenkomt met wat de server ziet. Tot nu toe vroeg de launcher er 40 per seconde.</p>
+<p>Vanaf 0.36.0 is de standaard <strong>64</strong>. Op servers die op 128 ticks draaien, kun je <strong>128</strong> kiezen onder <strong>Options &gt; System &gt; Network updates</strong>. 64 blijft de standaard met een reden: 128 verdubbelt ongeveer de hoeveelheid data die je ontvangt, tot zo'n 45 à 65 KB/s in een vol potje, en niet elke verbinding wil dat. Kan de jouwe het aan, probeer het dan.</p>
+<p>Meer snapshots versturen was het makkelijke deel. Ze een echte internetverbinding laten overleven, was dat niet. Elke snapshot wordt verstuurd als een wijziging ten opzichte van een eerdere, en de originele engine onthield maar een korte geschiedenis van eerdere snapshots. Bij 128 per seconde volstond een korte lagpiek om van het einde van die geschiedenis te vallen, en dan moest de game opnieuw beginnen met een volledige snapshot van de hele wereld. In een test met 250 ms vertraging gebeurde dat 286 keer per minuut. 0.36.0 houdt een langere geschiedenis bij, en in dezelfde test gebeurde het nul keer.</p>
+<p>We ontdekten ook dat servers op Windows de 128 ticks niet echt haalden. Windows wekt slapende programma's standaard op met een grove timer, waardoor een server die 128 snapshots per seconde wilde versturen er ongeveer 70 haalde. Dedicated servers vragen Windows nu om een fijne timer en houden hun volle tempo vast. Dat is belangrijk voor iedereen die een server op zijn eigen pc host.</p>
+<p>De eindcijfers, op een volle 128-tickserver met vijftien bots en één echte speler: 127,6 snapshots per seconde ontvangen op de instelling 128, 63,6 op 64, en 126,2 op een verbinding met 60 ms vertraging en één procent pakketverlies. Geen enkele snapshot kwam te laat binnen om nog bruikbaar te zijn.</p>
+<h3>Treffers die kloppen met de server</h3>
+<p>Ook twee oudere problemen zijn opgelost. Ten eerste beslist je game nu met precies dezelfde regels als de server of hij een hitmarker toont, zodat de marker en de server het eens zijn. Ten tweede tellen hoofden en benen die in bepaalde hoeken en houdingen buiten de hitbox van een speler steken nu mee. Vroeger konden schoten op een leunend hoofd of een uitgestrekt been missen, terwijl ze op jouw scherm duidelijk raak waren.</p>
+<p>Om beide te controleren, vuurden we honderd schoten op verschillende delen van het lichaam vanuit elke houding en vergeleken we wat de game toonde met wat de server telde: honderd op honderd kwamen overeen. Daarna herhaalden we de test over 160 gesimuleerde slechte verbindingen met vertraging, jitter en pakketverlies.</p>
+<p>Er is ook een nieuwe netgrafiek, <code>cg_netGraph 3</code>. Die toont je ping, pakketverlies in beide richtingen, snapshots per seconde, gaten tussen snapshots en hoe vaak je game zijn voorspelling moest bijsturen. Voelt je verbinding ooit verkeerd aan, dan vertelt een screenshot van die grafiek ons meer dan welke beschrijving ook.</p>
+<div class="callout"><p>Eén beperking: demo's die met 128 updates per seconde zijn opgenomen, spelen in oudere versies van de game mogelijk niet volledig af.</p></div>
+<h2 id="naamkleuren">Naamkleuren</h2>
+<p>De launcher heeft nu een echte kleurkiezer voor je naam, onder <strong>Settings &gt; Controls &gt; Player &gt; Name colours</strong>. Selecteer letters door te klikken en te slepen, kies een kleur en zie het resultaat meteen. Gekleurde namen worden nu ook overal in de game correct getoond: op het scorebord, in de chat en in het Deployment Menu, met elke kleur die de game kent, niet alleen de eerste tien.</p>
+<h2 id="een-installatiemap-die-even-groot-blijft">Een installatiemap die even groot blijft</h2>
+<p>Een speler wees ons erop dat zijn installatiemap bij elke update groeide. Hij had gelijk. Onder DirectX 12 bewaart de game gecompileerde shaders zodat maps de volgende keer sneller laden, en hij bewaarde een nieuwe kopie bij elke mapwissel en elke server. Na een paar weken kon dat oplopen tot enkele gigabytes.</p>
+<p>De cache houdt nu één kopie bij die over maps en servers heen hergebruikt wordt. De launcher houdt ook caches, replays, screenshots en bugrapporten onder een maximale grootte en verwijdert eerst de oudste bestanden. <strong>Settings &gt; Storage</strong> toont hoeveel ruimte elk ervan inneemt. De eerste start van de nieuwe launcher ruimt een te grote cache van eerdere versies op, en updates wissen de shadercache niet langer twee keer, zodat je eerste potje na een update sneller laadt.</p>
+<h2 id="f12-rapporten-rechtstreeks-naar-ons">F12-rapporten, rechtstreeks naar ons</h2>
+<p>Sinds 0.35.0 bewaart F12 een bugrapport met een screenshot. Vanaf 0.36.0 komt dat rapport ook rechtstreeks bij het ontwikkelteam terecht, met de details die we nodig hebben om het probleem te vinden: de map, je positie, de server, de build en een paar regels uit je console. Hardwaregegevens zijn optioneel. Elk rapport wordt nog steeds op je pc bewaard, en als versturen mislukt, laat de game je dat weten en houdt hij het bij. Hou je je rapporten liever voor jezelf, dan regelt <code>cg_bugReportUpload 0</code> dat.</p>
+<p>Dit is het nuttigste wat je voor de game kunt doen. Een rapport dat je verstuurt op het moment dat er iets misgaat, vanaf de exacte plek waar het gebeurde, bespaart ons uren.</p>
+<h2 id="beveiliging">Beveiliging</h2>
+<p>We hebben onze beveiligingsmaatregelen in deze update aangescherpt en uitgebreid. Zoals altijd gaan we niet in detail in op hoe.</p>
+<h2 id="fixes">Fixes</h2>
+<p>Twee punten uit de lijst "wat de update niet haalde" in onze post over 0.35.0 zijn opgelost:</p>
+<ul>
+  <li><strong>Het red-dotvizier.</strong> Het M68-vizier op de M4 SOPMOD toont nu een scherpe rode stip als je richt. Vroeger was dat een wazig vierkant.</li>
+  <li><strong>Instant replay.</strong> F8-clips hebben minstens vijf seconden spel nodig, en de melding "Clip saved" toont de echte lengte van de clip.</li>
+</ul>
+<p>En een aantal kleinere:</p>
+<ul>
+  <li>Options &gt; System &gt; Calibrate Brightness opent weer.</li>
+  <li>Je eigen schoten spelen het juiste geluid af voor het wapen dat je vasthoudt.</li>
+  <li>Toeschouwers blijven toeschouwer na een mapwissel of herstart, in plaats van in een team te worden gezet.</li>
+  <li>Voetstappen en het meebewegen van het beeld volgen omgeschakeld wandelen en sprinten correct.</li>
+  <li>In de serverbrowser werkt Reconnect weer na een verkeerd wachtwoord, en meedoen aan een lopend potje via de browser in de game werkt.</li>
+  <li>Neemt een DLSS-override in de NVIDIA App het over, dan meldt de game dat nu, in plaats van stil te falen.</li>
+</ul>
+<h2 id="hoe-we-het-testten">Hoe we het testten</h2>
+<p>Elke kandidaat-build gaat door dezelfde poort: een volledige regressietest van de game en de dedicated server op DirectX 12 en OpenGL, negentien geautomatiseerde controles in totaal, van gameplay en hitregistratie tot instellingen, herstarts, de launcher en de grootte van de installatiemap. Daarbovenop komen de live-controles: de test met honderd schoten, 160 gesimuleerde slechte verbindingen, voice in team- en free-for-allmodi, de serverbrowser, botpotjes en voor deze update de test met 128 snapshots.</p>
+<p>Er waren tien kandidaat-builds nodig om hier te komen. Elke build vond wel iets: een verouderd menubestand dat de nieuwe Audio-pagina verborg, een test die Practice niet dekte, een schijf die tijdens één run zo druk was dat een testclient de verbinding verloor. Elke fout werd tot op de oorzaak uitgezocht voor we verdergingen. De tiende build doorstond alles en werd op 13 november verpakt en gepubliceerd.</p>
+<h2 id="wat-de-update-niet-haalde">Wat de update niet haalde</h2>
+<p>Sommig werk was dichtbij maar nog niet klaar, en dat zeggen we liever dan het stil te laten.</p>
+<ul>
+  <li><strong>Hoe wapens aanvoelen.</strong> Een ronde afstelling van hoe wapens aanvoelen bij het vuren is gebouwd, maar heeft meer playtests nodig voor ze verschijnt.</li>
+  <li><strong>Slimmere bots, deel twee.</strong> De vuurlijnfix die we hierboven beschreven, en de volgende stap in hoe bots als team samenwerken.</li>
+  <li><strong>Een nieuwe look voor menu's en HUD.</strong> Een volledige vernieuwing van elk menu en de HUD in de game wordt getest, met de huidige HUD als optie.</li>
+  <li><strong>Visuele en gebruiksvriendelijke verbeteringen.</strong> Een reeks kleinere visuele en praktische aanpassingen in de game en de launcher.</li>
+</ul>
+<p>Die staan gepland voor de volgende update, en ze verschijnen wanneer ze door dezelfde poort raken als alles hierboven, niet eerder. De <a href="./#roadmap">roadmap</a> toont het volledige plan.</p>
+<h2 id="bedankt">Bedankt</h2>
+<p>Bijna alles in deze update begon bij een speler: een vraag naar ingebouwde voice, een klacht dat bots robotachtig aanvoelden, een vraag over een groeiende installatiemap. Bedankt om te spelen, te melden en geduldig te zijn terwijl we het goed kregen.</p>
+<p>Voelt er iets niet goed aan in 0.36.0, druk dan op F12 in de game of laat het ons weten op <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. Tot op de servers.</p>
+      </div>
+      <div class="post-rate" data-rate="inside-036" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-a-new-look"><small>Vorig artikel</small>Een nieuwe look, van laadscherm tot kill feed</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-035" tabindex="-1" aria-hidden="true"><img src="../img/media-village-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.35.0</span><time datetime="2026-11-12">12 nov 2026</time><span>13 min lezen</span><span class="post-stat" data-post-stat="inside-035" hidden></span></p>
+          <h2><a href="devlog-inside-035">Achter de schermen van 0.35.0, onze grootste update tot nu toe</a></h2>
+          <p>Easy Anti-Cheat zonder account, een launcher die van nul af is herbouwd, spelersstatistieken uit elk geverifieerd potje en het grootste deel van de playtestfixes. Dit is de lange versie: wat er veranderde, waarom we het zo bouwden, hoe we het testten en wat de update niet haalde.</p>
+          <a class="more" href="devlog-inside-035">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-a-new-look" tabindex="-1" aria-hidden="true"><img src="../img/devlog/a-new-look-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-13">13 nov 2026</time><span>3 min lezen</span><span class="post-stat" data-post-stat="a-new-look" hidden></span></p>
+          <h2><a href="devlog-a-new-look">Een nieuwe look, van laadscherm tot kill feed</a></h2>
+          <p>Laadschermen die de map uitleggen, een tactische kaart, een podium na de match, een fotomodus, HDR-uitvoer, duidelijke foutschermen en een launcher die je met een controller bedient. Dit komt eraan, en zo is het gebouwd.</p>
+          <a class="more" href="devlog-a-new-look">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=444c0d17ec"></script>
+</body>
+</html>
