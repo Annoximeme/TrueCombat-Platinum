@@ -690,7 +690,8 @@ var TCP_API = 'https://api.truecombat.eu';
   var TWIN_T = '<svg class="tt-mark" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 3H7V14L5 11V6H2Z M16 3H9V14L11 11V6H14Z"/></svg>';
   function teamHTML(t) {
     if (!t || !t.role) return '';
-    return '<a class="tt-ribbon" href="studio#roster" title="' + esc(L.teamTip) + '">' + TWIN_T + '<span class="tt-name">Team Terminus</span><span class="tt-role">' + esc(t.role) + '</span></a>';
+    var studio = /^(de|fr|pl)$/.test(lang) ? '../studio#roster' : 'studio#roster';   // the studio page is English and Dutch only
+    return '<a class="tt-ribbon" href="' + studio + '" title="' + esc(L.teamTip) + '">' + TWIN_T + '<span class="tt-name">Team Terminus</span><span class="tt-role">' + esc(t.role) + '</span></a>';
   }
   function badgesHTML(list) {
     list = list || [];
