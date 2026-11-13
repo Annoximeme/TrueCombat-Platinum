@@ -42,3 +42,16 @@ HEX = {
 }
 ALPHA = {"hairline": 0.12, "hairlineStrong": 0.24, "track": 0.09, "scrim": 0.72}
 FONT = {"display": "Saira Condensed", "body": "IBM Plex Sans", "mono": "JetBrains Mono"}
+# in-game menus and HUD (Direction A), exact menu colour strings
+GAME = {
+    "GRAPHITE": ".051 .067 .086",
+    "STEEL": ".078 .102 .129",
+    "INK": ".035 .043 .055",
+    "T1": ".933 .945 .953",
+    "T2": ".655 .690 .729",
+    "T3": ".424 .467 .514",
+    "ACC": ".824 .231 .251",
+    "ACC_HOT": ".878 .267 .286",
+    "AMBER": ".945 .690 .302",
+    "DANGER": ".788 .541 .549"
+}
