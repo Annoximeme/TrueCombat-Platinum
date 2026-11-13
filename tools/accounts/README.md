@@ -9,7 +9,7 @@ Optional accounts for TrueCombat: Platinum. Nobody needs one to play. A player w
 3. **A reserved name.** Official servers keep the name for its owner, look-alikes included.
 
 `tcp_accounts.py` is the whole service: Python 3.10+ standard library, one SQLite file. Tests: `python3 test_accounts.py`
-(102 checks; needs the `cryptography` package to sign like the launcher, the service itself does not).
+(103 checks; needs the `cryptography` package to sign like the launcher, the service itself does not).
 
 ## Identity
 
