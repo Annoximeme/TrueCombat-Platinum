@@ -34,7 +34,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=95fe2ea9a3">
+<link rel="stylesheet" href="../style.css?v=354f047aa4">
 </head>
 <body>
 <!--nav-->
@@ -86,6 +86,8 @@
       <div class="acct-perk"><h2>Een profiel om te delen</h2><p>Matchgeschiedenis, beste wapens en records op één kort adres, met je Discord alleen als je dat wilt.</p></div>
     </div>
     <p class="acct-cta"><a class="btn btn-play acct-discord" href="/api/account/login"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17 17 0 0 0 5.2 2.6l1.1-1.8a11 11 0 0 1-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3a11 11 0 0 1-1.7.8l1.1 1.8a17 17 0 0 0 5.2-2.6c.4-4.4-.7-8.3-2.1-11.7ZM8.7 14.7c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg><span class="stack"><span class="big">Aanmelden met Discord</span><span class="small">Geen e-mail, geen wachtwoord</span></span></a></p>
+    <p class="acct-row acct-alt"><button class="btn" type="button" data-acct-passkey-login>Aanmelden met een passkey</button></p>
+    <p class="acct-error" data-acct-passkey-login-error hidden></p>
     <p class="muted acct-fine">We vragen Discord wie je bent en verder niets. Lees wat we bewaren op de <a href="privacy">privacypagina</a>.</p>
   </div>
 </section>
@@ -114,10 +116,25 @@
 
 <section class="band acct-band" data-acct-in hidden>
   <div class="wrap acct-grid">
+    <div class="server-card full acct-card acct-wide acct-banned" data-acct-banned hidden>
+      <header><h2>Account geschorst</h2></header>
+      <div class="acct-body">
+        <p class="acct-hint" data-acct-banned-text></p>
+      </div>
+    </div>
+    <div class="server-card full acct-card acct-wide acct-pair" data-acct-pair hidden>
+      <header><h2>Een pc koppelen</h2><span class="pill" data-acct-pair-label></span></header>
+      <div class="acct-body">
+        <p>Controleer of je launcher de code <b class="acct-code" data-acct-pair-key></b> toont. Keur alleen een pc goed die nu voor je staat: hij speelt onder jouw naam.</p>
+        <p class="acct-row"><button class="btn btn-play" type="button" data-acct-pair-yes><span class="stack"><span class="big">Deze pc koppelen</span></span></button> <button class="btn" type="button" data-acct-pair-no>Niet mijn pc</button></p>
+        <p class="acct-hint" data-acct-pair-state hidden></p>
+      </div>
+    </div>
     <div class="server-card full acct-card">
       <header><h2>Naam</h2><a class="pill ok" data-acct-profile href="#">Profiel</a></header>
       <div class="acct-body">
         <p class="acct-name" data-acct-name></p>
+        <p class="acct-badges" data-acct-badges hidden></p>
         <form class="acct-inline" data-acct-rename>
           <input name="name" minlength="3" maxlength="20" spellcheck="false" aria-label="Nieuwe naam">
           <button class="btn" type="submit">Wijzigen</button>
@@ -131,7 +148,29 @@
       <div class="acct-body">
         <label class="acct-check"><input type="checkbox" data-acct-public> Openbaar profiel</label>
         <label class="acct-check"><input type="checkbox" data-acct-discord> Toon mijn Discord-naam op mijn profiel</label>
-        <p class="acct-hint">Je statistieken tellen hoe dan ook mee. Een verborgen account houdt zijn naam gereserveerd.</p>
+        <label class="acct-check"><input type="checkbox" data-acct-weekly> Stuur me een weekoverzicht op Discord</label>
+        <p class="acct-hint">Je statistieken tellen hoe dan ook mee. Een verborgen account houdt zijn naam gereserveerd. Het weekoverzicht is een privébericht van onze bot met jouw week in cijfers.</p>
+      </div>
+    </div>
+    <div class="server-card full acct-card">
+      <header><h2>Op zoek naar een squad</h2><span class="pill" data-acct-lfs-state></span></header>
+      <div class="acct-body">
+        <p class="acct-hint">Laat anderen weten dat je wilt samenspelen. Je staat op de serverpagina en in onze Discord tot de tijd om is.</p>
+        <form class="acct-lfs" data-acct-lfs>
+          <label class="acct-field"><span>Notitie</span><input name="note" maxlength="60" spellcheck="true" placeholder="EU-avonden, objective-modi"></label>
+          <label class="acct-field"><span>Voor</span><select name="hours"><option value="1">1 uur</option><option value="2" selected>2 uur</option><option value="4">4 uur</option><option value="6">6 uur</option></select></label>
+          <p class="acct-row"><button class="btn btn-play" type="submit" data-acct-lfs-on><span class="stack"><span class="big">Ik zoek</span></span></button> <button class="btn" type="button" data-acct-lfs-off>Stoppen</button></p>
+        </form>
+        <p class="acct-error" data-acct-lfs-error hidden></p>
+      </div>
+    </div>
+    <div class="server-card full acct-card">
+      <header><h2>Passkeys</h2></header>
+      <div class="acct-body">
+        <p class="acct-hint">Een passkey (Windows Hello, Face ID, je telefoon of een beveiligingssleutel) is een tweede manier om binnen te komen, zodat je je account houdt, ook als je je Discord kwijtraakt.</p>
+        <ul class="acct-keys" data-acct-passkeys></ul>
+        <p><button class="btn" type="button" data-acct-passkey-add>Passkey toevoegen</button></p>
+        <p class="acct-error" data-acct-passkey-error hidden></p>
       </div>
     </div>
     <div class="server-card full acct-card acct-wide">
@@ -141,6 +180,7 @@
         <ul class="acct-keys" data-acct-keys></ul>
         <p><button class="btn btn-play" type="button" data-acct-link><span class="stack"><span class="big">Deze pc koppelen</span><span class="small">Opent de launcher</span></span></button></p>
         <p class="acct-hint" data-acct-link-state hidden></p>
+        <p class="acct-hint">Op een andere pc? Open daar de launcher, kies <b>Koppelen met telefoon</b> en scan de code terwijl je hier bent aangemeld.</p>
       </div>
     </div>
     <div class="server-card full acct-card acct-wide">
@@ -153,6 +193,13 @@
           <button class="btn" type="submit">Account verwijderen</button>
         </form>
         <p class="acct-error" data-acct-delete-error hidden></p>
+      </div>
+    </div>
+    <div class="server-card full acct-card acct-wide acct-danger-card">
+      <header><h2>Pc kwijt of gestolen</h2></header>
+      <div class="acct-body">
+        <p class="acct-hint">Ontkoppelt elke pc en meldt je overal tegelijk af. Je rang en statistieken blijven bij het account: koppel daarna de pc's die je nog hebt opnieuw.</p>
+        <p><button class="btn" type="button" data-acct-panic>Elke pc ontkoppelen en afmelden</button></p>
       </div>
     </div>
   </div>
@@ -197,6 +244,6 @@
 </footer>
 <!--/footer-->
 
-<script src="../js/site.js?v=e9790fc491"></script>
+<script src="../js/site.js?v=6145c8135f"></script>
 </body>
 </html>
