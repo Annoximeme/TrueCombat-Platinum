@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/nl/devlog</id>
   <updated>2026-11-13T12:00:00Z</updated>
   <entry>
+    <title>Een nieuwe look, van laadscherm tot kill feed</title>
+    <link href="https://truecombat.eu/nl/devlog-a-new-look"/>
+    <id>https://truecombat.eu/nl/devlog-a-new-look</id>
+    <published>2026-11-13T12:00:00Z</published>
+    <updated>2026-11-13T12:00:00Z</updated>
+    <category term="Graphics"/>
+    <summary>Laadschermen die de map uitleggen, een tactische kaart, een podium na de match, een fotomodus, HDR-uitvoer, duidelijke foutschermen en een launcher die je met een controller bedient. Dit komt eraan, en zo is het gebouwd.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Elke map in 3D, in je browser</title>
     <link href="https://truecombat.eu/nl/devlog-maps-in-3d"/>
     <id>https://truecombat.eu/nl/devlog-maps-in-3d</id>

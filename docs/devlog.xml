@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/devlog</id>
   <updated>2026-11-13T12:00:00Z</updated>
   <entry>
+    <title>A new look, from the loading screen to the kill feed</title>
+    <link href="https://truecombat.eu/devlog-a-new-look"/>
+    <id>https://truecombat.eu/devlog-a-new-look</id>
+    <published>2026-11-13T12:00:00Z</published>
+    <updated>2026-11-13T12:00:00Z</updated>
+    <category term="Graphics"/>
+    <summary>Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a controller. Here is what is coming and how it was built.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Every map, in 3D, in your browser</title>
     <link href="https://truecombat.eu/devlog-maps-in-3d"/>
     <id>https://truecombat.eu/devlog-maps-in-3d</id>
