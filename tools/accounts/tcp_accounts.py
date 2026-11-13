@@ -42,7 +42,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 log = logging.getLogger("tcp-accounts")
 
 LINK_TAG = b"TrueCombat account link v1\n"
@@ -711,7 +711,7 @@ class Accounts:
         token = credential("stats-token", self.cfg.get("stats_token", ""))
         if url and token:
             body = json.dumps({"aliases": self.aliases()}).encode()
-            req = urllib.request.Request(url.rstrip("/") + "/accounts/aliases", data=body, method="POST",
+            req = urllib.request.Request(url.rstrip("/") + "/staff/accounts/aliases", data=body, method="POST",
                                          headers={"Content-Type": "application/json", "X-Accounts-Token": token})
             with urllib.request.urlopen(req, timeout=60) as r:
                 done.append("stats:%s" % json.loads(r.read() or b"{}").get("rebuilt", "unchanged"))

@@ -313,6 +313,14 @@ check("stats: the staff portal's token cannot set aliases", r[0] == 404)
 r = S.handle_staff(db, "POST", "/staff/accounts/aliases", {"X-Accounts-Token": "acct-tok"}, "8.8.8.8", body, "staff-tok")
 check("stats: alias route loopback only", r[0] == 404)
 
+# the real push: account service -> stats service over HTTP (loopback, account token)
+sport_srv = __import__("socket").socket(); sport_srv.bind(("127.0.0.1", 0)); sport = sport_srv.getsockname()[1]; sport_srv.close()
+threading.Thread(target=S.serve, args=(db, "127.0.0.1:%d" % sport, "*", "staff-tok"), daemon=True).start()
+time.sleep(0.5)
+pacc = A.Accounts({"data_dir": str(tmp / "push"), "stats_url": "http://127.0.0.1:%d" % sport, "stats_token": "acct-tok"})
+done = pacc.push()
+check("push reaches the stats service's alias route", any(d.startswith("stats:") for d in done), done)
+
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))
 sys.exit(1 if failed else 0)
