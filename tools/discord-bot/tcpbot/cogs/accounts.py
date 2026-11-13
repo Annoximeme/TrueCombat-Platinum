@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import datetime as dt
 import logging
+import urllib.parse
 from zoneinfo import ZoneInfo
 
 import discord
@@ -18,9 +19,20 @@ from discord.ext import commands, tasks
 from .. import embeds
 from ..bot import UserFacingError, staff_only
 from ..sources import AccountsUnavailable, StatsUnavailable
-from ..text import clean
+from ..text import clean, md
 
 log = logging.getLogger("tcpbot.accounts")
+
+
+def safe(text, limit: int = 36) -> str:
+    """Player-written text (names, notes, reasons) inside a message: colour codes off, markdown escaped,
+    mentions inert, so a note cannot post a link or ping anyone in our channels."""
+    t = clean(text, limit)
+    return md(t) if t else ""
+
+
+def profile_link(cfg, name: str) -> str:
+    return "%s/u/%s" % (cfg.site, urllib.parse.quote(str(name or ""), safe=""))
 
 
 def _arrow(now: float, before: float) -> str:
@@ -64,9 +76,9 @@ def lfs_embed(cfg, players: list[dict]) -> discord.Embed:
     else:
         lines = []
         for p in players[:20]:
-            line = "**[%s](%s/u/%s)**" % (clean(p.get("name")), cfg.site, p.get("name", ""))
+            line = "**[%s](%s)**" % (safe(p.get("name")), profile_link(cfg, p.get("name", "")))
             if p.get("note"):
-                line += " · %s" % clean(p["note"], 60).replace("@", "@​")
+                line += " · %s" % safe(p["note"], 60)
             line += " · until <t:%d:t>" % int(p.get("until") or 0)
             lines.append(line)
         e.description = "\n".join(lines)
@@ -203,17 +215,17 @@ class Accounts(commands.Cog):
             await interaction.followup.send(embed=embeds.notice("No account", "%s has no player account." % member.mention),
                                             ephemeral=True)
             return
-        e = discord.Embed(title=clean(a.get("name")), colour=embeds.STEEL, url="%s/u/%s" % (self.cfg.site, a.get("name", "")))
+        e = discord.Embed(title=clean(a.get("name")), colour=embeds.STEEL, url=profile_link(self.cfg, a.get("name", "")))
         e.add_field(name="Stats id", value="`%s`" % a.get("statsId", ""))
         e.add_field(name="Profile", value=str(a.get("visibility", "")))
         if isinstance(a.get("created"), int):
             e.add_field(name="Created", value="<t:%d:D>" % a["created"])
         keys = [k for k in a.get("keys") or [] if not k.get("retired")]
-        e.add_field(name="Linked PCs", value=", ".join(clean(k.get("label") or "PC") for k in keys) or "None")
+        e.add_field(name="Linked PCs", value=", ".join(safe(k.get("label") or "PC") for k in keys) or "None")
         e.add_field(name="Badges", value=", ".join(a.get("badges") or []) or "None")
         sanctions = a.get("sanctions") or []
         e.add_field(name="Banned" if a.get("banned") else "Sanctions", inline=False,
-                    value="\n".join("`#%d` %s · %s" % (x["id"], x["kind"], clean(x.get("reason") or "", 80)) for x in sanctions[:5])
+                    value="\n".join("`#%d` %s · %s" % (x["id"], x["kind"], safe(x.get("reason") or "", 80)) for x in sanctions[:5])
                     or "None")
         await interaction.followup.send(embed=e, ephemeral=True)
 
@@ -237,9 +249,9 @@ class Accounts(commands.Cog):
         if kind == "ban":
             span = "for %d day%s" % (days, "" if days == 1 else "s") if days else "permanently"
             text = "Banned **%s** %s (#%d). It covers %d PC%s, and any PC linked later." % (
-                clean(r.get("account")), span, r.get("ban", 0), r.get("keys", 0), "" if r.get("keys") == 1 else "s")
+                safe(r.get("account")), span, r.get("ban", 0), r.get("keys", 0), "" if r.get("keys") == 1 else "s")
         else:
-            text = "Warned **%s** (#%d). The clean-record badge is off for 90 days." % (clean(r.get("account")), r.get("ban", 0))
+            text = "Warned **%s** (#%d). The clean-record badge is off for 90 days." % (safe(r.get("account")), r.get("ban", 0))
         await interaction.followup.send(embed=embeds.notice("Account %s" % what.lower(), text), ephemeral=True)
         staff = self.bot.text_channel(self.cfg.channel("staff"))
         if staff:
@@ -273,8 +285,8 @@ class Accounts(commands.Cog):
         lines = []
         for b in rows[:15]:
             state = "lifted" if b.get("lifted") else ("until <t:%d:d>" % b["until"] if b.get("until") else "permanent")
-            lines.append("`#%d` %s **%s** · %s · %s" % (b["id"], b.get("kind", "ban"), clean(b.get("account") or "deleted account"),
-                                                       state, clean(b.get("reason") or "", 80)))
+            lines.append("`#%d` %s **%s** · %s · %s" % (b["id"], b.get("kind", "ban"), safe(b.get("account") or "deleted account"),
+                                                       state, safe(b.get("reason") or "", 80)))
         await interaction.followup.send(embed=embeds.notice("Account bans", "\n".join(lines) or "None."), ephemeral=True)
 
 
