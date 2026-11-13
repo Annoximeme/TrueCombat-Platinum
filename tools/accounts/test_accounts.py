@@ -115,11 +115,13 @@ check("expired code refused", raises(lambda: acc.claim(ob["code"], ob["public"],
 txt = acc.reserved_txt()
 lines = dict(l.split(" ", 1) for l in txt.strip().split("\n")[1:])
 h1 = A.name_hash(A.skeleton("RaziC"))
-check("reserved list: hashed name -> both keys", lines.get(h1) == ",".join(sorted([pc1.kid, pc2.kid])), lines)
+check("reserved list: hashed name -> both keys", lines.get(h1) == ",".join(sorted([A.key_tag(pc1.kid), A.key_tag(pc2.kid)])), lines)
+check("reserved list holds no key ids in clear", pc1.kid not in txt and pc2.kid not in txt and txt.startswith("TCPNAMES2 "))
 check("reserved list holds no names in clear", "razic" not in txt.lower() and "ghost" not in txt.lower())
 check("hidden account's name still reserved", A.name_hash(A.skeleton("Ghost")) in lines and lines[A.name_hash("ghost")] == "-")
 acc.push()
 check("reserved list written for the local game server", (tmp / "srv1" / "accounts" / "names.txt").read_text() == txt)
+check("reserved list readable by every game server user", (tmp / "srv1" / "accounts" / "names.txt").stat().st_mode & 0o044 == 0o044)
 
 # rename rules
 check("rename blocked for 30 days", raises(lambda: acc.rename(acc.account(a1["id"]), "Razor"), 409))
@@ -131,7 +133,7 @@ check("rename after 30 days", a1c["name"] == "Razor")
 s3 = session("333")
 check("old name held for 30 days", raises(lambda: acc.signup(s3, "Razic", "public", True), 409))
 lines = dict(l.split(" ", 1) for l in acc.reserved_txt().strip().split("\n")[1:])
-check("held name still allowed for its owner in game", lines.get(h1) == ",".join(sorted([pc1.kid, pc2.kid])))
+check("held name still allowed for its owner in game", lines.get(h1) == ",".join(sorted([A.key_tag(pc1.kid), A.key_tag(pc2.kid)])))
 acc.store.x("UPDATE names SET held_until=1 WHERE skeleton='razic'")
 a3 = acc.signup(s3, "Razic", "public", True)
 check("hold over: name free again", a3["name"] == "Razic")
@@ -181,7 +183,9 @@ check("first verified key takes over the guid's history", db.player(kp1)["matche
 db.ingest(report(4, {"Raz": pc2.kid}, hours_ago=9), "official1")      # the laptop (same etkey copied, new eacid)
 kp2 = A.key_pid(pc2.kid)
 check("second PC is its own player before the merge", db.player(kp2)["matches"] == 1)
-check("review notes a guid seen with a second key", any("another key" in r["reason"] for r in db.review_list()))
+check("a guid seen with two players' keys moves to neither", db.player(guid_pid) and db.player(guid_pid)["matches"] == 2
+      and db.player(kp1)["matches"] == 1)
+check("and staff see it", any("different players" in r["reason"] for r in db.review_list()))
 n = db.set_aliases(acc.aliases())
 canon = A.account_pid(a1["id"])
 pl = db.player(canon)
@@ -195,8 +199,11 @@ ids = [r["id"] for r in lb["players"]] if isinstance(lb, dict) else []
 check("leaderboard lists the account once", ids.count(canon) == 1 and kp1 not in ids and kp2 not in ids, ids)
 
 # both of one account's PCs in the same match: kept apart for that match, flagged
-db.ingest(report(5, {"Raz": pc1.kid, "Bob": pc2.kid}, hours_ago=8), "official1")
-check("two linked PCs in one match stay apart", db.player(canon)["matches"] == 5 and db.player(kp2)["matches"] == 1)
+r5 = report(5, {"Raz": pc1.kid, "Bob": pc2.kid}, hours_ago=8)
+r5["players"][1]["guid"] = "E" * 32                    # the laptop's own profile
+db.ingest(r5, "official1")
+check("two linked PCs in one match stay apart", db.player(canon)["matches"] == 4 and db.player(kp1)["matches"] == 1
+      and db.player(kp2)["matches"] == 1)
 check("and go to the review queue", any("same match" in r["reason"] for r in db.review_list()))
 
 # unlink: earlier matches stay with the account, later ones go to the key
@@ -205,7 +212,7 @@ time.sleep(1.1)
 db.set_aliases(acc.aliases())
 db.ingest(report(6, {"Raz": pc2.kid}, hours_ago=-0.01), "official1")
 check("after unlink the PC plays as itself", db.player(kp2) and db.player(kp2)["matches"] >= 1)
-check("matches before the unlink stay with the account", db.player(canon)["matches"] == 5)
+check("matches before the unlink stay with the account", db.player(canon)["matches"] == 4)
 ratings = tmp / "ratings.txt"
 db.export_ratings(ratings)
 rt = dict(l.split() for l in ratings.read_text().split("\n") if l)
@@ -221,13 +228,31 @@ check("delete removes account, keys, names, sessions", acc.by_discord("111") is 
       and not acc.store.all("SELECT * FROM keys WHERE account=?", (a1["id"],))
       and not acc.store.all("SELECT * FROM sessions WHERE discord_id='111'"))
 db.set_aliases(acc.aliases())
-check("after delete the stats split back to the keys", not db.player(canon) and db.player(kp1)["matches"] >= 4)
+check("after delete the stats split back to the keys", not db.player(canon) and db.player(kp1)["matches"] == 2
+      and db.player(guid_pid)["matches"] == 2)
 check("signin log keeps no raw IPs", all("203.0.113" not in str(r) for r in acc.store.all("SELECT * FROM signins")))
 
 # tidy: inactive names released
 acc.store.x("UPDATE accounts SET last_active=1 WHERE id=?", (a2["id"],))
 acc.tidy()
 check("a year without activity frees the name", acc.by_name("Ghost") is None and acc.account(a2["id"]))
+acc.store.x("UPDATE accounts SET visibility='public' WHERE id=?", (a2["id"],))
+check("a released name leaves names.json", A.account_pid(a2["id"]) not in acc.names_json())
+check("the account knows its name is no longer reserved", acc.name_held(acc.account(a2["id"])) is False)
+sg = acc.session(acc.new_session("222", "Ghosty", "", "198.51.100.2"))
+check("signing in again takes the released name back", acc.by_name("Ghost") and acc.by_name("Ghost")["id"] == a2["id"]
+      and sg["account"] and acc.me(sg)["account"]["nameReserved"] is True)
+acc.played({A.account_pid(a2["id"]): "2099-01-01T00:00:00Z"})
+check("a match time in the future is ignored", acc.account(a2["id"])["last_active"] < 4000000000)
+acc.store.x("UPDATE accounts SET last_active=1 WHERE id=?", (a2["id"],))
+acc.played({A.account_pid(a2["id"]): time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - 60))})
+check("the stats service's last match counts as activity", abs(acc.account(a2["id"])["last_active"] - (time.time() - 60)) < 5)
+acc.store.x("UPDATE accounts SET last_active=1 WHERE id=?", (a2["id"],))
+acc.tidy()
+sx = acc.session(acc.new_session("444", "Thief", "", "198.51.100.3"))
+acc.signup(sx, "Gh0st", "public", True)
+acc.new_session("222", "Ghosty", "", "198.51.100.2")
+check("a name taken while away stays with its new owner", acc.by_name("Ghost")["discord_id"] == "444")
 
 # ------------------------------------------------------------------ HTTP
 cfg = {"data_dir": str(tmp / "http"), "dev_login": True, "internal_token": "tok-internal", "public_url": "http://127.0.0.1:0"}
@@ -284,7 +309,7 @@ check("http: page sees the link", out.get("state") == "linked")
 st, prof, r = req("GET", "/api/account/profile?u=tester")
 check("http: public profile", st == 200 and prof["name"] == "Tester" and r.getheader("Access-Control-Allow-Origin") == "*")
 st, out, _ = req("GET", "/api/account/reserved.txt")
-check("http: reserved list", st == 200 and out.startswith("TCPNAMES1") and pc.kid in out)
+check("http: reserved list", st == 200 and out.startswith("TCPNAMES2") and A.key_tag(pc.kid) in out and pc.kid not in out)
 st, out, _ = req("GET", "/internal/lookup?name=tester")
 check("http: internal route needs the token", st == 404)
 st, out, _ = req("GET", "/internal/lookup?name=tester", headers={"X-Accounts-Token": "tok-internal"})
@@ -320,6 +345,20 @@ time.sleep(0.5)
 pacc = A.Accounts({"data_dir": str(tmp / "push"), "stats_url": "http://127.0.0.1:%d" % sport, "stats_token": "acct-tok"})
 done = pacc.push()
 check("push reaches the stats service's alias route", any(d.startswith("stats:") for d in done), done)
+r = S.handle_staff(db, "POST", "/staff/accounts/aliases", {"X-Accounts-Token": "acct-tok"}, "127.0.0.1",
+                   json.dumps({"aliases": [{"pid": kp1, "canonical": kp2, "since": None, "until": None}]}).encode(), "staff-tok")
+check("stats: the alias answer says when each account last played", r[0] == 200 and kp2 in r[1].get("seen", {}), r)
+
+# the push thread survives anything
+class Boom(A.Accounts):
+    def push(self):
+        raise RuntimeError("boom")
+bacc = Boom({"data_dir": str(tmp / "boom")})
+th = threading.Thread(target=bacc.background, daemon=True)
+th.start()
+time.sleep(0.3)
+check("an unexpected error does not stop the push thread", th.is_alive())
+bacc.stop.set(); bacc.dirty.set()
 
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))

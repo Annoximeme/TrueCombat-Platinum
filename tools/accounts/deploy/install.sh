@@ -68,7 +68,8 @@ install_all() {
   chmod 0600 $ETC/client-secret $ETC/stats-token $ETC/internal-token
   for h in $HOMES; do
     [ -d "$h/tcetest" ] || continue
-    install -d -m 0775 -o "$(stat -c %U "$h/tcetest")" -g tcpgame "$h/tcetest/accounts"
+    # setgid: names.txt keeps the tcpgame group whoever writes it
+    install -d -m 2775 -o "$(stat -c %U "$h/tcetest")" -g tcpgame "$h/tcetest/accounts"
   done
   install -m 0644 "$HERE/deploy/$UNIT" /etc/systemd/system/$UNIT
   systemctl daemon-reload
