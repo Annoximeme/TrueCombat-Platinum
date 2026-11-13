@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A new look, from the loading screen to the kill feed · TrueCombat: Platinum</title>
+<meta name="description" content="Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-a-new-look">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-a-new-look">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="A new look, from the loading screen to the kill feed">
+<meta property="og:description" content="Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-a-new-look.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-a-new-look.jpg">
+<meta property="article:published_time" content="2026-11-13">
+<meta property="article:section" content="Graphics">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"A new look, from the loading screen to the kill feed","description":"Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a controller. Here is what is coming and how it was built.","datePublished":"2026-11-13","dateModified":"2026-11-13","inLanguage":"en","articleSection":"Graphics","timeRequired":"PT3M","image":"https://truecombat.eu/img/og-devlog-a-new-look.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-a-new-look","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="A new look, from the loading screen to the kill feed">
+<meta name="twitter:description" content="Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"A new look, from the loading screen to the kill feed","item":"https://truecombat.eu/devlog-a-new-look"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-a-new-look">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-a-new-look">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-a-new-look">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=95fe2ea9a3">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news">News</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-13">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-a-new-look" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-a-new-look" hreflang="nl" lang="nl">Nederlands</a></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Support</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="a-new-look" data-min="3">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(img/devlog/a-new-look.webp); --art-s: url(img/devlog/a-new-look-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Graphics</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-13">13 Nov 2026</time><span>3 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="a-new-look" hidden></span></p>
+      <h1>A new look, from the loading screen to the kill feed</h1>
+      <p class="lede">Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a controller. Here is what is coming and how it was built.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#in-the-match">In the match</a></li>
+          <li><a href="#before-and-after-the-match">Before and after the match</a></li>
+          <li><a href="#for-the-screenshot-crowd">For the screenshot crowd</a></li>
+          <li><a href="#the-launcher">The launcher</a></li>
+          <li><a href="#one-look-everywhere">One look everywhere</a></li>
+          <li><a href="#what-is-still-open">What is still open</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>The next update changes how TrueCombat: Platinum looks and feels almost everywhere you touch it. None of it changes how a round plays. All of it is about seeing more, understanding faster and losing less time to menus.</p>
+<figure class="wide">
+  <img src="img/devlog/a-new-look.webp" alt="Weapon icons rendered from the game&#x27;s own models" width="1280" height="720" loading="lazy">
+  <figcaption>Every weapon icon is drawn from the model you hold in game</figcaption>
+</figure>
+<h2 id="in-the-match">In the match</h2>
+<p><strong>Weapon icons in the kill feed.</strong> The kill feed now reads killer, weapon, victim, with a clean silhouette of the gun instead of its name. The icons are rendered straight from the game's own weapon models, all at one scale, so a pistol looks like a pistol next to a rifle.</p>
+<p><strong>Your real keys on screen.</strong> Every prompt, tip and vote line shows the key you actually bound, drawn as a key cap. Rebind Use to E and the hint says E.</p>
+<p><strong>A tactical map.</strong> Hold M for a top-down plan of the map with both bomb sites, the flags, the area names and your own team's positions. Enemies never show. Server owners can switch it off, for example for competitive play.</p>
+<p><strong>A podium at the end of the match.</strong> While the map vote is open, the top three stand on a podium with their score and kills.</p>
+<p><strong>What's new, once.</strong> After an update, a short card lists the changes the first time you load a map. Type <code>whatsnew</code> in the console to see it again.</p>
+<h2 id="before-and-after-the-match">Before and after the match</h2>
+<p><strong>Loading screens that teach the map.</strong> Each map now loads over its own backdrop, with the top-down plan, the setting, the time of day and a line about how the map plays.</p>
+<p><strong>Error screens that help.</strong> "Server is full", "wrong version", "missing files", "you were kicked" and a failing graphics driver each get a plain explanation and a button that does the fix: find another server, reconnect, allow downloads, quit to update or switch to OpenGL. The original message stays underneath for anyone who wants it.</p>
+<h2 id="for-the-screenshot-crowd">For the screenshot crowd</h2>
+<p><strong>Photo mode.</strong> In a local game, a demo or as a full spectator, type <code>photomode</code> for a free camera with the HUD hidden. Move, roll, change the field of view, cycle six colour grades, freeze a demo and take the shot. Camera paths let you set keys and play a smooth flight between them.</p>
+<p><strong>HDR output.</strong> On an HDR display with Windows HDR turned on, DirectX 12 can now output real HDR10. You set paper white and peak brightness on the Graphics page. On a normal display nothing changes.</p>
+<p><strong>A colour grade per map.</strong> Each map gets a gentle grade of its own on the Ultra preset, so snow reads cold and the railyard keeps its warm evening light.</p>
+<p><strong>See what a setting costs.</strong> The Graphics page now measures your frame time before and after each change and shows the difference in milliseconds, and a preview switch makes the page see-through so you can watch the change on the match behind it.</p>
+<h2 id="the-launcher">The launcher</h2>
+<p>The launcher's Play page can play a short, silent clip of each map behind the menu, recorded in the engine. Right-click the tray icon for a quick panel with the version, players online, Quick Play and practice. And the whole launcher now works with a controller: the D-pad moves, A selects, B goes back, the bumpers change pages and Start plays.</p>
+<h2 id="one-look-everywhere">One look everywhere</h2>
+<p>The website, the launcher, the in-game menus and HUD, the staff tools and the Discord bot now take their colours and type from one shared design file, so they can no longer drift apart. The website already uses one icon set, and the 3D map viewer and release pages went live earlier today.</p>
+<h2 id="what-is-still-open">What is still open</h2>
+<p>This is in testing for the next update, together with the new menu design. HDR output still needs testing on more displays, and the map clips for the launcher and the main menu will be recorded from the release build itself. If a loading screen, an error screen or an icon looks wrong to you, tell us on Discord.</p>
+      </div>
+      <div class="post-rate" data-rate="a-new-look" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-maps-in-3d"><small>Older post</small>Every map, in 3D, in your browser</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-ultra-visuals" tabindex="-1" aria-hidden="true"><img src="img/devlog/ultra-railhouse-ultra-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="ultra-visuals" hidden></span></p>
+          <h2><a href="devlog-ultra-visuals">New light for old maps</a></h2>
+          <p>The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.</p>
+          <a class="more" href="devlog-ultra-visuals">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Community">
+        <a class="post-art" href="devlog-maps-in-3d" tabindex="-1" aria-hidden="true"><img src="img/devlog/maps-in-3d-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-13">13 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="maps-in-3d" hidden></span></p>
+          <h2><a href="devlog-maps-in-3d">Every map, in 3D, in your browser</a></h2>
+          <p>The six map pages now carry a 3D model of the real map that you can turn, cut open and study before your first round, and every update gets a page of its own.</p>
+          <a class="more" href="devlog-maps-in-3d">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=7d4a315ae2"></script>
+</body>
+</html>
