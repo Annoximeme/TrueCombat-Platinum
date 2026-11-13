@@ -40,7 +40,10 @@ FEED = GITHUB + "/releases.atom"
 MAPLIST = ["delta", "northport", "railhouse", "snow", "stadtrand", "village"]
 # written out in full by this script from landing.py (the other pages are hand-edited)
 LANDING = ["download", "faq", "truecombat-elite", "privacy"]
-PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio", "support"]
+PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio", "support",
+         "account"]
+# pages that only make sense with a signed-in player or a query (player?u=, account): not in the sitemap or site search
+HIDDEN = ("player", "account")
 
 LABELS = {
     "en": {
@@ -122,7 +125,7 @@ def nav(lang, current):
     lang_links = "".join('<a href="%s" hreflang="%s" lang="%s">%s</a>' % (h, l, l, i18n.NAMES[l]) for l, h in others)
     home = "./"
     main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news", "devlog"]
-    active = {"player": "leaderboards", "match": "servers"}.get(current, current)
+    active = {"player": "leaderboards", "match": "servers", "account": ""}.get(current, current)
     if current.startswith("devlog-"):
         active = "devlog"
     if current.startswith("map-"):
@@ -227,7 +230,7 @@ def social(html):
 
 def crumbs(lang, page, html):
     """BreadcrumbList structured data: Home > page, or Home > Devlog > post."""
-    if page in ("index", "player", "match"):
+    if page in ("index", "match") + HIDDEN:
         return ""
     items = [("TrueCombat: Platinum", url(lang, "index"))]
     if page.startswith("devlog-"):
@@ -1267,7 +1270,7 @@ def search_index(lang, posts):
     rows = []
     def text(s):
         return re.sub(r"\s+", " ", strip_tags(s)).strip()
-    for page in [p for p in PAGES if p != "player"] + LANDING:
+    for page in [p for p in PAGES if p not in HIDDEN] + LANDING:
         # a page the language does not have is listed from the English site
         there = "" if has(lang, page) else "../"
         html = unbust(((base if has(lang, page) else DOCS) / (page + ".html")).read_text(encoding="utf-8"))
@@ -1706,7 +1709,7 @@ def main():
         OLD_LASTMOD.update(re.findall(r"<url><loc>([^<]+)</loc><lastmod>([^<]+)</lastmod>", old.read_text(encoding="utf-8")))
     rows = []
     # player.html without an id is an empty profile, so only real pages go in the sitemap
-    for page in [p for p in PAGES if p != "player"] + LANDING + details + ["devlog-" + p["slug"] for p in posts["en"]]:
+    for page in [p for p in PAGES if p not in HIDDEN] + LANDING + details + ["devlog-" + p["slug"] for p in posts["en"]]:
         alts = "".join('<xhtml:link rel="alternate" hreflang="%s" href="%s"/>' % (l, url(l, page)) for l in langs_for(page))
         for lang in langs_for(page):
             path = DOCS / sub(lang) / (page + ".html")

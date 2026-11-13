@@ -59,7 +59,15 @@ var TCP_API = 'https://api.truecombat.eu';
       s_grenadeKills: 'Grenade kills', s_aimedKills: 'Aimed kills', s_hipKills: 'Hip-fire kills', s_standKills: 'Standing kills', s_crouchKills: 'Crouching kills',
       s_proneKills: 'Prone kills', s_leanKills: 'Leaning kills', s_airKills: 'Airborne kills', s_objectives: 'Objectives', s_captures: 'Flag captures',
       s_plants: 'Bomb plants', s_defuses: 'Bomb defuses', s_returns: 'Flag returns', s_roundsWon: 'Rounds won', s_roundMvps: 'Round MVPs', s_wins: 'Match wins',
-      s_matches: 'Matches', s_timePlayed: 'Time played', s_xp: 'Experience', s_shots: 'Shots', s_hitsAll: 'Hits'
+      s_matches: 'Matches', s_timePlayed: 'Time played', s_xp: 'Experience', s_shots: 'Shots', s_hitsAll: 'Hits',
+      verified: 'Verified account', noProfile: 'There is no public profile with that name.',
+      acctLedeIn: 'Signed in. Link every PC you play on and your record follows you.', acctFree: 'Available.', acctChecking: 'Checking…',
+      acctRenameIn: 'You can change your name again in {n} days.', acctRenameNow: 'You can change your name once every 30 days. Your old name stays held for you for 30 days.',
+      acctPcs: '{n} of 8', acctLinkedOn: 'linked {d}', acctUnlink: 'Unlink', acctSure: 'Unlink this PC?', acctNoPcs: 'No PC linked yet. Open this page on the PC you play on and press Link this PC.',
+      acctLinkOpen: 'Waiting for the launcher. Approve the link there. Nothing happened? Update the launcher, then try again.',
+      acctLinkDone: 'This PC is linked. Your record now follows you.', acctLinkExpired: 'The link code expired. Press Link this PC to try again.',
+      acctSigninFailed: 'Sign-in did not finish. Please try again.', acctSigninDiscord: 'Discord did not answer. Please try again in a minute.',
+      acctSigninSlow: 'Too many sign-ins from here. Please wait a few minutes.', acctOnDiscord: 'on Discord'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -102,7 +110,15 @@ var TCP_API = 'https://api.truecombat.eu';
       s_grenadeKills: 'Granaatkills', s_aimedKills: 'Kills met richten', s_hipKills: 'Kills vanuit de heup', s_standKills: 'Staand', s_crouchKills: 'Gehurkt',
       s_proneKills: 'Liggend', s_leanKills: 'Leunend', s_airKills: 'In de lucht', s_objectives: 'Doelen', s_captures: 'Vlaggen veroverd',
       s_plants: 'Bommen geplaatst', s_defuses: 'Bommen ontmanteld', s_returns: 'Vlaggen teruggebracht', s_roundsWon: 'Rondes gewonnen', s_roundMvps: 'Ronde-MVP', s_wins: 'Potjes gewonnen',
-      s_matches: 'Potjes', s_timePlayed: 'Speeltijd', s_xp: 'Ervaring', s_shots: 'Schoten', s_hitsAll: 'Treffers'
+      s_matches: 'Potjes', s_timePlayed: 'Speeltijd', s_xp: 'Ervaring', s_shots: 'Schoten', s_hitsAll: 'Treffers',
+      verified: 'Geverifieerd account', noProfile: 'Er is geen openbaar profiel met die naam.',
+      acctLedeIn: 'Je bent aangemeld. Koppel elke pc waarop je speelt en je record gaat overal mee.', acctFree: 'Beschikbaar.', acctChecking: 'Bezig met controleren…',
+      acctRenameIn: 'Je kunt je naam over {n} dagen opnieuw wijzigen.', acctRenameNow: 'Je kunt je naam één keer per 30 dagen wijzigen. Je oude naam blijft 30 dagen voor je vastgehouden.',
+      acctPcs: '{n} van 8', acctLinkedOn: 'gekoppeld op {d}', acctUnlink: 'Ontkoppelen', acctSure: 'Deze pc ontkoppelen?', acctNoPcs: 'Nog geen pc gekoppeld. Open deze pagina op de pc waarop je speelt en kies Deze pc koppelen.',
+      acctLinkOpen: 'Wachten op de launcher. Keur de koppeling daar goed. Gebeurt er niets? Werk de launcher bij en probeer opnieuw.',
+      acctLinkDone: 'Deze pc is gekoppeld. Je record gaat nu overal mee.', acctLinkExpired: 'De koppelcode is verlopen. Kies Deze pc koppelen om opnieuw te proberen.',
+      acctSigninFailed: 'Aanmelden is niet gelukt. Probeer het opnieuw.', acctSigninDiscord: 'Discord gaf geen antwoord. Probeer het over een minuut opnieuw.',
+      acctSigninSlow: 'Te veel aanmeldingen vanaf hier. Wacht een paar minuten.', acctOnDiscord: 'op Discord'
     }
   };
   /* German, French and Polish strings arrive in js/lang-<code>.js (window.TCP_L); English fills any gap */
@@ -597,10 +613,149 @@ var TCP_API = 'https://api.truecombat.eu';
     load();
   });
 
+  /* ---------- optional player accounts (same origin: truecombat.eu/api/account) ----------
+     Everything here stays quiet while the account service is not running: the profile and leaderboards
+     look exactly as before, and the account page says accounts open with the next update. */
+  var ACCT = '/api/account';
+  function acctFetch(path, opts) {
+    return fetch(ACCT + path, Object.assign({ credentials: 'same-origin', cache: 'no-store' }, opts || {})).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) { var e = new Error(d.error || ('HTTP ' + r.status)); e.status = r.status; throw e; }
+        return d;
+      });
+    });
+  }
+  var TICK = '<svg class="acct-tick" width="14" height="14" viewBox="0 0 24 24" role="img" aria-label="' + esc(L.verified) + '"><title>' + esc(L.verified) +
+    '</title><circle cx="12" cy="12" r="11" fill="currentColor"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#0d1016" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function profileUrl(name) { return 'player?u=' + encodeURIComponent(name); }
+  var acctNamesP = null;
+  function acctNames() {   // stats id -> account name of every public account
+    if (!acctNamesP) acctNamesP = fetch(ACCT + '/names.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).catch(function () { return {}; });
+    return acctNamesP;
+  }
+  /* links to a profile by id show the account name with a tick, and lead to the short profile address */
+  if (document.querySelector('[data-leaderboard],[data-top],[data-recent],[data-servers],[data-player],[data-match],[data-statboard],[data-pf-detail]')) {
+    acctNames().then(function (names) {
+      if (!Object.keys(names).length) return;
+      var busy = false;
+      function decorate() {
+        busy = false;
+        $all('a[href^="player?id="]:not([data-acct-done])').forEach(function (a) {
+          a.setAttribute('data-acct-done', '');
+          var id = (a.getAttribute('href').split('id=')[1] || '').split('&')[0];
+          var name = names[id];
+          if (!name) return;
+          a.textContent = name;
+          a.setAttribute('href', profileUrl(name));
+          a.insertAdjacentHTML('beforeend', ' ' + TICK);
+        });
+      }
+      decorate();
+      if (window.MutationObserver) new MutationObserver(function () { if (!busy) { busy = true; requestAnimationFrame(decorate); } }).observe(document.body, { childList: true, subtree: true });
+    });
+  }
+  /* the player page: player?u=<account name> or player?id=<stats id> */
+  var PROFILE = new Promise(function (done) {
+    var sp = new URLSearchParams(location.search), id = (sp.get('id') || '').toLowerCase(), u = sp.get('u') || '';
+    if (!u) return done({ id: id, acct: null });
+    acctFetch('/profile?u=' + encodeURIComponent(u)).then(function (a) { done({ id: a.statsId, acct: a }); },
+      function () { done({ id: '', acct: null, missing: true }); });
+  });
+
+  $all('[data-account]').forEach(function (root) {
+    function q(sel) { return root.querySelector(sel); }
+    var me = null, poll = null;
+    function show(which) { ['out', 'signup', 'in', 'off'].forEach(function (k) { q('[data-acct-' + k + ']').hidden = k !== which; }); }
+    function post(path, body) {
+      return acctFetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF': (me && me.csrf) || '' }, body: JSON.stringify(body || {}) });
+    }
+    function err(sel, e) { var el = q(sel); el.textContent = e ? (e.message || String(e)) : ''; el.hidden = !e; }
+    function render(d) {
+      me = d;
+      if (!d.signedIn) {
+        show('out');
+        var why = { failed: L.acctSigninFailed, discord: L.acctSigninDiscord, slow: L.acctSigninSlow }[new URLSearchParams(location.search).get('signin') || ''];
+        if (why) q('[data-acct-lede]').textContent = why;
+        return;
+      }
+      if (d.needsSignup) { show('signup'); q('[data-acct-as]').textContent = (d.discord && d.discord.name) || ''; return; }
+      var a = d.account;
+      show('in');
+      q('[data-acct-title]').innerHTML = esc(a.name) + ' ' + TICK;
+      q('[data-acct-lede]').textContent = L.acctLedeIn;
+      q('[data-acct-name]').textContent = a.name;
+      var prof = q('[data-acct-profile]');
+      prof.href = profileUrl(a.name);
+      prof.hidden = a.visibility !== 'public';
+      q('[data-acct-rename] input').placeholder = a.name;
+      q('[data-acct-rename-note]').textContent = a.nameChangeIn > 0 ? L.acctRenameIn.replace('{n}', Math.ceil(a.nameChangeIn / 86400)) : L.acctRenameNow;
+      q('[data-acct-public]').checked = a.visibility === 'public';
+      q('[data-acct-discord]').checked = !!a.showDiscord;
+      var keys = (a.keys || []).filter(function (k) { return !k.retired; });
+      q('[data-acct-pcs]').textContent = L.acctPcs.replace('{n}', keys.length);
+      q('[data-acct-keys]').innerHTML = keys.length ? keys.map(function (k) {
+        return '<li><b>' + esc(k.label || 'PC') + '</b> <span class="muted">' + L.acctLinkedOn.replace('{d}', fmtDate(new Date(k.linked * 1000).toISOString())) +
+          ' · ' + esc(k.id.slice(0, 8)) + '</span><button type="button" class="btn" data-unlink="' + esc(k.id) + '">' + L.acctUnlink + '</button></li>';
+      }).join('') : '<li class="muted">' + L.acctNoPcs + '</li>';
+    }
+    function refresh() { return acctFetch('/me').then(render, function () { show('off'); }); }
+    refresh();
+
+    var form = q('[data-acct-signup-form]'), timer = null;
+    form.name.addEventListener('input', function () {
+      clearTimeout(timer);
+      var v = form.name.value.trim(), hint = q('[data-acct-check]');
+      if (v.length < 3) return;
+      hint.textContent = L.acctChecking;
+      timer = setTimeout(function () {
+        acctFetch('/check?name=' + encodeURIComponent(v)).then(function (r) { hint.textContent = r.ok ? L.acctFree : r.reason; hint.classList.toggle('bad', !r.ok); }, function () {});
+      }, 350);
+    });
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      err('[data-acct-error]', null);
+      post('/signup', { name: form.name.value, visibility: form.visibility.value, age13: form.age13.checked }).then(render, function (x) { err('[data-acct-error]', x); });
+    });
+    q('[data-acct-rename]').addEventListener('submit', function (e) {
+      e.preventDefault();
+      err('[data-acct-rename-error]', null);
+      post('/name', { name: e.target.name.value }).then(function (d) { e.target.reset(); render(d); }, function (x) { err('[data-acct-rename-error]', x); });
+    });
+    q('[data-acct-public]').addEventListener('change', function (e) { post('/settings', { visibility: e.target.checked ? 'public' : 'hidden' }).then(render, refresh); });
+    q('[data-acct-discord]').addEventListener('change', function (e) { post('/settings', { showDiscord: e.target.checked }).then(render, refresh); });
+    q('[data-acct-link]').addEventListener('click', function () {
+      var state = q('[data-acct-link-state]');
+      clearInterval(poll);
+      post('/link/start').then(function (r) {
+        state.textContent = L.acctLinkOpen; state.hidden = false;
+        location.href = r.url;
+        var until = Date.now() + r.expires_in * 1000;
+        poll = setInterval(function () {
+          if (document.hidden) return;
+          acctFetch('/link/status?code=' + r.code).then(function (s) {
+            if (s.state === 'linked') { clearInterval(poll); state.textContent = L.acctLinkDone; refresh(); }
+            else if (s.state === 'expired' || Date.now() > until) { clearInterval(poll); state.textContent = L.acctLinkExpired; }
+          }, function () {});
+        }, 2000);
+      }, function (x) { state.textContent = x.message; state.hidden = false; });
+    });
+    q('[data-acct-keys]').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-unlink]');
+      if (!b) return;
+      if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = L.acctSure; return; }
+      post('/unlink', { key: b.dataset.unlink }).then(render, refresh);
+    });
+    q('[data-acct-signout]').addEventListener('click', function () { post('/logout').then(function () { location.replace('account'); }, function () {}); });
+    q('[data-acct-delete]').addEventListener('submit', function (e) {
+      e.preventDefault();
+      err('[data-acct-delete-error]', null);
+      post('/delete', { confirm: e.target.confirm.value }).then(function () { location.replace('./'); }, function (x) { err('[data-acct-delete-error]', x); });
+    });
+  });
+
   /* ---------- player profile page ---------- */
   $all('[data-player]').forEach(function (root) {
     function q(sel) { return root.querySelector(sel); }
-    var id = (new URLSearchParams(location.search).get('id') || '').toLowerCase();
     var search = q('[data-pf-search]');
     var results = q('[data-pf-results]');
 
@@ -627,6 +782,9 @@ var TCP_API = 'https://api.truecombat.eu';
     }
 
     function missing(text) { var m = q('[data-pf-missing]'); q('[data-pf-missing-text]').textContent = text; m.hidden = false; }
+    PROFILE.then(function (pr) {
+    var id = pr.id, acct = pr.acct;
+    if (pr.missing) { missing(L.noProfile); return; }
     if (!id) return;
     if (!PID.test(id)) { missing(L.unknownPlayer); return; }
     if (!TCP_API) { missing(L.apiOffline); return; }
@@ -657,8 +815,21 @@ var TCP_API = 'https://api.truecombat.eu';
 
     api('/player.json?id=' + id).then(function (p) {
       var r = p.rank || {};
-      document.title = p.name + ' · ' + L.profile + ' · TrueCombat: Platinum';
+      document.title = (acct ? acct.name : p.name) + ' · ' + L.profile + ' · TrueCombat: Platinum';
       q('[data-pf-name]').textContent = p.name;
+      if (acct) {
+        q('[data-pf-name]').innerHTML = esc(acct.name) + ' ' + TICK;
+        if (acct.discord && acct.discord.name) {
+          q('[data-pf-name]').insertAdjacentHTML('afterend', '<p class="acct-discord-line">' + (acct.discord.avatar ? '<img src="' + esc(acct.discord.avatar) +
+            '" alt="" width="22" height="22" loading="lazy">' : '') + '<span>' + esc(acct.discord.name) + '</span> <span class="muted">' + L.acctOnDiscord + '</span></p>');
+        }
+      } else {
+        acctNames().then(function (names) {      // an account's own id: show its name and move to the short address
+          if (!names[id]) return;
+          q('[data-pf-name]').innerHTML = esc(names[id]) + ' ' + TICK;
+          try { history.replaceState(null, '', profileUrl(names[id])); } catch (e) {}
+        });
+      }
       q('[data-pf-lede]').hidden = true;
       if (search) search.hidden = true;
       var span = r.xpNext ? (r.xp - r.xpThis) / (r.xpNext - r.xpThis) : 1;
@@ -715,6 +886,7 @@ var TCP_API = 'https://api.truecombat.eu';
       });
       q('[data-pf-body]').hidden = false;
     }, function () { missing(L.unknownPlayer); });
+    });
   });
 
   /* ---------- detailed stats (tcp-match/2): stat leaders and the full profile ---------- */
@@ -788,7 +960,8 @@ var TCP_API = 'https://api.truecombat.eu';
   });
 
   $all('[data-pf-detail]').forEach(function (box) {
-    var id = (new URLSearchParams(location.search).get('id') || '').toLowerCase();
+    PROFILE.then(function (pr) {
+    var id = pr.id;
     if (!PID.test(id) || !TCP_API) return;
     var scope = 'all';
     function tiles(t, keys) {
@@ -876,6 +1049,7 @@ var TCP_API = 'https://api.truecombat.eu';
       var b = e.target.closest('[data-seg] button'); if (b && b.dataset.v !== scope) { scope = b.dataset.v; load(); }
     });
     load();
+    });
   });
 
   /* ---------- devlog: a dot on the nav link while the newest post is recent and unread ---------- */

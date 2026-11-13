@@ -1,0 +1,45 @@
+[Unit]
+Description=TrueCombat: Platinum player accounts
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tcpaccounts
+Group=tcpaccounts
+# group tcpgame: write the reserved-name list each official game server reads (tcetest/accounts/names.txt)
+SupplementaryGroups=tcpgame
+ExecStart=/usr/bin/python3 /opt/tcp/accounts/tcp_accounts.py --config /etc/tcp-accounts/config.json
+Restart=on-failure
+RestartSec=5
+# Discord OAuth client secret, the stats service's account token, the token the bot and portal use on /internal/
+LoadCredential=client-secret:/etc/tcp-accounts/client-secret
+LoadCredential=stats-token:/etc/tcp-accounts/stats-token
+LoadCredential=internal-token:/etc/tcp-accounts/internal-token
+ReadWritePaths=-/var/lib/tcpgame/home/tcetest/accounts -/var/lib/tcpgame/home-unranked/tcetest/accounts
+ReadWritePaths=-/var/lib/tcpgame/home-pickup1/tcetest/accounts -/var/lib/tcpgame/home-pickup2/tcetest/accounts
+StateDirectory=tcp-accounts
+StateDirectoryMode=0750
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+SystemCallArchitectures=native
+UMask=0027
+MemoryMax=256M
+
+[Install]
+WantedBy=multi-user.target
