@@ -507,6 +507,8 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
 /* ---------- shared additions: Discord, sub-pages ---------- */
 .nav-icon { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); flex: none; }
 .nav-icon:hover { color: #fff; border-color: #5865f2; background: #5865f2; }
+.nav-account:hover, .nav-account[aria-current] { color: #14100a; border-color: var(--amber); background: var(--amber); }
+.steps-note { margin: 18px 0 0; color: var(--muted); max-width: 70ch; }
 .nav-links a[aria-current="page"] { color: var(--fg); box-shadow: inset 0 -2px 0 var(--red-hi); padding-bottom: 6px; }
 .btn-ghost svg { flex: none; }
 
@@ -1952,3 +1954,4 @@ h1 .acct-tick { width: .6em; height: .6em; vertical-align: .08em; }
 .roster-group li b small { margin-left: 8px; color: var(--fg); opacity: .75; font: 500 var(--step--1)/1 var(--f-body); letter-spacing: 0; }
 .member-stack { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .member-stack li { font: 600 .72rem/1 var(--f-mono); color: var(--t-steel); padding: 5px 7px; border: 1px solid var(--line); background: var(--panel-2); border-radius: 3px; }
+@media (min-width: 1240px) and (max-width: 1299px) { .nav .wrap { gap: 10px; } .nav-links { gap: 13px; } .nav-icon { width: 36px; } }
