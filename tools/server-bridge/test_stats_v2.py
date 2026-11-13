@@ -184,6 +184,14 @@ code, r = tcp_stats.handle_staff(store, "POST", "/staff/unvoid", SH, "127.0.0.1"
 check("staff route: code == 200", code == 200)
 check("staff route: tcp_stats.handle_staff(store, 'POST', '/staff/void', SH, '127", tcp_stats.handle_staff(store, "POST", "/staff/void", SH, "127.0.0.1", b'{"kind":"x","id":"1"}', "s3cret")[0] == 400)
 
+# the match page's team score counts the reported round results, bots' rounds included
+page = store.match(tcp_stats.match_pub("official2", "v2-001"))
+check("team score from round results", page["score"] == {"specops": 2, "terrorists": 0}, page["score"])
+page = store.match(tcp_stats.match_pub("official2", "v2-012"))
+check("team score without round results falls back", page is None or page["score"] == {"specops": 6, "terrorists": 4},
+      page and page["score"])
+check("rivals of an unknown player is not found", store.rivals("f" * 16) is None)
+
 ok = sum(1 for _, c in checks if c)
 
 print("%d/%d checks passed" % (ok, len(checks)))

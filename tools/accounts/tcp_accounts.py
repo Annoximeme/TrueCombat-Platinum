@@ -45,7 +45,7 @@ from pathlib import Path
 
 import tcp_webauthn as webauthn
 
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 log = logging.getLogger("tcp-accounts")
 
 LINK_TAG = b"TrueCombat account link v1\n"
@@ -675,11 +675,13 @@ class Accounts:
             raise ApiError(410, "This code has expired. Scan the code on your PC again.")
         t = now()
         with self.store.tx() as db:
+            # one answer per code, even when two taps arrive at once
+            if not db.db.execute("UPDATE pairs SET state=?, account=? WHERE id=? AND state='waiting' AND created>=?",
+                                 ("linked" if approve else "refused", acct["id"], row["id"], t - LINK_TTL)).rowcount:
+                raise ApiError(410, "This code has expired. Scan the code on your PC again.")
             if approve:
                 self._link_key(db, acct["id"], row["kid"], row["public"], row["label"], t)
                 db.db.execute("UPDATE accounts SET last_active=? WHERE id=?", (t, acct["id"]))
-            db.db.execute("UPDATE pairs SET state=?, account=? WHERE id=?",
-                          ("linked" if approve else "refused", acct["id"], row["id"]))
         if approve:
             self.dirty.set()
         return {"state": "linked" if approve else "refused", "label": row["label"]}
@@ -701,9 +703,13 @@ class Accounts:
             n = db.db.execute("UPDATE keys SET retired=? WHERE account=? AND retired IS NULL", (t, acct["id"])).rowcount
             db.db.execute("DELETE FROM sessions WHERE discord_id=?", (acct["discord_id"],))
             db.db.execute("DELETE FROM links WHERE account=?", (acct["id"],))
+            db.db.execute("DELETE FROM pairs WHERE account=? OR state='waiting' AND kid IN "
+                          "(SELECT kid FROM keys WHERE account=?)", (acct["id"], acct["id"]))
+            # a lost phone or security key is a lost device too: its passkey must not sign back in
+            p = db.db.execute("DELETE FROM passkeys WHERE account=?", (acct["id"],)).rowcount
         self.dirty.set()
-        log.info("account %s: every PC unlinked and signed out (%d PCs)", acct["id"], n)
-        return {"ok": True, "unlinked": n}
+        log.info("account %s: every PC unlinked, %d passkeys removed, signed out (%d PCs)", acct["id"], p, n)
+        return {"ok": True, "unlinked": n, "passkeys": p}
 
     # -- passkeys
     def _rp(self) -> tuple:
@@ -739,7 +745,7 @@ class Accounts:
                                         {"type": "public-key", "alg": webauthn.ALG_ES256}],
                    "timeout": 120000, "attestation": "none",
                    "authenticatorSelection": {"residentKey": "required", "requireResidentKey": True,
-                                              "userVerification": "preferred"},
+                                              "userVerification": "required"},
                    "excludeCredentials": [{"type": "public-key", "id": r["id"]} for r in
                                           self.store.all("SELECT id FROM passkeys WHERE account=?", (acct["id"],))]}
         return cid, options
@@ -767,7 +773,7 @@ class Accounts:
             raise ApiError(429, "Too many tries. Try again later.")
         cid, challenge = self._challenge("login", None)
         site, rp_id = self._rp()
-        return cid, {"challenge": challenge, "rpId": rp_id, "timeout": 120000, "userVerification": "preferred",
+        return cid, {"challenge": challenge, "rpId": rp_id, "timeout": 120000, "userVerification": "required",
                      "allowCredentials": []}
 
     def passkey_login_finish(self, cid: str, d: dict, ip: str) -> str:

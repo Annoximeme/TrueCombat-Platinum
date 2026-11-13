@@ -1022,7 +1022,7 @@ PAGES["account"] = [
     ("On another PC? Open the launcher there, choose <b>Link with phone</b> and scan the code while you are signed in here.",
      "Op een andere pc? Open daar de launcher, kies <b>Koppelen met telefoon</b> en scan de code terwijl je hier bent aangemeld."),
     ("<header><h2>Lost or stolen PC</h2></header>", "<header><h2>Pc kwijt of gestolen</h2></header>"),
-    ("Unlinks every PC and signs you out everywhere at once. Your rank and stats stay with the account: link the PCs you still have again afterwards.",
-     "Ontkoppelt elke pc en meldt je overal tegelijk af. Je rang en statistieken blijven bij het account: koppel daarna de pc's die je nog hebt opnieuw."),
+    ("Unlinks every PC, removes every passkey and signs you out everywhere at once. Your rank and stats stay with the account: sign in with Discord and link the PCs you still have again.",
+     "Ontkoppelt elke pc, verwijdert elke passkey en meldt je overal tegelijk af. Je rang en statistieken blijven bij het account: meld je aan met Discord en koppel de pc's die je nog hebt opnieuw."),
     ("data-acct-panic>Unlink every PC and sign out</button>", "data-acct-panic>Elke pc ontkoppelen en afmelden</button>"),
 ]
