@@ -1004,7 +1004,8 @@ def studio_roster(lang, latest):
             name = htmlmod.escape(m["callsign"])
             if m.get("account"):
                 name = '<a href="player?u=%s" title="%s">%s</a>' % (urllib.parse.quote(m["account"]), T["profile"], name)
-            lis.append('<li>%s<b>%s</b><span>%s</span></li>' % (tt_svg(14), name, htmlmod.escape(m["role"])))
+            real = ' <small>%s</small>' % htmlmod.escape(m["name"]) if m.get("name") else ""
+            lis.append('<li>%s<b>%s%s</b><span>%s</span></li>' % (tt_svg(14), name, real, htmlmod.escape(m["role"])))
         groups.append('      <div class="roster-group"><h4>%s</h4><ul>%s</ul></div>' % (htmlmod.escape(g[lang]), "".join(lis)))
     return ("<!--studio-roster-->\n    <div class=\"roster\" id=\"roster\">\n      <div class=\"roster-head\">%s<div><h3>%s</h3><p>%s</p></div></div>\n"
             "      <div class=\"roster-groups\">\n%s\n      </div>\n    </div>\n<!--/studio-roster-->"
