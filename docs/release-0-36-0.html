@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrueCombat: Platinum v0.36.0 · Release notes · TrueCombat: Platinum</title>
+<meta name="description" content="0.36.0 adds voice chat, team pings, smarter bots, a full audio overhaul and a name colour picker.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/release-0-36-0">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://truecombat.eu/release-0-36-0">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="TrueCombat: Platinum v0.36.0 · Release notes">
+<meta property="og:description" content="0.36.0 adds voice chat, team pings, smarter bots, a full audio overhaul and a name colour picker. It sharpens online shooting, keeps the install folder from growing and sends F12 bug reports straight to the development team. Update through the launcher, or install fresh with TrueCombat-Platinum-Setup.exe.">
+<meta property="og:image" content="https://truecombat.eu/img/og-news.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-news.jpg">
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="TrueCombat: Platinum v0.36.0 · Release notes">
+<meta name="twitter:description" content="0.36.0 adds voice chat, team pings, smarter bots, a full audio overhaul and a name colour picker. It sharpens online shooting, keeps the install folder from growing and sends F12 bug reports straight to the development team. Update through the launcher, or install fresh with TrueCombat-Platinum-Setup.exe.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"News","item":"https://truecombat.eu/news"},{"@type":"ListItem","position":3,"name":"TrueCombat: Platinum 0.36.0","item":"https://truecombat.eu/release-0-36-0"}]}</script>
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/release-0-36-0">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/release-0-36-0">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=9cba1b76e3">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news" aria-current="page">News</a></li>
+      <li><a href="devlog" data-devlog-new="2026-11-13">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Support</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<section class="page-head rel-head">
+  <div class="head-art" style="--art: url(img/media-village-yard.webp); --art-s: url(img/media-village-yard-640.webp)" aria-hidden="true"></div>
+  <div class="wrap">
+    <a class="pf-back" href="news">← Patch notes</a>
+    <span class="eyebrow">Release · Latest · 13 Nov 2026</span>
+    <h1>TrueCombat: Platinum 0.36.0</h1>
+    <p class="lede">0.36.0 adds voice chat, team pings, smarter bots, a full audio overhaul and a name colour picker. It sharpens online shooting, keeps the install folder from growing and sends F12 bug reports straight to the development team. Update through the launcher, or install fresh with TrueCombat-Platinum-Setup.exe.</p>
+    <p class="rel-facts"><span>57 changes</span><span>13 areas</span><span>#58 · 0.36.0-sandbox28 · 13 Nov 2026</span></p>
+    <div class="hero-cta"><a class="btn" href="download">Download the latest version</a><a class="btn btn-ghost" href="devlog-inside-036">Read the devlog</a><a class="btn btn-ghost" href="news#v0.36.0">All patch notes</a></div>
+  </div>
+</section>
+
+<section class="band rel-glance">
+  <div class="wrap">
+    <h2 class="eyebrow">At a glance</h2>
+    <ul class="rel-cards">
+      <li><a href="#s-new-voice-chat"><b>New: voice chat</b><span>7 changes</span><p>Team radio: hold H to talk to your team. Enemies never hear</p></a></li>
+      <li><a href="#s-new-team-pings"><b>New: team pings</b><span>2 changes</span><p>Press middle mouse to mark a position, or point at an enemy to call them out. Your team sees a marker for 5 seconds with a short</p></a></li>
+      <li><a href="#s-new-bots"><b>New: bots</b><span>7 changes</span><p>Bots now read the map. They spread across multiple routes, take doorways one at a time, slow down and check corners, and aim down sights when holding…</p></a></li>
+      <li><a href="#s-new-audio-overhaul"><b>New: audio overhaul</b><span>7 changes</span><p>More sounds at once: the game now plays twice as many sounds at the same time. In a full firefight, enemy footsteps and gunfire take priority over…</p></a></li>
+      <li><a href="#s-new-name-colours"><b>New: name colours</b><span>2 changes</span><p>Colour each letter of your name in the launcher: Settings &gt; Controls &gt; Player &gt; Name colours. It includes a live preview, click-and-drag selection…</p></a></li>
+      <li><a href="#s-online-play-and-hit-registration"><b>Online play and hit registration</b><span>8 changes</span><p>Smoother updates: the launcher now asks servers for 64 updates per second instead of 40, so movement and hits update more smoothly on 128-tick…</p></a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="band band-alt rel-notes">
+  <div class="wrap">
+    <section class="rel-sec" id="s-new-voice-chat"><h2>New: voice chat</h2><ul>
+      <li><b>Team radio:</b> hold <b>H</b> to talk to your team. Enemies never hear it.</li>
+      <li><b>Local voice:</b> hold <b>N</b> to speak out loud. Everyone nearby hears you, enemies included.</li>
+      <li><b>Options &gt; Voice:</b> voice on/off, volume, microphone gain and input device, push to talk or voice activation (with an adjustable level), radio effect, mute the enemy team, and an on-screen list of who is talking.</li>
+      <li><b>Microphone test:</b> hear yourself without sending anything.</li>
+      <li><b>Mute players:</b> mute single players from the mute menu.</li>
+      <li><b>Keys:</b> both voice keys can be rebound in game and in the launcher's Controls. B stays the radio menu.</li>
+      <li>Voice works on servers that enable it.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-new-team-pings"><h2>New: team pings</h2><ul>
+      <li>Press <b>middle mouse</b> to mark a position, or point at an enemy to call them out. Your team sees a marker for 5 seconds with a short notice.</li>
+      <li>Team modes only. Pings are rate-limited to keep the screen clean, and <code>cg_pings 0</code> hides other players' marks.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-new-bots"><h2>New: bots</h2><ul>
+      <li><b>Bots now read the map.</b> They spread across multiple routes, take doorways one at a time, slow down and check corners, and aim down sights when holding an angle.</li>
+      <li><b>Bots take a moment to spot you.</b> Distance, lighting, movement and stance all count, so instant snap reactions are gone.</li>
+      <li>Bots no longer camp spawn exits.</li>
+      <li><b>Personalities:</b> each bot now has a name and a personality from a 32-strong roster. Some play aggressively, others play it safe, and each has its own preferred weapons.</li>
+      <li><b>Callouts:</b> bots call out enemy positions by map location on team chat and report bomb and flag events (adjust with <code>bot_chat</code>).</li>
+      <li><b>Team orders:</b> bots respond to typed team orders such as "follow me", "hold here" and "push", and always confirm they are bots when asked.</li>
+      <li><b>Adaptive difficulty:</b> with humans in the game, bots adjust their skill to keep matches close (disable with <code>bot_adaptive 0</code>).</li>
+    </ul></section>
+    <section class="rel-sec" id="s-new-audio-overhaul"><h2>New: audio overhaul</h2><ul>
+      <li><b>More sounds at once:</b> the game now plays twice as many sounds at the same time. In a full firefight, enemy footsteps and gunfire take priority over ambience and shell casings instead of being dropped.</li>
+      <li><b>Balanced mix:</b> every sound in the game has been levelled for loudness, category by category, and a master limiter stops loud moments from clipping.</li>
+      <li><b>Gunfire takes the stage:</b> nearby shots and explosions briefly lower the rest of the mix so they cut through.</li>
+      <li><b>Natural variation:</b> footsteps, gunfire, impacts and casings vary slightly in pitch, so repeated sounds no longer sound identical.</li>
+      <li><b>Bullet crack and whizz:</b> rounds passing close to you crack and whizz by.</li>
+      <li><b>Explosion aftermath:</b> a nearby blast muffles your hearing for a moment and lands with a low thump. The ringing in your ears is now a softer tone (the original beep is still available).</li>
+      <li><b>Options &gt; Audio:</b> a new page for the new sound settings, including the bullet crack, the ringing tone and how strongly gunfire lowers the rest of the mix.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-new-name-colours"><h2>New: name colours</h2><ul>
+      <li>Colour each letter of your name in the launcher: Settings &gt; Controls &gt; Player &gt; Name colours. It includes a live preview, click-and-drag selection and 26 colours.</li>
+      <li>Coloured names now show correctly on the scoreboard, in chat and in the Deployment Menu with every ET colour, not just the first ten.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-online-play-and-hit-registration"><h2>Online play and hit registration</h2><ul>
+      <li><b>Smoother updates:</b> the launcher now asks servers for 64 updates per second instead of 40, so movement and hits update more smoothly on 128-tick servers.</li>
+      <li><b>Hit marks match the server:</b> your game now uses the server's exact rules to decide whether a shot hit, so hit marks and the server agree.</li>
+      <li><b>Heads and legs register:</b> shots at heads and legs that stick out past a player's hitbox now count. Before, these sometimes missed at certain angles and stances.</li>
+      <li><b>Steadier on poor connections:</b> your input is resent until the server confirms it, and packet duplication adapts on its own to unstable connections.</li>
+      <li><b>128 updates per second:</b> a new Options &gt; System &gt; Network updates setting lets you receive 128 updates per second on 128-tick servers. 64 stays the default and uses about half the bandwidth.</li>
+      <li><b>Steadier at high update rates:</b> the game now keeps a longer history of server updates, so packet loss and lag spikes no longer force full resyncs at 128 updates per second.</li>
+      <li><b>Fairer for low-ping players:</b> lag compensation now rewinds at most 250 ms (was 400 ms).</li>
+      <li><b>New net graph:</b> <code>cg_netGraph 3</code> shows ping, packet loss in both directions, updates per second, snapshot gaps, prediction corrections and packet duplication.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-storage"><h2>Storage</h2><ul>
+      <li><b>The install folder no longer grows:</b> the DX12 shader cache used to save a fresh copy on every map change, which could add up to several gigabytes. It now keeps a single copy that is reused across servers and maps.</li>
+      <li><b>Size limits:</b> the launcher keeps caches, replays, screenshots and bug reports under a size limit, removing the oldest files first. Settings &gt; Storage shows how much space replays and caches use.</li>
+      <li>The first start of launcher 2.1.0 clears any oversized cache left by earlier versions.</li>
+      <li>Updates no longer clear the shader cache twice, so your first match after an update loads faster.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-bug-reports-f12"><h2>Bug reports (f12)</h2><ul>
+      <li>F12 reports now go straight to the development team: description, map, position, server, match, build, renderer, ping, frame rate, recent console lines and a screenshot. Hardware info is optional.</li>
+      <li>The report box asks for at least 10 characters before it sends.</li>
+      <li>Every report is still saved on your PC. If sending fails, the game tells you and keeps the report.</li>
+      <li>Players can send one report per minute. <code>cg_bugReportUpload 0</code> keeps reports on your PC only.</li>
+      <li><code>bugreport &lt;text&gt;</code> in the console files a report straight away.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-security"><h2>Security</h2><ul>
+      <li>We've tightened and expanded our security measures.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-launcher-2-1-0"><h2>Launcher 2.1.0</h2><ul>
+      <li><b>Player count:</b> the Play button shows how many people are playing and your ping ("12 playing · 38 ms").</li>
+      <li><b>New options:</b> name colour picker and voice keys in Controls, in English, German, French and Polish.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-weapons-and-visuals"><h2>Weapons and visuals</h2><ul>
+      <li><b>M4 SOPMOD red dot:</b> the M68 sight now shows a crisp red dot when aimed. The reticle no longer shows as a blurry square.</li>
+      <li><b>DLSS:</b> if a DLSS override in the NVIDIA App takes over, the game now says so instead of failing silently.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-fixes"><h2>Fixes</h2><ul>
+      <li>Hit markers on edge shots (head and leg grazes) now always match what the server counts.</li>
+      <li>Options &gt; System &gt; Calibrate Brightness opens correctly again.</li>
+      <li>Your own predicted shots now play the correct sound for the weapon you are holding.</li>
+      <li>Spectators stay spectators after a map change or restart instead of being put into a team.</li>
+      <li>Footsteps and view bob now follow toggled walk and sprint correctly (<code>cg_toggleWalk</code> / <code>cg_toggleSprint</code>).</li>
+      <li>Server browser: after "Invalid password", Reconnect now reconnects to that server. Joining from the in-game browser also works mid-match.</li>
+      <li>Local voice and quick voice chat (V menu) now work in Practice and free-for-all modes.</li>
+      <li>F8 replays: clips need at least 5 seconds of play, and the "Clip saved" notice shows the real clip length.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-behind-the-scenes"><h2>Behind the scenes</h2><ul>
+      <li>Every round is now recorded (winner, kills, objectives) for match history and leaderboards. No personal data is stored.</li>
+      <li>Opus voice codec added, with its licence included under Licences.</li>
+    </ul></section>
+    <nav class="rel-pager" aria-label="Other releases"><a class="rel-prev" href="release-0-35-0"><span>Previous release</span><b>v0.35.0</b></a></nav>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-inside-036"><time datetime="2026-11-13">13 Nov 2026</time><span>Inside 0.36.0, the update you can hear</span></a><a href="devlog-a-new-look"><time datetime="2026-11-13">13 Nov 2026</time><span>A new look, from the loading screen to the kill feed</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=8f70005e30"></script>
+</body>
+</html>

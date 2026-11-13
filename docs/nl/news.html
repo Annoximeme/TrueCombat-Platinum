@@ -90,8 +90,99 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.35.0" data-ver="v0.35.0" open>
-        <summary><span class="ver">v0.35.0<span class="latest">Nieuwste</span></span><span class="sum">Easy Anti-Cheat, a rebuilt launcher, an in-game server browser, a proper warm-up, grenade cooking and a long list of movement, weapon and map fixes from the latest playtest. Update through the launcher, or install fresh with TrueCombat-Platinum-Setup.exe.</span><span class="meta">#57 · 0.35.0-sandbox27 · 12 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.36.0" data-ver="v0.36.0" open>
+        <summary><span class="ver">v0.36.0<span class="latest">Nieuwste</span></span><span class="sum">0.36.0 adds voice chat, team pings, smarter bots, a full audio overhaul and a name colour picker. It sharpens online shooting, keeps the install folder from growing and sends F12 bug reports straight to the development team. Update through the launcher, or install fresh with TrueCombat-Platinum-Setup.exe.</span><span class="meta">#58 · 0.36.0-sandbox28 · 13 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>New: voice chat</h3><ul>
+            <li><b>Team radio:</b> hold <b>H</b> to talk to your team. Enemies never hear it.</li>
+            <li><b>Local voice:</b> hold <b>N</b> to speak out loud. Everyone nearby hears you, enemies included.</li>
+            <li><b>Options &gt; Voice:</b> voice on/off, volume, microphone gain and input device, push to talk or voice activation (with an adjustable level), radio effect, mute the enemy team, and an on-screen list of who is talking.</li>
+            <li><b>Microphone test:</b> hear yourself without sending anything.</li>
+            <li><b>Mute players:</b> mute single players from the mute menu.</li>
+            <li><b>Keys:</b> both voice keys can be rebound in game and in the launcher's Controls. B stays the radio menu.</li>
+            <li>Voice works on servers that enable it.</li>
+          </ul></section>
+          <section><h3>New: team pings</h3><ul>
+            <li>Press <b>middle mouse</b> to mark a position, or point at an enemy to call them out. Your team sees a marker for 5 seconds with a short notice.</li>
+            <li>Team modes only. Pings are rate-limited to keep the screen clean, and <code>cg_pings 0</code> hides other players' marks.</li>
+          </ul></section>
+          <section><h3>New: bots</h3><ul>
+            <li><b>Bots now read the map.</b> They spread across multiple routes, take doorways one at a time, slow down and check corners, and aim down sights when holding an angle.</li>
+            <li><b>Bots take a moment to spot you.</b> Distance, lighting, movement and stance all count, so instant snap reactions are gone.</li>
+            <li>Bots no longer camp spawn exits.</li>
+            <li><b>Personalities:</b> each bot now has a name and a personality from a 32-strong roster. Some play aggressively, others play it safe, and each has its own preferred weapons.</li>
+            <li><b>Callouts:</b> bots call out enemy positions by map location on team chat and report bomb and flag events (adjust with <code>bot_chat</code>).</li>
+            <li><b>Team orders:</b> bots respond to typed team orders such as "follow me", "hold here" and "push", and always confirm they are bots when asked.</li>
+            <li><b>Adaptive difficulty:</b> with humans in the game, bots adjust their skill to keep matches close (disable with <code>bot_adaptive 0</code>).</li>
+          </ul></section>
+          <section><h3>New: audio overhaul</h3><ul>
+            <li><b>More sounds at once:</b> the game now plays twice as many sounds at the same time. In a full firefight, enemy footsteps and gunfire take priority over ambience and shell casings instead of being dropped.</li>
+            <li><b>Balanced mix:</b> every sound in the game has been levelled for loudness, category by category, and a master limiter stops loud moments from clipping.</li>
+            <li><b>Gunfire takes the stage:</b> nearby shots and explosions briefly lower the rest of the mix so they cut through.</li>
+            <li><b>Natural variation:</b> footsteps, gunfire, impacts and casings vary slightly in pitch, so repeated sounds no longer sound identical.</li>
+            <li><b>Bullet crack and whizz:</b> rounds passing close to you crack and whizz by.</li>
+            <li><b>Explosion aftermath:</b> a nearby blast muffles your hearing for a moment and lands with a low thump. The ringing in your ears is now a softer tone (the original beep is still available).</li>
+            <li><b>Options &gt; Audio:</b> a new page for the new sound settings, including the bullet crack, the ringing tone and how strongly gunfire lowers the rest of the mix.</li>
+          </ul></section>
+          <section><h3>New: name colours</h3><ul>
+            <li>Colour each letter of your name in the launcher: Settings &gt; Controls &gt; Player &gt; Name colours. It includes a live preview, click-and-drag selection and 26 colours.</li>
+            <li>Coloured names now show correctly on the scoreboard, in chat and in the Deployment Menu with every ET colour, not just the first ten.</li>
+          </ul></section>
+          <section><h3>Online play and hit registration</h3><ul>
+            <li><b>Smoother updates:</b> the launcher now asks servers for 64 updates per second instead of 40, so movement and hits update more smoothly on 128-tick servers.</li>
+            <li><b>Hit marks match the server:</b> your game now uses the server's exact rules to decide whether a shot hit, so hit marks and the server agree.</li>
+            <li><b>Heads and legs register:</b> shots at heads and legs that stick out past a player's hitbox now count. Before, these sometimes missed at certain angles and stances.</li>
+            <li><b>Steadier on poor connections:</b> your input is resent until the server confirms it, and packet duplication adapts on its own to unstable connections.</li>
+            <li><b>128 updates per second:</b> a new Options &gt; System &gt; Network updates setting lets you receive 128 updates per second on 128-tick servers. 64 stays the default and uses about half the bandwidth.</li>
+            <li><b>Steadier at high update rates:</b> the game now keeps a longer history of server updates, so packet loss and lag spikes no longer force full resyncs at 128 updates per second.</li>
+            <li><b>Fairer for low-ping players:</b> lag compensation now rewinds at most 250 ms (was 400 ms).</li>
+            <li><b>New net graph:</b> <code>cg_netGraph 3</code> shows ping, packet loss in both directions, updates per second, snapshot gaps, prediction corrections and packet duplication.</li>
+          </ul></section>
+          <section><h3>Storage</h3><ul>
+            <li><b>The install folder no longer grows:</b> the DX12 shader cache used to save a fresh copy on every map change, which could add up to several gigabytes. It now keeps a single copy that is reused across servers and maps.</li>
+            <li><b>Size limits:</b> the launcher keeps caches, replays, screenshots and bug reports under a size limit, removing the oldest files first. Settings &gt; Storage shows how much space replays and caches use.</li>
+            <li>The first start of launcher 2.1.0 clears any oversized cache left by earlier versions.</li>
+            <li>Updates no longer clear the shader cache twice, so your first match after an update loads faster.</li>
+          </ul></section>
+          <section><h3>Bug reports (f12)</h3><ul>
+            <li>F12 reports now go straight to the development team: description, map, position, server, match, build, renderer, ping, frame rate, recent console lines and a screenshot. Hardware info is optional.</li>
+            <li>The report box asks for at least 10 characters before it sends.</li>
+            <li>Every report is still saved on your PC. If sending fails, the game tells you and keeps the report.</li>
+            <li>Players can send one report per minute. <code>cg_bugReportUpload 0</code> keeps reports on your PC only.</li>
+            <li><code>bugreport &lt;text&gt;</code> in the console files a report straight away.</li>
+          </ul></section>
+          <section><h3>Security</h3><ul>
+            <li>We've tightened and expanded our security measures.</li>
+          </ul></section>
+          <section><h3>Launcher 2.1.0</h3><ul>
+            <li><b>Player count:</b> the Play button shows how many people are playing and your ping ("12 playing · 38 ms").</li>
+            <li><b>New options:</b> name colour picker and voice keys in Controls, in English, German, French and Polish.</li>
+          </ul></section>
+          <section><h3>Weapons and visuals</h3><ul>
+            <li><b>M4 SOPMOD red dot:</b> the M68 sight now shows a crisp red dot when aimed. The reticle no longer shows as a blurry square.</li>
+            <li><b>DLSS:</b> if a DLSS override in the NVIDIA App takes over, the game now says so instead of failing silently.</li>
+          </ul></section>
+          <section><h3>Fixes</h3><ul>
+            <li>Hit markers on edge shots (head and leg grazes) now always match what the server counts.</li>
+            <li>Options &gt; System &gt; Calibrate Brightness opens correctly again.</li>
+            <li>Your own predicted shots now play the correct sound for the weapon you are holding.</li>
+            <li>Spectators stay spectators after a map change or restart instead of being put into a team.</li>
+            <li>Footsteps and view bob now follow toggled walk and sprint correctly (<code>cg_toggleWalk</code> / <code>cg_toggleSprint</code>).</li>
+            <li>Server browser: after "Invalid password", Reconnect now reconnects to that server. Joining from the in-game browser also works mid-match.</li>
+            <li>Local voice and quick voice chat (V menu) now work in Practice and free-for-all modes.</li>
+            <li>F8 replays: clips need at least 5 seconds of play, and the "Clip saved" notice shows the real clip length.</li>
+          </ul></section>
+          <section><h3>Behind the scenes</h3><ul>
+            <li>Every round is now recorded (winner, kills, objectives) for match history and leaderboards. No personal data is stored.</li>
+            <li>Opus voice codec added, with its licence included under Licences.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.36.0-sandbox28">GitHub ↗</a></p>
+          <p class="rel-page"><a href="../release-0-36-0">Releasepagina →</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.35.0" data-ver="v0.35.0">
+        <summary><span class="ver">v0.35.0</span><span class="sum">Easy Anti-Cheat, a rebuilt launcher, an in-game server browser, a proper warm-up, grenade cooking and a long list of movement, weapon and map fixes from the latest playtest. Update through the launcher, or install fresh with TrueCombat-Platinum-Setup.exe.</span><span class="meta">#57 · 0.35.0-sandbox27 · 12 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Easy anti-cheat</h3><ul>
             <li>TrueCombat: Platinum now ships with Easy Anti-Cheat. PLAY starts the game through the Easy Anti-Cheat bootstrapper, and the installer sets up the anti-cheat service once (Windows asks for permission).</li>

@@ -1,8 +1,8 @@
 # Launcher Play page. Written by tools/website/build.py from tools/website/launcher.json; do not edit.
 [slide]
-eyebrow=Update 0.35.0
+eyebrow=Update 0.36.0
 chip=Live now
-title=Update 0.35.0|is live.
+title=Update 0.36.0|is live.
 text=See everything that changed in the latest update.
 button=Read patch notes
 url=https://truecombat.eu/news.html
