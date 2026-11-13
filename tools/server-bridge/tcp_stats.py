@@ -29,6 +29,7 @@ key (HMAC-SHA256). Reports from unknown or removed servers are refused.
   python tcp_stats.py --db stats.db recompute                          (rebuild ranks after a rule change)
 """
 import argparse
+import copy
 import datetime as dt
 import hashlib
 import hmac
@@ -886,7 +887,28 @@ class StatsStore:
         except (ValueError, TypeError):
             return None
 
+    LEADERBOARD_TTL = 30.0   # seconds; matches the public Cache-Control max-age of the HTTP answer
+
     def leaderboard(self, period="all", sort="rating", mode="", limit=100, since="", until="", scope="all", who=""):
+        """Cached front for _leaderboard(). The all-time board sums every match row, which costs ~0.5 s at 200k rows
+        and ~3.5 s at 1M rows while holding the store lock, so the same board is built at most once per TTL. Any
+        write through this store (ingest, void, alias, ...) changes total_changes and so starts a fresh board."""
+        key = (period, sort, mode, str(limit), since, until, scope, who)
+        now = time.monotonic()
+        with self.lock:
+            changes = self.db.total_changes
+            cache = self.__dict__.setdefault("_lb_cache", {})
+            hit = cache.get(key)
+            if hit and hit[0] == changes and now - hit[1] < self.LEADERBOARD_TTL:
+                return copy.deepcopy(hit[2])
+        board = self._leaderboard(period, sort, mode, limit, since, until, scope, who)
+        with self.lock:
+            if len(cache) > 256:
+                cache.clear()
+            cache[key] = (changes, now, board)
+        return copy.deepcopy(board)
+
+    def _leaderboard(self, period="all", sort="rating", mode="", limit=100, since="", until="", scope="all", who=""):
         """period is all, 30d or 7d; since/until (ISO times) select any other window, e.g. a season.
         sort "season" ranks by XP earned inside the window and "gain" by rating won inside it."""
         sort = sort if sort in ("rating", "xp", "kills", "kd", "headshots", "wins", "season", "gain") else "rating"
