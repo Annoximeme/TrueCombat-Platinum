@@ -1301,17 +1301,27 @@ class StatsStore:
             rep = json.loads(r["report"] or "{}")
             version, host = clean(rep.get("version"), 48), clean(rep.get("server"), 64)
         except ValueError:
-            version, host = "", ""
+            rep, version, host = {}, "", ""
         players = [{"id": p["pid"], "name": p["name"], "team": p["team"], "won": bool(p["won"]), "kills": p["kills"],
                     "deaths": p["deaths"], "headshots": p["headshots"], "damage": p["damage"], "teamKills": p["team_kills"],
                     "objectives": p["objectives"], "roundsWon": p["rounds_won"], "timePlayed": p["time_played"], "xp": p["xp"],
                     "ratingChange": int(round(p["rating_after"] - p["rating_before"])), "topWeapon": p["top_weapon"] or ""}
                    for p in rows]
-        # a team's score is the most rounds any of its players was present to win
+        # a team's score: the round results the server reported (bots win rounds too); older reports without them
+        # fall back to the most rounds any of the team's players was present to win
         score = {}
-        for p in players:
-            if p["team"]:
-                score[p["team"]] = max(score.get(p["team"], 0), p["roundsWon"])
+        ends = [e for e in (rep.get("events") or []) if isinstance(e, dict) and e.get("kind") == "r"]
+        if ends:
+            for p in players:
+                if p["team"]:
+                    score.setdefault(p["team"], 0)
+            for e in ends:
+                if e.get("winner") and e["winner"] not in ("draw", "tie", "none"):
+                    score[e["winner"]] = score.get(e["winner"], 0) + 1
+        else:
+            for p in players:
+                if p["team"]:
+                    score[p["team"]] = max(score.get(p["team"], 0), p["roundsWon"])
         top = players[0] if players and players[0]["kills"] else None
         return {"schema": "tcp-match-page/1", "updated": now_iso(), "id": pub, "ended": r["ended"], "map": r["map"],
                 "mode": r["mode"], "duration": r["duration"], "rounds": r["rounds"], "winner": r["winner"],
@@ -1413,6 +1423,8 @@ class StatsStore:
         if not re.fullmatch(r"[0-9a-f]{16}", pid):
             return None
         with self.lock:
+            if not self.db.execute("SELECT 1 FROM players WHERE pid=?", (pid,)).fetchone():
+                return None
             rows = self.db.execute(
                 "SELECT pb.pid opp, COUNT(*) n, SUM(pa.won) w FROM match_players pa JOIN match_players pb "
                 "ON pb.server=pa.server AND pb.match=pa.match AND pb.pid<>pa.pid AND (pb.team<>pa.team OR pa.team='') "

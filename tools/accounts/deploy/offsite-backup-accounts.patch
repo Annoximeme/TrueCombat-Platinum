@@ -1,0 +1,60 @@
+--- a/tcp_offsite_backup.py
++++ b/tcp_offsite_backup.py
+@@ -17,6 +17,8 @@
+ REPO = f"{STATE}/repo"
+ HASHES = f"{STATE}/secret-hashes.json"
+ STATS_DB = "/var/lib/tcp-stats/stats.db"
++ACCOUNTS_DB = "/var/lib/tcp-accounts/accounts.db"
++ACCOUNTS_SNAP = f"{STATE}/accounts/accounts.db"   # encrypted as a secret: it holds Discord ids and sign-in data
+ 
+ PLAIN = [
+     "/etc/caddy/Caddyfile",
+@@ -31,12 +33,15 @@
+     "/etc/fstab",
+     "/opt/tcp/*.py", "/opt/tcp/*.sh", "/opt/tcp/care/*.py", "/opt/tcp/backup/*.py",
+     "/opt/tcp/server-bridge/*.py", "/opt/tcp/server-bridge/DEPLOYED_COMMIT",
++    "/opt/tcp/accounts/*.py",
+     "/opt/tcp/master-src/*",
+     "/var/lib/tcpgame/home*/tcetest/*.cfg",
+ ]
+ SECRET = [
+     "/etc/tcp-care/*.json", "/etc/tcp-status/*.json",
+     "/var/lib/tcpgame/home*/tcetest/*private*.cfg",
++    "/etc/tcp-accounts/*", "/etc/tcp-discord-bot/*",
++    ACCOUNTS_SNAP,
+ ]
+ STATS_DIRS = ["/var/lib/tcpgame/home/tcetest/stats"]
+ 
+@@ -82,6 +87,24 @@
+         dst.close()
+ 
+ 
++def snapshot_accounts():
++    """A consistent copy of the accounts database (WAL mode, so never copy the file itself)."""
++    if not os.path.exists(ACCOUNTS_DB):
++        return
++    os.makedirs(os.path.dirname(ACCOUNTS_SNAP), mode=0o700, exist_ok=True)
++    tmp = ACCOUNTS_SNAP + ".tmp"
++    if os.path.exists(tmp):
++        os.remove(tmp)
++    src = sqlite3.connect(f"file:{ACCOUNTS_DB}?mode=ro", uri=True)
++    dst = sqlite3.connect(tmp)
++    src.backup(dst)
++    src.close()
++    dst.execute("VACUUM")       # same contents give the same bytes, so an unchanged night re-encrypts nothing
++    dst.close()
++    os.chmod(tmp, 0o600)
++    os.replace(tmp, ACCOUNTS_SNAP)
++
++
+ def encrypt(src, hashes):
+     data = open(src, "rb").read()
+     h = hashlib.sha256(data).hexdigest()
+@@ -123,6 +146,7 @@
+             shutil.copytree(d, dest(d, "files"), dirs_exist_ok=True)
+     dump_stats(os.path.join(REPO, "stats"))
+ 
++    snapshot_accounts()
+     hashes = json.load(open(HASHES)) if os.path.exists(HASHES) else {}
+     wanted = set()
+     for f in expand(SECRET):

@@ -466,6 +466,20 @@ code, body = S.handle_staff(db, "POST", "/staff/accounts/aliases", {"X-Accounts-
                             json.dumps({"aliases": [{"pid": raz, "canonical": "f" * 16, "since": None, "until": None}]}).encode(), "")
 check("alias answer carries matches per account", body["players"]["f" * 16]["matches"] == 6, body)
 
+# ------------------------------------------------------------------ Team Terminus ribbon
+acc.cfg["team"] = {"501": "Founder \u00b7 Lead Developer", "777": "Moderator"}
+raz_name = acc.account(a1["id"])["name"]
+pr = acc.profile(raz_name)
+check("team: the ribbon follows the Discord sign-in", pr and pr.get("team") == {"name": "Team Terminus", "role": "Founder \u00b7 Lead Developer"}, pr)
+check("team: own page shows it too", acc.me(acc.session(acc.new_session("501", "R", "", "1.1.1.1")))["account"].get("team", {}).get("role"))
+sx = session("778", "Copycat")
+ax = acc.signup(sx, "RazicFan", "public", True)
+check("team: other players get no ribbon", "team" not in acc.profile("RazicFan"))
+tj = acc.team_json()
+check("team: team.json lists public members only", [m["name"] for m in tj] == [raz_name] and tj[0]["statsId"] == A.account_pid(a1["id"]), tj)
+acc.cfg["team"] = {}
+check("team: off when the list is empty", "team" not in acc.profile(raz_name) and acc.team_json() == [])
+
 failed = [n for n, ok in checks if not ok]
 print("%d/%d checks passed" % (len(checks) - len(failed), len(checks)))
 sys.exit(1 if failed else 0)

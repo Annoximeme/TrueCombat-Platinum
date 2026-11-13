@@ -72,6 +72,7 @@ All public routes sit under `/api/account/` on **truecombat.eu** itself (a Caddy
 | `POST lfs` `{on, note, hours}` | page | looking for a squad, 1 to 6 hours, note up to 60 characters |
 | `GET lfs.json` | anyone | public accounts looking right now (servers page, bot, launcher server browser) |
 | `GET badges.json` | anyone | stats id -> `["clean"]` or `["clean","trusted"]` |
+| `GET team.json` | anyone | Team Terminus members with a public account: name, role, stats id (config `team`: Discord id -> role) |
 | `GET bans.txt`, `GET trusted.txt` | game servers | see *Bans and trusted slots* |
 | `GET /internal/roles`, `/internal/weekly`, `/internal/bans`; `POST /internal/ban`, `/internal/unban` | Discord bot, staff portal (loopback, `X-Accounts-Token`) | role sync, weekly report list, staff sanctions |
 

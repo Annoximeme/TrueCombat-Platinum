@@ -2,7 +2,7 @@
 
 > TrueCombat: Platinum is a free, native 64-bit Windows rebuild of TrueCombat: Elite (TC:E), the realistic modern-combat tactical shooter originally made as a total conversion for Wolfenstein: Enemy Territory. It has a DirectX 12 renderer with an OpenGL fallback, the original maps, weapons, movement and HUD, a launcher with signed updates, official EU servers and leaderboards. It is developed by Team Terminus.
 
-- Current version: v0.35.0 (12 Nov 2026)
+- Current version: v0.36.0 (13 Nov 2026)
 - Platform: Windows 10 and 11, 64-bit. Price: free. Status: early access.
 - Not affiliated with Team Terminator, the creators of TrueCombat: Elite. Fan project.
 - The site is also available in Dutch under https://truecombat.eu/nl/.
@@ -80,6 +80,7 @@
 
 ## Devlog
 
+- [Inside 0.36.0, the update you can hear](https://truecombat.eu/devlog-inside-036): Voice chat, team pings, bots that read the map, a full audio overhaul and an optional 128 updates per second. This is the long version: what changed, why we built it the way we did, how it was tested, and what is still to come.
 - [A new look, from the loading screen to the kill feed](https://truecombat.eu/devlog-a-new-look): Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a controller. Here is what is coming and how it was built.
 - [Every map, in 3D, in your browser](https://truecombat.eu/devlog-maps-in-3d): The six map pages now carry a 3D model of the real map that you can turn, cut open and study before your first round, and every update gets a page of its own.
 - [Finding new players without tracking anyone](https://truecombat.eu/devlog-counting-without-cookies): TrueCombat: Platinum is about to go public on more platforms than ever. To learn which of them actually bring players, the site now counts visits and downloads the same way it counts devlog readers: no cookies, no outside companies, and nothing that leads back to you.
