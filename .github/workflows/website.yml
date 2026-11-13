@@ -38,6 +38,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          python tools/design/gen_tokens.py --check
           python tools/website/release_sync.py
           python tools/website/build.py
           python tools/website/check_site.py

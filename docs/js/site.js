@@ -227,9 +227,13 @@ var TCP_API = 'https://api.truecombat.eu';
     var html = rels.slice(0, limit).map(function (rel, i) { seen[verOf(rel)] = true; return releaseHTML(rel, i === 0, limit > 5); }).join('');
     if (!html) return;
     /* keep hand-written entries for versions the API does not return */
+    /* release pages exist only once the site has been rebuilt for that version: keep the links the static HTML has */
+    var pages = {};
+    $all('.rel-page', box).forEach(function (p) { var d = p.closest('.release'); if (d) pages[d.dataset.ver] = p.outerHTML; });
     var older = $all('.release[data-ver]', box).filter(function (d) { return !seen[d.dataset.ver]; });
     older.forEach(function (d) { d.open = false; var b = d.querySelector('.latest'); if (b) b.remove(); });
     box.innerHTML = html;
+    $all('.release[data-ver]', box).forEach(function (d) { var b = d.querySelector('.body'); if (b && pages[d.dataset.ver] && !b.querySelector('.rel-page')) b.insertAdjacentHTML('beforeend', pages[d.dataset.ver]); });
     older.slice(0, Math.max(0, limit - Object.keys(seen).length)).forEach(function (d) { box.appendChild(d); });
     clampNotes(box);
     if (location.hash) { var t = document.getElementById(location.hash.slice(1)); if (t && t.tagName === 'DETAILS') { t.open = true; t.scrollIntoView(); } }
