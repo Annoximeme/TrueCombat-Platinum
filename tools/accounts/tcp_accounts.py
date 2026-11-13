@@ -43,7 +43,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.0.2"
+VERSION = "1.0.3"
 log = logging.getLogger("tcp-accounts")
 
 LINK_TAG = b"TrueCombat account link v1\n"
@@ -731,7 +731,11 @@ class Accounts:
                 old = (p / "names.txt").read_text(encoding="utf-8") if (p / "names.txt").exists() else ""
                 if old and (p / "names.txt").stat().st_mode & 0o777 != 0o644:
                     os.chmod(p / "names.txt", 0o644)  # a list written by 1.0.1 was 0640 and the game servers could not read it
-                if old.split("\n", 1)[-1] != body.split("\n", 1)[-1]:
+                def same(x, y):               # the format tag and the list, not the time it was written
+                    hx, _, rx = x.partition("\n")
+                    hy, _, ry = y.partition("\n")
+                    return hx.split(" ")[0] == hy.split(" ")[0] and rx == ry
+                if not same(old, body):
                     tmp.write_text(body, encoding="utf-8")
                     os.chmod(tmp, 0o644)              # every game server user reads it; the service's umask is 027
                     os.replace(tmp, p / "names.txt")

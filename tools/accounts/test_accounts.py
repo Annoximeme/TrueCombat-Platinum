@@ -121,6 +121,10 @@ check("reserved list holds no names in clear", "razic" not in txt.lower() and "g
 check("hidden account's name still reserved", A.name_hash(A.skeleton("Ghost")) in lines and lines[A.name_hash("ghost")] == "-")
 acc.push()
 check("reserved list written for the local game server", (tmp / "srv1" / "accounts" / "names.txt").read_text() == txt)
+names = tmp / "srv1" / "accounts" / "names.txt"
+names.write_text("TCPNAMES1 1\n" + txt.split("\n", 1)[1])
+acc.push()
+check("a list in an older format is rewritten even when the names are the same", names.read_text() == txt)
 check("reserved list readable by every game server user", (tmp / "srv1" / "accounts" / "names.txt").stat().st_mode & 0o044 == 0o044)
 
 # rename rules
