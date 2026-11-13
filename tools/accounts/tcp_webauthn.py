@@ -259,6 +259,8 @@ def verify_registration(client_data: bytes, attestation: bytes, challenge: str, 
         raise ValueError("wrong site")
     if not ad["flags"] & 0x01:
         raise ValueError("the passkey did not confirm you were there")
+    if not ad["flags"] & 0x04:
+        raise ValueError("the passkey did not check it was you (PIN, fingerprint or face)")
     return {"credentialId": ad["credentialId"], "key": ad["key"], "signCount": ad["signCount"]}
 
 
@@ -271,6 +273,9 @@ def verify_assertion(stored: dict, client_data: bytes, auth_data: bytes, signatu
         raise ValueError("wrong site")
     if not ad["flags"] & 0x01:
         raise ValueError("the passkey did not confirm you were there")
+    if not ad["flags"] & 0x04:
+        # a passkey signs you in on its own, so it must check it is you, not only that someone touched it
+        raise ValueError("the passkey did not check it was you (PIN, fingerprint or face)")
     if not verify_with(stored, auth_data + hashlib.sha256(client_data).digest(), signature, ed25519_verify):
         raise ValueError("the passkey's signature does not match")
     count = ad["signCount"]

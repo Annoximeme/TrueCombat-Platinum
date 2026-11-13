@@ -186,6 +186,9 @@ sudo ./deploy/install.sh stats-link    # token + tcp-bridge drop-in 70-accounts.
 sudo ./deploy/install.sh caddy         # /api/account/* and /u/<name> in the truecombat.eu block (backup + validate)
 ```
 
+1.1.1 (audit fixes) on top of 1.1.0: `install.sh install` again, and `deploy/tcp_stats-accounts-1.1.1.patch` (cache for the
+profile routes) against the 1.1.0 stats code.
+
 1.1.0 on top of a running 1.0.x: `install.sh install` again (copies `tcp_accounts.py` and `tcp_webauthn.py`, keeps
 the database; new tables are added on start), and patch the stats code with `deploy/tcp_stats-accounts-1.1.0.patch`
 (against the 1.0.2 stats code; back up `stats.db` first).
