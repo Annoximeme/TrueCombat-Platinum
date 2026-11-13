@@ -1,0 +1,11 @@
+{
+  "_about": "One icon family for the website, launcher, in-game menus and staff portal: Lucide (ISC licence, src/LICENSE-lucide.txt), redrawn with the Direction A stroke (square caps, mitred joins). Name on the left, Lucide source file on the right. Brand marks (Discord, GitHub) are not part of the family and keep their official shapes.",
+  "play": "play", "servers": "server", "news": "newspaper", "profile": "user", "replays": "clapperboard", "host": "globe",
+  "settings": "settings", "support": "heart", "favorite": "star", "anticheat": "shield-check", "search": "search", "menu": "menu",
+  "chevron": "chevron-down", "external": "external-link", "rss": "rss", "download": "download", "update": "refresh-cw",
+  "close": "x", "check": "check", "warning": "triangle-alert", "info": "info", "password": "lock", "offline": "wifi-off",
+  "players": "users", "map": "map", "objective": "flag", "crosshair": "crosshair", "keyboard": "keyboard", "gamepad": "gamepad-2",
+  "camera": "camera", "image": "image", "trophy": "trophy", "whatsnew": "sparkles", "display": "monitor", "exposure": "sun",
+  "time": "clock", "practice": "target", "back": "arrow-left", "next": "arrow-right", "kick": "log-out", "version": "package",
+  "eye": "eye", "eye-off": "eye-off", "tray": "panel-bottom", "link": "link", "copy": "copy", "volume": "volume-2", "mic": "mic"
+}

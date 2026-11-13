@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/nl/devlog"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog</id>
-  <updated>2026-11-12T12:00:00Z</updated>
+  <updated>2026-11-13T12:00:00Z</updated>
+  <entry>
+    <title>Elke map in 3D, in je browser</title>
+    <link href="https://truecombat.eu/nl/devlog-maps-in-3d"/>
+    <id>https://truecombat.eu/nl/devlog-maps-in-3d</id>
+    <published>2026-11-13T12:00:00Z</published>
+    <updated>2026-11-13T12:00:00Z</updated>
+    <category term="Community"/>
+    <summary>De zes mappagina's hebben nu een 3D-model van de echte map dat je kunt draaien, openknippen en bestuderen voor je eerste ronde, en elke update krijgt een eigen pagina.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Nieuwe spelers vinden zonder iemand te volgen</title>
     <link href="https://truecombat.eu/nl/devlog-counting-without-cookies"/>
