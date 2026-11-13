@@ -1458,6 +1458,29 @@ class StatsStore:
                          "won": bool(best["won"])} if best else None,
                 "newMedals": [{"key": m["key"], "name": m["name"]} for m in medals]}
 
+    PROFILE_TTL = 60.0   # seconds; medals walks every match of a player, so a public request must not run it each time
+
+    def profile_part(self, kind, pid):
+        """Cached front for medals, career, rivals and week (public routes). Same rule as the leaderboard cache:
+        an entry lives PROFILE_TTL seconds and any write through the store starts fresh."""
+        pid = str(pid or "").lower()
+        if kind not in ("medals", "career", "rivals", "week") or not re.fullmatch(r"[0-9a-f]{16}", pid):
+            return None
+        key = (kind, pid)
+        now = time.monotonic()
+        with self.lock:
+            changes = self.db.total_changes
+            cache = self.__dict__.setdefault("_pf_cache", {})
+            hit = cache.get(key)
+            if hit and hit[0] == changes and now - hit[1] < self.PROFILE_TTL:
+                return copy.deepcopy(hit[2])
+        out = getattr(self, kind)(pid)
+        with self.lock:
+            if len(cache) > 2048:
+                cache.clear()
+            cache[key] = (changes, now, out)
+        return copy.deepcopy(out)
+
     def account_summary(self, aliases):
         """For the account service: last match and match count of each account's stats id."""
         ids = sorted({str(a.get("canonical", "")) for a in aliases or [] if isinstance(a, dict)})[:5000]
@@ -1588,10 +1611,10 @@ def handle_get(store, path, query):
         return 200, store.ranks()
     if path == "/netstats.json":
         return 200, store.netstats(q.get("days", 30))
-    for route, fn in (("/medals.json", store.medals), ("/career.json", store.career), ("/rivals.json", store.rivals),
-                      ("/week.json", store.week)):
+    for route, kind in (("/medals.json", "medals"), ("/career.json", "career"), ("/rivals.json", "rivals"),
+                        ("/week.json", "week")):
         if path == route:
-            r = fn(q.get("id"))
+            r = store.profile_part(kind, q.get("id"))
             return (200, r) if r else (404, {"error": "unknown player"})
     return None
 
