@@ -8,6 +8,9 @@
 #   clean-urls.caddy        ->  /etc/caddy/clean-urls.caddy
 
 {
+	# admin API on a private unix socket (full audit 2026-11-13), not 127.0.0.1:2019.
+	# Needs the systemd drop-in caddy-admin-socket.conf next to this file (RuntimeDirectory=caddy).
+	admin unix//run/caddy/admin.sock
 	servers {
 		# a request must name the same host in TLS (SNI) and in the Host header
 		strict_sni_host on
