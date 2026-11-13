@@ -24,6 +24,7 @@ Python 3.10+ standard library only. State in one SQLite file.
   python3 tcp_accounts.py --config /etc/tcp-accounts/config.json
 """
 import argparse
+import calendar
 import hashlib
 import hmac
 import json
@@ -42,7 +43,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.0.1"
+VERSION = "1.0.2"
 log = logging.getLogger("tcp-accounts")
 
 LINK_TAG = b"TrueCombat account link v1\n"
@@ -134,6 +135,12 @@ def name_hash(sk: str) -> str:
 
 def key_id(public: bytes) -> str:
     return hashlib.sha256(public).hexdigest()[:40]
+
+
+def key_tag(kid: str) -> str:
+    """How the reserved-name list names a key: a hash of the key id, so the public list cannot be tied to anyone's
+    stats id (the stats id of a key is derived from the key id). A game server hashes the key id it verified."""
+    return hashlib.sha256(("tcp-namekey:" + kid).encode()).hexdigest()[:24]
 
 
 def stats_pid(raw: str) -> str:
@@ -381,6 +388,7 @@ class Accounts:
         acct = self.by_discord(discord_id)
         if acct:
             self.store.x("UPDATE accounts SET last_active=? WHERE id=?", (t, acct["id"]))
+            self.reclaim(acct)
             if acct["show_discord"]:
                 self.store.x("UPDATE accounts SET discord_name=?, discord_avatar=? WHERE id=?",
                              (discord_name[:64], avatar[:64], acct["id"]))
@@ -404,6 +412,22 @@ class Accounts:
         s["account"] = acct
         return s
 
+    def reclaim(self, acct: dict) -> bool:
+        """A name released after a year away comes back on the next sign-in, if nobody took it meanwhile."""
+        with self.store.tx() as db:
+            if db.db.execute("SELECT 1 FROM names WHERE skeleton=? AND account=?", (acct["skeleton"], acct["id"])).fetchone():
+                return False
+            if self.name_taken(acct["skeleton"], acct["id"]):
+                return False
+            db.db.execute("DELETE FROM names WHERE skeleton=?", (acct["skeleton"],))
+            db.db.execute("INSERT INTO names VALUES(?,?,?,NULL)", (acct["skeleton"], acct["id"], acct["name"]))
+        self.dirty.set()
+        return True
+
+    def name_held(self, acct: dict) -> bool:
+        return bool(self.store.one("SELECT 1 AS x FROM names WHERE skeleton=? AND account=? AND held_until IS NULL",
+                                   (acct["skeleton"], acct["id"])))
+
     def end_session(self, s: dict) -> None:
         self.store.x("DELETE FROM sessions WHERE id=?", (s["id"],))
 
@@ -424,6 +448,8 @@ class Accounts:
                 raise ApiError(409, why)
             sk = skeleton(name)
             db.db.execute("DELETE FROM names WHERE skeleton=?", (sk,))      # an expired hold
+            if db.db.execute("SELECT 1 FROM accounts WHERE discord_id=?", (s["discord_id"],)).fetchone():
+                raise ApiError(409, "You already have an account.")
             db.db.execute("INSERT INTO accounts(id, discord_id, name, skeleton, visibility, show_discord, created, "
                           "name_changed, last_active) VALUES(?,?,?,?,?,0,?,?,?)",
                           (acct, s["discord_id"], name, sk, visibility, t, t, t))
@@ -445,7 +471,7 @@ class Accounts:
             if why:
                 raise ApiError(409, why)
             if sk == acct["skeleton"]:            # same skeleton: only the spelling changes, no wait, no hold
-                db.db.execute("UPDATE names SET display=? WHERE skeleton=?", (name, sk))
+                db.db.execute("UPDATE names SET display=? WHERE skeleton=? AND account=?", (name, sk, acct["id"]))
                 db.db.execute("UPDATE accounts SET name=? WHERE id=?", (name, acct["id"]))
             else:
                 db.db.execute("UPDATE names SET held_until=? WHERE skeleton=? AND account=?",
@@ -580,6 +606,7 @@ class Accounts:
             "name": a["name"], "visibility": a["visibility"], "showDiscord": bool(a["show_discord"]),
             "created": a["created"], "statsId": account_pid(a["id"]),
             "nameChangeIn": max(0, NAME_CHANGE_DAYS * 86400 - (t - a["name_changed"])),
+            "nameReserved": self.name_held(a),
             "keys": [{"id": k["kid"], "label": k["label"], "linked": k["linked"], "retired": k["retired"]}
                      for k in self.keys_of(a["id"])],
         }
@@ -600,16 +627,17 @@ class Accounts:
     def names_json(self) -> dict:
         """Stats id -> account name for public accounts (leaderboards, match pages, the bot)."""
         return {account_pid(r["id"]): r["name"] for r in
-                self.store.all("SELECT id, name FROM accounts WHERE visibility='public'")}
+                self.store.all("SELECT a.id, a.name FROM accounts a JOIN names n ON n.account=a.id AND n.skeleton=a.skeleton "
+                               "AND n.held_until IS NULL WHERE a.visibility='public'")}
 
     def reserved_txt(self) -> str:
-        """For game servers: hashed name skeleton -> the key ids allowed to use it. Held names have no keys,
-        so nobody may use them until the hold ends."""
-        lines = ["TCPNAMES1 %d" % now()]
+        """For game servers: hashed name skeleton -> tags of the keys allowed to use it. A name on hold still
+        belongs to its owner; a name whose owner has no linked PC is listed with "-" (nobody may use it)."""
+        lines = ["TCPNAMES2 %d" % now()]
         rows = self.store.all("SELECT n.skeleton, n.account, n.held_until FROM names n")
         keys = {}
         for k in self.store.all("SELECT kid, account FROM keys WHERE retired IS NULL"):
-            keys.setdefault(k["account"], []).append(k["kid"])
+            keys.setdefault(k["account"], []).append(key_tag(k["kid"]))
         t = now()
         for r in sorted(rows, key=lambda r: r["skeleton"]):
             if r["held_until"] and r["held_until"] < t:
@@ -701,8 +729,11 @@ class Accounts:
                 tmp = p / "names.txt.tmp"
                 body = text
                 old = (p / "names.txt").read_text(encoding="utf-8") if (p / "names.txt").exists() else ""
+                if old and (p / "names.txt").stat().st_mode & 0o777 != 0o644:
+                    os.chmod(p / "names.txt", 0o644)  # a list written by 1.0.1 was 0640 and the game servers could not read it
                 if old.split("\n", 1)[-1] != body.split("\n", 1)[-1]:
                     tmp.write_text(body, encoding="utf-8")
+                    os.chmod(tmp, 0o644)              # every game server user reads it; the service's umask is 027
                     os.replace(tmp, p / "names.txt")
                     done.append("names:" + folder)
             except OSError as e:
@@ -714,8 +745,25 @@ class Accounts:
             req = urllib.request.Request(url.rstrip("/") + "/staff/accounts/aliases", data=body, method="POST",
                                          headers={"Content-Type": "application/json", "X-Accounts-Token": token})
             with urllib.request.urlopen(req, timeout=60) as r:
-                done.append("stats:%s" % json.loads(r.read() or b"{}").get("rebuilt", "unchanged"))
+                answer = json.loads(r.read() or b"{}")
+            done.append("stats:%s" % answer.get("rebuilt", "unchanged"))
+            self.played(answer.get("seen") or {})
         return done
+
+    def played(self, seen: dict) -> None:
+        """The stats service's last match per account: playing keeps an account active (and its name reserved)."""
+        if not isinstance(seen, dict) or not seen:
+            return
+        for r in self.store.all("SELECT id, last_active FROM accounts"):
+            when = seen.get(account_pid(r["id"]))
+            if not isinstance(when, str):
+                continue
+            try:
+                ts = calendar.timegm(time.strptime(when[:19], "%Y-%m-%dT%H:%M:%S"))
+            except (ValueError, OverflowError):
+                continue
+            if r["last_active"] < ts <= now() + 300:
+                self.store.x("UPDATE accounts SET last_active=? WHERE id=?", (ts, r["id"]))
 
     def background(self) -> None:
         last_tidy = 0
@@ -724,7 +772,7 @@ class Accounts:
                 last_tidy = time.time()
                 try:
                     self.tidy()
-                except sqlite3.Error:
+                except Exception:  # noqa: BLE001
                     log.exception("tidy failed")
             self.dirty.wait(600)                # a change, or every 10 minutes in case the stats service missed one
             if self.stop.is_set():
@@ -734,6 +782,10 @@ class Accounts:
                 self.push()
             except (OSError, urllib.error.URLError, ValueError) as e:
                 log.warning("push failed, retrying in a minute: %s", e)
+                self.stop.wait(60)
+                self.dirty.set()
+            except Exception:  # noqa: BLE001  never let the push thread die: the list and the stats would go stale
+                log.exception("push failed, retrying in a minute")
                 self.stop.wait(60)
                 self.dirty.set()
 
@@ -760,10 +812,9 @@ def http_json(url: str, data: dict | None = None, token: str | None = None, time
         return json.loads(r.read().decode())
 
 
+# X-Frame-Options and Referrer-Policy come from the site's Caddy headers (sending them here too doubled them)
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "Referrer-Policy": "same-origin",
     "Cross-Origin-Resource-Policy": "same-origin",
 }
 PREFIX = "/api/account"
@@ -921,7 +972,9 @@ def make_handler(acc: Accounts):
                     "client_id": oauth.get("client_id", ""), "client_secret": credential("client-secret", oauth.get("client_secret", "")),
                     "grant_type": "authorization_code", "code": qs["code"], "redirect_uri": public + PREFIX + "/callback"})
                 me = http_json(DISCORD_API + "/users/@me", token=tok["access_token"])
-            except (urllib.error.URLError, OSError, ValueError, KeyError):
+                if not re.fullmatch(r"[0-9]{5,25}", str(me.get("id", ""))):
+                    raise ValueError("no Discord user id")
+            except (urllib.error.URLError, OSError, ValueError, KeyError, TypeError, AttributeError):
                 log.exception("Discord sign-in failed")
                 return self.redirect(back + "?signin=discord")
             # the Discord access token is not kept: we only needed who you are

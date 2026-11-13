@@ -9,7 +9,7 @@ Optional accounts for TrueCombat: Platinum. Nobody needs one to play. A player w
 3. **A reserved name.** Official servers keep the name for its owner, look-alikes included.
 
 `tcp_accounts.py` is the whole service: Python 3.10+ standard library, one SQLite file. Tests: `python3 test_accounts.py`
-(90 checks; needs the `cryptography` package to sign like the launcher, the service itself does not).
+(102 checks; needs the `cryptography` package to sign like the launcher, the service itself does not).
 
 ## Identity
 
@@ -28,6 +28,7 @@ the 32-byte public key, the same value as the `sub` of the EOS sign-in service.
 | Accounts | stats service | `POST /staff/accounts/aliases` (loopback, own token): which key ids are one account, and when |
 | Accounts | game servers on the VPS | writes `<home>/tcetest/accounts/names.txt` (reserved names) |
 | Game server | stats service | match reports carry the verified `key` per player (game 0.37.0) |
+| Stats service | accounts | the answer to the alias push: when each account last played (keeps its name reserved) |
 | Discord bot, staff portal | accounts | `GET /internal/lookup?discord=|name=|pid=` (loopback, `X-Accounts-Token`) |
 
 ## Routes
@@ -59,14 +60,17 @@ All public routes sit under `/api/account/` on **truecombat.eu** itself (a Caddy
 `tools/server-bridge/tcp_stats.py`:
 
 * A tcp-match/2 player with `"key": "<40 hex>"` is filed under `player_id("key:" + key)` instead of the guid id.
-* **Learned keys:** the first verified match that shows a guid together with a key moves that guid's whole history
-  onto the key (table `learned`), so nobody loses what they earned before 0.37.0. A guid later seen with a different
-  key goes to the review queue and is not moved.
+* **Learned keys:** a verified match that shows a guid together with a key records the pair (table `guid_keys`),
+  and the guid's whole history moves onto the key, so nobody loses what they earned before 0.37.0. A guid seen with
+  several keys moves only when those keys are one player (linked to the same account at some time). Otherwise it moves
+  to nobody and goes to the review queue: a copied guid cannot carry someone else's history to another key.
 * **Aliases** from the account service map a key id to the account's stats id (`player_id("acct:" + account id)`) for
   the time it was linked (`since`, `until`). A change rebuilds the stats (`recompute`).
-* Two ids of one account in the same match stay apart for that match and go to the review queue.
+* Two ids of one player in the same match each keep their own id for that match and go to the review queue.
 * Reports are stored with the ids they arrived with (`pid0`), so a rebuild applies the current links again.
 * `export_ratings` writes every own id of a merged player with the merged rating, so `g_balanceSkill` still finds them.
+* The answer to an alias push carries `seen`: the last match of each account's stats id. The account service counts it
+  as activity.
 
 ## Reserved names
 
@@ -76,16 +80,20 @@ All public routes sit under `/api/account/` on **truecombat.eu** itself (a Caddy
 * Blocked: studio and staff words anywhere (admin, staff, moderator, official, truecombat, terminus, console, server,
   support, anticheat, devteam), some whole names (mod, gm, dev, owner, system, ...), anything starting with `player`
   (the game's fallback names), and a short abuse list.
-* A name with no sign-in and no linked-PC use for 12 months is released (the account stays).
+* A name with no sign-in and no match for 12 months is released (the account stays). The next sign-in takes it back
+  if nobody has claimed it meanwhile; otherwise the account page asks for a new one. A released name is not shown on
+  leaderboards (`names.json`).
 
 `names.txt` (also `GET /api/account/reserved.txt`):
 
 ```
-TCPNAMES1 <unix time written>
-<32 hex: sha256("tcp-name:" + skeleton)[:32]> <key id>,<key id>   ("-" = nobody may use it)
+TCPNAMES2 <unix time written>
+<32 hex: sha256("tcp-name:" + skeleton)[:32]> <key tag>,<key tag>   ("-" = nobody may use it)
 ```
 
-Only hashes of skeletons are listed, so hidden accounts' names are not readable from the file.
+key tag = `sha256("tcp-namekey:" + key id)[:24]` hex. Only hashes are listed: the file names no account, and its key
+tags cannot be matched to anyone's stats id (a key's stats id is derived from the key id itself). The file is written
+mode 0644 into a setgid `tcpgame` folder.
 
 ## Game and launcher (0.37.0)
 
@@ -100,7 +108,7 @@ Nothing here ships in 0.36.0.
 3. Every 60 s the server re-reads `tcetest/accounts/names.txt` if its mtime changed. On connect, on a name change and
    when the key is verified: skeleton the clean name (same rules as `skeleton()` here; a C test vector file is
    generated from `test_accounts.py`), hash it, and if the hash is listed and the client's verified key is not in its
-   list, rename the client to `Player` + 4 digits and print one line: "That name is reserved by its owner." A client
+   list (compare `key_tag(verified key id)`), rename the client to `Player` + 4 digits and print one line: "That name is reserved by its owner." A client
    that has not answered the challenge within 10 s counts as unverified.
 
 **Client (cgame/engine):** answer `tcp_idchal` with `eacid.key` (already loaded for EOS).

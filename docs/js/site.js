@@ -62,7 +62,7 @@ var TCP_API = 'https://api.truecombat.eu';
       s_matches: 'Matches', s_timePlayed: 'Time played', s_xp: 'Experience', s_shots: 'Shots', s_hitsAll: 'Hits',
       verified: 'Verified account', noProfile: 'There is no public profile with that name.',
       acctLedeIn: 'Signed in. Link every PC you play on and your record follows you.', acctFree: 'Available.', acctChecking: 'Checking…',
-      acctRenameIn: 'You can change your name again in {n} days.', acctRenameNow: 'You can change your name once every 30 days. Your old name stays held for you for 30 days.',
+      acctRenameIn: 'You can change your name again in {n} days.', acctRenameNow: 'You can change your name once every 30 days. Your old name stays held for you for 30 days.', acctNameFree: 'Your name was released after a year away and someone else has taken it. Pick a new one below.',
       acctPcs: '{n} of 8', acctLinkedOn: 'linked {d}', acctUnlink: 'Unlink', acctSure: 'Unlink this PC?', acctNoPcs: 'No PC linked yet. Open this page on the PC you play on and press Link this PC.',
       acctLinkOpen: 'Waiting for the launcher. Approve the link there. Nothing happened? Update the launcher, then try again.',
       acctLinkDone: 'This PC is linked. Your record now follows you.', acctLinkExpired: 'The link code expired. Press Link this PC to try again.',
@@ -113,7 +113,7 @@ var TCP_API = 'https://api.truecombat.eu';
       s_matches: 'Potjes', s_timePlayed: 'Speeltijd', s_xp: 'Ervaring', s_shots: 'Schoten', s_hitsAll: 'Treffers',
       verified: 'Geverifieerd account', noProfile: 'Er is geen openbaar profiel met die naam.',
       acctLedeIn: 'Je bent aangemeld. Koppel elke pc waarop je speelt en je record gaat overal mee.', acctFree: 'Beschikbaar.', acctChecking: 'Bezig met controleren…',
-      acctRenameIn: 'Je kunt je naam over {n} dagen opnieuw wijzigen.', acctRenameNow: 'Je kunt je naam één keer per 30 dagen wijzigen. Je oude naam blijft 30 dagen voor je vastgehouden.',
+      acctRenameIn: 'Je kunt je naam over {n} dagen opnieuw wijzigen.', acctRenameNow: 'Je kunt je naam één keer per 30 dagen wijzigen. Je oude naam blijft 30 dagen voor je vastgehouden.', acctNameFree: 'Je naam is na een jaar afwezigheid vrijgegeven en iemand anders heeft hem genomen. Kies hieronder een nieuwe.',
       acctPcs: '{n} van 8', acctLinkedOn: 'gekoppeld op {d}', acctUnlink: 'Ontkoppelen', acctSure: 'Deze pc ontkoppelen?', acctNoPcs: 'Nog geen pc gekoppeld. Open deze pagina op de pc waarop je speelt en kies Deze pc koppelen.',
       acctLinkOpen: 'Wachten op de launcher. Keur de koppeling daar goed. Gebeurt er niets? Werk de launcher bij en probeer opnieuw.',
       acctLinkDone: 'Deze pc is gekoppeld. Je record gaat nu overal mee.', acctLinkExpired: 'De koppelcode is verlopen. Kies Deze pc koppelen om opnieuw te proberen.',
@@ -692,7 +692,7 @@ var TCP_API = 'https://api.truecombat.eu';
       prof.href = profileUrl(a.name);
       prof.hidden = a.visibility !== 'public';
       q('[data-acct-rename] input').placeholder = a.name;
-      q('[data-acct-rename-note]').textContent = a.nameChangeIn > 0 ? L.acctRenameIn.replace('{n}', Math.ceil(a.nameChangeIn / 86400)) : L.acctRenameNow;
+      q('[data-acct-rename-note]').textContent = a.nameReserved === false ? L.acctNameFree : a.nameChangeIn > 0 ? L.acctRenameIn.replace('{n}', Math.ceil(a.nameChangeIn / 86400)) : L.acctRenameNow;
       q('[data-acct-public]').checked = a.visibility === 'public';
       q('[data-acct-discord]').checked = !!a.showDiscord;
       var keys = (a.keys || []).filter(function (k) { return !k.retired; });
