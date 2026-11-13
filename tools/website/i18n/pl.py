@@ -2501,7 +2501,7 @@ TABLES['PRIVACY_T'] = {
     'lede': 'Chcemy wiedzieć, które strony warto czytać i skąd nowi gracze dowiadują się o grze. Nie musimy wiedzieć, kim jesteś, żeby to sprawdzić, więc nigdy o to nie pytamy.',
     'toc': 'Na tej stronie', 'n1': 'W skrócie', 'n2': 'Ta strona', 'n3': 'Gra', 'n4': 'Twój wybór', 'n5': 'Zmiany',
     's_h': 'W skrócie',
-    's_a': '<b>Bez ciasteczek, bez trackerów reklamowych, bez firm analitycznych.</b> Na tej stronie nie ładuje się nic od Google, Meta ani nikogo innego.',
+    's_a': '<b>Bez ciasteczek śledzących, bez trackerów reklamowych, bez firm analitycznych.</b> Na tej stronie nie ładuje się nic od Google, Meta ani nikogo innego.',
     's_b': '<b>Liczymy odwiedziny, nie odwiedzających.</b> Strona przechowuje dzienne sumy i nic, co prowadzi do konkretnej osoby.',
     's_c': '<b>Gdy przeglądarka mówi nie, słuchamy.</b> Z włączonym Global Privacy Control lub Do Not Track nie jesteś liczony w ogóle.',
     's_d': '<b>Gra wysyła dane o użyciu tylko wtedy, gdy tego chcesz.</b> Ten przełącznik jest wyłączony, dopóki go nie włączysz.',
@@ -2519,7 +2519,7 @@ TABLES['PRIVACY_T'] = {
     'w4': 'Twoje oceny w devlogu zapamiętuje twoja własna przeglądarka, żeby gwiazdki były wypełnione po powrocie. Ta notatka nigdy nie opuszcza twojego komputera i nie służy do liczenia.',
     'w5': 'Niektóre strony pobierają dane na żywo z <code>api.truecombat.eu</code> (serwery, rankingi) oraz informacje o aktualizacjach przez API GitHuba. Zwiastun ładuje się z YouTube dopiero po kliknięciu odtwarzania. Jak przy każdej stronie, te serwery widzą twój adres połączenia, gdy odpowiadają.',
     'g_h': 'Gra i launcher',
-    'g_a': '<b>Gra online.</b> Serwery gry widzą twój adres połączenia, jak w każdej grze online. Nasze narzędzia moderacji przechowują go do 90 dni, aby walczyć z oszustwami i nadużyciami.',
+    'g_a': '<b>Gra online.</b> Serwery gry widzą twój adres połączenia, jak w każdej grze online. Nasze narzędzia moderacji przechowują go do 90 dni, aby walczyć z oszustwami i nadużyciami, a wpis o banie zachowuje zbanowany adres.',
     'g_b': '<b>Rankingi.</b> Mecze rankingowe na oficjalnych i zweryfikowanych serwerach zapisują twoją nazwę w grze, identyfikator gracza utworzony z klucza gry oraz statystyki meczu. Na tej podstawie powstają rankingi i twój publiczny profil.',
     'g_c': '<b>Anti-cheat.</b> Oficjalne serwery korzystają z Easy Anti-Cheat, który działa zgodnie z <a href="https://www.epicgames.com/site/privacypolicy">polityką prywatności Epic Games</a>.',
     'g_d': '<b>Raporty awarii</b> zostają na twoim komputerze. Trafiają do nas tylko wtedy, gdy sam dołączysz je do zgłoszenia błędu.',
@@ -2528,8 +2528,9 @@ TABLES['PRIVACY_T'] = {
     'c_h': 'Twój wybór',
     'c1': 'Jeśli nie chcesz być liczony na tej stronie, włącz w przeglądarce Global Privacy Control lub Do Not Track. Zablokowanie <code>api.truecombat.eu/insights</code> też działa, a strona działa dokładnie tak samo.',
     'c2': 'Masz pytania albo chcesz coś usunąć? Napisz do nas na <a href="https://discord.gg/8kcHdg2Hch">Discordzie</a> lub otwórz zgłoszenie na <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHubie</a>. Cały kod liczący jest w publicznym repozytorium, więc nigdy nie musisz wierzyć nam na słowo.',
+    'c3': 'Liczymy odwiedziny strony na podstawie naszego prawnie uzasadnionego interesu w tym, by wiedzieć, jak jest używana (RODO art. 6 ust. 1 lit. f), z opisanymi wyżej zabezpieczeniami. Dane o użyciu z gry zbieramy tylko za twoją zgodą, którą możesz w każdej chwili wycofać w launcherze. TrueCombat: Platinum tworzy Team Terminus pod kierunkiem RaziC*. Jeśli uważasz, że niewłaściwie obchodzimy się z twoimi danymi, możesz złożyć skargę do organu ochrony danych; w Belgii, gdzie działamy, jest to <a href="https://www.dataprotectionauthority.be">Urząd Ochrony Danych</a>.',
     'x_h': 'Zmiany tej strony',
-    'x1': 'Jeśli zmieni się to, co zbieramy, najpierw zmieni się ta strona, a devlog o tym poinformuje. Ostatnia aktualizacja: 12 listopada 2026.',
+    'x1': 'Jeśli zmieni się to, co zbieramy, najpierw zmieni się ta strona, a devlog o tym poinformuje. Ostatnia aktualizacja: 13 listopada 2026.',
     'credit': 'Wyszukiwanie kraju korzysta z IP to Country Lite od <a href="https://db-ip.com">DB-IP</a>, na licencji CC BY 4.0.',
 }
 
