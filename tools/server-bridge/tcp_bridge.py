@@ -245,6 +245,7 @@ class Bridge:
 def make_handler(bridge):
     class Handler(BaseHTTPRequestHandler):
         server_version = "tcp-bridge/1"
+        timeout = 30                       # a client that stops sending frees its thread
 
         def log_message(self, fmt, *a):
             if bridge.args.verbose:
@@ -286,6 +287,8 @@ def make_handler(bridge):
                 n = int(self.headers.get("Content-Length") or 0)
             except ValueError:
                 n = 0
+            if n < 0:                        # a negative length would read until the client stops sending
+                return self.send_json({"error": "bad request"}, 400)
             if n > tcp_stats.MAX_BODY:
                 return self.send_json({"error": "report too large"}, 413)
             path, body = urlparse(self.path).path, self.rfile.read(n)
@@ -345,7 +348,10 @@ def main(argv=None):
     threading.Thread(target=bridge.loop, daemon=True).start()
     host, port = parse_addr(args.listen, 8090)
     print("tcp-bridge on http://%s:%d (master %s:%d)" % (host, port, *bridge.master), flush=True)
-    ThreadingHTTPServer((host, port), make_handler(bridge)).serve_forever()
+    ThreadingHTTPServer.request_queue_size = 128   # the default 5 overflows under a burst behind Caddy
+    httpd = ThreadingHTTPServer((host, port), make_handler(bridge))
+    httpd.daemon_threads = True
+    httpd.serve_forever()
 
 
 if __name__ == "__main__":

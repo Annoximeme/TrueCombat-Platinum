@@ -430,6 +430,7 @@ def poll_github(store, repo, every=6 * 3600, once=False):
 def make_handler(store, key, cors, site_root, limiter, geoip):
     class Handler(BaseHTTPRequestHandler):
         server_version = "tcp-insights"
+        timeout = 30                       # a client that stops sending frees its thread
 
         def log_message(self, fmt, *a):
             pass
@@ -562,7 +563,10 @@ def main(argv=None):
     host, _, port = args.listen.rpartition(":")
     cors = [c.strip() for c in args.cors.split(",") if c.strip()]
     print("tcp-insights on http://%s:%s (countries %s)" % (host, port, "on" if len(geoip.v4s) else "off"), flush=True)
-    ThreadingHTTPServer((host, int(port)), make_handler(store, key, cors, args.site_root, Limiter(), geoip)).serve_forever()
+    ThreadingHTTPServer.request_queue_size = 128   # the default 5 overflows under a burst behind Caddy
+    httpd = ThreadingHTTPServer((host, int(port)), make_handler(store, key, cors, args.site_root, Limiter(), geoip))
+    httpd.daemon_threads = True
+    httpd.serve_forever()
 
 
 if __name__ == "__main__":

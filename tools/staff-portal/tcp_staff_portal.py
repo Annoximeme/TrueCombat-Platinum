@@ -3940,6 +3940,7 @@ def main(argv=None) -> int:
     host, _, port = (a.listen or "%s:%s" % (cfg.get("host", "127.0.0.1"), cfg.get("port", 8097))).rpartition(":")
     portal = Portal(cfg)
     portal.start()
+    ThreadingHTTPServer.request_queue_size = 128   # the default 5 overflows under a burst behind Caddy
     httpd = ThreadingHTTPServer((host, int(port)), make_handler(portal))
     httpd.daemon_threads = True
     log.info("staff portal %s on http://%s:%s (%d servers)", VERSION, host, port, len(portal.servers))
