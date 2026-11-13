@@ -1,0 +1,227 @@
+{
+ "music": "trailer_music_bed_v2_venom.wav",
+ "music_start": 0.0,
+ "game_audio_db": -15,
+ "fade_out": 0.8,
+ "segments": [
+  {
+   "brand": "intro",
+   "dur": 4.5
+  },
+  {
+   "clip": "pan_village_0a.mp4",
+   "in": 0,
+   "dur": 4.34,
+   "mute": true
+  },
+  {
+   "clip": "pan_village_1a.mp4",
+   "in": 1,
+   "dur": 4.0,
+   "mute": true,
+   "card": {
+    "text": "TRUECOMBAT: ELITE",
+    "sub": "REBUILT FOR MODERN WINDOWS",
+    "at": 0.25,
+    "dur": 3.5
+   }
+  },
+  {
+   "clip": "village_move_tp.mp4",
+   "in": 2,
+   "dur": 2.0
+  },
+  {
+   "clip": "delta_squad_move_front.mp4",
+   "in": 0,
+   "dur": 2.0
+  },
+  {
+   "clip": "stadtrand_flash_hit_fp.mp4",
+   "in": 1.5,
+   "dur": 2.0
+  },
+  {
+   "clip": "delta_plant2_fp.mp4",
+   "in": 3,
+   "dur": 2.0
+  },
+  {
+   "clip": "snow_plant_fp.mp4",
+   "in": 2,
+   "dur": 2.0,
+   "card": {
+    "text": "ONE LIFE",
+    "sub": "PER ROUND",
+    "at": 0.0,
+    "dur": 2.0
+   }
+  },
+  {
+   "clip": "stadtrand_frag_throw_fp.mp4",
+   "in": 3,
+   "dur": 2.0
+  },
+  {
+   "clip": "snow_squad_move_tp.mp4",
+   "in": 0,
+   "dur": 4.0,
+   "card": {
+    "text": "SIX MAPS. 27 GUNS.",
+    "sub": "THE ORIGINAL, PIECE BY PIECE",
+    "at": 1.4,
+    "dur": 2.5
+   }
+  },
+  {
+   "clip": "stadtrand_smoke_push_tp.mp4",
+   "in": 2,
+   "dur": 2.0
+  },
+  {
+   "clip": "stadtrand_smoke_push_fp.mp4",
+   "in": 1.5,
+   "dur": 1.0
+  },
+  {
+   "clip": "snow_detonation1_tp.mp4",
+   "in": 0.5,
+   "dur": 1.0
+  },
+  {
+   "clip": "village_frags_tp.mp4",
+   "in": 1,
+   "dur": 2.0
+  },
+  {
+   "clip": "delta_frag_round1.mp4",
+   "in": 0.5,
+   "dur": 1.0
+  },
+  {
+   "clip": "snow_plant4_fp.mp4",
+   "in": 3,
+   "dur": 1.0
+  },
+  {
+   "clip": "stadtrand_move_tp.mp4",
+   "in": 3,
+   "dur": 4.0,
+   "card": {
+    "text": "BUILT FOR TODAY",
+    "sub": "DIRECTX 12  \u00b7  DLSS  \u00b7  EASY ANTI-CHEAT",
+    "at": 0.8,
+    "dur": 2.8
+   }
+  },
+  {
+   "clip": "snow_detonation4_tp.mp4",
+   "in": 0.5,
+   "dur": 1.0
+  },
+  {
+   "clip": "village_smoke_throw_fp.mp4",
+   "in": 0.5,
+   "dur": 1.0
+  },
+  {
+   "clip": "snow_smoke_throw_fp.mp4",
+   "in": 2,
+   "dur": 1.0
+  },
+  {
+   "clip": "snow_plant4_fp.mp4",
+   "in": 4.5,
+   "dur": 1.0
+  },
+  {
+   "clip": "delta_squad_move_front.mp4",
+   "in": 4,
+   "dur": 2.0
+  },
+  {
+   "clip": "stadtrand_flash_death_fp.mp4",
+   "in": 1.5,
+   "dur": 2.0
+  },
+  {
+   "clip": "delta_plant_siteB_tp.mp4",
+   "in": 4,
+   "dur": 2.0,
+   "flash": true
+  },
+  {
+   "clip": "stadtrand_double_frag_tp.mp4",
+   "in": 0.5,
+   "dur": 1.0
+  },
+  {
+   "clip": "snow_plant_tp.mp4",
+   "in": 3,
+   "dur": 1.0
+  },
+  {
+   "clip": "village_plant_slowmo.mp4",
+   "in": 2,
+   "dur": 2.0,
+   "mute": true
+  },
+  {
+   "clip": "delta_plant_r2_tp.mp4",
+   "in": 5,
+   "dur": 1.0
+  },
+  {
+   "clip": "village_flash_then_plant_tp.mp4",
+   "in": 4,
+   "dur": 1.0
+  },
+  {
+   "clip": "stadtrand_frag_slowmo.mp4",
+   "in": 1.5,
+   "dur": 2.0,
+   "mute": true
+  },
+  {
+   "clip": "delta_defuse_tp.mp4",
+   "in": 0.5,
+   "dur": 2.0
+  },
+  {
+   "clip": "snow_detonation_triple_slowmo.mp4",
+   "in": 0,
+   "dur": 1.0,
+   "mute": true,
+   "flash": true
+  },
+  {
+   "clip": "stadtrand_double_frag_tp.mp4",
+   "in": 3.2,
+   "dur": 1.0
+  },
+  {
+   "clip": "snow_squad_move_tp.mp4",
+   "in": 6,
+   "dur": 1.0
+  },
+  {
+   "clip": "delta_detonation_tp.mp4",
+   "in": 0,
+   "dur": 1.0
+  },
+  {
+   "clip": "delta_plant_r2_tp.mp4",
+   "in": 7,
+   "dur": 1.0
+  },
+  {
+   "clip": "stadtrand_double_frag_tp.mp4",
+   "in": 4.0,
+   "dur": 0.56
+  },
+  {
+   "brand": "end",
+   "dur": 7.0
+  }
+ ]
+}

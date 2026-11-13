@@ -60,6 +60,13 @@ def read_frames(path, t_in, dur, speed, w, h, vertical):
     p.wait()
 
 
+def has_audio(path):
+    probe = os.environ.get("FFPROBE", str(Path(FF).with_name("ffprobe" + Path(FF).suffix)) if os.sep in FF else "ffprobe")
+    r = subprocess.run([probe, "-v", "error", "-select_streams", "a", "-show_entries", "stream=index", "-of", "csv=p=0",
+                        str(path)], capture_output=True, text=True)
+    return bool(r.stdout.strip())
+
+
 def brand_frames(kind, dur, w, h, vertical):
     fn = B.intro_frame if kind == "intro" else B.end_frame
     for i in range(int(round(dur * FPS))):
@@ -143,7 +150,7 @@ def main():
             path = clips / seg["clip"]
             sp = seg.get("speed", 1.0)
             src = read_frames(path, seg.get("in", 0.0), dur, sp, w, h, a.vertical)
-            if sp == 1.0 and not seg.get("mute"):
+            if sp == 1.0 and not seg.get("mute") and has_audio(path):
                 audio_parts.append((path, seg.get("in", 0.0), dur, t_edit))
         k = 0
         last = Image.new("RGB", (w, h))
