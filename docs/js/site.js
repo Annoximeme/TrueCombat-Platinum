@@ -67,7 +67,17 @@ var TCP_API = 'https://api.truecombat.eu';
       acctLinkOpen: 'Waiting for the launcher. Approve the link there. Nothing happened? Update the launcher, then try again.',
       acctLinkDone: 'This PC is linked. Your record now follows you.', acctLinkExpired: 'The link code expired. Press Link this PC to try again.',
       acctSigninFailed: 'Sign-in did not finish. Please try again.', acctSigninDiscord: 'Discord did not answer. Please try again in a minute.',
-      acctSigninSlow: 'Too many sign-ins from here. Please wait a few minutes.', acctOnDiscord: 'on Discord'
+      acctSigninSlow: 'Too many sign-ins from here. Please wait a few minutes.', acctOnDiscord: 'on Discord',
+      acctPairSignin: 'Sign in to link the PC that showed you this code.', acctPairDone: 'Linked. Go back to your PC: the launcher picks it up within a few seconds.',
+      acctPairRefused: 'Refused. That PC was not linked.', acctPairGone: 'This code has expired or was already used. Show the code on your PC again.',
+      acctPasskeyNone: 'No passkey yet.', acctPasskeyAdded: 'added {d}', acctPasskeyUsed: 'last used {d}', acctRemove: 'Remove', acctRemoveSure: 'Remove this passkey?',
+      acctPasskeyUnsupported: 'This browser does not support passkeys.', acctPasskeyCancelled: 'Cancelled. Nothing was changed.', acctPasskeyName: 'Passkey',
+      acctLfsOn: 'Until {t}', acctLfsOff: 'Off', acctPanicSure: 'Press again to unlink every PC', acctPanicDone: 'Every PC is unlinked and you are signed out everywhere.',
+      acctBanned: 'Your account is suspended {until}. While it is, your profile is hidden and you cannot link PCs.', acctBannedUntil: 'until {d}', acctBannedForever: 'until further notice',
+      acctBannedWhy: 'Reason: {r}', badgeClean: 'Clean record', badgeTrusted: 'Trusted', badgeCleanTip: 'A month on the servers, 20 matches, no sanction in 90 days',
+      badgeTrustedTip: 'Two months and 50 matches with a clean record. Can take a reserved slot on official servers', acctFormerly: 'Formerly {names}',
+      lfsLooking: 'Looking for a squad', lfsUntil: 'until {t}', medalsOf: '{n} of {of}', medalEarned: 'earned {d}', medalMatch: 'in this match',
+      rivalRecord: '{w} won, {l} lost', shareCard: 'Save share card', shareSaved: 'Saved', shareFor: 'Match report on truecombat.eu'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -118,7 +128,17 @@ var TCP_API = 'https://api.truecombat.eu';
       acctLinkOpen: 'Wachten op de launcher. Keur de koppeling daar goed. Gebeurt er niets? Werk de launcher bij en probeer opnieuw.',
       acctLinkDone: 'Deze pc is gekoppeld. Je record gaat nu overal mee.', acctLinkExpired: 'De koppelcode is verlopen. Kies Deze pc koppelen om opnieuw te proberen.',
       acctSigninFailed: 'Aanmelden is niet gelukt. Probeer het opnieuw.', acctSigninDiscord: 'Discord gaf geen antwoord. Probeer het over een minuut opnieuw.',
-      acctSigninSlow: 'Te veel aanmeldingen vanaf hier. Wacht een paar minuten.', acctOnDiscord: 'op Discord'
+      acctSigninSlow: 'Te veel aanmeldingen vanaf hier. Wacht een paar minuten.', acctOnDiscord: 'op Discord',
+      acctPairSignin: 'Meld je aan om de pc te koppelen die je deze code toonde.', acctPairDone: 'Gekoppeld. Ga terug naar je pc: de launcher pikt het binnen een paar seconden op.',
+      acctPairRefused: 'Geweigerd. Die pc is niet gekoppeld.', acctPairGone: 'Deze code is verlopen of al gebruikt. Toon de code op je pc opnieuw.',
+      acctPasskeyNone: 'Nog geen passkey.', acctPasskeyAdded: 'toegevoegd op {d}', acctPasskeyUsed: 'laatst gebruikt op {d}', acctRemove: 'Verwijderen', acctRemoveSure: 'Deze passkey verwijderen?',
+      acctPasskeyUnsupported: 'Deze browser ondersteunt geen passkeys.', acctPasskeyCancelled: 'Geannuleerd. Er is niets gewijzigd.', acctPasskeyName: 'Passkey',
+      acctLfsOn: 'Tot {t}', acctLfsOff: 'Uit', acctPanicSure: 'Druk nogmaals om elke pc te ontkoppelen', acctPanicDone: 'Elke pc is ontkoppeld en je bent overal afgemeld.',
+      acctBanned: 'Je account is geschorst {until}. Zolang dat duurt is je profiel verborgen en kun je geen pc koppelen.', acctBannedUntil: 'tot {d}', acctBannedForever: 'tot nader bericht',
+      acctBannedWhy: 'Reden: {r}', badgeClean: 'Schoon blazoen', badgeTrusted: 'Vertrouwd', badgeCleanTip: 'Een maand op de servers, 20 potjes, geen sanctie in 90 dagen',
+      badgeTrustedTip: 'Twee maanden en 50 potjes met een schoon blazoen. Mag een gereserveerde plek innemen op officiële servers', acctFormerly: 'Voorheen {names}',
+      lfsLooking: 'Op zoek naar een squad', lfsUntil: 'tot {t}', medalsOf: '{n} van {of}', medalEarned: 'behaald op {d}', medalMatch: 'in dit potje',
+      rivalRecord: '{w} gewonnen, {l} verloren', shareCard: 'Deelkaart opslaan', shareSaved: 'Opgeslagen', shareFor: 'Wedstrijdverslag op truecombat.eu'
     }
   };
   /* German, French and Polish strings arrive in js/lang-<code>.js (window.TCP_L); English fills any gap */
@@ -666,9 +686,63 @@ var TCP_API = 'https://api.truecombat.eu';
       function () { done({ id: '', acct: null, missing: true }); });
   });
 
+  function badgesHTML(list) {
+    list = list || [];
+    var b = list.indexOf('trusted') >= 0 ? 'trusted' : list.indexOf('clean') >= 0 ? 'clean' : '';
+    if (!b) return '';
+    return '<span class="acct-badge ' + b + '" title="' + esc(b === 'trusted' ? L.badgeTrustedTip : L.badgeCleanTip) + '">' + esc(b === 'trusted' ? L.badgeTrusted : L.badgeClean) + '</span>';
+  }
+  function clock(unix) { var d = new Date(unix * 1000); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  /* passkeys (WebAuthn): the browser speaks ArrayBuffers, our API speaks base64url */
+  function unb64u(t) {
+    t = String(t || '').replace(/-/g, '+').replace(/_/g, '/');
+    while (t.length % 4) t += '=';
+    var b = atob(t), u = new Uint8Array(b.length);
+    for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i);
+    return u.buffer;
+  }
+  function b64u(buf) {
+    var u = new Uint8Array(buf), t = '';
+    for (var i = 0; i < u.length; i++) t += String.fromCharCode(u[i]);
+    return btoa(t).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function passkeysWork() { return !!(window.PublicKeyCredential && navigator.credentials && navigator.credentials.create); }
+  function passkeyError(x) { return x && (x.name === 'NotAllowedError' || x.name === 'AbortError') ? L.acctPasskeyCancelled : (x && x.message) || String(x); }
+  function deviceLabel() {
+    var u = navigator.userAgent;
+    return /iPhone|iPad/.test(u) ? 'iPhone' : /Android/.test(u) ? 'Android' : /Mac OS X/.test(u) ? 'Mac' : /Windows/.test(u) ? 'Windows' : L.acctPasskeyName;
+  }
+
   $all('[data-account]').forEach(function (root) {
     function q(sel) { return root.querySelector(sel); }
     var me = null, poll = null;
+    /* ?pair=<code> comes from the QR code the launcher shows; it survives the Discord sign-in in this tab */
+    var PAIR_KEY = 'tcp-pair', pair = '', pairAsked = false;
+    try {
+      var fromUrl = new URLSearchParams(location.search).get('pair') || '';
+      if (/^[0-9a-f]{32}$/.test(fromUrl)) { sessionStorage.setItem(PAIR_KEY, fromUrl); history.replaceState(null, '', location.pathname); }
+      pair = sessionStorage.getItem(PAIR_KEY) || '';
+    } catch (e) { pair = ''; }
+    function pairDone() { pair = ''; try { sessionStorage.removeItem(PAIR_KEY); } catch (e) {} }
+    function pairCard(a) {
+      if (!pair || pairAsked || a.banned) return;
+      pairAsked = true;
+      var card = q('[data-acct-pair]'), state = q('[data-acct-pair-state]');
+      function say(t) { state.textContent = t; state.hidden = false; $all('[data-acct-pair-yes],[data-acct-pair-no]', card).forEach(function (b) { b.hidden = true; }); }
+      acctFetch('/pair/info?id=' + pair).then(function (r) {
+        card.hidden = false;
+        q('[data-acct-pair-label]').textContent = r.label || 'PC';
+        q('[data-acct-pair-key]').textContent = r.key || '';
+        if (r.state !== 'waiting') { pairDone(); say(r.state === 'linked' && r.linkedHere ? L.acctPairDone : L.acctPairGone); }
+        card.scrollIntoView({ block: 'center' });
+      }, function () { card.hidden = false; pairDone(); say(L.acctPairGone); });
+      function answer(yes) {
+        post(yes ? '/pair/approve' : '/pair/refuse', { id: pair }).then(function () { pairDone(); say(yes ? L.acctPairDone : L.acctPairRefused); if (yes) refresh(); },
+          function (x) { pairDone(); say(x.status === 410 ? L.acctPairGone : x.message); });
+      }
+      q('[data-acct-pair-yes]').onclick = function () { answer(true); };
+      q('[data-acct-pair-no]').onclick = function () { answer(false); };
+    }
     function show(which) { ['out', 'signup', 'in', 'off'].forEach(function (k) { q('[data-acct-' + k + ']').hidden = k !== which; }); }
     function post(path, body) {
       return acctFetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF': (me && me.csrf) || '' }, body: JSON.stringify(body || {}) });
@@ -680,6 +754,8 @@ var TCP_API = 'https://api.truecombat.eu';
         show('out');
         var why = { failed: L.acctSigninFailed, discord: L.acctSigninDiscord, slow: L.acctSigninSlow }[new URLSearchParams(location.search).get('signin') || ''];
         if (why) q('[data-acct-lede]').textContent = why;
+        else if (pair) q('[data-acct-lede]').textContent = L.acctPairSignin;
+        q('[data-acct-passkey-login]').hidden = !passkeysWork();
         return;
       }
       if (d.needsSignup) { show('signup'); q('[data-acct-as]').textContent = (d.discord && d.discord.name) || ''; return; }
@@ -701,6 +777,33 @@ var TCP_API = 'https://api.truecombat.eu';
         return '<li><b>' + esc(k.label || 'PC') + '</b> <span class="muted">' + L.acctLinkedOn.replace('{d}', fmtDate(new Date(k.linked * 1000).toISOString())) +
           ' · ' + esc(k.id.slice(0, 8)) + '</span><button type="button" class="btn" data-unlink="' + esc(k.id) + '">' + L.acctUnlink + '</button></li>';
       }).join('') : '<li class="muted">' + L.acctNoPcs + '</li>';
+
+      var banned = q('[data-acct-banned]');
+      banned.hidden = !a.banned;
+      if (a.banned) {
+        q('[data-acct-banned-text]').textContent = L.acctBanned.replace('{until}', a.banned.until ? L.acctBannedUntil.replace('{d}', fmtDate(new Date(a.banned.until * 1000).toISOString())) : L.acctBannedForever) +
+          (a.banned.reason ? ' ' + L.acctBannedWhy.replace('{r}', a.banned.reason) : '');
+      }
+      var bl = q('[data-acct-badges]'), former = (a.formerly || []).length ? '<span class="acct-formerly">' + esc(L.acctFormerly.replace('{names}', a.formerly.join(', '))) + '</span>' : '';
+      bl.innerHTML = badgesHTML(a.badges) + former;
+      bl.hidden = !bl.innerHTML;
+      q('[data-acct-weekly]').checked = !!a.weekly;
+
+      var lfs = a.lookingForSquad, lf = q('[data-acct-lfs]');
+      q('[data-acct-lfs-state]').textContent = lfs ? L.acctLfsOn.replace('{t}', clock(lfs.until)) : L.acctLfsOff;
+      q('[data-acct-lfs-state]').classList.toggle('ok', !!lfs);
+      if (lfs && document.activeElement !== lf.note) lf.note.value = lfs.note || '';
+      q('[data-acct-lfs-off]').hidden = !lfs;
+
+      var pks = a.passkeys || [];
+      q('[data-acct-passkeys]').innerHTML = pks.length ? pks.map(function (k) {
+        return '<li><b>' + esc(k.label || L.acctPasskeyName) + '</b> <span class="muted">' + L.acctPasskeyAdded.replace('{d}', fmtDate(new Date(k.created * 1000).toISOString())) +
+          (k.used ? ' · ' + L.acctPasskeyUsed.replace('{d}', fmtDate(new Date(k.used * 1000).toISOString())) : '') +
+          '</span><button type="button" class="btn" data-passkey-remove="' + esc(k.id) + '">' + L.acctRemove + '</button></li>';
+      }).join('') : '<li class="muted">' + L.acctPasskeyNone + '</li>';
+      q('[data-acct-passkey-add]').hidden = !passkeysWork();
+      if (!passkeysWork()) err('[data-acct-passkey-error]', new Error(L.acctPasskeyUnsupported));
+      pairCard(a);
     }
     function refresh() { return acctFetch('/me').then(render, function () { show('off'); }); }
     refresh();
@@ -750,11 +853,74 @@ var TCP_API = 'https://api.truecombat.eu';
       post('/unlink', { key: b.dataset.unlink }).then(render, refresh);
     });
     q('[data-acct-signout]').addEventListener('click', function () { post('/logout').then(function () { location.replace('account'); }, function () {}); });
+    q('[data-acct-weekly]').addEventListener('change', function (e) { post('/settings', { weekly: e.target.checked }).then(render, refresh); });
+    q('[data-acct-lfs]').addEventListener('submit', function (e) {
+      e.preventDefault();
+      err('[data-acct-lfs-error]', null);
+      post('/lfs', { on: true, note: e.target.note.value, hours: parseInt(e.target.hours.value, 10) || 2 }).then(render, function (x) { err('[data-acct-lfs-error]', x); });
+    });
+    q('[data-acct-lfs-off]').addEventListener('click', function () {
+      err('[data-acct-lfs-error]', null);
+      post('/lfs', { on: false }).then(function (d) { q('[data-acct-lfs]').note.value = ''; render(d); }, function (x) { err('[data-acct-lfs-error]', x); });
+    });
+    q('[data-acct-passkey-add]').addEventListener('click', function () {
+      err('[data-acct-passkey-error]', null);
+      post('/passkey/register/begin').then(function (r) {
+        var o = r.options;
+        o.challenge = unb64u(o.challenge);
+        o.user.id = unb64u(o.user.id);
+        o.excludeCredentials = (o.excludeCredentials || []).map(function (c) { return { type: c.type, id: unb64u(c.id) }; });
+        return navigator.credentials.create({ publicKey: o }).then(function (c) {
+          return post('/passkey/register/finish', { ticket: r.ticket, id: b64u(c.rawId), label: deviceLabel(),
+            clientDataJSON: b64u(c.response.clientDataJSON), attestationObject: b64u(c.response.attestationObject) });
+        });
+      }).then(render, function (x) { err('[data-acct-passkey-error]', new Error(passkeyError(x))); });
+    });
+    q('[data-acct-passkeys]').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-passkey-remove]');
+      if (!b) return;
+      if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = L.acctRemoveSure; return; }
+      post('/passkey/remove', { id: b.dataset.passkeyRemove }).then(render, refresh);
+    });
+    q('[data-acct-passkey-login]').addEventListener('click', function () {
+      err('[data-acct-passkey-login-error]', null);
+      post('/passkey/login/begin').then(function (r) {
+        var o = r.options;
+        o.challenge = unb64u(o.challenge);
+        o.allowCredentials = [];
+        return navigator.credentials.get({ publicKey: o }).then(function (c) {
+          return post('/passkey/login/finish', { ticket: r.ticket, id: b64u(c.rawId), clientDataJSON: b64u(c.response.clientDataJSON),
+            authenticatorData: b64u(c.response.authenticatorData), signature: b64u(c.response.signature),
+            userHandle: c.response.userHandle ? b64u(c.response.userHandle) : '' });
+        });
+      }).then(render, function (x) { err('[data-acct-passkey-login-error]', new Error(passkeyError(x))); });
+    });
+    q('[data-acct-panic]').addEventListener('click', function (e) {
+      var b = e.currentTarget;
+      if (!b.classList.contains('sure')) { b.classList.add('sure'); b.textContent = L.acctPanicSure; return; }
+      post('/panic', { confirm: true }).then(function () {
+        me = null;
+        return refresh().then(function () { q('[data-acct-lede]').textContent = L.acctPanicDone; });
+      }, function () {});
+    });
     q('[data-acct-delete]').addEventListener('submit', function (e) {
       e.preventDefault();
       err('[data-acct-delete-error]', null);
       post('/delete', { confirm: e.target.confirm.value }).then(function () { location.replace('./'); }, function (x) { err('[data-acct-delete-error]', x); });
     });
+  });
+
+  /* ---------- servers page: who is looking for a squad right now ---------- */
+  $all('[data-lfs]').forEach(function (box) {
+    acctFetch('/lfs.json').then(function (d) {
+      var list = (d.players || []).slice(0, 24);
+      if (!list.length) return;
+      box.querySelector('.lfs-list').innerHTML = list.map(function (p) {
+        return '<li><a href="' + esc(profileUrl(p.name)) + '">' + esc(p.name) + '</a>' + (p.note ? '<span>' + esc(p.note) + '</span>' : '') +
+          '<span>' + L.lfsUntil.replace('{t}', clock(p.until)) + (p.discord ? ' · ' + esc(p.discord) + ' ' + L.acctOnDiscord : '') + '</span></li>';
+      }).join('');
+      box.hidden = false;
+    }, function () {});
   });
 
   /* ---------- player profile page ---------- */
@@ -821,8 +987,18 @@ var TCP_API = 'https://api.truecombat.eu';
       var r = p.rank || {};
       document.title = (acct ? acct.name : p.name) + ' · ' + L.profile + ' · TrueCombat: Platinum';
       q('[data-pf-name]').textContent = p.name;
+      function extras(a) {      // badge, former names and "looking for a squad" under the name
+        var html = '';
+        var b = badgesHTML(a.badges);
+        if (b) html += '<p class="pf-badges">' + b + '</p>';
+        if ((a.formerly || []).length) html += '<p class="acct-formerly">' + esc(L.acctFormerly.replace('{names}', a.formerly.join(', '))) + '</p>';
+        if (a.lookingForSquad) html += '<p class="acct-lfs-line"><b>' + L.lfsLooking + '</b> <span class="muted">' + L.lfsUntil.replace('{t}', clock(a.lookingForSquad.until)) +
+          (a.lookingForSquad.note ? ' · ' + esc(a.lookingForSquad.note) : '') + '</span></p>';
+        if (html) q('[data-pf-name]').insertAdjacentHTML('afterend', html);
+      }
       if (acct) {
         q('[data-pf-name]').innerHTML = esc(acct.name) + ' ' + TICK;
+        extras(acct);
         if (acct.discord && acct.discord.name) {
           q('[data-pf-name]').insertAdjacentHTML('afterend', '<p class="acct-discord-line">' + (acct.discord.avatar ? '<img src="' + esc(acct.discord.avatar) +
             '" alt="" width="22" height="22" loading="lazy">' : '') + '<span>' + esc(acct.discord.name) + '</span> <span class="muted">' + L.acctOnDiscord + '</span></p>');
@@ -832,6 +1008,7 @@ var TCP_API = 'https://api.truecombat.eu';
           if (!names[id]) return;
           q('[data-pf-name]').innerHTML = esc(names[id]) + ' ' + TICK;
           try { history.replaceState(null, '', profileUrl(names[id])); } catch (e) {}
+          acctFetch('/profile?u=' + encodeURIComponent(names[id])).then(extras, function () {});
         });
       }
       q('[data-pf-lede]').hidden = true;
@@ -878,6 +1055,39 @@ var TCP_API = 'https://api.truecombat.eu';
       }).join('') || '<tr><td colspan="8">–</td></tr>';
 
       chart(p);
+
+      /* service record, career and rivals arrive from the stats service; a card stays hidden until it has something to show */
+      api('/medals.json?id=' + id).then(function (d) {
+        var list = d.medals || [];
+        if (!list.length) return;
+        q('[data-pf-medals-count]').textContent = L.medalsOf.replace('{n}', d.count).replace('{of}', d.of);
+        q('[data-pf-medals]').innerHTML = list.map(function (m) {
+          var when = m.at ? L.medalEarned.replace('{d}', fmtDate(m.at)) : '';
+          if (m.at && m.match && MID.test(m.match)) when = '<a href="' + matchHref(m.match) + '">' + when + '</a>';
+          return '<li class="t' + (m.tier || 1) + '"><span class="medal" aria-hidden="true">' + ['I', 'II', 'III'][(m.tier || 1) - 1] + '</span><b>' + esc(m.name) +
+            '</b><small>' + esc(m.how) + (when ? ' · ' + when : '') + '</small></li>';
+        }).join('');
+        q('[data-pf-medals-card]').hidden = false;
+      }, function () {});
+      api('/career.json?id=' + id).then(function (d) {
+        var months = (d.months || []).slice(-12).reverse();
+        if (months.length < 1) return;
+        q('[data-pf-career]').innerHTML = months.map(function (mo) {
+          var ym = String(mo.month || '').split('-');
+          return '<tr><td>' + esc(L.months[(parseInt(ym[1], 10) || 1) - 1] + ' ' + ym[0]) + '</td><td>' + num(mo.matches) + '</td><td>' + num(mo.wins) + '</td><td>' +
+            (Number(mo.kd) || 0).toFixed(2) + '</td><td>' + (mo.rating == null ? '–' : num(mo.rating)) + '</td><td>' + esc(mo.topWeapon || '–') + '</td></tr>';
+        }).join('');
+        q('[data-pf-career-card]').hidden = false;
+      }, function () {});
+      api('/rivals.json?id=' + id).then(function (d) {
+        var list = d.rivals || [];
+        if (!list.length) return;
+        q('[data-pf-rivals]').innerHTML = list.map(function (r) {
+          return '<tr><td><a href="' + esc(profileHref(r.id)) + '">' + esc(r.name) + '</a></td><td>' + num(r.matches) + '</td><td>' +
+            L.rivalRecord.replace('{w}', num(r.wins)).replace('{l}', num(r.losses)) + '</td><td>' + num(r.killsFor) + ' / ' + num(r.killsAgainst) + '</td></tr>';
+        }).join('');
+        q('[data-pf-rivals-card]').hidden = false;
+      }, function () {});
 
       var foot = q('[data-pf-foot]');
       foot.innerHTML = (p.firstSeen ? L.firstSeen + ' ' + fmtDate(p.firstSeen) : '') + (p.lastSeen ? ' · ' + L.lastSeen + ' ' + fmtDate(p.lastSeen) : '') +
@@ -1068,6 +1278,79 @@ var TCP_API = 'https://api.truecombat.eu';
   });
 
   /* ---------- match report (match?id=<match id>) ---------- */
+  /* a 1200 x 630 image of a match result: the right size for Discord, X and most chat apps */
+  function shareCard(m, title, art) {
+    var W = 1200, H = 630, c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    var g = c.getContext('2d');
+    var css = getComputedStyle(document.documentElement);
+    function tok(n, d) { return (css.getPropertyValue(n) || '').trim() || d; }
+    var BG = tok('--bg', '#0d1016'), FG = tok('--fg', '#e8eaef'), MUTED = tok('--muted', '#9aa3b3'), RED = tok('--red', '#d63b3b'), AMBER = tok('--amber', '#e7a73c');
+    var SO = tok('--t-team-specops', '#3f7fe0'), TE = tok('--t-team-terrorists', '#e04848');
+    var DISP = '"Saira Condensed", "Arial Narrow", sans-serif', BODY = '"IBM Plex Sans", "Segoe UI", sans-serif';
+    function bgImage() {
+      return new Promise(function (ok) {
+        if (!art) return ok(null);
+        var im = new Image();
+        im.onload = function () { ok(im); }; im.onerror = function () { ok(null); };
+        im.src = IMG + 'map-' + art.toLowerCase() + '.webp';
+      });
+    }
+    return (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(bgImage).then(function (im) {
+      g.fillStyle = BG; g.fillRect(0, 0, W, H);
+      if (im) {
+        var sc = Math.max(W / im.width, H / im.height);
+        g.globalAlpha = 0.35; g.drawImage(im, (W - im.width * sc) / 2, (H - im.height * sc) / 2, im.width * sc, im.height * sc); g.globalAlpha = 1;
+      }
+      var fade = g.createLinearGradient(0, 0, 0, H);
+      fade.addColorStop(0, 'rgba(13,16,22,.55)'); fade.addColorStop(1, 'rgba(13,16,22,.95)');
+      g.fillStyle = fade; g.fillRect(0, 0, W, H);
+      g.fillStyle = RED; g.fillRect(0, 0, W, 6);
+      g.textBaseline = 'alphabetic';
+      g.fillStyle = MUTED; g.font = '600 24px ' + DISP;
+      g.fillText('TRUECOMBAT: PLATINUM', 60, 70);
+      g.textAlign = 'right'; g.fillText(fmtDate(m.ended).toUpperCase(), W - 60, 70); g.textAlign = 'left';
+      g.fillStyle = FG; g.font = '700 64px ' + DISP;
+      g.fillText(title.toUpperCase(), 60, 150, W - 120);
+      var sc2 = m.score || {}, w = String(m.winner || '').toLowerCase();
+      var teams = ['specops', 'terrorists'].filter(function (t) { return (m.players || []).some(function (p) { return p.team === t; }); });
+      var y = 270;
+      if (teams.length === 2) {
+        g.font = '700 120px ' + DISP;
+        g.fillStyle = SO; g.fillText(String(sc2.specops || 0), 60, y);
+        var wl = g.measureText(String(sc2.specops || 0)).width;
+        g.fillStyle = MUTED; g.font = '600 28px ' + DISP; g.fillText(L.specops.toUpperCase(), 60 + wl + 20, y - 12);
+        g.textAlign = 'right';
+        g.font = '700 120px ' + DISP; g.fillStyle = TE; g.fillText(String(sc2.terrorists || 0), W - 60, y);
+        var wr = g.measureText(String(sc2.terrorists || 0)).width;
+        g.fillStyle = MUTED; g.font = '600 28px ' + DISP; g.fillText(L.terrorists.toUpperCase(), W - 60 - wr - 20, y - 12);
+        g.textAlign = 'center'; g.fillStyle = AMBER; g.font = '700 34px ' + DISP;
+        g.fillText((w ? L.wins_.replace('{t}', L[w] || w) : L.draw).toUpperCase(), W / 2, y - 30);
+        g.textAlign = 'left';
+      }
+      var top = (m.players || []).slice().sort(function (a, b) { return (b.kills || 0) - (a.kills || 0) || (b.xp || 0) - (a.xp || 0); }).slice(0, 5);
+      y = 340;
+      g.font = '600 20px ' + DISP; g.fillStyle = MUTED;
+      g.fillText(L.player.toUpperCase(), 60, y);
+      g.textAlign = 'right';
+      g.fillText(L.kills.toUpperCase(), 820, y); g.fillText(L.deaths.toUpperCase(), 960, y); g.fillText('XP', W - 60, y);
+      g.textAlign = 'left';
+      top.forEach(function (p, i) {
+        var yy = y + 46 + i * 44;
+        g.fillStyle = p.team === 'specops' ? SO : p.team === 'terrorists' ? TE : MUTED;
+        g.fillRect(60, yy - 24, 4, 30);
+        g.fillStyle = FG; g.font = '500 28px ' + BODY;
+        g.fillText(String(p.name || '') + (m.mvp && m.mvp.id === p.id ? '  \u2605' : ''), 78, yy, 600);
+        g.textAlign = 'right';
+        g.fillText(String(p.kills || 0), 820, yy); g.fillText(String(p.deaths || 0), 960, yy); g.fillText('+' + (p.xp || 0), W - 60, yy);
+        g.textAlign = 'left';
+      });
+      g.fillStyle = MUTED; g.font = '500 20px ' + BODY;
+      g.fillText(L.shareFor + ' · truecombat.eu/match?id=' + (new URLSearchParams(location.search).get('id') || ''), 60, H - 34, W - 120);
+      return new Promise(function (ok, no) { c.toBlob(function (b) { if (b) ok(b); else no(new Error('canvas')); }, 'image/png'); });
+    });
+  }
+
   $all('[data-match]').forEach(function (root) {
     function q(sel) { return root.querySelector(sel); }
     var id = (new URLSearchParams(location.search).get('id') || '').toLowerCase();
@@ -1118,7 +1401,23 @@ var TCP_API = 'https://api.truecombat.eu';
       q('[data-m-teams]').innerHTML = html;
 
       var foot = q('[data-m-foot]');
-      foot.innerHTML = (m.version ? L.version + ' ' + esc(m.version) + ' · ' : '') + '<button type="button" class="pf-copy">' + L.matchCopy + '</button>';
+      foot.innerHTML = (m.version ? L.version + ' ' + esc(m.version) + ' · ' : '') + '<button type="button" class="pf-copy">' + L.matchCopy + '</button>' +
+        (document.createElement('canvas').toBlob ? ' · <button type="button" class="pf-copy" data-m-share>' + L.shareCard + '</button>' : '');
+      var shareBtn = foot.querySelector('[data-m-share]');
+      if (shareBtn) shareBtn.addEventListener('click', function () {
+        shareCard(m, title, art).then(function (blob) {
+          var file = 'truecombat-match-' + id + '.png';
+          try {
+            if (navigator.canShare && window.File && navigator.canShare({ files: [new File([blob], file, { type: 'image/png' })] })) {
+              return navigator.share({ files: [new File([blob], file, { type: 'image/png' })], title: title, url: location.href });
+            }
+          } catch (e) {}
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob); a.download = file;
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        }).then(function () { shareBtn.textContent = L.shareSaved; setTimeout(function () { shareBtn.textContent = L.shareCard; }, 1600); }, function () {});
+      });
       foot.querySelector('.pf-copy').addEventListener('click', function (e) {
         var b = e.currentTarget;
         (navigator.clipboard ? navigator.clipboard.writeText(location.href) : Promise.reject()).then(function () {

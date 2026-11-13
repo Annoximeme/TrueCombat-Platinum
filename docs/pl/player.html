@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Informacje o wersjach (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=95fe2ea9a3">
+<link rel="stylesheet" href="../style.css?v=354f047aa4">
 </head>
 <body>
 <!--nav-->
@@ -118,6 +118,28 @@
       </div>
     </div>
     <div class="pf-detail" data-pf-detail></div>
+    <div class="server-card full pf-medals" data-pf-medals-card hidden>
+      <header><h2>Przebieg służby</h2><span class="pill" data-pf-medals-count></span></header>
+      <ul class="pf-medals-list" data-pf-medals></ul>
+    </div>
+    <div class="server-card full pf-career" data-pf-career-card hidden>
+      <header><h2>Kariera</h2><span class="pill">Miesiąc po miesiącu</span></header>
+      <div class="table-scroll">
+        <table class="srv-table">
+          <thead><tr><th>Miesiąc</th><th>Mecze</th><th>Wygrane</th><th>K / D</th><th>Ranking</th><th>Ulubiona broń</th></tr></thead>
+          <tbody data-pf-career></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="server-card full pf-rivals" data-pf-rivals-card hidden>
+      <header><h2>Rywale</h2><span class="pill">Najczęściej po drugiej stronie</span></header>
+      <div class="table-scroll">
+        <table class="srv-table">
+          <thead><tr><th>Gracz</th><th>Mecze</th><th>Twój bilans</th><th>Zabójstwa</th></tr></thead>
+          <tbody data-pf-rivals></tbody>
+        </table>
+      </div>
+    </div>
     <div class="server-card full pf-matches">
       <header><h2>Ostatnie mecze</h2></header>
       <div class="table-scroll">
@@ -171,6 +193,6 @@
 <!--/footer-->
 
 <script src="../js/lang-pl.js"></script>
-<script src="../js/site.js?v=e9790fc491"></script>
+<script src="../js/site.js?v=6145c8135f"></script>
 </body>
 </html>
