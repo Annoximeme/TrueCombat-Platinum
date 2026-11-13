@@ -28,6 +28,9 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import landing  # noqa: E402
 import detail  # noqa: E402
 import i18n  # noqa: E402
+import releases  # noqa: E402
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "design" / "icons"))
+import build_icons as icons  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
@@ -69,9 +72,9 @@ LABELS = {
 }
 
 DISCORD_SVG = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg>')
-HEART_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.6 2.1 4.5 6 4.1c2.2-.2 4.1 1 6 3.2 1.9-2.2 3.8-3.4 6-3.2 3.9.4 5.6 4.5 4 7.6C19.5 16.4 12 21 12 21z"/></svg>'
-SEARCH_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>'
-MENU_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'
+HEART_SVG = icons.inline("support", 16)
+SEARCH_SVG = icons.inline("search", 18)
+MENU_SVG = icons.inline("menu", 22)
 
 
 def href(page):
@@ -96,7 +99,10 @@ def upp(lang):
 
 
 def has(lang, page):
-    """Whether the page exists in the language. The extra languages leave the devlog and studio pages in English."""
+    """Whether the page exists in the language. The extra languages leave the devlog and studio pages in English.
+    Release pages are English only, like the patch notes."""
+    if page.startswith("release-"):
+        return lang == "en"
     return lang not in XLANGS or not (page in i18n.EN_ONLY or page.startswith("devlog-"))
 
 
@@ -132,6 +138,8 @@ def nav(lang, current):
         active = "maps"
     if current.startswith("weapon-"):
         active = "weapons"
+    if current.startswith("release-"):
+        active = "news"
     links = "\n".join(
         '      <li><a href="%s"%s%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "",
                                                ' data-devlog-new="%s"' % devlog_posts(lang)[0]["date"] if p == "devlog" else "", L[p])
@@ -167,7 +175,7 @@ def nav(lang, current):
 
 
 GITHUB_SVG = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg>'
-RSS_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="19" r="2.2"/><path d="M3 10.5v3a7.5 7.5 0 0 1 7.5 7.5h3A10.5 10.5 0 0 0 3 10.5zm0-6v3A13.5 13.5 0 0 1 16.5 21h3A16.5 16.5 0 0 0 3 4.5z"/></svg>'
+RSS_SVG = icons.inline("rss", 16)
 
 
 def footer(lang, page=""):
@@ -236,6 +244,10 @@ def crumbs(lang, page, html):
     if page.startswith("devlog-"):
         items.append(("Devlog", url(lang, "devlog")))
         m = re.search(r'<meta property="og:title" content="([^"]*)"', re.sub(r"<!--alt-->.*?<!--/alt-->", "", html, flags=re.S))
+        items.append((htmlmod.unescape(m.group(1)) if m else page, url(lang, page)))
+    elif page.startswith("release-"):
+        items.append((LABELS[lang]["news"], url(lang, "news")))
+        m = re.search(r"<h1>(.*?)</h1>", html, re.S)
         items.append((htmlmod.unescape(m.group(1)) if m else page, url(lang, page)))
     elif page.startswith(("map-", "weapon-")):
         parent = "maps" if page.startswith("map-") else "weapons"
@@ -1244,7 +1256,8 @@ def detail_pages(lang):
     pages = []
     for name in MAPLIST:
         title, desc, og = detail.map_meta(lang, name)
-        pages.append(("map-" + name, title, desc, og, "og-map-%s.jpg" % name, detail.map_body(lang, name, MAPLIST, layout_html), ""))
+        pages.append(("map-" + name, title, desc, og, "og-map-%s.jpg" % name, detail.map_body(lang, name, MAPLIST, layout_html),
+                      '<script src="%sjs/map3d.js" defer></script>\n' % upp(lang)))
     allw = detail.weapons(lang)
     for w in allw:
         title, desc = detail.weapon_meta(lang, w)
@@ -1282,7 +1295,7 @@ def search_index(lang, posts):
         main = html[html.index("<main"):html.index("</main>")]
         if page == "news":
             for m in re.finditer(r'<details class="release" id="([^"]+)".*?<span class="sum">(.*?)</span>', main, re.S):
-                rows.append({"t": m.group(1), "u": there + "news.html#" + m.group(1), "k": K["release"], "d": text(m.group(2))[:150]})
+                rows.append({"t": m.group(1), "u": ("" if lang == "en" else "../") + releases.slug(m.group(1)) + ".html", "k": K["release"], "d": text(m.group(2))[:150]})
             continue
         if page == "faq":
             for qid, q, a in landing.faq_items(lang):
@@ -1663,6 +1676,8 @@ def main():
         src = en
         if page == "maps":
             en = map_links("en", en)
+        if page in ("index", "news"):
+            en = releases.link_blocks("en", en)
         en = put(en, "nav", nav("en", page), path)
         en = put(en, "footer", footer("en", page), path)
         en = put(en, "alt", alt("en", page, en), path)
@@ -1674,6 +1689,8 @@ def main():
             tr = to_lang(lang, page, generated(lang, page, src, path))
             if page == "maps":
                 tr = map_links(lang, tr)
+            if page in ("index", "news"):
+                tr = releases.link_blocks(lang, tr, "../")
             tr = put(tr, "nav", nav(lang, page), path)
             tr = put(tr, "footer", footer(lang, page), path)
             tr = put(tr, "alt", alt(lang, page, tr), path)
@@ -1687,6 +1704,11 @@ def main():
             write(lang, page, html)
         write(lang, "match", match_page(lang))
     details = [page for page, _ in detail_pages("en")]
+    rels = releases.parse(unbust((DOCS / "news.html").read_text(encoding="utf-8")))
+    for rel in rels:
+        title, desc, body = releases.page_body(rel, rels, posts["en"], GITHUB)
+        write("en", rel["page"], shell("en", rel["page"], title + " · TrueCombat: Platinum", desc, desc, "og-news.jpg", body))
+    details += [r["page"] for r in rels]
 
     template = unbust((DOCS / "devlog.html").read_text(encoding="utf-8"))
     for lang in ("en", "nl"):

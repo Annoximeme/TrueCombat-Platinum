@@ -171,6 +171,47 @@ def map_meta(lang, name):
     return T["map_title"].format(m=m), T["map_desc"].format(m=m, file="obj_" + name, d=desc.split(". ")[0].rstrip(".") + "."), desc
 
 
+M3D = {
+    "en": {"h": "Explore {m} in 3D", "p": "The real map, built from the game's own map file with its baked lighting. Drag to turn, right-drag or Shift-drag to move, scroll to zoom. On a keyboard: arrow keys turn, Shift and the arrows move, + and - zoom, R resets.",
+           "open": "Load the 3D view", "size": "about 1 MB", "cut": "Roof height", "labels": "Area names", "reset": "Reset view",
+           "loading": "Loading the map\u2026", "fail": "Your browser cannot show the 3D view. The plan above shows the same layout.", "label": "3D view of {m}"},
+    "nl": {"h": "Verken {m} in 3D", "p": "De echte map, opgebouwd uit het eigen mapbestand van het spel met de ingebakken belichting. Sleep om te draaien, sleep met rechts of met Shift om te verschuiven, scroll om te zoomen. Met het toetsenbord: pijltjes draaien, Shift en de pijltjes verschuiven, + en - zoomen, R zet terug.",
+           "open": "Laad de 3D-weergave", "size": "ongeveer 1 MB", "cut": "Dakhoogte", "labels": "Gebiedsnamen", "reset": "Beeld terugzetten",
+           "loading": "Map laden\u2026", "fail": "Je browser kan de 3D-weergave niet tonen. Het plan hierboven toont dezelfde indeling.", "label": "3D-weergave van {m}"},
+    "de": {"h": "{m} in 3D erkunden", "p": "Die echte Karte, aus der Kartendatei des Spiels mit ihrer eingebrannten Beleuchtung gebaut. Ziehen zum Drehen, mit rechts oder Shift ziehen zum Verschieben, scrollen zum Zoomen. Tastatur: Pfeiltasten drehen, Shift und Pfeile verschieben, + und - zoomen, R setzt zurück.",
+           "open": "3D-Ansicht laden", "size": "etwa 1 MB", "cut": "Dachhöhe", "labels": "Gebietsnamen", "reset": "Ansicht zurücksetzen",
+           "loading": "Karte wird geladen\u2026", "fail": "Dein Browser kann die 3D-Ansicht nicht anzeigen. Der Plan oben zeigt denselben Aufbau.", "label": "3D-Ansicht von {m}"},
+    "fr": {"h": "Explorer {m} en 3D", "p": "La vraie carte, construite à partir du fichier de carte du jeu avec son éclairage précalculé. Faites glisser pour tourner, clic droit ou Maj pour déplacer, molette pour zoomer. Au clavier : flèches pour tourner, Maj et flèches pour déplacer, + et - pour zoomer, R pour réinitialiser.",
+           "open": "Charger la vue 3D", "size": "environ 1 Mo", "cut": "Hauteur des toits", "labels": "Noms des zones", "reset": "Réinitialiser la vue",
+           "loading": "Chargement de la carte\u2026", "fail": "Votre navigateur ne peut pas afficher la vue 3D. Le plan ci-dessus montre la même disposition.", "label": "Vue 3D de {m}"},
+    "pl": {"h": "Poznaj {m} w 3D", "p": "Prawdziwa mapa, zbudowana z pliku mapy gry z jej wypalonym oświetleniem. Przeciągnij, aby obrócić, prawym przyciskiem lub z Shift, aby przesunąć, kółkiem, aby przybliżyć. Klawiatura: strzałki obracają, Shift i strzałki przesuwają, + i - przybliżają, R resetuje.",
+           "open": "Wczytaj widok 3D", "size": "około 1 MB", "cut": "Wysokość dachów", "labels": "Nazwy obszarów", "reset": "Resetuj widok",
+           "loading": "Wczytywanie mapy\u2026", "fail": "Twoja przeglądarka nie może pokazać widoku 3D. Plan powyżej pokazuje ten sam układ.", "label": "Widok 3D mapy {m}"},
+}
+
+
+def map3d_html(lang, name):
+    """The click-to-load 3D view on a map page (docs/js/map3d.js)."""
+    T = M3D.get(lang, M3D["en"])
+    m = name.capitalize()
+    return f"""<section class="band band-alt" id="explore">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">3D</span><h2>{e(T['h'].format(m=m))}</h2><p class="lede">{e(T['p'])}</p></div>
+    <div class="m3d" data-map3d="{name}" data-src="img/maps/3d-{name}.bin" data-loading="{e(T['loading'])}" data-fail="{e(T['fail'])}" data-label="{e(T['label'].format(m=m))}">
+      <div class="m3d-stage" style="--poster: url(img/maps/layout-{name}.webp)">
+        <button type="button" class="btn m3d-open">{e(T['open'])} <small>{e(T['size'])}</small></button>
+        <p class="m3d-status" role="status" aria-live="polite"></p>
+      </div>
+      <div class="m3d-bar">
+        <label>{e(T['cut'])} <input type="range" class="m3d-cut" disabled aria-label="{e(T['cut'])}"></label>
+        <label><input type="checkbox" class="m3d-labels-toggle" checked aria-label="{e(T['labels'])}"> {e(T['labels'])}</label>
+        <button type="button" class="btn btn-ghost m3d-reset">{e(T['reset'])}</button>
+      </div>
+    </div>
+  </div>
+</section>
+"""
+
 def map_body(lang, name, maplist, layout_html):
     T = S[lang]
     m = name.capitalize()
@@ -194,7 +235,7 @@ def map_body(lang, name, maplist, layout_html):
     <span class="eyebrow">{T['map']}</span>
     <h1>{m}</h1>
     <p class="lede">{e(desc)}</p>
-    <nav class="chips" aria-label="{T['toc']}"><a href="#layout">{T['layout']}</a><a href="#names">{T['names']}</a><a href="#play">{T['gmodes']}</a><a href="#textures">HD</a></nav>
+    <nav class="chips" aria-label="{T['toc']}"><a href="#layout">{T['layout']}</a><a href="#explore">3D</a><a href="#names">{T['names']}</a><a href="#play">{T['gmodes']}</a><a href="#textures">HD</a></nav>
   </div>
 </section>
 
@@ -222,7 +263,8 @@ def map_body(lang, name, maplist, layout_html):
   </div>
 </section>
 
-<section class="band band-alt" id="names">
+{map3d_html(lang, name)}
+<section class="band" id="names">
   <div class="wrap narrow">
     <div class="section-head"><span class="eyebrow">{T['names']}</span><h2>{T['callouts_h'].format(m=m)}</h2></div>
     <div class="prose-block">
@@ -231,7 +273,7 @@ def map_body(lang, name, maplist, layout_html):
   </div>
 </section>
 
-<section class="band" id="play">
+<section class="band band-alt" id="play">
   <div class="wrap narrow">
     <div class="section-head"><span class="eyebrow">{T['gmodes']}</span><h2>{T['play_h'].format(m=m)}</h2></div>
     <ul class="mode-list">

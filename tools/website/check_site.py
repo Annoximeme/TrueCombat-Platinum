@@ -46,11 +46,13 @@ class P(HTMLParser):
             if a.get('target')=='_blank' and 'noopener' not in (a.get('rel') or '') and (a.get('href') or '').startswith('http'): s.ext_blank_noopener.append(a.get('href'))
         if t=='img' and s._a is not None and a.get('alt'): s._a['img']=True
         if t=='svg' and s._a is not None and a.get('aria-label'): s._a['img']=True
+        if t=='label': s._lab=getattr(s,'_lab',0)+1
         if t=='label' and a.get('for'): s.labels_for.add(a['for'])
         if t in ('input','select','textarea') and a.get('type') not in ('hidden','submit','button'):
-            s.inputs.append((a.get('id'), a.get('aria-label') or a.get('aria-labelledby') or a.get('title')))
+            s.inputs.append((a.get('id'), a.get('aria-label') or a.get('aria-labelledby') or a.get('title') or ('wrapped' if getattr(s,'_lab',0) else None)))
     def handle_endtag(s,t):
         if t=='title': s._t=False
+        if t=='label' and getattr(s,'_lab',0): s._lab-=1
         if t=='script': s._ld=False
         if t=='a' and s._a is not None:
             x=s._a
@@ -74,6 +76,7 @@ def resolve(rel, url):
     if u.scheme in ('mailto','tel','javascript','data'): return None
     if u.netloc and u.netloc not in ('truecombat.eu','www.truecombat.eu'): return 'EXT'
     path=unquote(u.path)
+    if path.startswith('/api/'): return None   # served by the VPS (Caddy), not a file in docs/
     if not path and not u.netloc: return 'SELF'
     if path.startswith('/'): t=path.lstrip('/')
     else: t=os.path.normpath(os.path.join(os.path.dirname(rel),path))
