@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/nl/devlog</id>
   <updated>2026-11-13T12:00:00Z</updated>
   <entry>
+    <title>Achter de schermen van 0.36.0, de update die je hoort</title>
+    <link href="https://truecombat.eu/nl/devlog-inside-036"/>
+    <id>https://truecombat.eu/nl/devlog-inside-036</id>
+    <published>2026-11-13T12:00:00Z</published>
+    <updated>2026-11-13T12:00:00Z</updated>
+    <category term="Release"/>
+    <summary>Voicechat, teampings, bots die de map lezen, een volledig vernieuwde audio en optioneel 128 updates per seconde. Dit is de lange versie: wat er veranderde, waarom we het zo bouwden, hoe we het testten en wat er nog komt.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Een nieuwe look, van laadscherm tot kill feed</title>
     <link href="https://truecombat.eu/nl/devlog-a-new-look"/>
     <id>https://truecombat.eu/nl/devlog-a-new-look</id>
