@@ -486,6 +486,7 @@ PRIVACY = """<section class="page-head">
         <h2>[[c_h]]</h2>
         <p>[[c1]]</p>
         <p>[[c2]]</p>
+        <p>[[c3]]</p>
       </section>
 
       <section id="changes">
@@ -508,7 +509,7 @@ PRIVACY_T = {
         "lede": "We want to know which pages are worth reading and where new players hear about the game. We do not need to know who you are to find that out, so we never ask.",
         "toc": "On this page", "n1": "The short version", "n2": "This website", "n3": "The game", "n4": "Your choices", "n5": "Changes",
         "s_h": "The short version",
-        "s_a": "<b>No cookies, no ad trackers, no analytics companies.</b> Nothing from Google, Meta or anyone else is loaded on this site.",
+        "s_a": "<b>No tracking cookies, no ad trackers, no analytics companies.</b> Nothing from Google, Meta or anyone else is loaded on this site.",
         "s_b": "<b>We count visits, not visitors.</b> The website keeps daily totals and nothing that points back to a person.",
         "s_c": "<b>Your browser says no, we listen.</b> With Global Privacy Control or Do Not Track switched on, you are not counted at all.",
         "s_d": "<b>The game sends usage data only if you ask it to.</b> That switch is off until you turn it on.",
@@ -526,7 +527,7 @@ PRIVACY_T = {
         "w4": "Your devlog star ratings are remembered in your own browser, so the stars stay filled in when you come back. That note never leaves your computer and is not used for counting.",
         "w5": "Some pages fetch live data from <code>api.truecombat.eu</code> (servers, leaderboards) and patch notes from the GitHub API. The trailer comes from YouTube only after you click play. As with any website, these servers see your connection address while they answer.",
         "g_h": "The game and the launcher",
-        "g_a": "<b>Online play.</b> Game servers see your connection address, as every online game does. Our moderation tools keep it for up to 90 days to deal with cheating and abuse.",
+        "g_a": "<b>Online play.</b> Game servers see your connection address, as every online game does. Our moderation tools keep it for up to 90 days to deal with cheating and abuse, and a ban record keeps the address that was banned.",
         "g_b": "<b>Leaderboards.</b> Ranked matches on official and verified servers record your in-game name, a player ID made from your game key, and your match statistics. That is what fills the leaderboards and your public profile.",
         "g_c": "<b>Anti-cheat.</b> Official servers use Easy Anti-Cheat, which runs under the <a href=\"https://www.epicgames.com/site/privacypolicy\">Epic Games privacy policy</a>.",
         "g_d": "<b>Crash reports</b> stay on your PC. They only reach us if you attach them to a bug report yourself.",
@@ -535,8 +536,9 @@ PRIVACY_T = {
         "c_h": "Your choices",
         "c1": "To stop being counted on this website, switch on Global Privacy Control or Do Not Track in your browser. Blocking <code>api.truecombat.eu/insights</code> works too, and the site keeps working exactly the same.",
         "c2": "Questions, or want something removed? Ask us on <a href=\"https://discord.gg/8kcHdg2Hch\">Discord</a> or open an issue on <a href=\"https://github.com/Annoximeme/TrueCombat-Platinum\">GitHub</a>. All of the counting code is in the public repository, so you never have to take our word for it.",
+        "c3": "We count website visits because we have a legitimate interest in knowing how the site is used (GDPR Article 6(1)(f)), with the safeguards described above. Usage data from the game is only collected with your consent, which you can withdraw at any time in the launcher. TrueCombat: Platinum is run by Team Terminus, led by RaziC*. If you believe we handle your data wrongly, you can complain to a data protection authority; in Belgium, where we are based, that is the <a href=\"https://www.dataprotectionauthority.be\">Data Protection Authority</a>.",
         "x_h": "Changes to this page",
-        "x1": "If what we collect changes, this page changes first, and the devlog says so. Last updated 12 November 2026.",
+        "x1": "If what we collect changes, this page changes first, and the devlog says so. Last updated 13 November 2026.",
         "credit": "Country lookup uses IP to Country Lite by <a href=\"https://db-ip.com\">DB-IP</a>, licensed under CC BY 4.0.",
     },
     "nl": {
@@ -547,7 +549,7 @@ PRIVACY_T = {
         "lede": "We willen weten welke pagina's het lezen waard zijn en waar nieuwe spelers over de game horen. Daarvoor hoeven we niet te weten wie je bent, dus vragen we het ook nooit.",
         "toc": "Op deze pagina", "n1": "Kort samengevat", "n2": "Deze website", "n3": "De game", "n4": "Jouw keuzes", "n5": "Wijzigingen",
         "s_h": "Kort samengevat",
-        "s_a": "<b>Geen cookies, geen advertentietrackers, geen analysebedrijven.</b> Er wordt niets van Google, Meta of iemand anders op deze site geladen.",
+        "s_a": "<b>Geen trackingcookies, geen advertentietrackers, geen analysebedrijven.</b> Er wordt niets van Google, Meta of iemand anders op deze site geladen.",
         "s_b": "<b>We tellen bezoeken, geen bezoekers.</b> De website bewaart dagtotalen en niets dat naar een persoon terugleidt.",
         "s_c": "<b>Zegt je browser nee, dan luisteren we.</b> Met Global Privacy Control of Do Not Track aan word je helemaal niet geteld.",
         "s_d": "<b>De game stuurt alleen gebruiksgegevens als jij dat wilt.</b> Die schakelaar staat uit tot je hem aanzet.",
@@ -565,7 +567,7 @@ PRIVACY_T = {
         "w4": "Je sterrenbeoordelingen bij devlogberichten worden in je eigen browser onthouden, zodat de sterren gevuld blijven als je terugkomt. Die notitie verlaat je computer nooit en wordt niet gebruikt om te tellen.",
         "w5": "Sommige pagina's halen live gegevens op bij <code>api.truecombat.eu</code> (servers, ranglijsten) en patchnotes via de GitHub API. De trailer komt pas van YouTube nadat je op afspelen klikt. Zoals bij elke website zien deze servers je verbindingsadres terwijl ze antwoorden.",
         "g_h": "De game en de launcher",
-        "g_a": "<b>Online spelen.</b> Gameservers zien je verbindingsadres, zoals bij elke online game. Onze moderatietools bewaren het tot 90 dagen om valsspelen en misbruik aan te pakken.",
+        "g_a": "<b>Online spelen.</b> Gameservers zien je verbindingsadres, zoals bij elke online game. Onze moderatietools bewaren het tot 90 dagen om valsspelen en misbruik aan te pakken, en een ban bewaart het adres dat geband werd.",
         "g_b": "<b>Ranglijsten.</b> Ranked potjes op officiële en geverifieerde servers leggen je spelnaam vast, een speler-ID afgeleid van je gamesleutel en je wedstrijdstatistieken. Daarmee worden de ranglijsten en je openbare profiel gevuld.",
         "g_c": "<b>Anti-cheat.</b> Officiële servers gebruiken Easy Anti-Cheat, dat valt onder het <a href=\"https://www.epicgames.com/site/privacypolicy\">privacybeleid van Epic Games</a>.",
         "g_d": "<b>Crashrapporten</b> blijven op je pc. Ze komen alleen bij ons als je ze zelf bij een bugmelding voegt.",
@@ -574,8 +576,9 @@ PRIVACY_T = {
         "c_h": "Jouw keuzes",
         "c1": "Wil je niet geteld worden op deze website, zet dan Global Privacy Control of Do Not Track aan in je browser. Ook <code>api.truecombat.eu/insights</code> blokkeren werkt, en de site blijft precies hetzelfde werken.",
         "c2": "Vragen, of wil je iets laten verwijderen? Vraag het ons op <a href=\"https://discord.gg/8kcHdg2Hch\">Discord</a> of open een issue op <a href=\"https://github.com/Annoximeme/TrueCombat-Platinum\">GitHub</a>. Alle telcode staat in de openbare repository, dus je hoeft ons nooit op ons woord te geloven.",
+        "c3": "We tellen websitebezoeken omdat we een gerechtvaardigd belang hebben bij weten hoe de site gebruikt wordt (AVG artikel 6, lid 1, f), met de waarborgen hierboven. Gebruiksgegevens uit de game verzamelen we alleen met jouw toestemming, die je op elk moment in de launcher kunt intrekken. TrueCombat: Platinum wordt gemaakt door Team Terminus, onder leiding van RaziC*. Vind je dat we verkeerd met je gegevens omgaan, dan kun je klacht indienen bij een toezichthouder; in België, waar we gevestigd zijn, is dat de <a href=\"https://www.gegevensbeschermingsautoriteit.be\">Gegevensbeschermingsautoriteit</a>.",
         "x_h": "Wijzigingen aan deze pagina",
-        "x1": "Als er verandert wat we verzamelen, verandert eerst deze pagina, en de devlog meldt het. Laatst bijgewerkt op 12 november 2026.",
+        "x1": "Als er verandert wat we verzamelen, verandert eerst deze pagina, en de devlog meldt het. Laatst bijgewerkt op 13 november 2026.",
         "credit": "Het opzoeken van landen gebruikt IP to Country Lite van <a href=\"https://db-ip.com\">DB-IP</a>, onder licentie CC BY 4.0.",
     },
 }

@@ -2558,7 +2558,7 @@ TABLES['PRIVACY_T'] = {
     'lede': 'Wir wollen wissen, welche Seiten sich lohnen und wo neue Spieler vom Spiel erfahren. Dafür müssen wir nicht wissen, wer du bist, also fragen wir nie danach.',
     'toc': 'Auf dieser Seite', 'n1': 'Kurz gesagt', 'n2': 'Diese Website', 'n3': 'Das Spiel', 'n4': 'Deine Wahl', 'n5': 'Änderungen',
     's_h': 'Kurz gesagt',
-    's_a': '<b>Keine Cookies, keine Werbetracker, keine Analysefirmen.</b> Nichts von Google, Meta oder anderen wird auf dieser Seite geladen.',
+    's_a': '<b>Keine Tracking-Cookies, keine Werbetracker, keine Analysefirmen.</b> Nichts von Google, Meta oder anderen wird auf dieser Seite geladen.',
     's_b': '<b>Wir zählen Besuche, keine Besucher.</b> Die Website speichert Tagessummen und nichts, das auf eine Person zurückführt.',
     's_c': '<b>Sagt dein Browser nein, hören wir zu.</b> Mit Global Privacy Control oder Do Not Track wirst du überhaupt nicht gezählt.',
     's_d': '<b>Das Spiel sendet Nutzungsdaten nur, wenn du es willst.</b> Dieser Schalter ist aus, bis du ihn einschaltest.',
@@ -2576,7 +2576,7 @@ TABLES['PRIVACY_T'] = {
     'w4': 'Deine Sternebewertungen im Devlog merkt sich dein eigener Browser, damit die Sterne gefüllt bleiben, wenn du wiederkommst. Diese Notiz verlässt nie deinen Computer und wird nicht zum Zählen verwendet.',
     'w5': 'Einige Seiten laden Live-Daten von <code>api.truecombat.eu</code> (Server, Ranglisten) und Patchnotes über die GitHub-API. Der Trailer kommt erst von YouTube, wenn du auf Abspielen klickst. Wie bei jeder Website sehen diese Server deine Verbindungsadresse, während sie antworten.',
     'g_h': 'Das Spiel und der Launcher',
-    'g_a': '<b>Online spielen.</b> Spielserver sehen deine Verbindungsadresse, wie bei jedem Onlinespiel. Unsere Moderationswerkzeuge speichern sie bis zu 90 Tage, um gegen Cheater und Missbrauch vorzugehen.',
+    'g_a': '<b>Online spielen.</b> Spielserver sehen deine Verbindungsadresse, wie bei jedem Onlinespiel. Unsere Moderationswerkzeuge speichern sie bis zu 90 Tage, um gegen Cheater und Missbrauch vorzugehen, und ein Bann-Eintrag behält die gesperrte Adresse.',
     'g_b': '<b>Ranglisten.</b> Gewertete Matches auf offiziellen und verifizierten Servern speichern deinen Spielnamen, eine aus deinem Spielschlüssel gebildete Spieler-ID und deine Matchstatistiken. Daraus entstehen die Ranglisten und dein öffentliches Profil.',
     'g_c': '<b>Anti-Cheat.</b> Offizielle Server nutzen Easy Anti-Cheat, das unter der <a href="https://www.epicgames.com/site/privacypolicy">Datenschutzerklärung von Epic Games</a> läuft.',
     'g_d': '<b>Absturzberichte</b> bleiben auf deinem PC. Sie erreichen uns nur, wenn du sie selbst einem Fehlerbericht anhängst.',
@@ -2585,8 +2585,9 @@ TABLES['PRIVACY_T'] = {
     'c_h': 'Deine Wahl',
     'c1': 'Wenn du auf dieser Website nicht gezählt werden willst, schalte in deinem Browser Global Privacy Control oder Do Not Track ein. Auch das Blockieren von <code>api.truecombat.eu/insights</code> funktioniert, und die Seite funktioniert genau wie vorher.',
     'c2': 'Fragen, oder soll etwas gelöscht werden? Frag uns auf <a href="https://discord.gg/8kcHdg2Hch">Discord</a> oder eröffne ein Issue auf <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>. Der gesamte Zählcode liegt im öffentlichen Repository, du musst uns also nie einfach glauben.',
+    'c3': 'Wir zählen Website-Besuche aufgrund unseres berechtigten Interesses zu wissen, wie die Seite genutzt wird (DSGVO Art. 6 Abs. 1 lit. f), mit den oben beschriebenen Schutzmaßnahmen. Nutzungsdaten aus dem Spiel erfassen wir nur mit deiner Einwilligung, die du jederzeit im Launcher widerrufen kannst. TrueCombat: Platinum wird von Team Terminus unter der Leitung von RaziC* entwickelt. Wenn du meinst, dass wir mit deinen Daten falsch umgehen, kannst du dich bei einer Datenschutzbehörde beschweren; in Belgien, wo wir ansässig sind, ist das die <a href="https://www.dataprotectionauthority.be">Datenschutzbehörde</a>.',
     'x_h': 'Änderungen an dieser Seite',
-    'x1': 'Wenn sich ändert, was wir erfassen, ändert sich zuerst diese Seite, und das Devlog sagt es. Zuletzt aktualisiert am 12. November 2026.',
+    'x1': 'Wenn sich ändert, was wir erfassen, ändert sich zuerst diese Seite, und das Devlog sagt es. Zuletzt aktualisiert am 13. November 2026.',
     'credit': 'Die Länderabfrage nutzt IP to Country Lite von <a href="https://db-ip.com">DB-IP</a>, lizenziert unter CC BY 4.0.',
 }
 
