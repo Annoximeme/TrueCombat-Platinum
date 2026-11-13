@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/devlog"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog</id>
-  <updated>2026-11-12T12:00:00Z</updated>
+  <updated>2026-11-13T12:00:00Z</updated>
+  <entry>
+    <title>Every map, in 3D, in your browser</title>
+    <link href="https://truecombat.eu/devlog-maps-in-3d"/>
+    <id>https://truecombat.eu/devlog-maps-in-3d</id>
+    <published>2026-11-13T12:00:00Z</published>
+    <updated>2026-11-13T12:00:00Z</updated>
+    <category term="Community"/>
+    <summary>The six map pages now carry a 3D model of the real map that you can turn, cut open and study before your first round, and every update gets a page of its own.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Finding new players without tracking anyone</title>
     <link href="https://truecombat.eu/devlog-counting-without-cookies"/>

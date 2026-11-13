@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrueCombat: Platinum v0.32.0 · Release notes · TrueCombat: Platinum</title>
+<meta name="description" content="A major update. Movement now runs at the original TC:E pace, and leaning, ladders, swimming and spectating are back.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/release-0-32-0">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://truecombat.eu/release-0-32-0">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="TrueCombat: Platinum v0.32.0 · Release notes">
+<meta property="og:description" content="A major update. Movement now runs at the original TC:E pace, and leaning, ladders, swimming and spectating are back. This release also brings a competitive match mode, smarter bots on every objective, a new-player welcome, a one-click installer, and a fix for the most common crash to desktop.">
+<meta property="og:image" content="https://truecombat.eu/img/og-news.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-news.jpg">
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="TrueCombat: Platinum v0.32.0 · Release notes">
+<meta name="twitter:description" content="A major update. Movement now runs at the original TC:E pace, and leaning, ladders, swimming and spectating are back. This release also brings a competitive match mode, smarter bots on every objective, a new-player welcome, a one-click installer, and a fix for the most common crash to desktop.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"News","item":"https://truecombat.eu/news"},{"@type":"ListItem","position":3,"name":"TrueCombat: Platinum 0.32.0","item":"https://truecombat.eu/release-0-32-0"}]}</script>
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/release-0-32-0">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/release-0-32-0">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=4566dec9cb">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news" aria-current="page">News</a></li>
+      <li><a href="devlog" data-devlog-new="2026-11-13">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Support</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<section class="page-head rel-head">
+  <div class="head-art" style="--art: url(img/launcher.webp); --art-s: url(img/launcher-640.webp)" aria-hidden="true"></div>
+  <div class="wrap">
+    <a class="pf-back" href="news">← Patch notes</a>
+    <span class="eyebrow">Release · 7 Nov 2026</span>
+    <h1>TrueCombat: Platinum 0.32.0</h1>
+    <p class="lede">A major update. Movement now runs at the original TC:E pace, and leaning, ladders, swimming and spectating are back. This release also brings a competitive match mode, smarter bots on every objective, a new-player welcome, a one-click installer, and a fix for the most common crash to desktop.</p>
+    <p class="rel-facts"><span>37 changes</span><span>11 areas</span><span>#53 · 0.32.0-sandbox23 · 7 Nov 2026</span></p>
+    <div class="hero-cta"><a class="btn btn-ghost" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.32.0-sandbox23">Download this version</a><a class="btn btn-ghost" href="devlog-installer">Read the devlog</a><a class="btn btn-ghost" href="news#v0.32.0">All patch notes</a></div>
+  </div>
+</section>
+
+<section class="band rel-glance">
+  <div class="wrap">
+    <h2 class="eyebrow">At a glance</h2>
+    <ul class="rel-cards">
+      <li><a href="#s-movement-and-gunplay"><b>Movement and gunplay</b><span>5 changes</span><p>Movement speed matches the original TC:E. Running, sprinting, crouching and going prone all move at the original</p></a></li>
+      <li><a href="#s-new-original-content"><b>New original content</b><span>7 changes</span><p>Lean around corners with Q and</p></a></li>
+      <li><a href="#s-competitive-match-mode"><b>Competitive match mode</b><span>2 changes</span><p>Organised matches with ready-up, an optional knife round, side pick, halftime side swap, tactical timeouts and a final score</p></a></li>
+      <li><a href="#s-bots"><b>Bots</b><span>3 changes</span><p>Bots now play the objective. They plant and defuse the bomb, carry the flag home, and take and hold the capture point, with team callouts in chat…</p></a></li>
+      <li><a href="#s-new-players"><b>New players</b><span>3 changes</span><p>First launch now opens a three-step welcome: the basics, your controls, and how to start</p></a></li>
+      <li><a href="#s-install-and-updates"><b>Install and updates</b><span>3 changes</span><p>The download is now a small installer: TrueCombat-Platinum-Setup.exe. It installs the launcher, and the launcher downloads the</p></a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="band band-alt rel-notes">
+  <div class="wrap">
+    <section class="rel-sec" id="s-movement-and-gunplay"><h2>Movement and gunplay</h2><ul>
+      <li>Movement speed matches the original TC:E. Running, sprinting, crouching and going prone all move at the original speeds.</li>
+      <li>Walk and run animations now switch at the original speed, so other players move the way you remember.</li>
+      <li>Stamina recovers when you walk, stand still, crouch or go prone, like the original.</li>
+      <li>Third-person animations now follow the original TC:E set: weapon-specific stances for rifles, pistols, knife and grenades, a raise animation on weapon switch, prone pistol poses, and death animations that react to how and where a player is hit.</li>
+      <li>Bullet tracer lines are gone. Muzzle flashes now show correctly on every player and light up their surroundings on DirectX 12 and OpenGL.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-new-original-content"><h2>New original content</h2><ul>
+      <li>Lean around corners with Q and E.</li>
+      <li>Climb ladders. Bots use them too.</li>
+      <li>Swim, dive and drown. Northport's water is fully swimmable.</li>
+      <li>Glass, wood and metal now shatter into debris.</li>
+      <li>Defusing a bomb puts the pliers in your hands.</li>
+      <li>When you die, the camera follows a living teammate and shows their health and ammo.</li>
+      <li>Suppressors: the MAC-10, MP5, M4 and AKS-74U now have a Suppressor toggle in the Deployment Menu, using the original suppressed variants and their trade-offs.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-competitive-match-mode"><h2>Competitive match mode</h2><ul>
+      <li>Organised matches with ready-up, an optional knife round, side pick, halftime side swap, tactical timeouts and a final score screen.</li>
+      <li>Server admins run it with the match rcon commands. Players use ready, notready, timeout, stay and swap.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-bots"><h2>Bots</h2><ul>
+      <li>Bots now play the objective. They plant and defuse the bomb, carry the flag home, and take and hold the capture point, with team callouts in chat (bot_chat).</li>
+      <li>Point Capture is fairer. The point is now placed at an equal walking distance from both spawns, and it takes 30 seconds to capture (g_captureHoldMs).</li>
+      <li>Fixed: a single bomb detonation could award the round to the attackers more than once.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-new-players"><h2>New players</h2><ul>
+      <li>First launch now opens a three-step welcome: the basics, your controls, and how to start playing.</li>
+      <li>New in the launcher: Practice offline with bots starts a Railhouse Team Deathmatch against bots in one click.</li>
+      <li>New players see nine short tips during their first matches. Turn them off with cg_tips 0, or bring them back with tips_reset.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-install-and-updates"><h2>Install and updates</h2><ul>
+      <li>The download is now a small installer: TrueCombat-Platinum-Setup.exe. It installs the launcher, and the launcher downloads the game.</li>
+      <li>Choose your install folder, with desktop and Start menu shortcuts and a proper uninstaller.</li>
+      <li>New Versions button in the launcher: stay on an older release, or switch back to the latest at any time.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-online"><h2>Online</h2><ul>
+      <li>The in-game server browser now lists official Platinum servers.</li>
+      <li>Ranked hosting: server owners can enter a ranked key in the launcher's Hosting tab, so their matches count towards the leaderboards.</li>
+      <li>Team Terminus staff now carry a verified emblem and an orange name on the scoreboard.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-interface"><h2>Interface</h2><ul>
+      <li>The HUD, scoreboard, Deployment Menu, map vote and main menu now fit every screen shape, from 4:3 to 32:9 super-ultrawide. Nothing gets cut off at the edges any more.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-performance"><h2>Performance</h2><ul>
+      <li>Removed the long freezes that happened the first time a weapon or explosion appeared in a match. Weapon and effect media now load with the map.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-fixes"><h2>Fixes</h2><ul>
+      <li>Fixed a crash to desktop when a player was kicked or banned, or the server restarted or shut down.</li>
+      <li>Your team, class and loadout are now kept after a map restart or map change.</li>
+      <li>The cheat detection no longer flags the game's own HD and interface files.</li>
+      <li>The speed check no longer misfires after a freeze or alt-tab.</li>
+      <li>Elimination rounds now last 5 minutes, like the original (server cvar tcp_roundtime).</li>
+      <li>Restored missing crosshairs and server-browser icons.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-known-issues"><h2>Known issues</h2><ul>
+      <li>Easy Anti-Cheat is prepared but not switched on yet.</li>
+      <li>Still to come: the first-person muzzle flash, a sniper scope overlay, ledge climbing, and the modern Ultra visuals.</li>
+      <li>In DirectX 12, water seen from above in third person can render black.</li>
+    </ul></section>
+    <nav class="rel-pager" aria-label="Other releases"><a class="rel-prev" href="release-0-31-0"><span>Previous release</span><b>v0.31.0</b></a><a class="rel-next" href="release-0-33-0"><span>Next release</span><b>v0.33.0</b></a></nav>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-maps-in-3d"><time datetime="2026-11-13">13 Nov 2026</time><span>Every map, in 3D, in your browser</span></a><a href="devlog-counting-without-cookies"><time datetime="2026-11-12">12 Nov 2026</time><span>Finding new players without tracking anyone</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=3b0d8b48e5"></script>
+</body>
+</html>
