@@ -1824,6 +1824,35 @@ h1 .acct-tick { width: .6em; height: .6em; vertical-align: .08em; }
 .server-card header a.pill { text-decoration: none; }
 .acct-body button.btn:not(.btn-play), .acct-keys button.btn { background: transparent; color: var(--fg); }
 .acct-keys li.muted { color: var(--muted); font-size: var(--step--1); }
+.acct-alt { margin-top: 12px; }
+.acct-body select { background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; font: 500 var(--step-0)/1.2 var(--f-body); }
+.acct-body select:focus-visible { outline: 2px solid var(--red-hi); outline-offset: 1px; }
+.acct-lfs { display: grid; gap: 12px; width: 100%; }
+.acct-code { font: 600 1.05em/1 var(--f-mono); letter-spacing: .08em; color: var(--amber); }
+.acct-pair { border-color: var(--amber); }
+.acct-banned { border-color: var(--red); }
+.acct-danger-card .btn { border-color: rgba(214, 59, 59, .5); }
+.acct-danger-card .btn.sure { border-color: var(--red-hi); color: var(--red-hi); }
+.acct-badges, .pf-badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.acct-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; font: 600 var(--step--1)/1 var(--f-display); text-transform: uppercase; letter-spacing: .08em; color: var(--ok); background: rgba(79, 191, 122, .08); }
+.acct-badge.trusted { color: var(--amber); background: rgba(231, 167, 60, .08); }
+.acct-formerly { color: var(--muted); font-size: var(--step--1); margin-top: 6px; }
+.acct-lfs-line { display: inline-flex; gap: 8px; align-items: baseline; margin-top: 8px; padding: 6px 12px; border-left: 2px solid var(--ok); background: var(--panel); }
+.pf-badges { margin-top: 10px; }
+.pf-medals-list { list-style: none; margin: 0; padding: 16px 18px; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.pf-medals-list li { display: grid; grid-template-columns: 34px 1fr; gap: 2px 10px; align-items: center; padding: 10px 12px; background: var(--panel-2); border-radius: 6px; }
+.pf-medals-list .medal { grid-row: 1 / span 2; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 700 .9rem/1 var(--f-display); color: var(--t-ink); background: var(--t-steel); }
+.pf-medals-list .t2 .medal { background: var(--ok); }
+.pf-medals-list .t3 .medal { background: var(--amber); }
+.pf-medals-list b { font: 600 var(--step-0)/1.15 var(--f-display); text-transform: uppercase; letter-spacing: .03em; }
+.pf-medals-list small { color: var(--muted); font-size: var(--step--1); }
+.pf-medals-list small a { color: inherit; }
+.lfs-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.lfs-list li { display: grid; gap: 4px; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-left: 2px solid var(--ok); }
+.lfs-list li a { font: 600 var(--step-1)/1.1 var(--f-display); text-decoration: none; color: var(--fg); }
+.lfs-list li a:hover, .lfs-list li a:focus-visible { text-decoration: underline; }
+.lfs-list li span { color: var(--muted); font-size: var(--step--1); }
+.m-share { margin-left: 10px; }
 
 /* ---------- release pages (release-<x-y-z>.html, built by tools/website/releases.py) ---------- */
 .rel-page { margin: 4px 0 0; font-size: .88rem; grid-column: 1 / -1; }

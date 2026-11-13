@@ -34,7 +34,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=95fe2ea9a3">
+<link rel="stylesheet" href="style.css?v=354f047aa4">
 </head>
 <body>
 <!--nav-->
@@ -86,6 +86,8 @@
       <div class="acct-perk"><h2>A profile worth sharing</h2><p>Match history, best weapons and records at one short address, with your Discord shown only if you want it.</p></div>
     </div>
     <p class="acct-cta"><a class="btn btn-play acct-discord" href="/api/account/login"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17 17 0 0 0 5.2 2.6l1.1-1.8a11 11 0 0 1-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3a11 11 0 0 1-1.7.8l1.1 1.8a17 17 0 0 0 5.2-2.6c.4-4.4-.7-8.3-2.1-11.7ZM8.7 14.7c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg><span class="stack"><span class="big">Sign in with Discord</span><span class="small">No email, no password</span></span></a></p>
+    <p class="acct-row acct-alt"><button class="btn" type="button" data-acct-passkey-login>Sign in with a passkey</button></p>
+    <p class="acct-error" data-acct-passkey-login-error hidden></p>
     <p class="muted acct-fine">We ask Discord who you are and nothing else. Read what we keep on the <a href="privacy">privacy page</a>.</p>
   </div>
 </section>
@@ -114,10 +116,25 @@
 
 <section class="band acct-band" data-acct-in hidden>
   <div class="wrap acct-grid">
+    <div class="server-card full acct-card acct-wide acct-banned" data-acct-banned hidden>
+      <header><h2>Account suspended</h2></header>
+      <div class="acct-body">
+        <p class="acct-hint" data-acct-banned-text></p>
+      </div>
+    </div>
+    <div class="server-card full acct-card acct-wide acct-pair" data-acct-pair hidden>
+      <header><h2>Link a PC</h2><span class="pill" data-acct-pair-label></span></header>
+      <div class="acct-body">
+        <p>Check that your launcher shows the code <b class="acct-code" data-acct-pair-key></b>. Only approve a PC that is in front of you right now: it will play under your name.</p>
+        <p class="acct-row"><button class="btn btn-play" type="button" data-acct-pair-yes><span class="stack"><span class="big">Link this PC</span></span></button> <button class="btn" type="button" data-acct-pair-no>Not my PC</button></p>
+        <p class="acct-hint" data-acct-pair-state hidden></p>
+      </div>
+    </div>
     <div class="server-card full acct-card">
       <header><h2>Name</h2><a class="pill ok" data-acct-profile href="#">Profile</a></header>
       <div class="acct-body">
         <p class="acct-name" data-acct-name></p>
+        <p class="acct-badges" data-acct-badges hidden></p>
         <form class="acct-inline" data-acct-rename>
           <input name="name" minlength="3" maxlength="20" spellcheck="false" aria-label="New name">
           <button class="btn" type="submit">Change</button>
@@ -131,7 +148,29 @@
       <div class="acct-body">
         <label class="acct-check"><input type="checkbox" data-acct-public> Public profile</label>
         <label class="acct-check"><input type="checkbox" data-acct-discord> Show my Discord name on my profile</label>
-        <p class="acct-hint">Your stats count either way. A hidden account keeps its name reserved.</p>
+        <label class="acct-check"><input type="checkbox" data-acct-weekly> Send me a weekly report on Discord</label>
+        <p class="acct-hint">Your stats count either way. A hidden account keeps its name reserved. The weekly report is a private message from our bot with your week in numbers.</p>
+      </div>
+    </div>
+    <div class="server-card full acct-card">
+      <header><h2>Looking for a squad</h2><span class="pill" data-acct-lfs-state></span></header>
+      <div class="acct-body">
+        <p class="acct-hint">Let others know you want to team up. You show on the servers page and in our Discord until the time runs out.</p>
+        <form class="acct-lfs" data-acct-lfs>
+          <label class="acct-field"><span>Note</span><input name="note" maxlength="60" spellcheck="true" placeholder="EU evenings, objective modes"></label>
+          <label class="acct-field"><span>For</span><select name="hours"><option value="1">1 hour</option><option value="2" selected>2 hours</option><option value="4">4 hours</option><option value="6">6 hours</option></select></label>
+          <p class="acct-row"><button class="btn btn-play" type="submit" data-acct-lfs-on><span class="stack"><span class="big">I'm looking</span></span></button> <button class="btn" type="button" data-acct-lfs-off>Stop</button></p>
+        </form>
+        <p class="acct-error" data-acct-lfs-error hidden></p>
+      </div>
+    </div>
+    <div class="server-card full acct-card">
+      <header><h2>Passkeys</h2></header>
+      <div class="acct-body">
+        <p class="acct-hint">A passkey (Windows Hello, Face ID, your phone or a security key) is a second way in, so you keep your account even if you lose your Discord.</p>
+        <ul class="acct-keys" data-acct-passkeys></ul>
+        <p><button class="btn" type="button" data-acct-passkey-add>Add a passkey</button></p>
+        <p class="acct-error" data-acct-passkey-error hidden></p>
       </div>
     </div>
     <div class="server-card full acct-card acct-wide">
@@ -141,6 +180,7 @@
         <ul class="acct-keys" data-acct-keys></ul>
         <p><button class="btn btn-play" type="button" data-acct-link><span class="stack"><span class="big">Link this PC</span><span class="small">Opens the launcher</span></span></button></p>
         <p class="acct-hint" data-acct-link-state hidden></p>
+        <p class="acct-hint">On another PC? Open the launcher there, choose <b>Link with phone</b> and scan the code while you are signed in here.</p>
       </div>
     </div>
     <div class="server-card full acct-card acct-wide">
@@ -153,6 +193,13 @@
           <button class="btn" type="submit">Delete account</button>
         </form>
         <p class="acct-error" data-acct-delete-error hidden></p>
+      </div>
+    </div>
+    <div class="server-card full acct-card acct-wide acct-danger-card">
+      <header><h2>Lost or stolen PC</h2></header>
+      <div class="acct-body">
+        <p class="acct-hint">Unlinks every PC and signs you out everywhere at once. Your rank and stats stay with the account: link the PCs you still have again afterwards.</p>
+        <p><button class="btn" type="button" data-acct-panic>Unlink every PC and sign out</button></p>
       </div>
     </div>
   </div>
@@ -197,6 +244,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=7d4a315ae2"></script>
+<script src="js/site.js?v=d1b2080bac"></script>
 </body>
 </html>

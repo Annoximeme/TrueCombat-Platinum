@@ -51,12 +51,14 @@ install_all() {
   user=$(port_user)
   if [ -n "$user" ] && ! systemctl is-active -q $UNIT 2>/dev/null; then say "port $PORT is taken by $user; stop"; exit 1; fi
   python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || { say "needs Python 3.10+"; exit 1; }
-  ( cd "$HERE" && python3 -m py_compile tcp_accounts.py )
+  ( cd "$HERE" && python3 -m py_compile tcp_accounts.py tcp_webauthn.py )
   getent group tcpaccounts >/dev/null || groupadd --system tcpaccounts
   id tcpaccounts >/dev/null 2>&1 || useradd --system --gid tcpaccounts --home-dir $DATA --shell /usr/sbin/nologin tcpaccounts
   install -d -m 0755 /opt/tcp "$APP"
-  if [ -f $APP/tcp_accounts.py ]; then cp -p $APP/tcp_accounts.py "$APP/tcp_accounts.py.bak-$(date -u +%Y%m%d-%H%M%S)"; fi
-  install -m 0644 "$HERE/tcp_accounts.py" $APP/tcp_accounts.py
+  for f in tcp_accounts.py tcp_webauthn.py; do
+    if [ -f "$APP/$f" ]; then cp -p "$APP/$f" "$APP/$f.bak-$(date -u +%Y%m%d-%H%M%S)"; fi
+    install -m 0644 "$HERE/$f" "$APP/$f"
+  done
   install -d -m 0750 -o root -g tcpaccounts $ETC
   [ -f $ETC/config.json ] || install -m 0640 -o root -g tcpaccounts "$HERE/deploy/config.example.json" $ETC/config.json
   if ! filled $ETC/client-secret && filled /etc/tcp-staff-portal/client-secret; then
