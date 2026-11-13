@@ -19,3 +19,5 @@ Ninja.42	ninjaz	99676ce10813406946c5ea530e1daefc	ok
 a.-.b	ab	2e081e348065aca6251b114e5e52d657	The name needs at least 3 letters or digits.
 T3ST3R	tester	12761b931fc401571dbeaae9704a0aa5	ok
 ZZTop	ztop	df340f0d10b9c80d146ebcac48dc9e6a	ok
+# key tag (TCPNAMES2): key id<TAB>sha256("tcp-namekey:" + key id)[:24]
+#KEY	0123456789abcdef0123456789abcdef01234567	5f622fc28829dfc51cbddfad
