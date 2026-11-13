@@ -1177,7 +1177,7 @@ html { scrollbar-color: #2e3747 var(--bg); }
 
 .band-alt { background: linear-gradient(180deg, rgba(20,25,34,.7), rgba(20,25,34,.25)); }
 
-.lineage { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; position: relative; counter-reset: lin; }
+.lineage { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; position: relative; counter-reset: lin; }
 .lineage::before { content: ""; position: absolute; left: 24px; right: 24px; top: 0; height: 2px; background: linear-gradient(90deg, var(--amber), var(--red-hi)); opacity: .55; }
 .lineage .clan { position: relative; margin-top: 22px; }
 .lineage .clan::before { content: ""; position: absolute; top: -28px; left: 22px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--amber); }
