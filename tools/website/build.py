@@ -20,6 +20,7 @@ Run it after changing any English page:   python tools/website/build.py
 """
 import html as htmlmod
 import json
+import urllib.parse
 import pathlib
 import re
 import sys
@@ -973,6 +974,44 @@ def studio_workshop(lang, latest):
     return "<!--studio-workshop-->\n    <ul class=\"workshop\">\n" + lis + "\n    </ul>\n<!--/studio-workshop-->"
 
 
+TT_PATH = "M0 3H7V14L5 11V6H2Z M16 3H9V14L11 11V6H14Z"   # the Twin T, Team Terminus' small mark (staff names, profiles)
+TR = {"en": {"title": "Team Terminus roster",
+             "intro": "Everyone who builds, tests and looks after Platinum. Look for the Twin T: it marks team members on their player profile.",
+             "intro_game": "Everyone who builds, tests and looks after Platinum. Look for the Twin T: it marks team members beside their name in game and on their player profile.",
+             "profile": "Profile"},
+      "nl": {"title": "Het Team Terminus-rooster",
+             "intro": "Iedereen die Platinum bouwt, test en verzorgt. Let op de Twin T: die markeert teamleden op hun spelersprofiel.",
+             "intro_game": "Iedereen die Platinum bouwt, test en verzorgt. Let op de Twin T: die markeert teamleden naast hun naam in de game en op hun spelersprofiel.",
+             "profile": "Profiel"}}
+
+
+def tt_svg(size, cls="tt-mark"):
+    return '<svg class="%s" width="%d" height="%d" viewBox="0 0 16 16" aria-hidden="true"><path d="%s"/></svg>' % (cls, size, size, TT_PATH)
+
+
+def studio_roster(lang, latest):
+    """The Team Terminus roster on the studio page, from team.json, grouped by role."""
+    d = json.loads((HERE / "team.json").read_text(encoding="utf-8"))
+    T = TR[lang]
+    in_game = d.get("in_game_from") and vkey(latest) >= vkey("v" + d["in_game_from"])
+    groups = []
+    for g in d["groups"]:
+        ms = [m for m in d["members"] if m["group"] == g["id"]]
+        if not ms:
+            continue
+        lis = []
+        for m in ms:
+            name = htmlmod.escape(m["callsign"])
+            if m.get("account"):
+                name = '<a href="player?u=%s" title="%s">%s</a>' % (urllib.parse.quote(m["account"]), T["profile"], name)
+            real = ' <small>%s</small>' % htmlmod.escape(m["name"]) if m.get("name") else ""
+            lis.append('<li>%s<b>%s%s</b><span>%s</span></li>' % (tt_svg(14), name, real, htmlmod.escape(m["role"])))
+        groups.append('      <div class="roster-group"><h4>%s</h4><ul>%s</ul></div>' % (htmlmod.escape(g[lang]), "".join(lis)))
+    return ("<!--studio-roster-->\n    <div class=\"roster\" id=\"roster\">\n      <div class=\"roster-head\">%s<div><h3>%s</h3><p>%s</p></div></div>\n"
+            "      <div class=\"roster-groups\">\n%s\n      </div>\n    </div>\n<!--/studio-roster-->"
+            % (tt_svg(40, "tt-mark tt-big"), T["title"], T["intro_game"] if in_game else T["intro"], "\n".join(groups)))
+
+
 def studio_devlog(lang, posts):
     return "<!--studio-devlog-->\n    <div class=\"post-list post-trio\">\n" + post_cards(lang, posts[:3], h="h3") + "\n    </div>\n<!--/studio-devlog-->"
 
@@ -1662,6 +1701,7 @@ def main():
             html = put(html, "studio-releases", studio_releases(lang, "v" + latest_version()), path)
             html = put(html, "studio-devlog", studio_devlog(lang, posts[lang]), path)
             html = put(html, "studio-workshop", studio_workshop(lang, "v" + latest_version()), path)
+            html = put(html, "studio-roster", studio_roster(lang, "v" + latest_version()), path)
         if page == "support":
             html = put(html, "support-funding", support_funding(lang), path)
         return html
