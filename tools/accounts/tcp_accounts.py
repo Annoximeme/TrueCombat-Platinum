@@ -729,6 +729,8 @@ class Accounts:
                 tmp = p / "names.txt.tmp"
                 body = text
                 old = (p / "names.txt").read_text(encoding="utf-8") if (p / "names.txt").exists() else ""
+                if old and (p / "names.txt").stat().st_mode & 0o777 != 0o644:
+                    os.chmod(p / "names.txt", 0o644)  # a list written by 1.0.1 was 0640 and the game servers could not read it
                 if old.split("\n", 1)[-1] != body.split("\n", 1)[-1]:
                     tmp.write_text(body, encoding="utf-8")
                     os.chmod(tmp, 0o644)              # every game server user reads it; the service's umask is 027
@@ -810,10 +812,9 @@ def http_json(url: str, data: dict | None = None, token: str | None = None, time
         return json.loads(r.read().decode())
 
 
+# X-Frame-Options and Referrer-Policy come from the site's Caddy headers (sending them here too doubled them)
 SECURITY_HEADERS = {
     "X-Content-Type-Options": "nosniff",
-    "X-Frame-Options": "DENY",
-    "Referrer-Policy": "same-origin",
     "Cross-Origin-Resource-Policy": "same-origin",
 }
 PREFIX = "/api/account"
