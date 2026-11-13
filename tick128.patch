@@ -25,10 +25,10 @@ index 215a356..c0aff01 100644
  /**
   * @struct clientActive_t
 diff --git a/reference/etlegacy/src/qcommon/qcommon.h b/reference/etlegacy/src/qcommon/qcommon.h
-index b26e16b..337782f 100644
+index b26e16b..b01e09e 100644
 --- a/reference/etlegacy/src/qcommon/qcommon.h
 +++ b/reference/etlegacy/src/qcommon/qcommon.h
-@@ -150,7 +150,12 @@ NET
+@@ -150,7 +150,14 @@ NET
   * @brief number of old messages that must be kept on client and
   * server for delta comrpession and ping estimation
   */
@@ -37,6 +37,8 @@ index b26e16b..337782f 100644
 +// actually uses per client is negotiated with the "snaphist" userinfo key (32 for older clients).
 +#define PACKET_BACKUP   64
 +#define TCP_DELTA_WINDOW_LEGACY 32
++// TCP: most snapshots per second sent to a client without "snaphist"
++#define TCP_LEGACY_MAX_SNAPS 64
 +// TCP: highest rate (bytes/s) a client may ask for; was 90000
 +#define TCP_MAX_RATE    250000
  #define PACKET_MASK (PACKET_BACKUP - 1)
@@ -55,7 +57,7 @@ index ea19281..afcc89e 100644
  	int nextReliableUserTime;               ///< svs.time when another userinfo change will be allowed
  	int lastPacketTime;                     ///< svs.time when packet was last received
 diff --git a/reference/etlegacy/src/server/sv_client.c b/reference/etlegacy/src/server/sv_client.c
-index 52a8389..4698c8d 100644
+index 52a8389..b39f53e 100644
 --- a/reference/etlegacy/src/server/sv_client.c
 +++ b/reference/etlegacy/src/server/sv_client.c
 @@ -1983,7 +1983,7 @@ void SV_UserinfoChanged(client_t *cl)
@@ -90,6 +92,19 @@ index 52a8389..4698c8d 100644
  	// snaps command
  	val = Info_ValueForKey(cl->userinfo, "snaps");
  	if (strlen(val))
+@@ -2032,6 +2036,12 @@ void SV_UserinfoChanged(client_t *cl)
+ 		{
+ 			i = sv_fps->integer;
+ 		}
++		// TCP: clients that keep only 32 snapshots fall back to full snapshots at high ping
++		// when sent more than 64 a second, so cap them there
++		if (cl->deltaWindow < PACKET_BACKUP && i > TCP_LEGACY_MAX_SNAPS)
++		{
++			i = TCP_LEGACY_MAX_SNAPS;
++		}
+ 
+ 		i = 1000 / i;
+ 	}
 diff --git a/reference/etlegacy/src/server/sv_snapshot.c b/reference/etlegacy/src/server/sv_snapshot.c
 index 9711d26..d0fec4b 100644
 --- a/reference/etlegacy/src/server/sv_snapshot.c
