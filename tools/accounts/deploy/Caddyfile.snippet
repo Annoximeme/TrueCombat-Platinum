@@ -1,0 +1,8 @@
+	# Player accounts (tools/accounts). Goes INSIDE the truecombat.eu site block, before the file server,
+	# so the session cookie is first-party. install.sh caddy adds it (backup + caddy validate + reload).
+	handle /api/account/* {
+		reverse_proxy 127.0.0.1:8095
+	}
+	# short profile addresses: truecombat.eu/u/<name> -> player.html?u=<name>
+	@tcp_profile path_regexp tcpu ^/u/([^/]{1,40})$
+	redir @tcp_profile /player?u={re.tcpu.1} 302

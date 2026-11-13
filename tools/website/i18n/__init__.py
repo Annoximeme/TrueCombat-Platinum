@@ -17,7 +17,7 @@ import importlib
 LANGS = ["de", "fr", "pl"]
 NAMES = {"en": "English", "nl": "Nederlands", "de": "Deutsch", "fr": "Français", "pl": "Polski"}
 OGLOCALE = {"de": "de_DE", "fr": "fr_FR", "pl": "pl_PL"}
-EN_ONLY = ("news", "devlog", "press", "studio", "support")
+EN_ONLY = ("news", "devlog", "press", "studio", "support", "account")
 
 MODS = {code: importlib.import_module("i18n." + code) for code in LANGS}
 
