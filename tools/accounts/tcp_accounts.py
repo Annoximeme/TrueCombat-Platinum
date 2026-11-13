@@ -1119,6 +1119,7 @@ def main(argv=None) -> int:
         return 0
     host, _, port = (a.listen or "%s:%s" % (cfg.get("host", "127.0.0.1"), cfg.get("port", 8095))).rpartition(":")
     threading.Thread(target=acc.background, daemon=True).start()
+    ThreadingHTTPServer.request_queue_size = 128   # the default 5 overflows under a burst behind Caddy
     httpd = ThreadingHTTPServer((host, int(port)), make_handler(acc))
     httpd.daemon_threads = True
     log.info("accounts %s on http://%s:%s", VERSION, host, port)
