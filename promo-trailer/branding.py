@@ -101,6 +101,17 @@ def paste_center(bg, layer, dy=0, opacity=1.0):
     bg.paste(layer, ((W - layer.width) // 2, (H - layer.height) // 2 + dy), layer)
 
 
+def layer():
+    """Transparent RGBA layer + drawer. Pillow ignores fill alpha for text drawn on RGB images,
+    so all text goes on a layer that is alpha-composited onto the frame."""
+    lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    return lay, ImageDraw.Draw(lay)
+
+
+def comp(im, lay):
+    return Image.alpha_composite(im.convert("RGBA"), lay).convert("RGB")
+
+
 def spaced_text(draw, cx, y, text, fnt, fill, spacing):
     widths = [draw.textlength(c, font=fnt) for c in text]
     total = sum(widths) + spacing * (len(text) - 1)
@@ -132,9 +143,10 @@ def intro_frame(i):
     em = sweep(em, ramp(t, 1.0, 2.3))
     op = ease_out(ramp(t, 0.15, 1.1))
     paste_center(im, em, dy=-70, opacity=op)
-    d = ImageDraw.Draw(im, "RGBA")
+    lay, d = layer()
     a = int(255 * ease_out(ramp(t, 1.5, 2.3)))
     spaced_text(d, W / 2, H / 2 + 205, "PRESENTS", font(34), (215, 215, 220, a), 14)
+    im = comp(im, lay)
     im = flare(im, W / 2 + 175, H / 2 - 210, 70, math.sin(math.pi * ramp(t, 1.55, 2.15)) * 0.9)
     fade = 1 - ease_in_out(ramp(t, dur - 0.7, dur))
     im = Image.fromarray((np.asarray(im).astype(np.float32) * fade).astype(np.uint8))
@@ -161,7 +173,7 @@ def end_frame(i):
     if flash > 0:
         im = Image.fromarray(np.clip(np.asarray(im).astype(np.float32) + 255 * flash, 0, 255).astype(np.uint8))
     im = flare(im, W / 2 - 420, H / 2 - 160, 60, math.sin(math.pi * ramp(t, 1.0, 1.7)) * 0.8)
-    d = ImageDraw.Draw(im, "RGBA")
+    lay, d = layer()
     a1 = int(255 * ease_out(ramp(t, 1.9, 2.6)))
     a2 = int(255 * ease_out(ramp(t, 2.4, 3.1)))
     a3 = int(255 * ease_out(ramp(t, 3.0, 3.7)))
@@ -171,10 +183,11 @@ def end_frame(i):
     d.rectangle((W / 2 - 300 - rw, cy, W / 2 - 300, cy + 3), fill=RED + (a1,))
     d.rectangle((W / 2 + 300, cy, W / 2 + 300 + rw, cy + 3), fill=RED + (a1,))
     spaced_text(d, W / 2, H / 2 + 277, "TRUECOMBAT.EU", font(56), (255, 255, 255, a2), 8)
+    im = comp(im, lay)
     # studio mark + legal line
     em = scaled(EMBLEM, 78)
     paste_center(im, em, dy=H // 2 - 128, opacity=a3 / 255)
-    d = ImageDraw.Draw(im, "RGBA")
+    lay, d = layer()
     legal = ("A fan project by Team Terminus. TrueCombat: Elite was created by Team Terminator. "
              "Not affiliated with or endorsed by Team Terminator, Splash Damage, id Software or Activision.")
     f = font(17, plex=True)
@@ -183,6 +196,7 @@ def end_frame(i):
     music = "Music: 'Venom' by Scott Buckley, released under CC-BY 4.0. www.scottbuckley.com.au"
     mw = d.textlength(music, font=f)
     d.text(((W - mw) / 2, H - 68), music, font=f, fill=(150, 150, 155, int(a3 * 0.8)))
+    im = comp(im, lay)
     fade = 1 - ease_in_out(ramp(t, dur - 0.6, dur))
     im = Image.fromarray((np.asarray(im).astype(np.float32) * fade).astype(np.uint8))
     return grain(im, 5)
@@ -207,14 +221,14 @@ def title_card(frame_rgb, t, text, sub=None, dur=2.2):
     if sub:
         spaced_text(sd, W / 2, H / 2 + 86, sub, font(32), (0, 0, 0, int(200 * a)), 6)
     im = Image.alpha_composite(im.convert("RGBA"), sh.filter(ImageFilter.GaussianBlur(10))).convert("RGB")
-    d = ImageDraw.Draw(im, "RGBA")
+    lay, d = layer()
     spaced_text(d, W / 2 + drift, H / 2 - 52, text, font(88), (255, 255, 255, al), 12)
     rw = int(110 * a_in)
     y = H / 2 + 62
     d.rectangle((W / 2 - rw, y, W / 2 + rw, y + 4), fill=RED + (al,))
     if sub:
         spaced_text(d, W / 2, y + 22, sub, font(32), (220, 220, 225, int(al * 0.9)), 6)
-    return im
+    return comp(im, lay)
 
 
 def render(path, frame_fn, frames):
