@@ -49,6 +49,18 @@
 #define TOK_A_HAIRLINE_STRONG 0.24f
 #define TOK_A_TRACK 0.09f
 #define TOK_A_SCRIM 0.72f
+
+/* In-game menus and HUD (Direction A), exact. */
+#define TOK_GAME_GRAPHITE_F .051f,.067f,.086f
+#define TOK_GAME_STEEL_F .078f,.102f,.129f
+#define TOK_GAME_INK_F .035f,.043f,.055f
+#define TOK_GAME_T1_F .933f,.945f,.953f
+#define TOK_GAME_T2_F .655f,.690f,.729f
+#define TOK_GAME_T3_F .424f,.467f,.514f
+#define TOK_GAME_ACC_F .824f,.231f,.251f
+#define TOK_GAME_ACC_HOT_F .878f,.267f,.286f
+#define TOK_GAME_AMBER_F .945f,.690f,.302f
+#define TOK_GAME_DANGER_F .788f,.541f,.549f
 #define TOK_RADIUS 0
 #define TOK_RADIUS_LAUNCHER 6
 #define TOK_TICK 10
