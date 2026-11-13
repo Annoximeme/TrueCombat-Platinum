@@ -1642,7 +1642,10 @@ var TCP_API = 'https://api.truecombat.eu';
       if (/^utm_(source|medium|campaign|content)$/.test(k)) { try { q[k] = decodeURIComponent(v.replace(/\+/g, ' ')); } catch (e) { q[k] = ''; } }
       else keep.push(kv);
     });
-    var hit = { p: location.pathname, r: document.referrer || '', l: lang, w: window.screen ? screen.width : 0 };
+    // only the name of the referring site and a screen size class leave the browser
+    var ref = ''; try { ref = document.referrer ? new URL(document.referrer).hostname : ''; } catch (e) { ref = ''; }
+    var sw = window.screen ? screen.width : 0;
+    var hit = { p: location.pathname, r: ref, l: lang, d: !sw ? '' : sw < 700 ? 'phone' : sw < 1100 ? 'tablet' : 'desktop' };
     if (q.utm_source) { hit.s = q.utm_source; hit.m = q.utm_medium || ''; hit.c = q.utm_campaign || ''; hit.t = q.utm_content || ''; }
     send('hit', hit);
     if (Object.keys(q).length && window.history && history.replaceState) {

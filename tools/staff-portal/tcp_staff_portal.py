@@ -43,7 +43,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -160,6 +160,18 @@ def allowed(role: str | None, perm: str) -> bool:
 COLOUR = re.compile(r"\^.")
 PID = re.compile(r"^[0-9a-f]{16}$")
 MAP_NAME = re.compile(r"^[A-Za-z0-9_-]{1,48}$")
+
+
+def short_ip(ip: str) -> str:
+    """An address cut to its network part for the request log (IPv4 /24, IPv6 /48)."""
+    try:
+        addr = ipaddress.ip_address(ip)
+    except ValueError:
+        return "-"
+    if addr.version == 6 and addr.ipv4_mapped:
+        addr = addr.ipv4_mapped
+    bits = 24 if addr.version == 4 else 48
+    return str(ipaddress.ip_network(f"{addr}/{bits}", strict=False))
 
 
 def now() -> int:
@@ -2883,7 +2895,9 @@ def make_handler(portal: Portal):
         protocol_version = "HTTP/1.1"
 
         def log_message(self, fmt, *args):  # noqa: D401
-            log.info("%s %s", self.client_ip(), fmt % args)
+            # the request log keeps only a shortened address (IPv4 /24, IPv6 /48); sign-in and
+            # security events keep the full address in their own audit records
+            log.info("%s %s", short_ip(self.client_ip()), fmt % args)
 
         # -- plumbing
         def client_ip(self) -> str:

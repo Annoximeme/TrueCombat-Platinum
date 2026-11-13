@@ -68,6 +68,7 @@ class Store:
     def __init__(self, path):
         self.lock = threading.Lock()
         self.db = sqlite3.connect(path or ":memory:", check_same_thread=False)
+        self.db.execute("PRAGMA secure_delete=ON")  # yesterday's secret and hashes are zeroed, not left in free pages
         self.db.executescript("""
             CREATE TABLE IF NOT EXISTS daily (day TEXT NOT NULL, slug TEXT NOT NULL, reads INTEGER NOT NULL DEFAULT 0,
                 readers INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, slug));

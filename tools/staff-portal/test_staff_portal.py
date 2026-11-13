@@ -200,6 +200,14 @@ def fake_stats():
     return "http://127.0.0.1:%d" % srv.server_address[1]
 
 
+class ShortIpTest(unittest.TestCase):
+    def test_request_log_address_is_shortened(self):
+        self.assertEqual(tsp.short_ip("203.0.113.77"), "203.0.113.0/24")
+        self.assertEqual(tsp.short_ip("2001:db8:1234:5678::1"), "2001:db8:1234::/48")
+        self.assertEqual(tsp.short_ip("::ffff:198.51.100.9"), "198.51.100.0/24")
+        self.assertEqual(tsp.short_ip("not an address"), "-")
+
+
 class PortalTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
