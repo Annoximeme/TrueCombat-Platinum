@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/devlog</id>
   <updated>2026-11-13T12:00:00Z</updated>
   <entry>
+    <title>Inside 0.36.0, the update you can hear</title>
+    <link href="https://truecombat.eu/devlog-inside-036"/>
+    <id>https://truecombat.eu/devlog-inside-036</id>
+    <published>2026-11-13T12:00:00Z</published>
+    <updated>2026-11-13T12:00:00Z</updated>
+    <category term="Release"/>
+    <summary>Voice chat, team pings, bots that read the map, a full audio overhaul and an optional 128 updates per second. This is the long version: what changed, why we built it the way we did, how it was tested, and what is still to come.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>A new look, from the loading screen to the kill feed</title>
     <link href="https://truecombat.eu/devlog-a-new-look"/>
     <id>https://truecombat.eu/devlog-a-new-look</id>

@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Every map, in 3D,|in your browser.
-text=The six map pages now carry a 3D model of the real map that you can turn, cut open and study before your first round, and every update gets a page of its own.
+title=Inside 0.36.0, the|update you can hear.
+text=Voice chat, team pings, bots that read the map, a full audio overhaul and an optional 128 updates per second.
 button=Read the devlog
-url=https://truecombat.eu/devlog-maps-in-3d.html
+url=https://truecombat.eu/devlog-inside-036.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
-title=A new look, from the loading screen to the kill feed
-text=Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive…
-url=https://truecombat.eu/devlog-a-new-look.html
+title=Inside 0.36.0, the update you can hear
+text=Voice chat, team pings, bots that read the map, a full audio overhaul and an optional 128 updates per second.
+url=https://truecombat.eu/devlog-inside-036.html
 [news]
 tag=Community
 title=Weekend ranked ladder
