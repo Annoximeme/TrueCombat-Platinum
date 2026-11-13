@@ -42,6 +42,7 @@ inspect() {
   else say "port:    127.0.0.1:$PORT TAKEN by $user: pick another port in config.json, the unit and the Caddy snippet"; fi
   say "caddy:   $( grep -q '/api/account/' /etc/caddy/Caddyfile 2>/dev/null && echo 'route present' || echo 'no route yet (install.sh caddy)')"
   say "unit:    $(systemctl is-active $UNIT 2>/dev/null || true)"
+  say "group:   $(getent group tcpgame >/dev/null && echo 'tcpgame present' || echo 'NO tcpgame GROUP: the reserved-name list cannot be written')"
   for h in $HOMES; do say "server:  $h $( [ -d "$h/tcetest" ] && echo "names list -> $h/tcetest/accounts/names.txt" || echo '(no such server)')"; done
 }
 
