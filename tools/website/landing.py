@@ -80,6 +80,7 @@ DOWNLOAD = """<section class="page-head">
       <li><b>[[g2t]]</b><p>[[g2]]</p></li>
       <li><b>[[g3t]]</b><p>[[g3]]</p></li>
     </ol>
+    <p class="steps-note">[[acct]]</p>
   </div>
 </section>
 
@@ -127,6 +128,7 @@ DOWNLOAD_T = {
         "g1t": "Pick a name", "g1": "Open TrueCombat: Platinum and type your player name. It is saved for next time.",
         "g2t": "Join a server", "g2": "The Servers tab lists every public server. Official #2 always has a match running, and Official #1 counts towards the <a href=\"leaderboards.html\">leaderboards</a>.",
         "g3t": "Or warm up first", "g3": "Practice offline with bots starts a match in one click. The <a href=\"guide.html\">beginner's guide</a> covers the controls.",
+        "acct": "Playing on more than one PC? A free <a href=\"account.html\">account</a> keeps your rank, stats and name with you. You sign in with Discord, and it is entirely optional.",
         "help_eyebrow": "Help", "help_h": "If something stops you",
         "h1t": "Windows shows a SmartScreen notice", "h1a": "Windows shows this for installers it has not seen often yet. Choose <b>More info</b>, then <b>Run anyway</b>. From then on the launcher verifies every update itself.",
         "h2t": "DirectX 12 won't start", "h2a": "Press <b>Safe start</b> in the launcher. It runs the game on OpenGL in a 1280 × 720 window and leaves your normal settings alone.",
@@ -160,6 +162,7 @@ DOWNLOAD_T = {
         "g1t": "Kies een naam", "g1": "Open TrueCombat: Platinum en typ je spelersnaam. Die wordt bewaard voor de volgende keer.",
         "g2t": "Kies een server", "g2": "Het tabblad Servers toont elke publieke server. Op Official #2 loopt altijd een potje, en Official #1 telt mee voor de <a href=\"leaderboards.html\">ranglijsten</a>.",
         "g3t": "Of speel je eerst warm", "g3": "Practice offline with bots start met één klik een potje. De <a href=\"guide.html\">beginnersgids</a> legt de besturing uit.",
+        "acct": "Speel je op meer dan één pc? Met een gratis <a href=\"account.html\">account</a> neem je je rang, statistieken en naam overal mee. Je meldt je aan met Discord, en het is helemaal optioneel.",
         "help_eyebrow": "Hulp", "help_h": "Als iets je tegenhoudt",
         "h1t": "Windows toont een SmartScreen-melding", "h1a": "Windows toont die bij installatieprogramma's die het nog niet vaak heeft gezien. Kies <b>Meer informatie</b> en daarna <b>Toch uitvoeren</b>. Vanaf dan controleert de launcher elke update zelf.",
         "h2t": "DirectX 12 start niet", "h2a": "Druk op <b>Safe start</b> in de launcher. Het spel draait dan op OpenGL in een venster van 1280 × 720 en je gewone instellingen blijven ongemoeid.",
