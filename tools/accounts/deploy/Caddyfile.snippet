@@ -3,6 +3,7 @@
 	handle /api/account/* {
 		reverse_proxy 127.0.0.1:8095
 	}
-	# short profile addresses: truecombat.eu/u/<name> -> player.html?u=<name>
-	@tcp_profile path_regexp tcpu ^/u/([^/]{1,40})$
+	# short profile addresses: truecombat.eu/u/<name> -> player?u=<name>. Matched on the raw request URI, so the name
+	# stays URL-encoded in the redirect (a path match sees it decoded: "Mr.%20Bean" would become a bare space)
+	@tcp_profile vars_regexp tcpu {http.request.uri} ^/u/([^/?#]{1,60})(\?.*)?$
 	redir @tcp_profile /player?u={re.tcpu.1} 302

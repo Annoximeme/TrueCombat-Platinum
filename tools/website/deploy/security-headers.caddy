@@ -29,7 +29,11 @@ header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 header @tcp_fonts_missing >Cache-Control "no-store"
 
 # pages always check back, so a deploy shows at once (the ETag makes the check cheap)
-@tcp_pages not path *.css *.js *.webp *.png *.jpg *.jpeg *.gif *.svg *.ico *.woff2 *.woff *.json *.xml *.txt *.zip *.webmanifest *.atom
+# (not the account API: it sets its own, no-store for signed-in answers, a short public cache for profiles)
+@tcp_pages {
+	not path *.css *.js *.webp *.png *.jpg *.jpeg *.gif *.svg *.ico *.woff2 *.woff *.json *.xml *.txt *.zip *.webmanifest *.atom
+	not path /api/*
+}
 header @tcp_pages >Cache-Control "no-cache"
 
 # style.css?v=<hash> and site.js?v=<hash> change name when they change: cache for a year
