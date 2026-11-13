@@ -1668,6 +1668,7 @@ def serve(store, listen, cors, token=""):
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "tcp-stats/1"
+        timeout = 30                       # a client that stops sending frees its thread
 
         def log_message(self, fmt, *a):
             pass
@@ -1707,7 +1708,10 @@ def serve(store, listen, cors, token=""):
 
     host, _, port = listen.rpartition(":")
     print("tcp-stats on http://%s:%s" % (host, port), flush=True)
-    ThreadingHTTPServer((host, int(port)), Handler).serve_forever()
+    ThreadingHTTPServer.request_queue_size = 128   # the default 5 overflows under a burst behind Caddy
+    httpd = ThreadingHTTPServer((host, int(port)), Handler)
+    httpd.daemon_threads = True
+    httpd.serve_forever()
 
 
 def main(argv=None):

@@ -221,6 +221,7 @@ def post_exists(site_root, slug):
 def make_handler(store, key, cors, site_root, min_ratings, show_reads, limiter):
     class Handler(BaseHTTPRequestHandler):
         server_version = "tcp-devlog"
+        timeout = 30                       # a client that stops sending frees its thread
 
         def log_message(self, fmt, *a):
             pass
@@ -341,7 +342,10 @@ def main(argv=None):
     cors = [c.strip() for c in args.cors.split(",") if c.strip()]
     print("tcp-devlog on http://%s:%s (public reads %s)" % (host, port, "on" if args.public_reads else "off"), flush=True)
     handler = make_handler(store, key, cors, args.site_root, args.min_ratings, args.public_reads, Limiter())
-    ThreadingHTTPServer((host, int(port)), handler).serve_forever()
+    ThreadingHTTPServer.request_queue_size = 128   # the default 5 overflows under a burst behind Caddy
+    httpd = ThreadingHTTPServer((host, int(port)), handler)
+    httpd.daemon_threads = True
+    httpd.serve_forever()
 
 
 if __name__ == "__main__":

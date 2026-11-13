@@ -1,4 +1,4 @@
-# Reference copy of the live /etc/caddy/Caddyfile on the VPS, as of 2026-11-12,
+# Reference copy of the live /etc/caddy/Caddyfile on the VPS, as of 2026-11-13 (player accounts added),
 # after the upgrade to Caddy 2.11.9 and the website audit hardening.
 # This file is not installed by any script. It records what the server runs so that
 # a future install or rebuild can start from it instead of undoing it.
@@ -49,6 +49,15 @@ api.truecombat.eu {
 }
 
 truecombat.eu {
+	# Player accounts (tools/accounts). Goes INSIDE the truecombat.eu site block, before the file server,
+	# so the session cookie is first-party. install.sh caddy adds it (backup + caddy validate + reload).
+	handle /api/account/* {
+		reverse_proxy 127.0.0.1:8095
+	}
+	# short profile addresses: truecombat.eu/u/<name> -> player?u=<name>. Matched on the raw request URI, so the name
+	# stays URL-encoded in the redirect (a path match sees it decoded: "Mr.%20Bean" would become a bare space)
+	@tcp_profile vars_regexp tcpu {http.request.uri} ^/u/([^/?#]{1,60})(\?.*)?$
+	redir @tcp_profile /player?u={re.tcpu.1} 302
 	import /etc/caddy/security-headers.caddy
 	import /etc/caddy/clean-urls.caddy
 	root * /var/www/truecombat
