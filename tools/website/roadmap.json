@@ -435,6 +435,11 @@
    "en": "Optional performance and crash data from the launcher",
    "nl": "Optionele prestatie- en crashgegevens vanuit de launcher",
    "version": null
+  },
+  {
+   "en": "Optional accounts: your rank on every PC, a reserved name and a public profile",
+   "nl": "Optionele accounts: je rang op elke pc, een gereserveerde naam en een openbaar profiel",
+   "version": "0.37"
   }
  ]
 }
