@@ -1005,11 +1005,11 @@ var TCP_API = 'https://api.truecombat.eu';
       }
       if (acct) {
         q('[data-pf-name]').innerHTML = esc(acct.name) + ' ' + TICK;
-        extras(acct);
         if (acct.discord && acct.discord.name) {
           q('[data-pf-name]').insertAdjacentHTML('afterend', '<p class="acct-discord-line">' + (acct.discord.avatar ? '<img src="' + esc(acct.discord.avatar) +
             '" alt="" width="22" height="22" loading="lazy">' : '') + '<span>' + esc(acct.discord.name) + '</span> <span class="muted">' + L.acctOnDiscord + '</span></p>');
         }
+        extras(acct);      // after the Discord line, so the team ribbon sits right under the name
       } else {
         acctNames().then(function (names) {      // an account's own id: show its name and move to the short address
           if (!names[id]) return;
