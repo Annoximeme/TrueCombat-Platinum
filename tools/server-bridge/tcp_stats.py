@@ -7,9 +7,10 @@ skill rating, and answers the website's JSON requests. It runs on its own or
 inside tcp_bridge.py (--stats-db). Python 3.8+ standard library only, so it can
 be hosted on any VPS, home server or container.
 
-No player accounts: a player is identified by the game's cl_guid, which the
-client derives from its own locally generated etkey file. Only a one-way hash
-of it (the 16-character player id) is stored or published.
+A player is identified by the game's cl_guid (derived from the local etkey file) or, from game 0.37.0, by the
+identity key the server checked (eacid.key; the report carries its key id). Only one-way hashes (the
+16-character player ids) are stored or published. Optional player accounts (tools/accounts) tell this service
+which ids belong to one player (POST /staff/accounts/aliases, loopback only); those ids are then merged into one.
 
 Only real players count (tcp-match/2, game 0.35.0 and later): kills, deaths, hits, damage and
 assists between two humans, from verified servers with Easy Anti-Cheat on for the whole match.
@@ -178,6 +179,14 @@ def sanitize(report, trusted=False, allow_cheats=False):
         if not guid:
             guid = "name:" + clean(p.get("name"))
         pid = player_id(guid.upper() if re.fullmatch(r"[0-9A-Fa-f]{32}", guid) else guid)
+        # Game 0.37.0 and later: the server checked that the client holds its identity key (eacid.key) and reports
+        # the key id. The key, not the guid, is then the player: a guid can be copied, a signature cannot.
+        key = str(p.get("key") or "").lower() if v2 else ""
+        guid_pid = ""
+        if re.fullmatch(r"[0-9a-f]{40}", key):
+            guid_pid, pid = pid, player_id("key:" + key)
+        else:
+            key = ""
         if pid in seen:
             index.append(seen[pid])
             continue
@@ -193,6 +202,8 @@ def sanitize(report, trusted=False, allow_cheats=False):
              "timePlayed": _int(p.get("timePlayed", duration), 0, cap + 120), "weapons": {},
              # Left before the end (the game sets connected=false); abandoning a losing match costs full rating
              "left": p.get("connected") is False, "leaves": _int(p.get("leaves"), 0, 100)}
+        if key:
+            q["key"], q["guidId"] = key, guid_pid
         net = p.get("net")
         if isinstance(net, dict):
             def f(v, hi):
@@ -275,6 +286,13 @@ def _round_events(raw, index, cap):
             out.append({"kind": "r", "t": t, "round": rnd, "winner": clean(e[3], 16).lower() if isinstance(e[3], str) else None,
                         "clutch": index[c] if c >= 0 else None, "enemies": _int(e[5], 0, 64), "humans": _int(e[6], 0, 64)})
     out.sort(key=lambda x: x["t"])
+    return out
+
+
+def _original(m):
+    """The report as stored: every player under the id it arrived with (accounts are applied again on a rebuild)."""
+    out = dict(m)
+    out["players"] = [dict(p, id=p.get("pid0", p["id"])) for p in m["players"]]
     return out
 
 
@@ -528,6 +546,9 @@ CREATE TABLE IF NOT EXISTS match_vs(server TEXT, match TEXT, pid TEXT, opp TEXT,
 CREATE INDEX IF NOT EXISTS match_vs_pid ON match_vs(pid);
 CREATE INDEX IF NOT EXISTS match_vs_opp ON match_vs(opp);
 CREATE TABLE IF NOT EXISTS review(server TEXT, match TEXT, pid TEXT, reason TEXT, created TEXT, PRIMARY KEY(server, match, pid, reason));
+CREATE TABLE IF NOT EXISTS learned(old TEXT PRIMARY KEY, new TEXT NOT NULL, at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS aliases(pid TEXT NOT NULL, canonical TEXT NOT NULL, since TEXT, until TEXT);
+CREATE INDEX IF NOT EXISTS aliases_pid ON aliases(pid);
 CREATE TABLE IF NOT EXISTS voided(kind TEXT, id TEXT, reason TEXT, created TEXT, PRIMARY KEY(kind, id));
 """
 
@@ -623,16 +644,92 @@ class StatsStore:
                 return "duplicate", {"id": m["id"]}
             self.db.execute("BEGIN")
             try:
+                learned = self.learn_keys(m, server)
                 self._apply(m, server)
                 self.db.execute("UPDATE servers SET last_seen=?, uploads=uploads+1 WHERE id=?", (now_iso(), server))
                 self.db.execute("COMMIT")
             except Exception:
                 self.db.execute("ROLLBACK")
                 raise
+            if learned:
+                self.recompute()          # older guid matches now count for the key
         return "stored", {"id": m["id"], "players": len(m["players"])}
+
+    def _resolve(self, m, server):
+        """Player accounts: maps each player's own id to the id the stats are kept under. A guid id first seen
+        with a verified key becomes that key (its history moves with it), and a key linked to an account becomes
+        the account for the time it was linked. The report keeps the original id (pid0), so a rebuild can redo this."""
+        db = self.db
+        when = m["ended"]
+        out = []
+        for p in m["players"]:
+            base = p.setdefault("pid0", p["id"])
+            pid = base
+            row = db.execute("SELECT new FROM learned WHERE old=?", (pid,)).fetchone()
+            if row:
+                pid = row["new"]
+            for a in db.execute("SELECT canonical, since, until FROM aliases WHERE pid=?", (pid,)):
+                if (not a["since"] or when >= a["since"]) and (not a["until"] or when < a["until"]):
+                    pid = a["canonical"]
+                    break
+            if pid in out:            # two linked ids in one match: keep them apart and let staff look
+                db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)",
+                           (server, m["id"], pid, "two ids of one account in the same match", now_iso()))
+                pid = base
+            out.append(pid)
+        for p, pid in zip(m["players"], out):
+            p["id"] = pid
+
+    def learn_keys(self, m, server):
+        """First verified sighting of a key with a guid: the guid's history belongs to the key from now on.
+        Returns True when something new was learned (the caller rebuilds)."""
+        if not m.get("verified"):
+            return False
+        new = False
+        for p in m["players"]:
+            if not p.get("key") or not p.get("guidId"):
+                continue
+            row = self.db.execute("SELECT new FROM learned WHERE old=?", (p["guidId"],)).fetchone()
+            if row is None:
+                self.db.execute("INSERT INTO learned VALUES(?,?,?)", (p["guidId"], p.get("pid0", p["id"]), m["ended"]))
+                new = True
+            elif row["new"] != p.get("pid0", p["id"]):
+                self.db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)",
+                                (server, m["id"], p.get("pid0", p["id"]), "guid already belongs to another key", now_iso()))
+        return new
+
+    def set_aliases(self, aliases):
+        """From the account service: [{pid, canonical, since, until}] (since/until: unix seconds or null).
+        Replaces the table; rebuilds the stats when it changed. Returns the number of matches rebuilt, or None."""
+        def iso(v):
+            if v in (None, "", 0):
+                return None
+            return dt.datetime.fromtimestamp(int(v), dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+        rows = []
+        for a in aliases or []:
+            pid, can = str(a.get("pid", "")), str(a.get("canonical", ""))
+            if not (re.fullmatch(r"[0-9a-f]{16}", pid) and re.fullmatch(r"[0-9a-f]{16}", can)):
+                raise ValueError("bad alias")
+            rows.append((pid, can, iso(a.get("since")), iso(a.get("until"))))
+        rows.sort(key=lambda r: tuple(x or "" for x in r))
+        with self.lock:
+            old = sorted((tuple(r) for r in self.db.execute("SELECT pid, canonical, since, until FROM aliases")),
+                         key=lambda r: tuple(x or "" for x in r))
+            if old == rows:
+                return None
+            self.db.execute("BEGIN")
+            try:
+                self.db.execute("DELETE FROM aliases")
+                self.db.executemany("INSERT INTO aliases VALUES(?,?,?,?)", rows)
+                self.db.execute("COMMIT")
+            except Exception:
+                self.db.execute("ROLLBACK")
+                raise
+            return self.recompute()
 
     def _apply(self, m, server, received=None):
         db = self.db
+        self._resolve(m, server)
         pids = [p["id"] for p in m["players"]]
         rows = {r["pid"]: r for r in db.execute(
             "SELECT pid, rating, rated, last_seen FROM players WHERE pid IN (%s)" % ",".join("?" * len(pids)), pids)}
@@ -652,7 +749,7 @@ class StatsStore:
         db.execute("INSERT INTO matches(server, id, ended, map, mode, duration, rounds, winner, players, received, report, pub, "
                    "ranked, verified, bots) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                    (server, m["id"], m["ended"], m["map"], m["mode"], m["duration"], m["rounds"], m["winner"],
-                    len(m["players"]), received or now_iso(), json.dumps(m, separators=(",", ":")), match_pub(server, m["id"]),
+                    len(m["players"]), received or now_iso(), json.dumps(_original(m), separators=(",", ":")), match_pub(server, m["id"]),
                     ranked, int(bool(m.get("verified"))), int(m.get("bots") or 0)))
         for i, p in enumerate(m["players"]):
             pid = p["id"]
@@ -1045,11 +1142,21 @@ class StatsStore:
         balance (g_balanceSkill reads ratings.txt from the server's home folder).
         Atomic, so a server never reads a half-written file. Returns the count."""
         with self.lock:
-            rows = self.db.execute("SELECT pid, rating FROM players WHERE rated > 0 ORDER BY pid").fetchall()
+            rows = [(r["pid"], r["rating"]) for r in
+                    self.db.execute("SELECT pid, rating FROM players WHERE rated > 0 ORDER BY pid")]
+            rating = dict(rows)
+            # accounts: the game looks a player up by its own id, so every id of a merged player carries its rating
+            extra = {}
+            for r in self.db.execute("SELECT l.old AS pid, COALESCE(a.canonical, l.new) AS to_pid FROM learned l "
+                                     "LEFT JOIN aliases a ON a.pid=l.new AND a.until IS NULL "
+                                     "UNION SELECT a.pid, a.canonical FROM aliases a WHERE a.until IS NULL"):
+                if r["to_pid"] in rating and r["pid"] not in rating:
+                    extra[r["pid"]] = rating[r["to_pid"]]
+            rows = sorted(rows + list(extra.items()))
         tmp = str(path) + ".tmp"
         with open(tmp, "w", encoding="ascii") as fh:
-            for r in rows:
-                fh.write("%s %d\n" % (r["pid"], int(round(r["rating"]))))
+            for pid, value in rows:
+                fh.write("%s %d\n" % (pid, int(round(value))))
         os.replace(tmp, path)
         return len(rows)
 
@@ -1270,11 +1377,35 @@ def staff_token(path=""):
     return os.environ.get("TCP_STATS_STAFF_TOKEN", "").strip()
 
 
+def accounts_token():
+    """The account service's secret: the systemd credential 'accounts-token' (a LoadCredential= drop-in), else
+    TCP_STATS_ACCOUNTS_TOKEN. Empty = the route is off."""
+    cred = os.environ.get("CREDENTIALS_DIRECTORY", "")
+    if cred and (pathlib.Path(cred) / "accounts-token").exists():
+        try:
+            return (pathlib.Path(cred) / "accounts-token").read_text(encoding="utf-8").strip()
+        except OSError:
+            return ""
+    return os.environ.get("TCP_STATS_ACCOUNTS_TOKEN", "").strip()
+
+
 def handle_staff(store, method, path, headers, client, body, token):
     """Staff portal routes: the review queue and voiding stats. Only from this machine, never through the
     reverse proxy (which adds X-Forwarded-For), and only with the shared token. Anything else looks like 404."""
     if not path.startswith("/staff/"):
         return None
+    if path == "/staff/accounts/aliases":
+        # the account service (its own token, never the staff portal's): which player ids are one account
+        acct = accounts_token()
+        if (method != "POST" or not acct or client not in ("127.0.0.1", "::1") or headers.get("X-Forwarded-For")
+                or not hmac.compare_digest(str(headers.get("X-Accounts-Token", "")), acct)):
+            return 404, {"error": "not found"}
+        try:
+            d = json.loads(body or b"{}")
+            n = store.set_aliases(d.get("aliases"))
+        except (ValueError, TypeError, AttributeError) as exc:
+            return 400, {"error": str(exc)}
+        return 200, {"ok": True, "rebuilt": "unchanged" if n is None else n}
     if (not token or client not in ("127.0.0.1", "::1") or headers.get("X-Forwarded-For")
             or not hmac.compare_digest(str(headers.get("X-Staff-Token", "")), token)):
         return 404, {"error": "not found"}

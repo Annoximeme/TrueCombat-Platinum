@@ -1,0 +1,15 @@
+{
+  "host": "127.0.0.1",
+  "port": 8095,
+  "public_url": "https://truecombat.eu",
+  "site_url": "https://truecombat.eu",
+  "data_dir": "/var/lib/tcp-accounts",
+  "discord": { "client_id": "1569008112407683072" },
+  "stats_url": "http://127.0.0.1:8090",
+  "reserved_dirs": [
+    "/var/lib/tcpgame/home/tcetest/accounts",
+    "/var/lib/tcpgame/home-unranked/tcetest/accounts",
+    "/var/lib/tcpgame/home-pickup1/tcetest/accounts",
+    "/var/lib/tcpgame/home-pickup2/tcetest/accounts"
+  ]
+}
