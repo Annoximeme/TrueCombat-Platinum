@@ -92,8 +92,8 @@ def cbor(v):
 class Authenticator:
     """A passkey: ES256 or Ed25519, discoverable, with a signature counter."""
 
-    def __init__(self, kind="es256", counter=True):
-        self.kind, self.count, self.counter = kind, 0, counter
+    def __init__(self, kind="es256", counter=True, uv=True):
+        self.kind, self.count, self.counter, self.uv = kind, 0, counter, uv
         self.cred = hashlib.sha256(str(time.time_ns()).encode() + kind.encode()).digest()
         if kind == "es256":
             self.sk = ec.generate_private_key(ec.SECP256R1())
@@ -114,7 +114,7 @@ class Authenticator:
         rp_id = rp_id or options["rp"]["id"]
         self.user = W.unb64u(options["user"]["id"])
         cd = json.dumps({"type": "webauthn.create", "challenge": options["challenge"], "origin": origin}).encode()
-        auth = (hashlib.sha256(rp_id.encode()).digest() + bytes([0x45]) + self.count.to_bytes(4, "big") + b"\0" * 16
+        auth = (hashlib.sha256(rp_id.encode()).digest() + bytes([0x45 if self.uv else 0x41]) + self.count.to_bytes(4, "big") + b"\0" * 16
                 + len(self.cred).to_bytes(2, "big") + self.cred + cbor(self.cose))
         return {"id": W.b64u(self.cred), "clientDataJSON": W.b64u(cd),
                 "attestationObject": W.b64u(cbor({"fmt": "none", "attStmt": {}, "authData": auth}))}
@@ -124,7 +124,7 @@ class Authenticator:
             self.count += 1
         rp_id = rp_id or options["rpId"]
         cd = json.dumps({"type": "webauthn.get", "challenge": challenge or options["challenge"], "origin": origin}).encode()
-        auth = hashlib.sha256(rp_id.encode()).digest() + bytes([0x05]) + self.count.to_bytes(4, "big")
+        auth = hashlib.sha256(rp_id.encode()).digest() + bytes([0x05 if self.uv else 0x01]) + self.count.to_bytes(4, "big")
         sig = self._sign(auth + hashlib.sha256(cd).digest())
         return {"id": W.b64u(self.cred), "clientDataJSON": W.b64u(cd), "authenticatorData": W.b64u(auth),
                 "signature": W.b64u(sig), "userHandle": W.b64u(self.user)}
@@ -193,6 +193,16 @@ for kind in ("es256", "ed25519"):
     ticket, lo = acc.passkey_login_begin("9.9.9.9")
     check("passkey %s: a signature over another challenge is refused" % kind,
           raises(lambda: acc.passkey_login_finish(ticket, auth.get(lo, SITE, challenge=W.b64u(b"x" * 32)), "9.9.9.9"), 401))
+    ticket, lo = acc.passkey_login_begin("9.9.9.9")
+    auth.uv = False
+    check("passkey %s: a sign-in without PIN, fingerprint or face is refused" % kind,
+          raises(lambda: acc.passkey_login_finish(ticket, auth.get(lo, SITE), "9.9.9.9"), 401))
+    auth.uv = True
+    ticket, opts = acc.passkey_register_begin(acc.account(a1["id"]))
+    check("passkey %s: options require user verification" % kind,
+          opts["authenticatorSelection"]["userVerification"] == "required" and lo["userVerification"] == "required")
+    check("passkey %s: a key that skips user verification is not added" % kind,
+          raises(lambda: acc.passkey_register_finish(acc.account(a1["id"]), ticket, Authenticator(kind, uv=False).create(opts, SITE)), 400))
     ticket, lo = acc.passkey_login_begin("9.9.9.9")
     forged = auth.get(lo, SITE)
     forged["signature"] = W.b64u(Authenticator(kind)._sign(b"nope"))
@@ -308,9 +318,11 @@ acc.lift(r["ban"])
 # ------------------------------------------------------------------ 3. lost or stolen PC
 s1 = acc.session(acc.new_session("501", "Razic", "", "1.1.1.1"))
 other = acc.session(acc.new_session("501", "Razic", "", "1.1.1.2"))
+had_passkeys = acc.store.one("SELECT COUNT(*) n FROM passkeys WHERE account=?", (a1["id"],))["n"]
 acc.panic(s1["account"])
 check("lost PC: every PC unlinked", acc.keys_of(a1["id"], True) == [] and len(acc.keys_of(a1["id"])) == 1)
 check("lost PC: every session signed out", acc.store.one("SELECT COUNT(*) n FROM sessions WHERE discord_id='501'")["n"] == 0)
+check("lost PC: passkeys removed too", had_passkeys > 0 and acc.store.one("SELECT COUNT(*) n FROM passkeys WHERE account=?", (a1["id"],))["n"] == 0)
 
 # ------------------------------------------------------------------ lists for the game servers
 acc.push()

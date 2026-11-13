@@ -1301,17 +1301,27 @@ class StatsStore:
             rep = json.loads(r["report"] or "{}")
             version, host = clean(rep.get("version"), 48), clean(rep.get("server"), 64)
         except ValueError:
-            version, host = "", ""
+            rep, version, host = {}, "", ""
         players = [{"id": p["pid"], "name": p["name"], "team": p["team"], "won": bool(p["won"]), "kills": p["kills"],
                     "deaths": p["deaths"], "headshots": p["headshots"], "damage": p["damage"], "teamKills": p["team_kills"],
                     "objectives": p["objectives"], "roundsWon": p["rounds_won"], "timePlayed": p["time_played"], "xp": p["xp"],
                     "ratingChange": int(round(p["rating_after"] - p["rating_before"])), "topWeapon": p["top_weapon"] or ""}
                    for p in rows]
-        # a team's score is the most rounds any of its players was present to win
+        # a team's score: the round results the server reported (bots win rounds too); older reports without them
+        # fall back to the most rounds any of the team's players was present to win
         score = {}
-        for p in players:
-            if p["team"]:
-                score[p["team"]] = max(score.get(p["team"], 0), p["roundsWon"])
+        ends = [e for e in (rep.get("events") or []) if isinstance(e, dict) and e.get("kind") == "r"]
+        if ends:
+            for p in players:
+                if p["team"]:
+                    score.setdefault(p["team"], 0)
+            for e in ends:
+                if e.get("winner") and e["winner"] not in ("draw", "tie", "none"):
+                    score[e["winner"]] = score.get(e["winner"], 0) + 1
+        else:
+            for p in players:
+                if p["team"]:
+                    score[p["team"]] = max(score.get(p["team"], 0), p["roundsWon"])
         top = players[0] if players and players[0]["kills"] else None
         return {"schema": "tcp-match-page/1", "updated": now_iso(), "id": pub, "ended": r["ended"], "map": r["map"],
                 "mode": r["mode"], "duration": r["duration"], "rounds": r["rounds"], "winner": r["winner"],
@@ -1413,6 +1423,8 @@ class StatsStore:
         if not re.fullmatch(r"[0-9a-f]{16}", pid):
             return None
         with self.lock:
+            if not self.db.execute("SELECT 1 FROM players WHERE pid=?", (pid,)).fetchone():
+                return None
             rows = self.db.execute(
                 "SELECT pb.pid opp, COUNT(*) n, SUM(pa.won) w FROM match_players pa JOIN match_players pb "
                 "ON pb.server=pa.server AND pb.match=pa.match AND pb.pid<>pa.pid AND (pb.team<>pa.team OR pa.team='') "
@@ -1457,6 +1469,29 @@ class StatsStore:
                 "best": {"id": best["pub"], "map": best["map"], "kills": best["kills"], "deaths": best["deaths"],
                          "won": bool(best["won"])} if best else None,
                 "newMedals": [{"key": m["key"], "name": m["name"]} for m in medals]}
+
+    PROFILE_TTL = 60.0   # seconds; medals walks every match of a player, so a public request must not run it each time
+
+    def profile_part(self, kind, pid):
+        """Cached front for medals, career, rivals and week (public routes). Same rule as the leaderboard cache:
+        an entry lives PROFILE_TTL seconds and any write through the store starts fresh."""
+        pid = str(pid or "").lower()
+        if kind not in ("medals", "career", "rivals", "week") or not re.fullmatch(r"[0-9a-f]{16}", pid):
+            return None
+        key = (kind, pid)
+        now = time.monotonic()
+        with self.lock:
+            changes = self.db.total_changes
+            cache = self.__dict__.setdefault("_pf_cache", {})
+            hit = cache.get(key)
+            if hit and hit[0] == changes and now - hit[1] < self.PROFILE_TTL:
+                return copy.deepcopy(hit[2])
+        out = getattr(self, kind)(pid)
+        with self.lock:
+            if len(cache) > 2048:
+                cache.clear()
+            cache[key] = (changes, now, out)
+        return copy.deepcopy(out)
 
     def account_summary(self, aliases):
         """For the account service: last match and match count of each account's stats id."""
@@ -1588,10 +1623,10 @@ def handle_get(store, path, query):
         return 200, store.ranks()
     if path == "/netstats.json":
         return 200, store.netstats(q.get("days", 30))
-    for route, fn in (("/medals.json", store.medals), ("/career.json", store.career), ("/rivals.json", store.rivals),
-                      ("/week.json", store.week)):
+    for route, kind in (("/medals.json", "medals"), ("/career.json", "career"), ("/rivals.json", "rivals"),
+                        ("/week.json", "week")):
         if path == route:
-            r = fn(q.get("id"))
+            r = store.profile_part(kind, q.get("id"))
             return (200, r) if r else (404, {"error": "unknown player"})
     return None
 
