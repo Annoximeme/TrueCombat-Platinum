@@ -19,16 +19,28 @@ from . import text as T
 ASSETS = Path(__file__).resolve().parent.parent / "assets"
 FONTS = ASSETS / "fonts"
 
-# Palette, matching embeds.py and the website
-INK = (14, 17, 23)
-PANEL = (24, 29, 38)
-PANEL_HI = (33, 40, 52)
-LINE = (52, 61, 76)
-TEXT = (232, 235, 240)
-MUTED = (150, 160, 175)
-RED = (214, 59, 59)
-AMBER = (231, 167, 60)
-GREEN = (79, 191, 122)
+
+
+def _token(name: str, fallback: tuple[int, int, int]) -> tuple[int, int, int]:
+    """A colour from assets/tokens.json, the shared design tokens (website repo tools/design)."""
+    try:
+        import json
+        value = json.loads((ASSETS / "tokens.json").read_text(encoding="utf-8"))[name].lstrip("#")
+        return tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))  # type: ignore[return-value]
+    except (OSError, ValueError, KeyError, TypeError):
+        return fallback
+
+
+# Palette: the shared design tokens, with the bot's own extras (medals, card edges) below
+INK = _token("bg", (13, 16, 22))
+PANEL = _token("panel", (20, 25, 34))
+PANEL_HI = _token("panel2", (26, 32, 43))
+LINE = (52, 61, 76)            # card edges sit a step brighter than web hairlines
+TEXT = _token("fg", (232, 234, 239))
+MUTED = _token("muted", (154, 163, 179))
+RED = _token("red", (214, 59, 59))
+AMBER = _token("amber", (231, 167, 60))
+GREEN = _token("ok", (79, 191, 122))
 GOLD = (201, 162, 39)
 BLUE = (91, 155, 213)
 SILVER = (176, 186, 199)
