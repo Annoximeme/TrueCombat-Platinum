@@ -15,7 +15,7 @@ from discord.ext import commands
 from . import __version__, embeds
 from . import emoji as E
 from .config import Config
-from .sources import Releases, StatsAPI, StatsUnavailable
+from .sources import AccountsAPI, Releases, StatsAPI, StatsUnavailable
 from .store import Store
 
 log = logging.getLogger("tcpbot")
@@ -42,6 +42,7 @@ EXTENSIONS = (
     "tcpbot.cogs.mapvote",
     "tcpbot.cogs.chatbridge",
     "tcpbot.cogs.support",
+    "tcpbot.cogs.accounts",
 )
 
 
@@ -66,6 +67,7 @@ class TCPBot(commands.Bot):
         self.http_session: aiohttp.ClientSession | None = None
         self.stats: StatsAPI | None = None
         self.releases: Releases | None = None
+        self.accounts: AccountsAPI | None = None
         self.tree.on_error = self.on_app_command_error
 
     # ------------------------------------------------------------ lifecycle
@@ -73,6 +75,9 @@ class TCPBot(commands.Bot):
         self.http_session = aiohttp.ClientSession(headers={"User-Agent": "TrueCombatBot/%s" % __version__})
         self.stats = StatsAPI(self.http_session, self.cfg["api_url"])
         self.releases = Releases(self.http_session, self.cfg["releases"]["repo"])
+        from .cogs.feedback import secret
+        self.accounts = AccountsAPI(self.http_session, self.cfg["accounts"]["url"],
+                                    secret(self.cfg["accounts"]["token_credential"]))
         for ext in EXTENSIONS:
             await self.load_extension(ext)
         guild = discord.Object(id=int(self.cfg["guild_id"]))

@@ -34,7 +34,7 @@ def test_command_tree_builds():
     assert names == sorted(["compare", "event", "events", "help", "link", "link-admin", "matches", "notify", "pickup", "admin",
                             "profile", "release", "servers", "setup", "top", "unlink",
                             "season", "recap", "achievements", "alerts", "team", "scrim", "tournament", "bug",
-                            "suggest", "suggestion", "mapvote", "chat", "mod", "appeal", "ask"]), names
+                            "suggest", "suggestion", "mapvote", "chat", "mod", "appeal", "ask", "account"]), names
     for p in payloads:
         assert 1 <= len(p["description"]) <= 100, p["name"]
         for o in p.get("options", []):
@@ -43,5 +43,5 @@ def test_command_tree_builds():
                 assert len(sub["description"]) <= 100, (p["name"], o["name"], sub["name"])
     staff = {p["name"]: p.get("default_member_permissions") for p in payloads}
     assert staff["release"] and staff["setup"] and staff["event"] and staff["link-admin"] and staff["admin"]
-    assert staff["profile"] is None and staff["mod"] and staff["mapvote"] and staff["team"] is None
+    assert staff["account"] and staff["profile"] is None and staff["mod"] and staff["mapvote"] and staff["team"] is None
     assert len(payloads) <= 100

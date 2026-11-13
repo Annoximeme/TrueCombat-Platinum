@@ -142,6 +142,74 @@ class StatsAPI:
     async def recent(self, fresh=False):
         return await self._get("/recent.json", ttl=0 if fresh else None)
 
+    async def week(self, pid: str):
+        """A player's last seven days against the seven before (tcp-week/1); None on an older stats service."""
+        return await self._get("/week.json", {"id": pid}, ttl=0)
+
+
+# ---------------------------------------------------------------- player accounts
+class AccountsUnavailable(Exception):
+    pass
+
+
+class AccountsAPI:
+    """The account service on the VPS (127.0.0.1:8095). /internal/* needs the shared token
+    (systemd credential, the same value as the service's internal-token). Without a token the
+    account features stay off and nothing else changes."""
+
+    def __init__(self, session: aiohttp.ClientSession, base: str, token: str):
+        self.session = session
+        self.base = base.rstrip("/")
+        self.token = token or ""
+
+    @property
+    def ready(self) -> bool:
+        return bool(self.token)
+
+    async def _call(self, method: str, path: str, body: dict | None = None):
+        if not self.ready:
+            raise AccountsUnavailable("no accounts token")
+        try:
+            async with self.session.request(method, self.base + path, json=body,
+                                            headers={"X-Accounts-Token": self.token},
+                                            timeout=aiohttp.ClientTimeout(total=8)) as r:
+                data = await r.json(content_type=None)
+                if r.status >= 400:
+                    raise AccountsUnavailable((data or {}).get("error") or "HTTP %d" % r.status)
+                return data
+        except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as e:
+            log.warning("accounts %s: %s", path, e)
+            raise AccountsUnavailable(str(e)) from e
+
+    async def roles(self) -> list[dict]:
+        """Every linked account the bot should know: discordId, name, statsId, badges."""
+        return (await self._call("GET", "/internal/roles")).get("accounts", [])
+
+    async def weekly(self) -> list[dict]:
+        return (await self._call("GET", "/internal/weekly")).get("accounts", [])
+
+    async def lfs(self) -> list[dict]:
+        return (await self._call("GET", "/api/account/lfs.json")).get("players", [])
+
+    async def lookup(self, discord_id: int):
+        try:
+            return await self._call("GET", "/internal/lookup?discord=%d" % int(discord_id))
+        except AccountsUnavailable as e:
+            if "No such" in str(e) or "404" in str(e):
+                return None
+            raise
+
+    async def ban(self, *, discord_id: int = 0, name: str = "", kind: str = "ban", reason: str = "", days: int = 0,
+                  by: str = "") -> dict:
+        return await self._call("POST", "/internal/ban", {"discord": str(discord_id or ""), "name": name, "kind": kind,
+                                                          "reason": reason, "days": days, "by": by})
+
+    async def unban(self, ban_id: int) -> dict:
+        return await self._call("POST", "/internal/unban", {"ban": int(ban_id)})
+
+    async def bans(self) -> list[dict]:
+        return (await self._call("GET", "/internal/bans")).get("bans", [])
+
 
 class StatsUnavailable(Exception):
     pass

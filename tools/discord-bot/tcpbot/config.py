@@ -55,6 +55,8 @@ DEFAULTS: dict = {
         "votes": 0,
         # Questions passed on to staff with "Ask staff", and ban appeals (private; defaults to staff)
         "support": 0,
+        # One live list of players looking for a squad (from player accounts); empty = off
+        "lfs": 0,
     },
     "servers": [
         {
@@ -140,6 +142,17 @@ DEFAULTS: dict = {
         "rank_tiers": True,
         "top10": True,
         "verified": True,
+        # Clean record and Trusted player roles from player accounts
+        "badges": True,
+    },
+    # Player accounts (truecombat.eu/account). The token is the service's internal token, stored as the
+    # systemd credential named here (install.sh --secret-stdin accounts-token). Without it all of this is off.
+    "accounts": {
+        "url": "http://127.0.0.1:8095",
+        "token_credential": "accounts-token",
+        # The opt-in weekly report by DM: weekday 0 = Monday, hour in the bot's timezone
+        "weekly": {"enabled": True, "weekday": 0, "hour": 19},
+        "lfs_refresh_minutes": 2,
     },
     "welcome": {"enabled": True, "dm": False},
     # A report card after every finished match on the listed stats servers (empty = every server)

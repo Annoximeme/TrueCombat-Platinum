@@ -32,7 +32,10 @@ EARNED = {
     "verified": ("Verified player", 0x4FBF7A),
     "top10": ("Top 10", 0xF2C94C),
     "champion": ("Season champion", 0xC9A227),
+    "clean": ("Clean record", 0x8FD3A8),
+    "trusted": ("Trusted player", 0xE7A73C),
 }
+BADGE_ROLES = ("clean", "trusted")
 for _key, _name, _first, _colour in RANK_TIERS:
     EARNED["tier_" + _key] = (_name, _colour)
 
@@ -165,6 +168,7 @@ class Community(commands.Cog):
         self.cfg = bot.cfg
         self.role_loop.change_interval(minutes=max(2, int(self.cfg["roles"]["sync_minutes"])))
         self.lock = asyncio.Lock()
+        self.account_links: dict[int, dict] = {}   # Discord id -> account (statsId, badges), from the last sync
 
     async def cog_load(self):
         self.bot.add_dynamic_items(OptInButton, RSVPButton)
@@ -218,6 +222,7 @@ class Community(commands.Cog):
         for k, v in EARNED.items():
             if (k == "verified" and not roles_cfg["verified"]) or (k == "top10" and not roles_cfg["top10"]) \
                     or (k.startswith("tier_") and not roles_cfg["rank_tiers"]) \
+                    or (k in BADGE_ROLES and not roles_cfg.get("badges", True)) \
                     or (k == "champion" and not (self.cfg["seasons"]["enabled"] and self.cfg["seasons"]["champion_role"])):
                 continue
             wanted[k] = v
@@ -322,12 +327,36 @@ class Community(commands.Cog):
             return
         top = await self._top10()
         linked = {r["discord_id"]: r for r in self.bot.store.all_links()}
+        accounts = await self.account_roles()
+        if accounts is not None:
+            self.account_links = accounts
+        for uid, a in self.account_links.items():
+            # an account is the stronger link: its stats id holds every linked PC
+            linked[uid] = dict(linked.get(uid) or {}, discord_id=uid, pid=a["statsId"], badges=a.get("badges") or [])
         # members who hold a bot-assigned role but are no longer linked
         managed = {self.bot.role_id(k) for k in EARNED if k != "champion"} - {0}   # champion: see highlights
         holders = {m.id for rid in managed if (r := guild.get_role(rid)) for m in r.members}
         for uid in set(linked) | holders:
             await self.sync_member_roles(uid, top=top, link=linked.get(uid))
             await asyncio.sleep(0.2)   # stay well under Discord's role-edit rate limit
+
+    async def account_roles(self) -> dict[int, dict] | None:
+        """Accounts by Discord id, or None when the account service is off or not answering."""
+        api = getattr(self.bot, "accounts", None)
+        if api is None or not api.ready:
+            return None
+        try:
+            rows = await api.roles()
+        except Exception as e:  # noqa: BLE001
+            log.warning("account roles unavailable: %s", e)
+            return None
+        out = {}
+        for r in rows:
+            try:
+                out[int(r["discordId"])] = r
+            except (KeyError, TypeError, ValueError):
+                continue
+        return out
 
     async def sync_member_roles(self, user_id: int, top: set[str] | None = None, link=None):
         guild = self.bot.guild
@@ -336,7 +365,10 @@ class Community(commands.Cog):
         member = guild.get_member(user_id)
         if member is None:
             return
-        link = link if link is not None else self.bot.store.linked_player(user_id)
+        if link is None:
+            a = self.account_links.get(user_id)
+            link = dict(self.bot.store.linked_player(user_id) or {}, discord_id=user_id, pid=a["statsId"],
+                        badges=a.get("badges") or []) if a else self.bot.store.linked_player(user_id)
         want: set[int] = set()
         if link:
             if top is None:
@@ -356,8 +388,15 @@ class Community(commands.Cog):
                 want.add(self.bot.role_id("verified"))
             if link["pid"] in (top or set()):
                 want.add(self.bot.role_id("top10"))
+            if self.cfg["roles"].get("badges", True):
+                for b in (link.get("badges") if isinstance(link, dict) else None) or []:
+                    if b in BADGE_ROLES:
+                        want.add(self.bot.role_id(b))
         want.discard(0)
         managed = {self.bot.role_id(k) for k in EARNED if k != "champion"} - {0}   # champion: see highlights
+        if not (isinstance(link, dict) and "badges" in link) and not self.account_links:
+            # the account service has not answered yet: leave badge roles as they are
+            managed -= {self.bot.role_id(k) for k in BADGE_ROLES}
         have = {r.id for r in member.roles} & managed
         add = [guild.get_role(r) for r in want - have]
         remove = [guild.get_role(r) for r in have - want]
