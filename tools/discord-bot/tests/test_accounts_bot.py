@@ -168,11 +168,13 @@ def test_lfs_board_posts_once_then_edits_only_on_change():
     assert len(ch.sent) == 1 and "Nobody right now" in ch.sent[0].kwargs["embed"].description
     run(cog.refresh_lfs())                                         # unchanged
     assert len(ch.edits) == 0
-    bot.accounts._lfs = [{"name": "Gianni", "note": "@everyone EU nights", "until": 2000000000}]
+    bot.accounts._lfs = [{"name": "Gi anni", "note": "@everyone EU nights [free](https://evil.example)", "until": 2000000000}]
     run(cog.refresh_lfs())
     assert len(ch.edits) == 1
     desc = ch.edits[0][1]["embed"].description
-    assert "Gianni" in desc and "@​everyone" in desc and "<t:2000000000:t>" in desc
+    assert "Gi anni" in desc and "@\u200beveryone" in desc and "<t:2000000000:t>" in desc
+    assert "/u/Gi%20anni)" in desc                                 # the profile link survives a space
+    assert "[free](" not in desc and "\\[free\\]" in desc            # a note cannot post a link
     ch.deleted.add(ch.sent[0].id)
     bot.accounts._lfs = []
     run(cog.refresh_lfs())                                         # board deleted: posted again
