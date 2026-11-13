@@ -27,6 +27,7 @@ folder) and only talks to Discord and the public GitHub releases API.
 | **Teams and scrims** | `/team create`, invite by DM button, roster, captain hand-over and a team ladder with its own rating. `/scrim challenge` puts a challenge in front of the other captain; on Accept the bot claims a match server, names both sides and sends every player their join line. The winner is read from the scoreboard and the ladder moves. |
 | **Tournaments** | Staff open one with `/tournament create`, captains sign up with a button. `/tournament start` draws a single-elimination bracket seeded on team rating (top seeds get the byes). Captains start their match with `/tournament play`; winners advance on their own and the bracket card updates. |
 | **Bug reports** | `/bug` opens a short form. Reports land in a private tracker channel as cards staff move through Confirmed, Fixed, Can't reproduce and so on; the reporter gets a DM on every change. Optionally one click files it as a GitHub issue. |
+| **Player accounts (1.3.0)** | Members with a [player account](https://truecombat.eu/account) get their roles from it: one record across every PC they linked, plus **Clean record** and **Trusted player** roles that follow the account's badges. An opt-in **weekly report** by DM every Monday evening (only to players who played that week: matches, kills and K/D against the week before, rating change, best match, new medals). A live **Looking for a squad** board in its own channel. Staff `/account lookup`, `/account ban` (covers every PC the account ever linked, survives deleting the account), `/account unban` and `/account bans`. |
 | **Suggestions** | `/suggest` posts an idea to the suggestions channel with 👍 / 👎 buttons (one vote per member). Staff mark it Planned, In progress, Shipped or Not planned, and `/suggestion top` lists the most wanted. |
 | **Map votes** | A weekly ballot (or `/mapvote start`) with a button per map and a few votes per member. The result is announced, staff get the winners, and with `map_votes.apply = "rcon"` the rotation is set on the servers directly. |
 | **Chat bridge** | Public game chat appears in a Discord channel per server. Team chat and commands (link codes) never leave the server. `/chat` sends a line back into the game: staff only by default, or every linked player. |
@@ -169,6 +170,23 @@ Between matches the bot keeps every match server locked with a random password.
   check them against a real log line when enabling the bridge.
 * **Map votes with `apply: "rcon"`** need `rcon_credential` on the server entries, like `/admin`.
 * Re-run `/setup roles` once after updating, so the **Season champion** role exists.
+
+## Player accounts (1.3.0)
+
+Reads the account service on the VPS (`tools/accounts/tcp_accounts.py`, 127.0.0.1:8095). Off until the bot has its token:
+
+```sh
+sudo cat /etc/tcp-accounts/internal-token | sudo ./deploy/install.sh --secret-stdin accounts-token
+```
+
+(use the path where the account service keeps its `internal-token` credential). Then:
+
+1. `/setup roles` once, so **Clean record** and **Trusted player** exist (`roles.badges: false` leaves them out).
+2. Set `channels.lfs` to a read-only channel for the *Looking for a squad* board (0 = off).
+3. `accounts.weekly` sets the day and hour of the weekly report (default Monday 19:00 Belgian time).
+
+An account outranks a `/link` link for roles: its stats id holds every PC the player linked. If the account service
+is down, roles are left as they are. The weekly report needs `week.json` from the stats service (accounts 1.1.0 patch).
 
 ## Game side (account linking)
 
