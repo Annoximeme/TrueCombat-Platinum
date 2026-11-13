@@ -1,0 +1,299 @@
+diff --git a/tools/server-bridge/tcp_stats.py b/tools/server-bridge/tcp_stats.py
+index 81e342c..f6e78e6 100644
+--- a/tools/server-bridge/tcp_stats.py
++++ b/tools/server-bridge/tcp_stats.py
+@@ -561,6 +561,8 @@ class StatsStore:
+         self.lock = threading.RLock()
+         self.allow_cheats = allow_cheats
+         self.min_matches = min_matches
++        # one person, one ranked place (player accounts): TCP_STATS_RANKED_ACCOUNTS_ONLY=1 limits the rating board to accounts
++        self.ranked_accounts_only = os.environ.get("TCP_STATS_RANKED_ACCOUNTS_ONLY", "") == "1"
+         self.require_anticheat = require_anticheat   # refuse reports without Easy Anti-Cheat on (live service)
+         self.rate_window = {}
+         with self.lock:
+@@ -747,14 +749,6 @@ class StatsStore:
+                 raise
+             return self.recompute()
+ 
+-    def last_seen_of(self, aliases):
+-        """When each account last played (its canonical id's last match), so the account service can tell an active
+-        player from one who left; a name is released only after a year without either."""
+-        ids = sorted({str(a.get("canonical", "")) for a in aliases or [] if isinstance(a, dict)})[:5000]
+-        with self.lock:
+-            return {r["pid"]: r["last_seen"] for r in self.db.execute(
+-                "SELECT pid, last_seen FROM players WHERE pid IN (%s)" % ",".join("?" * len(ids)), ids)} if ids else {}
+-
+     def _apply(self, m, server, received=None):
+         db = self.db
+         self._resolve(m, server)
+@@ -892,7 +886,7 @@ class StatsStore:
+         except (ValueError, TypeError):
+             return None
+ 
+-    def leaderboard(self, period="all", sort="rating", mode="", limit=100, since="", until="", scope="all"):
++    def leaderboard(self, period="all", sort="rating", mode="", limit=100, since="", until="", scope="all", who=""):
+         """period is all, 30d or 7d; since/until (ISO times) select any other window, e.g. a season.
+         sort "season" ranks by XP earned inside the window and "gain" by rating won inside it."""
+         sort = sort if sort in ("rating", "xp", "kills", "kd", "headshots", "wins", "season", "gain") else "rating"
+@@ -917,6 +911,12 @@ class StatsStore:
+         if scope == "ranked":
+             where.append("m.ranked = 1")
+         where.append("mp.pid NOT IN (SELECT id FROM voided WHERE kind='player')")
++        # one person, one ranked place: with the switch on (or ?who=accounts) the rating board lists account holders only
++        if who == "accounts" or (self.ranked_accounts_only and sort in ("rating", "gain") and who != "all"):
++            where.append("mp.pid IN (SELECT canonical FROM aliases)")
++            who = "accounts"
++        else:
++            who = "all"
+         cond = ("WHERE " + " AND ".join(where)) if where else ""
+         with self.lock:
+             nmatches = self.db.execute("SELECT COUNT(DISTINCT m.server || '/' || m.id) FROM match_players mp JOIN matches m "
+@@ -942,7 +942,7 @@ class StatsStore:
+         for i, p in enumerate(players):
+             p["position"] = i + 1
+         return {"schema": "tcp-leaderboard/1", "updated": now_iso(), "period": period,
+-                "since": since if period == "all" else None, "until": until, "sort": sort, "mode": mode, "scope": scope, "minMatches": self.min_matches, "matches": nmatches,
++                "since": since if period == "all" else None, "until": until, "sort": sort, "mode": mode, "scope": scope, "who": who, "minMatches": self.min_matches, "matches": nmatches,
+                 "players": players[:limit]}
+ 
+     def player(self, pid):
+@@ -1328,6 +1328,123 @@ class StatsStore:
+                    "mostActive": best("COUNT(*)")}
+         return out
+ 
++    def medals(self, pid):
++        """The service record of one player (tcp-medals/1): every medal earned, when, and in which match."""
++        p = self.player(pid)
++        if not p:
++            return None
++        pid = p["id"]
++        earned = {}
++        with self.lock:
++            results = [bool(r[0]) for r in self.db.execute(
++                "SELECT mp.won FROM match_players mp JOIN matches m ON m.server=mp.server AND m.id=mp.match "
++                "WHERE mp.pid=? AND m.ranked=1 ORDER BY mp.ended DESC", (pid,))]
++            mine = self.db.execute("SELECT mp.*, m.pub FROM match_players mp JOIN matches m ON m.server=mp.server AND m.id=mp.match "
++                                   "WHERE mp.pid=? ORDER BY mp.ended", (pid,)).fetchall()
++            for r in mine:
++                row = dict(r)
++                board = [dict(x) for x in self.db.execute("SELECT pid, kills, xp FROM match_players WHERE server=? AND match=?",
++                                                          (r["server"], r["match"]))]
++                for k in match_medals(row, board):
++                    if k not in earned:
++                        earned[k] = {"at": r["ended"], "match": r["pub"]}
++        for k in career_medals(dict(p, streakResults=results)):
++            earned.setdefault(k, {"at": None, "match": None})
++        order = list(MEDALS)
++        keys = sorted(earned, key=lambda k: (-MEDALS[k][2], order.index(k)))
++        return {"schema": "tcp-medals/1", "updated": now_iso(), "id": pid, "count": len(keys), "of": len(MEDALS),
++                "medals": [{"key": k, "name": MEDALS[k][0], "how": MEDALS[k][1], "tier": MEDALS[k][2],
++                            "at": earned[k]["at"], "match": earned[k]["match"]} for k in keys]}
++
++    def career(self, pid):
++        """A player's career month by month (tcp-career/1): matches, wins, kills, rating at the month's end, top weapon."""
++        pid = str(pid or "").lower()
++        if not re.fullmatch(r"[0-9a-f]{16}", pid):
++            return None
++        with self.lock:
++            if not self.db.execute("SELECT 1 FROM players WHERE pid=?", (pid,)).fetchone():
++                return None
++            months = [dict(r) for r in self.db.execute(
++                "SELECT substr(mp.ended, 1, 7) month, COUNT(*) matches, SUM(mp.won) wins, SUM(mp.kills) kills, "
++                "SUM(mp.deaths) deaths, SUM(mp.headshots) headshots, SUM(mp.xp) xp, SUM(mp.time_played) timePlayed "
++                "FROM match_players mp WHERE mp.pid=? GROUP BY month ORDER BY month", (pid,))]
++            for mo in months:
++                last = self.db.execute(
++                    "SELECT mp.rating_after FROM match_players mp JOIN matches m ON m.server=mp.server AND m.id=mp.match "
++                    "WHERE mp.pid=? AND m.ranked=1 AND substr(mp.ended, 1, 7)=? ORDER BY mp.ended DESC LIMIT 1",
++                    (pid, mo["month"])).fetchone()
++                mo["rating"] = int(round(last[0])) if last else None
++                top = self.db.execute("SELECT weapon, SUM(kills) k FROM match_weapons WHERE pid=? AND substr(ended, 1, 7)=? "
++                                      "GROUP BY weapon ORDER BY k DESC LIMIT 1", (pid, mo["month"])).fetchone()
++                mo["topWeapon"] = top["weapon"] if top and top["k"] else ""
++                mo["kd"] = round(mo["kills"] / mo["deaths"], 2) if mo["deaths"] else float(mo["kills"] or 0)
++            best = self.db.execute(
++                "SELECT m.pub, mp.ended, m.map, mp.kills, mp.deaths, mp.won FROM match_players mp JOIN matches m "
++                "ON m.server=mp.server AND m.id=mp.match WHERE mp.pid=? ORDER BY mp.kills DESC, mp.xp DESC LIMIT 5", (pid,))
++            best = [{"id": b["pub"], "ended": b["ended"], "map": b["map"], "kills": b["kills"], "deaths": b["deaths"],
++                     "won": bool(b["won"])} for b in best]
++        return {"schema": "tcp-career/1", "updated": now_iso(), "id": pid, "months": months, "bestMatches": best}
++
++    def rivals(self, pid, limit=5):
++        """The players someone meets most on the other side (tcp-rivals/1), with the record both ways."""
++        pid = str(pid or "").lower()
++        if not re.fullmatch(r"[0-9a-f]{16}", pid):
++            return None
++        with self.lock:
++            rows = self.db.execute(
++                "SELECT pb.pid opp, COUNT(*) n, SUM(pa.won) w FROM match_players pa JOIN match_players pb "
++                "ON pb.server=pa.server AND pb.match=pa.match AND pb.pid<>pa.pid AND (pb.team<>pa.team OR pa.team='') "
++                "WHERE pa.pid=? AND pb.pid NOT IN (SELECT id FROM voided WHERE kind='player') "
++                "GROUP BY pb.pid HAVING n >= 2 ORDER BY n DESC LIMIT ?", (pid, max(1, min(20, _int(limit, 1, 20))))).fetchall()
++            out = []
++            for r in rows:
++                kf = self.db.execute("SELECT COALESCE(SUM(kills), 0) FROM match_vs WHERE pid=? AND opp=?", (pid, r["opp"])).fetchone()[0]
++                ka = self.db.execute("SELECT COALESCE(SUM(kills), 0) FROM match_vs WHERE pid=? AND opp=?", (r["opp"], pid)).fetchone()[0]
++                name = self.db.execute("SELECT name FROM players WHERE pid=?", (r["opp"],)).fetchone()
++                out.append({"id": r["opp"], "name": name["name"] if name else "Player", "matches": r["n"], "wins": r["w"] or 0,
++                            "losses": r["n"] - (r["w"] or 0), "killsFor": kf, "killsAgainst": ka})
++        return {"schema": "tcp-rivals/1", "updated": now_iso(), "id": pid, "rivals": out}
++
++    def week(self, pid, now=None):
++        """A player's last seven days against the seven before (tcp-week/1), for the opt-in weekly report."""
++        pid = str(pid or "").lower()
++        if not re.fullmatch(r"[0-9a-f]{16}", pid):
++            return None
++        end = now or dt.datetime.now(dt.timezone.utc)
++        iso = lambda d: d.replace(microsecond=0).isoformat().replace("+00:00", "Z")
++        a, b = iso(end - dt.timedelta(days=7)), iso(end - dt.timedelta(days=14))
++
++        def span(lo, hi):
++            r = self.db.execute("SELECT COUNT(*) matches, COALESCE(SUM(won), 0) wins, COALESCE(SUM(kills), 0) kills, "
++                                "COALESCE(SUM(deaths), 0) deaths, COALESCE(SUM(headshots), 0) headshots, COALESCE(SUM(xp), 0) xp, "
++                                "COALESCE(SUM(time_played), 0) timePlayed, COALESCE(SUM(rating_after - rating_before), 0) rating "
++                                "FROM match_players WHERE pid=? AND ended >= ? AND ended < ?", (pid, lo, hi)).fetchone()
++            d = dict(r)
++            d["rating"] = int(round(d["rating"]))
++            d["kd"] = round(d["kills"] / d["deaths"], 2) if d["deaths"] else float(d["kills"])
++            return d
++        with self.lock:
++            if not self.db.execute("SELECT 1 FROM players WHERE pid=?", (pid,)).fetchone():
++                return None
++            this, last = span(a, iso(end)), span(b, a)
++            best = self.db.execute("SELECT m.pub, m.map, mp.kills, mp.deaths, mp.won FROM match_players mp JOIN matches m "
++                                   "ON m.server=mp.server AND m.id=mp.match WHERE mp.pid=? AND mp.ended >= ? "
++                                   "ORDER BY mp.kills DESC, mp.xp DESC LIMIT 1", (pid, a)).fetchone()
++        medals = [m for m in (self.medals(pid) or {}).get("medals", []) if m["at"] and m["at"] >= a]
++        return {"schema": "tcp-week/1", "updated": now_iso(), "id": pid, "since": a, "week": this, "before": last,
++                "best": {"id": best["pub"], "map": best["map"], "kills": best["kills"], "deaths": best["deaths"],
++                         "won": bool(best["won"])} if best else None,
++                "newMedals": [{"key": m["key"], "name": m["name"]} for m in medals]}
++
++    def account_summary(self, aliases):
++        """For the account service: last match and match count of each account's stats id."""
++        ids = sorted({str(a.get("canonical", "")) for a in aliases or [] if isinstance(a, dict)})[:5000]
++        if not ids:
++            return {}
++        with self.lock:
++            return {r["pid"]: {"lastSeen": r["last_seen"], "matches": r["matches"] or 0} for r in self.db.execute(
++                "SELECT pid, last_seen, matches FROM players WHERE pid IN (%s)" % ",".join("?" * len(ids)), ids)}
++
+     @staticmethod
+     def ranks():
+         return {"schema": "tcp-ranks/1", "ranks": [{"level": i + 1, "title": t, "short": s, "xp": RANK_XP[i]}
+@@ -1336,6 +1453,83 @@ class StatsStore:
+                       "(25 otherwise), 2 per minute played, minus 25 per team kill"}
+ 
+ 
++# ------------------------------------------------------------------ service record
++# Same keys, names and rules as the Discord bot (tcpbot/achievements.py), so a medal means the same everywhere.
++MEDALS = {
++    "first_match": ("Boots on the ground", "Finish your first ranked match", 1),
++    "first_win": ("First blood", "Win a ranked match", 1),
++    "matches_10": ("Regular", "Finish 10 ranked matches", 1),
++    "matches_50": ("Veteran", "Finish 50 ranked matches", 2),
++    "matches_100": ("Lifer", "Finish 100 ranked matches", 3),
++    "wins_10": ("Winning habit", "Win 10 ranked matches", 1),
++    "wins_50": ("Closer", "Win 50 ranked matches", 2),
++    "wins_100": ("Unstoppable", "Win 100 ranked matches", 3),
++    "kills_100": ("Rifleman", "100 kills", 1),
++    "kills_500": ("Sharpshooter", "500 kills", 2),
++    "kills_1000": ("Marksman", "1,000 kills", 2),
++    "kills_5000": ("One-man army", "5,000 kills", 3),
++    "headshots_100": ("Head hunter", "100 headshot kills", 2),
++    "headshots_500": ("Surgeon", "500 headshot kills", 3),
++    "rating_1100": ("On the rise", "Reach a skill rating of 1,100", 1),
++    "rating_1250": ("Contender", "Reach a skill rating of 1,250", 2),
++    "rating_1400": ("Elite", "Reach a skill rating of 1,400", 3),
++    "streak_3": ("On a roll", "Win three ranked matches in a row", 1),
++    "streak_5": ("Untouchable", "Win five ranked matches in a row", 3),
++    "hours_10": ("Time served", "Play for 10 hours", 1),
++    "hours_50": ("Home from home", "Play for 50 hours", 2),
++    "match_20": ("Wrecking crew", "20 kills in one match", 2),
++    "match_30": ("Rampage", "30 kills in one match", 3),
++    "match_hs10": ("Dead centre", "10 headshot kills in one match", 2),
++    "match_survivor": ("Ghost", "Win a match with 10 or more kills and at most two deaths", 3),
++    "match_mvp": ("Most valuable", "Top the scoreboard of a match you won", 1),
++    "match_objective": ("Mission first", "Three objectives in one match", 2),
++}
++
++
++def _steps(prefix, value, steps):
++    return ["%s_%d" % (prefix, s) for s in steps if (value or 0) >= s]
++
++
++def career_medals(p):
++    """What a player's profile (tcp-player/1) has earned over a career."""
++    out = []
++    matches, wins = p.get("matches") or 0, p.get("wins") or 0
++    if matches:
++        out.append("first_match")
++    if wins:
++        out.append("first_win")
++    out += _steps("matches", matches, (10, 50, 100))
++    out += _steps("wins", wins, (10, 50, 100))
++    out += _steps("kills", p.get("kills"), (100, 500, 1000, 5000))
++    out += _steps("headshots", p.get("headshots"), (100, 500))
++    out += _steps("rating", max(p.get("rating") or 0, p.get("peakRating") or 0), (1100, 1250, 1400))
++    out += _steps("hours", (p.get("timePlayed") or 0) / 3600, (10, 50))
++    best = run = 0
++    for m in reversed(p.get("streakResults") or []):          # oldest first
++        run = run + 1 if m else 0
++        best = max(best, run)
++    out += _steps("streak", best, (3, 5))
++    return out
++
++
++def match_medals(row, board):
++    """What one scoreboard row earned in its match (row and board: match_players rows as dicts)."""
++    out = []
++    kills = row.get("kills") or 0
++    out += _steps("match", kills, (20, 30))
++    if (row.get("headshots") or 0) >= 10:
++        out.append("match_hs10")
++    if row.get("won") and kills >= 10 and (row.get("deaths") or 0) <= 2:
++        out.append("match_survivor")
++    if (row.get("objectives") or 0) >= 3:
++        out.append("match_objective")
++    if row.get("won") and len(board) >= 4:
++        best = max(board, key=lambda r: (r.get("xp") or 0, r.get("kills") or 0))
++        if best.get("pid") == row.get("pid"):
++            out.append("match_mvp")
++    return out
++
++
+ # ------------------------------------------------------------------ HTTP
+ def handle_get(store, path, query):
+     """Returns (code, json) for GET routes, or None when the path is not a stats route."""
+@@ -1343,7 +1537,7 @@ def handle_get(store, path, query):
+     if path == "/leaderboard.json":
+         return 200, store.leaderboard(q.get("period", "all"), q.get("sort", "rating"), q.get("mode", ""),
+                                       q.get("limit", 100), q.get("since", ""), q.get("until", ""),
+-                                      "ranked" if q.get("scope") == "ranked" else "all")
++                                      "ranked" if q.get("scope") == "ranked" else "all", q.get("who", ""))
+     scope = "ranked" if q.get("scope") == "ranked" else "all"
+     if path == "/stats.json":
+         p = store.detail(q.get("id"), scope, q.get("period", "all"))
+@@ -1372,6 +1566,11 @@ def handle_get(store, path, query):
+         return 200, store.ranks()
+     if path == "/netstats.json":
+         return 200, store.netstats(q.get("days", 30))
++    for route, fn in (("/medals.json", store.medals), ("/career.json", store.career), ("/rivals.json", store.rivals),
++                      ("/week.json", store.week)):
++        if path == route:
++            r = fn(q.get("id"))
++            return (200, r) if r else (404, {"error": "unknown player"})
+     return None
+ 
+ 
+@@ -1437,7 +1636,9 @@ def handle_staff(store, method, path, headers, client, body, token):
+             n = store.set_aliases(d.get("aliases"))
+         except (ValueError, TypeError, AttributeError) as exc:
+             return 400, {"error": str(exc)}
+-        return 200, {"ok": True, "rebuilt": "unchanged" if n is None else n, "seen": store.last_seen_of(d.get("aliases"))}
++        summary = store.account_summary(d.get("aliases"))
++        return 200, {"ok": True, "rebuilt": "unchanged" if n is None else n,
++                     "seen": {k: v["lastSeen"] for k, v in summary.items()}, "players": summary}
+     if (not token or client not in ("127.0.0.1", "::1") or headers.get("X-Forwarded-For")
+             or not hmac.compare_digest(str(headers.get("X-Staff-Token", "")), token)):
+         return 404, {"error": "not found"}

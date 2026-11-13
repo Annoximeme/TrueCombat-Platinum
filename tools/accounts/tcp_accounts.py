@@ -43,10 +43,19 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.0.3"
+import tcp_webauthn as webauthn
+
+VERSION = "1.1.0"
 log = logging.getLogger("tcp-accounts")
 
 LINK_TAG = b"TrueCombat account link v1\n"
+PAIR_TAG = b"TrueCombat account pair v1\n"     # the launcher's QR pairing: it signs a time, not a code
+PAIR_SKEW = 300                   # seconds the launcher's clock may be off
+MAX_PASSKEYS = 10
+LFS_HOURS = 6                     # looking for a squad lasts at most this long
+NAME_HISTORY_DAYS = 30            # "formerly known as" after a rename
+CLEAN_DAYS, CLEAN_MATCHES, CLEAN_WINDOW = 30, 20, 90      # clean-record badge: account age, matches, days without a sanction
+TRUSTED_DAYS, TRUSTED_MATCHES = 60, 50                     # trusted player (reserved slots): clean, older, more matches
 LINK_TTL = 600                    # seconds a link code lives
 SESSION_DAYS = 30
 PENDING_SESSION = 3600            # a signed-in Discord user who has not made an account yet
@@ -124,6 +133,13 @@ def name_problem(raw: str) -> str | None:
     if any(w in sk for w in _SK["abuse"]) or sk in _SK["abuse_exact"]:
         return "That name is not allowed."
     return None
+
+
+def note_problem(note: str) -> bool:
+    """A short free-text note (looking for a squad): the same abuse list as names, long words anywhere, short ones as words."""
+    sk = skeleton(note)
+    words = {skeleton(w) for w in re.split(r"[\s,;:/]+", note) if w}
+    return any(w in sk for w in _sk_list(ABUSE)) or bool(words & set(_sk_list(ABUSE_EXACT)))
 
 
 def name_hash(sk: str) -> str:
@@ -260,7 +276,18 @@ CREATE TABLE IF NOT EXISTS sessions(id TEXT PRIMARY KEY, discord_id TEXT NOT NUL
 CREATE TABLE IF NOT EXISTS links(code TEXT PRIMARY KEY, account TEXT NOT NULL, created INTEGER NOT NULL,
   used_by TEXT);
 CREATE TABLE IF NOT EXISTS signins(at INTEGER NOT NULL, account TEXT, ip TEXT);
+CREATE TABLE IF NOT EXISTS name_history(account TEXT NOT NULL, display TEXT NOT NULL, until INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS pairs(id TEXT PRIMARY KEY, kid TEXT NOT NULL, public TEXT NOT NULL, label TEXT, created INTEGER NOT NULL,
+  account TEXT, state TEXT NOT NULL DEFAULT 'waiting');
+CREATE TABLE IF NOT EXISTS passkeys(id TEXT PRIMARY KEY, account TEXT NOT NULL, key TEXT NOT NULL, sign_count INTEGER NOT NULL,
+  label TEXT, created INTEGER NOT NULL, used INTEGER);
+CREATE TABLE IF NOT EXISTS challenges(id TEXT PRIMARY KEY, kind TEXT NOT NULL, challenge TEXT NOT NULL, account TEXT,
+  created INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS bans(id INTEGER PRIMARY KEY, kind TEXT NOT NULL, discord_hash TEXT NOT NULL, account TEXT,
+  kids TEXT NOT NULL, reason TEXT, by_whom TEXT, created INTEGER NOT NULL, until INTEGER, lifted INTEGER);
 CREATE INDEX IF NOT EXISTS keys_account ON keys(account);
+CREATE INDEX IF NOT EXISTS passkeys_account ON passkeys(account);
+CREATE INDEX IF NOT EXISTS bans_account ON bans(account);
 CREATE INDEX IF NOT EXISTS names_account ON names(account);
 """
 
@@ -281,6 +308,11 @@ class Store:
             self.db.execute("PRAGMA journal_mode=WAL")
             self.db.execute("PRAGMA foreign_keys=ON")
             self.db.executescript(DDL)
+            cols = {r[1] for r in self.db.execute("PRAGMA table_info(accounts)")}
+            for col, decl in (("lfs_until", "INTEGER"), ("lfs_note", "TEXT"), ("weekly", "INTEGER NOT NULL DEFAULT 0"),
+                              ("matches", "INTEGER NOT NULL DEFAULT 0")):
+                if col not in cols:
+                    self.db.execute("ALTER TABLE accounts ADD COLUMN %s %s" % (col, decl))
             if not self.one("SELECT v FROM meta WHERE k='ip_salt'"):
                 self.x("INSERT INTO meta VALUES('ip_salt', ?)", (secrets.token_hex(16),))
 
@@ -450,6 +482,8 @@ class Accounts:
             db.db.execute("DELETE FROM names WHERE skeleton=?", (sk,))      # an expired hold
             if db.db.execute("SELECT 1 FROM accounts WHERE discord_id=?", (s["discord_id"],)).fetchone():
                 raise ApiError(409, "You already have an account.")
+            if self.ban_of(discord_id=s["discord_id"]):
+                raise ApiError(403, "This Discord account is banned from TrueCombat: Platinum.")
             db.db.execute("INSERT INTO accounts(id, discord_id, name, skeleton, visibility, show_discord, created, "
                           "name_changed, last_active) VALUES(?,?,?,?,?,0,?,?,?)",
                           (acct, s["discord_id"], name, sk, visibility, t, t, t))
@@ -474,6 +508,7 @@ class Accounts:
                 db.db.execute("UPDATE names SET display=? WHERE skeleton=? AND account=?", (name, sk, acct["id"]))
                 db.db.execute("UPDATE accounts SET name=? WHERE id=?", (name, acct["id"]))
             else:
+                db.db.execute("INSERT INTO name_history VALUES(?,?,?)", (acct["id"], acct["name"], t + NAME_HISTORY_DAYS * 86400))
                 db.db.execute("UPDATE names SET held_until=? WHERE skeleton=? AND account=?",
                               (t + NAME_HOLD_DAYS * 86400, acct["skeleton"], acct["id"]))
                 db.db.execute("DELETE FROM names WHERE skeleton=?", (sk,))
@@ -483,8 +518,10 @@ class Accounts:
         self.dirty.set()
         return self.account(acct["id"])
 
-    def settings(self, s: dict, visibility: str | None, show_discord: bool | None) -> dict:
+    def settings(self, s: dict, visibility: str | None, show_discord: bool | None, weekly: bool | None = None) -> dict:
         acct = s["account"]
+        if weekly is not None:
+            self.store.x("UPDATE accounts SET weekly=? WHERE id=?", (1 if weekly else 0, acct["id"]))
         if visibility is not None:
             if visibility not in ("public", "hidden"):
                 raise ApiError(400, "Pick public or hidden.")
@@ -500,7 +537,9 @@ class Accounts:
 
     def delete(self, acct: dict) -> None:
         with self.store.tx() as db:
-            for table, col in (("keys", "account"), ("names", "account"), ("links", "account")):
+            db.db.execute("UPDATE bans SET account=NULL WHERE account=?", (acct["id"],))   # a ban outlives the account
+            for table, col in (("keys", "account"), ("names", "account"), ("links", "account"), ("name_history", "account"),
+                               ("pairs", "account"), ("passkeys", "account"), ("challenges", "account")):
                 db.db.execute("DELETE FROM %s WHERE %s=?" % (table, col), (acct["id"],))
             db.db.execute("DELETE FROM sessions WHERE discord_id=?", (acct["discord_id"],))
             db.db.execute("DELETE FROM signins WHERE account=?", (acct["id"],))
@@ -518,6 +557,10 @@ class Accounts:
             "keys": self.store.all("SELECT kid, public, label, linked, retired FROM keys WHERE account=?", (a["id"],)),
             "sessions": self.store.all("SELECT created, seen FROM sessions WHERE discord_id=?", (a["discord_id"],)),
             "signins": [r["at"] for r in self.store.all("SELECT at FROM signins WHERE account=? ORDER BY at", (a["id"],))],
+            "nameHistory": self.store.all("SELECT display, until FROM name_history WHERE account=?", (a["id"],)),
+            "passkeys": self.store.all("SELECT label, created, used FROM passkeys WHERE account=?", (a["id"],)),
+            "lookingForSquad": {"until": a["lfs_until"], "note": a["lfs_note"]}, "weeklyReport": bool(a["weekly"]),
+            "sanctions": self.store.all("SELECT kind, reason, created, until, lifted FROM bans WHERE account=?", (a["id"],)),
             "note": "Match stats are public and anonymous; see your profile or the stats service for them.",
         }
 
@@ -562,23 +605,359 @@ class Accounts:
             if not row or row["used_by"] or t - row["created"] > LINK_TTL:
                 raise ApiError(410, "This link code has expired. Start again on truecombat.eu.")
             acct = row["account"]
-            owner = db.db.execute("SELECT id, account FROM keys WHERE kid=? AND retired IS NULL", (kid,)).fetchone()
-            if owner and owner["account"] != acct:
-                raise ApiError(409, "This PC is linked to another account. Unlink it there first.")
-            if owner:
-                db.db.execute("UPDATE keys SET label=? WHERE id=?", (label, owner["id"]))
-            else:
-                active = db.db.execute("SELECT COUNT(*) FROM keys WHERE account=? AND retired IS NULL", (acct,)).fetchone()[0]
-                if active >= MAX_KEYS:
-                    raise ApiError(409, "An account can link %d PCs. Unlink an old one first." % MAX_KEYS)
-                db.db.execute("INSERT INTO keys(kid, account, public, label, linked, retired) VALUES(?,?,?,?,?,NULL)",
-                              (kid, acct, public_hex, label, t))
+            self._link_key(db, acct, kid, public_hex, label, t)
             db.db.execute("UPDATE links SET used_by=? WHERE code=?", (kid, h))
             db.db.execute("UPDATE accounts SET last_active=? WHERE id=?", (t, acct))
             name = db.db.execute("SELECT name FROM accounts WHERE id=?", (acct,)).fetchone()["name"]
         self.dirty.set()
         log.info("key %s linked to account %s", kid[:12], acct)
         return {"ok": True, "key": kid, "account": name}
+
+    def _link_key(self, db, acct: str, kid: str, public_hex: str, label: str, t: int) -> None:
+        """Inside a transaction: the key joins the account (or gets its new label)."""
+        if self.ban_of(account=acct) or self.ban_of(kid=kid):
+            raise ApiError(403, "This PC or account is banned from TrueCombat: Platinum.")
+        owner = db.db.execute("SELECT id, account FROM keys WHERE kid=? AND retired IS NULL", (kid,)).fetchone()
+        if owner and owner["account"] != acct:
+            raise ApiError(409, "This PC is linked to another account. Unlink it there first.")
+        if owner:
+            db.db.execute("UPDATE keys SET label=? WHERE id=?", (label, owner["id"]))
+            return
+        active = db.db.execute("SELECT COUNT(*) FROM keys WHERE account=? AND retired IS NULL", (acct,)).fetchone()[0]
+        if active >= MAX_KEYS:
+            raise ApiError(409, "An account can link %d PCs. Unlink an old one first." % MAX_KEYS)
+        db.db.execute("INSERT INTO keys(kid, account, public, label, linked, retired) VALUES(?,?,?,?,?,NULL)",
+                      (kid, acct, public_hex, label, t))
+
+    # -- linking a PC with a phone (the launcher shows a QR code)
+    def pair_start(self, public_hex: str, stamp, signature_hex: str, label: str, ip: str) -> dict:
+        if self.limited("pair:" + ip, 20, 3600):
+            raise ApiError(429, "Too many tries. Try again later.")
+        public_hex, signature_hex, stamp = str(public_hex).lower(), str(signature_hex).lower(), str(stamp)
+        if (not re.fullmatch(r"[0-9a-f]{64}", public_hex) or not re.fullmatch(r"[0-9a-f]{128}", signature_hex)
+                or not re.fullmatch(r"[0-9]{9,11}", stamp)):
+            raise ApiError(400, "Bad request.")
+        if abs(now() - int(stamp)) > PAIR_SKEW:
+            raise ApiError(400, "Your PC's clock is off. Set it to the right time and try again.")
+        public = bytes.fromhex(public_hex)
+        msg = PAIR_TAG + stamp.encode() + b"\n" + public_hex.encode()
+        if not ed25519_verify(public, msg, bytes.fromhex(signature_hex)):
+            raise ApiError(401, "The signature does not match this key.")
+        kid = key_id(public)
+        if self.ban_of(kid=kid):
+            raise ApiError(403, "This PC is banned from TrueCombat: Platinum.")
+        pair = secrets.token_hex(16)
+        t = now()
+        self.store.x("DELETE FROM pairs WHERE kid=? AND state='waiting'", (kid,))
+        self.store.x("INSERT INTO pairs(id, kid, public, label, created, state) VALUES(?,?,?,?,?,'waiting')",
+                     (hashlib.sha256(pair.encode()).hexdigest(), kid, public_hex, display_name(label)[:32] or "PC", t))
+        site = self.cfg.get("site_url", self.cfg.get("public_url", "")).rstrip("/")
+        return {"pair": pair, "url": site + "/account?pair=" + pair, "expires_in": LINK_TTL, "key": kid[:8]}
+
+    def _pair(self, pair: str) -> dict | None:
+        if not re.fullmatch(r"[0-9a-f]{32}", str(pair or "")):
+            raise ApiError(400, "Bad code.")
+        row = self.store.one("SELECT * FROM pairs WHERE id=?", (hashlib.sha256(pair.encode()).hexdigest(),))
+        if row and row["state"] == "waiting" and now() - row["created"] > LINK_TTL:
+            row["state"] = "expired"
+        return row
+
+    def pair_info(self, acct: dict, pair: str) -> dict:
+        row = self._pair(pair)
+        if not row:
+            raise ApiError(404, "This code is not known. Scan the code on your PC again.")
+        return {"state": row["state"], "label": row["label"], "key": row["kid"][:8], "created": row["created"],
+                "linkedHere": row["account"] == acct["id"]}
+
+    def pair_answer(self, acct: dict, pair: str, approve: bool) -> dict:
+        row = self._pair(pair)
+        if not row or row["state"] != "waiting":
+            raise ApiError(410, "This code has expired. Scan the code on your PC again.")
+        t = now()
+        with self.store.tx() as db:
+            if approve:
+                self._link_key(db, acct["id"], row["kid"], row["public"], row["label"], t)
+                db.db.execute("UPDATE accounts SET last_active=? WHERE id=?", (t, acct["id"]))
+            db.db.execute("UPDATE pairs SET state=?, account=? WHERE id=?",
+                          ("linked" if approve else "refused", acct["id"], row["id"]))
+        if approve:
+            self.dirty.set()
+        return {"state": "linked" if approve else "refused", "label": row["label"]}
+
+    def pair_status(self, pair: str) -> dict:
+        row = self._pair(pair)
+        if not row:
+            return {"state": "unknown"}
+        out = {"state": row["state"]}
+        if row["state"] == "linked":
+            a = self.account(row["account"])
+            out["account"] = a["name"] if a else ""
+        return out
+
+    # -- lost or stolen PC: every PC off the account, every session signed out
+    def panic(self, acct: dict) -> dict:
+        t = now()
+        with self.store.tx() as db:
+            n = db.db.execute("UPDATE keys SET retired=? WHERE account=? AND retired IS NULL", (t, acct["id"])).rowcount
+            db.db.execute("DELETE FROM sessions WHERE discord_id=?", (acct["discord_id"],))
+            db.db.execute("DELETE FROM links WHERE account=?", (acct["id"],))
+        self.dirty.set()
+        log.info("account %s: every PC unlinked and signed out (%d PCs)", acct["id"], n)
+        return {"ok": True, "unlinked": n}
+
+    # -- passkeys
+    def _rp(self) -> tuple:
+        site = self.cfg.get("site_url", self.cfg.get("public_url", "http://127.0.0.1")).rstrip("/")
+        host = urllib.parse.urlsplit(site).hostname or "localhost"
+        return site, self.cfg.get("rp_id", host)
+
+    def _challenge(self, kind: str, account: str | None) -> tuple:
+        cid, challenge = secrets.token_urlsafe(24), webauthn.b64u(secrets.token_bytes(32))
+        t = now()
+        self.store.x("DELETE FROM challenges WHERE created<?", (t - 600,))
+        self.store.x("INSERT INTO challenges VALUES(?,?,?,?,?)", (hashlib.sha256(cid.encode()).hexdigest(), kind, challenge, account, t))
+        return cid, challenge
+
+    def _take_challenge(self, cid: str, kind: str) -> dict:
+        if not cid or not re.fullmatch(r"[A-Za-z0-9_-]{20,80}", cid):
+            raise ApiError(400, "This request has expired. Try again.")
+        h = hashlib.sha256(cid.encode()).hexdigest()
+        row = self.store.one("SELECT * FROM challenges WHERE id=? AND kind=?", (h, kind))
+        self.store.x("DELETE FROM challenges WHERE id=?", (h,))
+        if not row or now() - row["created"] > 300:
+            raise ApiError(400, "This request has expired. Try again.")
+        return row
+
+    def passkey_register_begin(self, acct: dict) -> tuple:
+        if self.store.one("SELECT COUNT(*) AS n FROM passkeys WHERE account=?", (acct["id"],))["n"] >= MAX_PASSKEYS:
+            raise ApiError(409, "An account can have %d passkeys. Remove an old one first." % MAX_PASSKEYS)
+        cid, challenge = self._challenge("register", acct["id"])
+        site, rp_id = self._rp()
+        options = {"challenge": challenge, "rp": {"id": rp_id, "name": "TrueCombat: Platinum"},
+                   "user": {"id": webauthn.b64u(acct["id"].encode()), "name": acct["name"], "displayName": acct["name"]},
+                   "pubKeyCredParams": [{"type": "public-key", "alg": webauthn.ALG_EDDSA},
+                                        {"type": "public-key", "alg": webauthn.ALG_ES256}],
+                   "timeout": 120000, "attestation": "none",
+                   "authenticatorSelection": {"residentKey": "required", "requireResidentKey": True,
+                                              "userVerification": "preferred"},
+                   "excludeCredentials": [{"type": "public-key", "id": r["id"]} for r in
+                                          self.store.all("SELECT id FROM passkeys WHERE account=?", (acct["id"],))]}
+        return cid, options
+
+    def passkey_register_finish(self, acct: dict, cid: str, d: dict) -> dict:
+        ch = self._take_challenge(cid, "register")
+        if ch["account"] != acct["id"]:
+            raise ApiError(400, "This request has expired. Try again.")
+        site, rp_id = self._rp()
+        try:
+            reg = webauthn.verify_registration(webauthn.unb64u(d.get("clientDataJSON")), webauthn.unb64u(d.get("attestationObject")),
+                                               ch["challenge"], site, rp_id)
+        except (ValueError, TypeError) as e:
+            raise ApiError(400, "The passkey was not added: %s." % e) from e
+        cred = webauthn.b64u(reg["credentialId"])
+        if self.store.one("SELECT 1 AS x FROM passkeys WHERE id=?", (cred,)):
+            raise ApiError(409, "This passkey is already added.")
+        label = display_name(d.get("label", ""))[:32] or "Passkey"
+        self.store.x("INSERT INTO passkeys VALUES(?,?,?,?,?,?,NULL)",
+                     (cred, acct["id"], json.dumps(reg["key"]), reg["signCount"], label, now()))
+        return {"ok": True, "id": cred, "label": label}
+
+    def passkey_login_begin(self, ip: str) -> tuple:
+        if self.limited("pklogin:" + ip, 30, 600):
+            raise ApiError(429, "Too many tries. Try again later.")
+        cid, challenge = self._challenge("login", None)
+        site, rp_id = self._rp()
+        return cid, {"challenge": challenge, "rpId": rp_id, "timeout": 120000, "userVerification": "preferred",
+                     "allowCredentials": []}
+
+    def passkey_login_finish(self, cid: str, d: dict, ip: str) -> str:
+        ch = self._take_challenge(cid, "login")
+        row = self.store.one("SELECT * FROM passkeys WHERE id=?", (str(d.get("id", ""))[:1400],))
+        if not row:
+            raise ApiError(401, "This passkey is not linked to an account. Sign in with Discord.")
+        acct = self.account(row["account"])
+        if not acct or (d.get("userHandle") and webauthn.unb64u(d["userHandle"]) != acct["id"].encode()):
+            raise ApiError(401, "This passkey is not linked to an account. Sign in with Discord.")
+        site, rp_id = self._rp()
+        try:
+            count = webauthn.verify_assertion(json.loads(row["key"]), webauthn.unb64u(d.get("clientDataJSON")),
+                                              webauthn.unb64u(d.get("authenticatorData")), webauthn.unb64u(d.get("signature")),
+                                              ch["challenge"], site, rp_id, row["sign_count"], ed25519_verify)
+        except (ValueError, TypeError) as e:
+            raise ApiError(401, "Sign-in failed: %s." % e) from e
+        self.store.x("UPDATE passkeys SET sign_count=?, used=? WHERE id=?", (count, now(), row["id"]))
+        return self.new_session(acct["discord_id"], acct["discord_name"] or acct["name"], acct["discord_avatar"] or "", ip)
+
+    def passkey_remove(self, acct: dict, cred: str) -> None:
+        if not self.store.x("DELETE FROM passkeys WHERE id=? AND account=?", (str(cred), acct["id"])).rowcount:
+            raise ApiError(404, "No such passkey.")
+
+    # -- looking for a squad
+    def lfs(self, acct: dict, on: bool, note: str, hours) -> dict:
+        if self.ban_of(account=acct["id"]):
+            raise ApiError(403, "Your account is suspended.")
+        if not on:
+            self.store.x("UPDATE accounts SET lfs_until=NULL, lfs_note=NULL WHERE id=?", (acct["id"],))
+            return {"on": False}
+        try:
+            hours = max(1, min(LFS_HOURS, int(hours or 2)))
+        except (TypeError, ValueError):
+            hours = 2
+        note = re.sub(r"\s+", " ", "".join(ch for ch in COLOR.sub("", str(note or "")) if ch.isprintable())).strip()[:60]
+        if note_problem(note):
+            raise ApiError(400, "Keep the note friendly.")
+        until = now() + hours * 3600
+        self.store.x("UPDATE accounts SET lfs_until=?, lfs_note=? WHERE id=?", (until, note, acct["id"]))
+        return {"on": True, "until": until, "note": note}
+
+    def lfs_list(self) -> list:
+        out = []
+        for a in self.store.all("SELECT * FROM accounts WHERE lfs_until>? AND visibility='public' ORDER BY lfs_until DESC", (now(),)):
+            if self.ban_of(account=a["id"]):
+                continue
+            item = {"name": a["name"], "statsId": account_pid(a["id"]), "note": a["lfs_note"] or "", "until": a["lfs_until"]}
+            if a["show_discord"] and a["discord_name"]:
+                item["discord"] = a["discord_name"]
+            out.append(item)
+        return out[:200]
+
+    # -- bans and the clean record
+    @staticmethod
+    def discord_hash(discord_id: str) -> str:
+        return hashlib.sha256(("tcp-ban:" + str(discord_id)).encode()).hexdigest()[:32]
+
+    def ban_of(self, account: str = "", discord_id: str = "", kid: str = "") -> dict | None:
+        """The active ban that covers this account, Discord user or key, if any."""
+        t = now()
+        live = "kind='ban' AND lifted IS NULL AND (until IS NULL OR until>?)"
+        if account:
+            row = self.store.one("SELECT * FROM bans WHERE account=? AND " + live, (account, t))
+            if row:
+                return row
+            a = self.account(account)
+            discord_id = discord_id or (a["discord_id"] if a else "")
+        if discord_id:
+            row = self.store.one("SELECT * FROM bans WHERE discord_hash=? AND " + live, (self.discord_hash(discord_id), t))
+            if row:
+                return row
+        if kid:
+            for row in self.store.all("SELECT * FROM bans WHERE " + live, (t,)):
+                if kid in row["kids"].split(","):
+                    return row
+        return None
+
+    def sanction(self, who: dict, kind: str, reason: str, days, by: str) -> dict:
+        """Staff: ban (or warn) an account. A ban covers every PC the account has ever linked, now and later."""
+        if kind not in ("ban", "warning"):
+            raise ApiError(400, "kind is ban or warning")
+        a = self.account(who.get("id", "")) if who.get("id") else (self.by_discord(who["discord"]) if who.get("discord")
+                                                                   else self.by_name(who.get("name", "")))
+        if not a:
+            raise ApiError(404, "No such account.")
+        try:
+            days = max(0, min(3650, int(days or 0)))
+        except (TypeError, ValueError) as e:
+            raise ApiError(400, "days is a number") from e
+        t = now()
+        kids = ",".join(r["kid"] for r in self.store.all("SELECT DISTINCT kid FROM keys WHERE account=?", (a["id"],)))
+        cur = self.store.x("INSERT INTO bans(kind, discord_hash, account, kids, reason, by_whom, created, until, lifted) "
+                           "VALUES(?,?,?,?,?,?,?,?,NULL)",
+                           (kind, self.discord_hash(a["discord_id"]), a["id"], kids, str(reason or "")[:300], str(by or "")[:64], t,
+                            t + days * 86400 if days else None))
+        if kind == "ban":
+            self.store.x("DELETE FROM sessions WHERE discord_id=?", (a["discord_id"],))
+            self.store.x("UPDATE accounts SET lfs_until=NULL WHERE id=?", (a["id"],))
+        self.dirty.set()
+        return {"ok": True, "ban": cur.lastrowid, "account": a["name"], "keys": len([k for k in kids.split(",") if k])}
+
+    def lift(self, ban_id) -> dict:
+        try:
+            n = self.store.x("UPDATE bans SET lifted=? WHERE id=? AND lifted IS NULL", (now(), int(ban_id))).rowcount
+        except (TypeError, ValueError) as e:
+            raise ApiError(400, "Bad ban id.") from e
+        if not n:
+            raise ApiError(404, "No such ban.")
+        self.dirty.set()
+        return {"ok": True}
+
+    def bans_list(self) -> list:
+        out = []
+        for r in self.store.all("SELECT * FROM bans ORDER BY created DESC, id DESC LIMIT 500"):
+            a = self.account(r["account"]) if r["account"] else None
+            out.append({"id": r["id"], "kind": r["kind"], "account": a["name"] if a else None, "reason": r["reason"],
+                        "by": r["by_whom"], "created": r["created"], "until": r["until"], "lifted": r["lifted"],
+                        "keys": len([k for k in r["kids"].split(",") if k])})
+        return out
+
+    def keys_for_ban(self, row: dict) -> set:
+        kids = {k for k in row["kids"].split(",") if k}
+        if row["account"]:                       # PCs linked after the ban are covered too
+            kids |= {r["kid"] for r in self.store.all("SELECT kid FROM keys WHERE account=?", (row["account"],))}
+        return kids
+
+    def bans_txt(self) -> str:
+        """For game servers: TCPBANS1, then one line per banned key tag with the end of the ban (0 = permanent)."""
+        t = now()
+        lines, seen = ["TCPBANS1 %d" % t], {}
+        for r in self.store.all("SELECT * FROM bans WHERE kind='ban' AND lifted IS NULL AND (until IS NULL OR until>?)", (t,)):
+            for kid in self.keys_for_ban(r):
+                end = r["until"] or 0
+                prev = seen.get(kid)
+                seen[kid] = 0 if prev == 0 or end == 0 else max(prev or 0, end)
+        for kid in sorted(seen, key=key_tag):
+            lines.append("%s %d" % (key_tag(kid), seen[kid]))
+        return "\n".join(lines) + "\n"
+
+    def badges(self, a: dict) -> list:
+        """clean: a month old, 20 matches, no sanction in 90 days. trusted: clean, two months old, 50 matches."""
+        t = now()
+        if self.ban_of(account=a["id"]):
+            return []
+        if self.store.one("SELECT 1 AS x FROM bans WHERE account=? AND created>?", (a["id"], t - CLEAN_WINDOW * 86400)):
+            return []
+        age, matches = t - a["created"], a["matches"] or 0
+        out = []
+        if age >= CLEAN_DAYS * 86400 and matches >= CLEAN_MATCHES:
+            out.append("clean")
+            if age >= TRUSTED_DAYS * 86400 and matches >= TRUSTED_MATCHES:
+                out.append("trusted")
+        return out
+
+    def trusted_txt(self) -> str:
+        """For game servers: TCPTRUST1, then the key tags of trusted players (they may take a reserved slot)."""
+        lines = ["TCPTRUST1 %d" % now()]
+        tags = []
+        for a in self.store.all("SELECT * FROM accounts"):
+            if "trusted" in self.badges(a):
+                tags += [key_tag(k["kid"]) for k in self.keys_of(a["id"], active_only=True)]
+        return "\n".join(lines + sorted(tags)) + "\n"
+
+    def badges_json(self) -> dict:
+        out = {}
+        for a in self.store.all("SELECT * FROM accounts WHERE visibility='public'"):
+            b = self.badges(a)
+            if b:
+                out[account_pid(a["id"])] = b
+        return out
+
+    def formerly(self, acct_id: str) -> list:
+        return [r["display"] for r in self.store.all("SELECT display FROM name_history WHERE account=? AND until>? ORDER BY until DESC",
+                                                     (acct_id, now()))]
+
+    # -- for the Discord bot
+    def roles(self) -> list:
+        """Every account the bot should treat as linked: Discord id, stats id, badges."""
+        out = []
+        for a in self.store.all("SELECT * FROM accounts"):
+            if self.ban_of(account=a["id"]):
+                continue
+            out.append({"discordId": a["discord_id"], "name": a["name"], "statsId": account_pid(a["id"]), "badges": self.badges(a),
+                        "lastActive": a["last_active"]})
+        return out
+
+    def weekly_list(self) -> list:
+        return [{"discordId": a["discord_id"], "name": a["name"], "statsId": account_pid(a["id"])}
+                for a in self.store.all("SELECT * FROM accounts WHERE weekly=1") if not self.ban_of(account=a["id"])]
 
     def unlink(self, acct: dict, kid: str) -> None:
         """The key stops counting for this account from now on; matches played with it before stay yours."""
@@ -609,15 +988,26 @@ class Accounts:
             "nameReserved": self.name_held(a),
             "keys": [{"id": k["kid"], "label": k["label"], "linked": k["linked"], "retired": k["retired"]}
                      for k in self.keys_of(a["id"])],
+            "passkeys": [{"id": r["id"], "label": r["label"], "created": r["created"], "used": r["used"]} for r in
+                         self.store.all("SELECT id, label, created, used FROM passkeys WHERE account=? ORDER BY created", (a["id"],))],
+            "weekly": bool(a["weekly"]), "badges": self.badges(a), "matches": a["matches"] or 0,
+            "lookingForSquad": {"until": a["lfs_until"], "note": a["lfs_note"] or ""} if (a["lfs_until"] or 0) > t else None,
+            "formerly": self.formerly(a["id"]),
         }
+        ban = self.ban_of(account=a["id"])
+        if ban:
+            out["account"]["banned"] = {"reason": ban["reason"] or "", "until": ban["until"]}
         return out
 
     def profile(self, name: str) -> dict | None:
         a = self.by_name(name)
-        if not a or a["visibility"] != "public":
+        if not a or a["visibility"] != "public" or self.ban_of(account=a["id"]):
             return None
+        t = now()
         out = {"name": a["name"], "verified": True, "created": a["created"], "statsId": account_pid(a["id"]),
-               "pcs": len(self.keys_of(a["id"], active_only=True))}
+               "pcs": len(self.keys_of(a["id"], active_only=True)), "badges": self.badges(a), "formerly": self.formerly(a["id"])}
+        if (a["lfs_until"] or 0) > t:
+            out["lookingForSquad"] = {"until": a["lfs_until"], "note": a["lfs_note"] or ""}
         if a["show_discord"] and a["discord_name"]:
             out["discord"] = {"name": a["discord_name"],
                               "avatar": ("https://cdn.discordapp.com/avatars/%s/%s.png?size=128" % (a["discord_id"], a["discord_avatar"]))
@@ -628,7 +1018,7 @@ class Accounts:
         """Stats id -> account name for public accounts (leaderboards, match pages, the bot)."""
         return {account_pid(r["id"]): r["name"] for r in
                 self.store.all("SELECT a.id, a.name FROM accounts a JOIN names n ON n.account=a.id AND n.skeleton=a.skeleton "
-                               "AND n.held_until IS NULL WHERE a.visibility='public'")}
+                               "AND n.held_until IS NULL WHERE a.visibility='public'") if not self.ban_of(account=r["id"])}
 
     def reserved_txt(self) -> str:
         """For game servers: hashed name skeleton -> tags of the keys allowed to use it. A name on hold still
@@ -674,7 +1064,10 @@ class Accounts:
         return {"id": a["id"], "name": a["name"], "discordId": a["discord_id"], "visibility": a["visibility"],
                 "statsId": account_pid(a["id"]), "created": a["created"], "lastActive": a["last_active"],
                 "keys": [{"id": k["kid"], "label": k["label"], "linked": k["linked"], "retired": k["retired"],
-                          "statsId": key_pid(k["kid"])} for k in self.keys_of(a["id"])]}
+                          "statsId": key_pid(k["kid"])} for k in self.keys_of(a["id"])],
+                "badges": self.badges(a), "banned": bool(self.ban_of(account=a["id"])),
+                "sanctions": self.store.all("SELECT id, kind, reason, by_whom, created, until, lifted FROM bans WHERE account=? "
+                                            "ORDER BY created DESC", (a["id"],))}
 
     def staff_rename(self, acct_id: str, name: str) -> dict:
         """Staff force a new name (abuse). No wait, no hold on the old one."""
@@ -701,6 +1094,9 @@ class Accounts:
         out["holds"] = self.store.x("DELETE FROM names WHERE held_until IS NOT NULL AND held_until<?", (t,)).rowcount
         out["links"] = self.store.x("DELETE FROM links WHERE created<?", (t - 86400,)).rowcount
         out["signins"] = self.store.x("DELETE FROM signins WHERE at<?", (t - SIGNIN_LOG_DAYS * 86400,)).rowcount
+        out["pairs"] = self.store.x("DELETE FROM pairs WHERE created<?", (t - 86400,)).rowcount
+        self.store.x("DELETE FROM challenges WHERE created<?", (t - 600,))
+        self.store.x("DELETE FROM name_history WHERE until<?", (t,))
         out["sessions"] = self.store.x("DELETE FROM sessions WHERE created<?", (t - SESSION_DAYS * 86400,)).rowcount
         # names of accounts with no sign-in and no linked-PC use for a year are released; the account stays
         idle = self.store.all("SELECT id, skeleton FROM accounts WHERE last_active<?", (t - INACTIVE_DAYS * 86400,))
@@ -721,27 +1117,41 @@ class Accounts:
     def push(self) -> list:
         """Writes the reserved list for local game servers and sends the aliases to the stats service."""
         done = []
-        text = self.reserved_txt()
+        files = {"names.txt": self.reserved_txt(), "bans.txt": self.bans_txt(), "trusted.txt": self.trusted_txt()}
         for folder in self.cfg.get("reserved_dirs", []):
-            try:
-                p = Path(folder)
-                p.mkdir(parents=True, exist_ok=True)
-                tmp = p / "names.txt.tmp"
-                body = text
-                old = (p / "names.txt").read_text(encoding="utf-8") if (p / "names.txt").exists() else ""
-                if old and (p / "names.txt").stat().st_mode & 0o777 != 0o644:
-                    os.chmod(p / "names.txt", 0o644)  # a list written by 1.0.1 was 0640 and the game servers could not read it
-                def same(x, y):               # the format tag and the list, not the time it was written
-                    hx, _, rx = x.partition("\n")
-                    hy, _, ry = y.partition("\n")
-                    return hx.split(" ")[0] == hy.split(" ")[0] and rx == ry
-                if not same(old, body):
-                    tmp.write_text(body, encoding="utf-8")
-                    os.chmod(tmp, 0o644)              # every game server user reads it; the service's umask is 027
-                    os.replace(tmp, p / "names.txt")
-                    done.append("names:" + folder)
-            except OSError as e:
-                log.warning("could not write %s: %s", folder, e)
+            for fname, text in files.items():
+                done += self._write_list(folder, fname, text)
+        self._push_stats(done)
+        return done
+
+    @staticmethod
+    def _same_list(x: str, y: str) -> bool:
+        """The format tag and the list, not the time it was written."""
+        hx, _, rx = x.partition("\n")
+        hy, _, ry = y.partition("\n")
+        return hx.split(" ")[0] == hy.split(" ")[0] and rx == ry
+
+    def _write_list(self, folder: str, fname: str, text: str) -> list:
+        """One list for the game servers on this machine, written atomically, mode 0644, only when it changed."""
+        try:
+            p = Path(folder)
+            p.mkdir(parents=True, exist_ok=True)
+            target = p / fname
+            old = target.read_text(encoding="utf-8") if target.exists() else ""
+            if old and target.stat().st_mode & 0o777 != 0o644:
+                os.chmod(target, 0o644)       # 1.0.1 wrote 0640: the game servers could not read it
+            if self._same_list(old, text):
+                return []
+            tmp = p / (fname + ".tmp")
+            tmp.write_text(text, encoding="utf-8")
+            os.chmod(tmp, 0o644)              # every game server user reads it; the service's umask is 027
+            os.replace(tmp, target)
+            return [fname + ":" + folder]
+        except OSError as e:
+            log.warning("could not write %s in %s: %s", fname, folder, e)
+            return []
+
+    def _push_stats(self, done: list) -> None:
         url = self.cfg.get("stats_url", "")
         token = credential("stats-token", self.cfg.get("stats_token", ""))
         if url and token:
@@ -751,11 +1161,16 @@ class Accounts:
             with urllib.request.urlopen(req, timeout=60) as r:
                 answer = json.loads(r.read() or b"{}")
             done.append("stats:%s" % answer.get("rebuilt", "unchanged"))
-            self.played(answer.get("seen") or {})
-        return done
+            self.played(answer.get("seen") or {}, answer.get("players") or {})
 
-    def played(self, seen: dict) -> None:
-        """The stats service's last match per account: playing keeps an account active (and its name reserved)."""
+    def played(self, seen: dict, players: dict | None = None) -> None:
+        """The stats service's last match (and match count) per account: playing keeps an account active and its name
+        reserved, and the match count feeds the clean-record and trusted badges."""
+        if isinstance(players, dict) and players:
+            for r in self.store.all("SELECT id, matches FROM accounts"):
+                info = players.get(account_pid(r["id"]))
+                if isinstance(info, dict) and isinstance(info.get("matches"), int) and info["matches"] != r["matches"]:
+                    self.store.x("UPDATE accounts SET matches=? WHERE id=?", (max(0, info["matches"]), r["id"]))
         if not isinstance(seen, dict) or not seen:
             return
         for r in self.store.all("SELECT id, last_active FROM accounts"):
@@ -945,7 +1360,7 @@ def make_handler(acc: Accounts):
                 fn = getattr(self, "%s_%s" % (method.lower(), sub.replace("/", "_").replace(".", "_")), None)
                 if not fn or not re.fullmatch(r"[a-z_/.]+", sub):
                     raise ApiError(404, "Not found.")
-                if method == "POST" and sub != "claim":
+                if method == "POST" and sub not in ("claim", "pair/start"):      # the launcher sends no Origin
                     origin = self.headers.get("Origin")
                     if origin and origin.rstrip("/") not in (site, public):
                         raise ApiError(403, "Cross-site request refused.")
@@ -1028,7 +1443,8 @@ def make_handler(acc: Accounts):
         def post_settings(self, qs):
             s = self.need_account()
             d = self.body_json()
-            acc.settings(s, d.get("visibility"), (d["showDiscord"] is True) if "showDiscord" in d else None)
+            acc.settings(s, d.get("visibility"), (d["showDiscord"] is True) if "showDiscord" in d else None,
+                         (d["weekly"] is True) if "weekly" in d else None)
             self.json(acc.me(self.session()))
 
         def post_link_start(self, qs):
@@ -1064,6 +1480,83 @@ def make_handler(acc: Accounts):
             self.json(acc.claim(d.get("code", ""), d.get("public", ""), d.get("signature", ""),
                                 str(d.get("label", "")), self.client_ip()))
 
+        # -- linking a PC with a phone: the launcher starts, the signed-in phone approves
+        def post_pair_start(self, qs):
+            d = self.body_json(2048)
+            self.json(acc.pair_start(d.get("public", ""), d.get("t", ""), d.get("signature", ""), str(d.get("label", "")),
+                                     self.client_ip()))
+
+        def get_pair_status(self, qs):
+            if acc.limited("pairstatus:" + self.client_ip(), 600, 600):
+                raise ApiError(429, "Slow down a little.")
+            self.json(acc.pair_status(qs.get("id", "")))
+
+        def get_pair_info(self, qs):
+            s = self.need_account(write=False)
+            self.json(acc.pair_info(s["account"], qs.get("id", "")))
+
+        def post_pair_approve(self, qs):
+            s = self.need_account()
+            self.json(acc.pair_answer(s["account"], str(self.body_json().get("id", "")), True))
+
+        def post_pair_refuse(self, qs):
+            s = self.need_account()
+            self.json(acc.pair_answer(s["account"], str(self.body_json().get("id", "")), False))
+
+        # -- lost or stolen PC
+        def post_panic(self, qs):
+            s = self.need_account()
+            if self.body_json().get("confirm") is not True:
+                raise ApiError(400, "Confirm first.")
+            acc.panic(s["account"])
+            self.json({"ok": True}, extra={"Set-Cookie": [self.set_cookie(cookie_name, "", 0)]})
+
+        # -- passkeys
+        def post_passkey_register_begin(self, qs):
+            s = self.need_account()
+            ticket, options = acc.passkey_register_begin(s["account"])
+            self.json({"ticket": ticket, "options": options})
+
+        def post_passkey_register_finish(self, qs):
+            s = self.need_account()
+            d = self.body_json(16384)
+            acc.passkey_register_finish(s["account"], str(d.get("ticket", "")), d)
+            self.json(acc.me(self.session()))
+
+        def post_passkey_remove(self, qs):
+            s = self.need_account()
+            acc.passkey_remove(s["account"], str(self.body_json().get("id", "")))
+            self.json(acc.me(self.session()))
+
+        def post_passkey_login_begin(self, qs):
+            ticket, options = acc.passkey_login_begin(self.client_ip())
+            self.json({"ticket": ticket, "options": options})
+
+        def post_passkey_login_finish(self, qs):
+            d = self.body_json(16384)
+            sid = acc.passkey_login_finish(str(d.get("ticket", "")), d, self.client_ip())
+            self.json(acc.me(acc.session(sid)), extra={"Set-Cookie": [self.set_cookie(cookie_name, sid, SESSION_DAYS * 86400)]})
+
+        # -- looking for a squad
+        def post_lfs(self, qs):
+            s = self.need_account()
+            d = self.body_json()
+            acc.lfs(s["account"], d.get("on") is True, str(d.get("note", "")), d.get("hours", 2))
+            self.json(acc.me(self.session()))
+
+        def get_lfs_json(self, qs):
+            self.json({"schema": "tcp-lfs/1", "updated": now(), "players": acc.lfs_list()},
+                      extra={"Cache-Control": "public, max-age=30", "Access-Control-Allow-Origin": "*"})
+
+        def get_badges_json(self, qs):
+            self.json(acc.badges_json(), extra={"Cache-Control": "public, max-age=300", "Access-Control-Allow-Origin": "*"})
+
+        def get_bans_txt(self, qs):
+            self.send(200, acc.bans_txt().encode(), "text/plain; charset=utf-8", {"Cache-Control": "public, max-age=120"})
+
+        def get_trusted_txt(self, qs):
+            self.send(200, acc.trusted_txt().encode(), "text/plain; charset=utf-8", {"Cache-Control": "public, max-age=300"})
+
         # -- public reads (cacheable)
         def get_profile(self, qs):
             p = acc.profile(qs.get("u", ""))
@@ -1093,6 +1586,19 @@ def make_handler(acc: Accounts):
                 d = self.body_json()
                 a = acc.staff_rename(str(d.get("id", "")), str(d.get("name", "")))
                 return self.json({"ok": True, "name": a["name"]})
+            if method == "GET" and path == "/internal/roles":
+                return self.json({"accounts": acc.roles()})
+            if method == "GET" and path == "/internal/weekly":
+                return self.json({"accounts": acc.weekly_list()})
+            if method == "GET" and path == "/internal/bans":
+                return self.json({"bans": acc.bans_list()})
+            if method == "POST" and path == "/internal/ban":
+                d = self.body_json()
+                return self.json(acc.sanction({"id": str(d.get("id", "")), "name": str(d.get("name", "")),
+                                               "discord": str(d.get("discord", ""))}, str(d.get("kind", "ban")),
+                                              str(d.get("reason", "")), d.get("days", 0), str(d.get("by", ""))))
+            if method == "POST" and path == "/internal/unban":
+                return self.json(acc.lift(self.body_json().get("ban")))
             if method == "POST" and path == "/internal/seen":
                 for kid in (self.body_json().get("keys") or [])[:256]:
                     if re.fullmatch(r"[0-9a-f]{40}", str(kid)):

@@ -9,7 +9,14 @@ Optional accounts for TrueCombat: Platinum. Nobody needs one to play. A player w
 3. **A reserved name.** Official servers keep the name for its owner, look-alikes included.
 
 `tcp_accounts.py` is the whole service: Python 3.10+ standard library, one SQLite file. Tests: `python3 test_accounts.py`
-(103 checks; needs the `cryptography` package to sign like the launcher, the service itself does not).
+(103 checks) and `python3 test_accounts_more.py` (90 checks, everything added in 1.1.0); both need the `cryptography`
+package to sign like the launcher, the service itself does not. Passkeys are verified by `tcp_webauthn.py` (standard
+library only: CBOR, P-256 ECDSA and the WebAuthn checks).
+
+**1.1.0** adds: phone linking by QR code, passkeys as a second way in, the lost-PC button, the service record,
+career and rivals on profiles, a shareable match card, name history, Discord role sync, the weekly report,
+looking for a squad, bans that follow the account, an accounts-only ranked board, trusted reserved slots and the
+clean-record badge.
 
 ## Identity
 
@@ -54,6 +61,19 @@ All public routes sit under `/api/account/` on **truecombat.eu** itself (a Caddy
 | `GET profile?u=` | anyone | public profile (name, stats id, Discord if shown) |
 | `GET names.json` | anyone | stats id -> account name, public accounts only |
 | `GET reserved.txt` | game servers elsewhere | the reserved list (same as `names.txt`) |
+| `POST pair/start` `{public, t, signature, label}` → `{pair, url, key}` | launcher | QR linking: `t` = unix time (±300 s), signature over `"TrueCombat account pair v1\n" + t + "\n" + public hex`; `url` = `https://truecombat.eu/account?pair=<32 hex>` for the QR code |
+| `GET pair/status?id=` | launcher | `waiting`, `linked` (+ `account`), `refused`, `expired`; poll every 2 s |
+| `GET pair/info?id=`, `POST pair/approve`, `POST pair/refuse` `{id}` | page (signed in, on the phone) | shows the PC's label and the first 8 digits of its key id, which the launcher shows too |
+| `POST panic` `{confirm: true}` | page | lost or stolen PC: every PC unlinked, every session signed out |
+| `POST passkey/register/begin`, `…/finish` | page | add a passkey (max 10). `begin` → `{ticket, options}`; `finish` `{ticket, id, clientDataJSON, attestationObject, label}` |
+| `POST passkey/login/begin`, `…/finish` | page | sign in with a passkey (discoverable); sets the session cookie |
+| `POST passkey/remove` `{id}` | page | |
+| `POST settings` `{weekly}` | page | the opt-in weekly report from the Discord bot |
+| `POST lfs` `{on, note, hours}` | page | looking for a squad, 1 to 6 hours, note up to 60 characters |
+| `GET lfs.json` | anyone | public accounts looking right now (servers page, bot, launcher server browser) |
+| `GET badges.json` | anyone | stats id -> `["clean"]` or `["clean","trusted"]` |
+| `GET bans.txt`, `GET trusted.txt` | game servers | see *Bans and trusted slots* |
+| `GET /internal/roles`, `/internal/weekly`, `/internal/bans`; `POST /internal/ban`, `/internal/unban` | Discord bot, staff portal (loopback, `X-Accounts-Token`) | role sync, weekly report list, staff sanctions |
 
 ## Progress follows you (stats service)
 
@@ -95,6 +115,24 @@ key tag = `sha256("tcp-namekey:" + key id)[:24]` hex. Only hashes are listed: th
 tags cannot be matched to anyone's stats id (a key's stats id is derived from the key id itself). The file is written
 mode 0644 into a setgid `tcpgame` folder.
 
+## Bans, clean record and trusted slots
+
+* A ban (`POST /internal/ban {account|discord|key, kind: ban|suspend, reason, days, by}`) is stored with a hash of the
+  Discord id (`sha256("tcp-ban:" + id)[:32]`) and the key ids of the account's PCs. It survives deleting the account,
+  so a banned player cannot start over with the same Discord. While it runs: signed out everywhere, profile hidden,
+  no signup, no linking, and PCs linked later are banned too. Kept until it ends; permanent bans are kept for good
+  (the privacy page must say so: launch checklist).
+* `bans.txt`: `TCPBANS1 <time>`, then `<key tag> <until unix time, 0 = permanent>` per line.
+* **Clean record** badge: account at least 30 days old, 20 matches, no sanction in 90 days. **Trusted**: clean, 60 days,
+  50 matches. `trusted.txt`: `TCPTRUST1 <time>`, then one key tag per line. Official servers let a trusted player take
+  a reserved slot.
+* Ranked board with accounts only: stats env `TCP_STATS_RANKED_ACCOUNTS_ONLY=1`, or `leaderboard.json?who=accounts`.
+
+## Profiles (stats service)
+
+`medals.json`, `career.json`, `rivals.json` and `week.json` (`?id=<stats id>`) on the stats API. Medals use the same
+keys, names and rules as the Discord bot's achievements. The match page draws a 1200 x 630 share card in the browser.
+
 ## Game and launcher (0.37.0)
 
 Nothing here ships in 0.36.0.
@@ -118,6 +156,15 @@ Link / Cancel, then sign `"TrueCombat account link v1\n" + code + "\n" + <public
 `{code, public, signature, label}` to `https://truecombat.eu/api/account/claim`; `label` = the Windows computer name
 unless the player edits it. Show the account name from the answer. Bump `platinum_launcher_version.h`.
 
+**Launcher 2.2.0, more:** *Link with phone* (POST `pair/start`, show the `url` as a QR code plus the 8-digit key code,
+poll `pair/status`); a profile switcher for shared PCs (one `eacid.key` per Windows-side profile folder, picked before
+launch); the servers tab shows `lfs.json`.
+
+**Game server, more:** re-read `bans.txt` and `trusted.txt` like `names.txt`; drop a client whose verified key tag is
+banned ("This PC is banned from TrueCombat: Platinum."); when a server is full except its reserved slots
+(`sv_privateClients`), a trusted key may take one. The scoreboard shows the clean-record tick from `badges.json`
+(pushed by the server bridge as a configstring).
+
 ## Deploy (VPS)
 
 Needs Gianni's typed go. From the PC: copy `tools/accounts` to the VPS, then
@@ -129,6 +176,10 @@ sudo ./deploy/install.sh stats-link    # token + tcp-bridge drop-in 70-accounts.
 sudo ./deploy/install.sh caddy         # /api/account/* and /u/<name> in the truecombat.eu block (backup + validate)
 ```
 
+1.1.0 on top of a running 1.0.x: `install.sh install` again (copies `tcp_accounts.py` and `tcp_webauthn.py`, keeps
+the database; new tables are added on start), and patch the stats code with `deploy/tcp_stats-accounts-1.1.0.patch`
+(against the 1.0.2 stats code; back up `stats.db` first).
+
 The VPS stats code is **not** a main checkout: patch the `tcp_stats.py` hunks from this change into
 `/opt/tcp/server-bridge`, never copy main over it. Back up `stats.db` first; the first alias push rebuilds the stats.
 
@@ -139,7 +190,8 @@ If the site's Content-Security-Policy header limits `connect-src`, it must inclu
 
 ## Launch checklist (with 0.37.0)
 
-1. Privacy page: a section on accounts (what is kept, why, how long, export and delete) in all five languages.
+1. Privacy page: a section on accounts (what is kept, why, how long, export and delete, passkeys, how long bans are
+   kept) in all five languages.
 2. Nav: an *Account* entry; devlog post; roadmap item moves to shipped.
 3. Official servers on 0.37.0 (key challenge + reserved names), launcher 2.2.0 live.
 4. Discord bot reads Discord links from `/internal/lookup` (no in-game `/link` code needed for account holders).

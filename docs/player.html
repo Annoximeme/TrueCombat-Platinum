@@ -37,7 +37,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=95fe2ea9a3">
+<link rel="stylesheet" href="style.css?v=354f047aa4">
 </head>
 <body>
 <!--nav-->
@@ -118,6 +118,28 @@
       </div>
     </div>
     <div class="pf-detail" data-pf-detail></div>
+    <div class="server-card full pf-medals" data-pf-medals-card hidden>
+      <header><h2>Service record</h2><span class="pill" data-pf-medals-count></span></header>
+      <ul class="pf-medals-list" data-pf-medals></ul>
+    </div>
+    <div class="server-card full pf-career" data-pf-career-card hidden>
+      <header><h2>Career</h2><span class="pill">Month by month</span></header>
+      <div class="table-scroll">
+        <table class="srv-table">
+          <thead><tr><th>Month</th><th>Matches</th><th>Wins</th><th>K / D</th><th>Rating</th><th>Top weapon</th></tr></thead>
+          <tbody data-pf-career></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="server-card full pf-rivals" data-pf-rivals-card hidden>
+      <header><h2>Rivals</h2><span class="pill">Most met on the other side</span></header>
+      <div class="table-scroll">
+        <table class="srv-table">
+          <thead><tr><th>Player</th><th>Matches</th><th>Your record</th><th>Kills</th></tr></thead>
+          <tbody data-pf-rivals></tbody>
+        </table>
+      </div>
+    </div>
     <div class="server-card full pf-matches">
       <header><h2>Recent matches</h2></header>
       <div class="table-scroll">
@@ -170,6 +192,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=7d4a315ae2"></script>
+<script src="js/site.js?v=d1b2080bac"></script>
 </body>
 </html>
