@@ -1,0 +1,40 @@
+{
+  "_about": "Team Terminus roster on the studio page (studio#roster). build.py renders it in English and Dutch (roles stay in English, like the team cards). 'account' is the player's account name: when set, the name links to their profile (player?u=<account>). Profile ribbons do NOT come from this file: they come from the account service's own team list, tied to each member's Discord sign-in. Add groups in display order; an empty group is skipped. 'in_game_from' is the release that shows the Twin T beside team names in game; the intro mentions it once that release is out.",
+  "groups": [
+    {
+      "id": "founders",
+      "en": "Founders",
+      "nl": "Oprichters"
+    },
+    {
+      "id": "dev",
+      "en": "Development",
+      "nl": "Ontwikkeling"
+    },
+    {
+      "id": "community",
+      "en": "Community and moderation",
+      "nl": "Community en moderatie"
+    },
+    {
+      "id": "test",
+      "en": "Playtesters",
+      "nl": "Playtesters"
+    }
+  ],
+  "members": [
+    {
+      "callsign": "RaziC*",
+      "group": "founders",
+      "role": "Founder · Lead Developer",
+      "account": ""
+    },
+    {
+      "callsign": "RavoC",
+      "group": "founders",
+      "role": "Co-founder · Head of Community",
+      "account": ""
+    }
+  ],
+  "in_game_from": "0.37.0"
+}
