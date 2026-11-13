@@ -15,9 +15,10 @@ from . import text as T
 from .sources import is_bot, release_download, release_version
 
 # Brand palette, taken from the website (docs/style.css)
-RED = 0xD63B3B       # launcher PLAY red
-AMBER = 0xE7A73C     # HUD compass lamp
-GREEN = 0x4FBF7A
+from .cards import GREEN as _GREEN, AMBER as _AMBER, RED as _RED  # shared design tokens
+RED = (_RED[0] << 16) | (_RED[1] << 8) | _RED[2]          # launcher PLAY red
+AMBER = (_AMBER[0] << 16) | (_AMBER[1] << 8) | _AMBER[2]  # HUD compass lamp
+GREEN = (_GREEN[0] << 16) | (_GREEN[1] << 8) | _GREEN[2]
 STEEL = 0x262E3B
 GOLD = 0xC9A227
 BLUE = 0x5B9BD5
