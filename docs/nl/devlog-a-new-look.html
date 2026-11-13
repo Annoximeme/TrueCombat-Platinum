@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Een nieuwe look, van laadscherm tot kill feed · TrueCombat: Platinum</title>
+<meta name="description" content="Laadschermen die de map uitleggen, een tactische kaart, een podium na de match, een fotomodus, HDR-uitvoer, duidelijke foutschermen en een launcher die je met…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-a-new-look">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-a-new-look">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Een nieuwe look, van laadscherm tot kill feed">
+<meta property="og:description" content="Laadschermen die de map uitleggen, een tactische kaart, een podium na de match, een fotomodus, HDR-uitvoer, duidelijke foutschermen en een launcher die je met…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-a-new-look.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-a-new-look.jpg">
+<meta property="article:published_time" content="2026-11-13">
+<meta property="article:section" content="Graphics">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Een nieuwe look, van laadscherm tot kill feed","description":"Laadschermen die de map uitleggen, een tactische kaart, een podium na de match, een fotomodus, HDR-uitvoer, duidelijke foutschermen en een launcher die je met een controller bedient. Dit komt eraan, en zo is het gebouwd.","datePublished":"2026-11-13","dateModified":"2026-11-13","inLanguage":"nl","articleSection":"Graphics","timeRequired":"PT3M","image":"https://truecombat.eu/img/og-devlog-a-new-look.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-a-new-look","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Een nieuwe look, van laadscherm tot kill feed">
+<meta name="twitter:description" content="Laadschermen die de map uitleggen, een tactische kaart, een podium na de match, een fotomodus, HDR-uitvoer, duidelijke foutschermen en een launcher die je met…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Een nieuwe look, van laadscherm tot kill feed","item":"https://truecombat.eu/nl/devlog-a-new-look"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-a-new-look">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-a-new-look">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-a-new-look">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=95fe2ea9a3">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Wapens</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Gids</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Ranglijsten</a></li>
+      <li><a href="competitive">Competitief</a></li>
+      <li><a href="news">Nieuws</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-13">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Zoeken</button><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="media">Media</a><a href="guide">Gids</a><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Steun ons</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq">Vragen</a><a href="press">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-a-new-look" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-a-new-look" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Steun ons</span></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="a-new-look" data-min="3">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/devlog/a-new-look.webp); --art-s: url(../img/devlog/a-new-look-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Graphics</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-13">13 nov 2026</time><span>3 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="a-new-look" hidden></span></p>
+      <h1>Een nieuwe look, van laadscherm tot kill feed</h1>
+      <p class="lede">Laadschermen die de map uitleggen, een tactische kaart, een podium na de match, een fotomodus, HDR-uitvoer, duidelijke foutschermen en een launcher die je met een controller bedient. Dit komt eraan, en zo is het gebouwd.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#in-de-match">In de match</a></li>
+          <li><a href="#voor-en-na-de-match">Voor en na de match</a></li>
+          <li><a href="#voor-wie-graag-screenshots-maakt">Voor wie graag screenshots maakt</a></li>
+          <li><a href="#de-launcher">De launcher</a></li>
+          <li><a href="#overal-dezelfde-stijl">Overal dezelfde stijl</a></li>
+          <li><a href="#wat-nog-openstaat">Wat nog openstaat</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>De volgende update verandert hoe TrueCombat: Platinum eruitziet en aanvoelt, bijna overal waar je komt. Aan de rondes zelf verandert niets. Alles draait om meer zien, sneller begrijpen en minder tijd verliezen in menu's.</p>
+<figure class="wide">
+  <img src="../img/devlog/a-new-look.webp" alt="Wapeniconen, gerenderd uit de eigen modellen van de game" width="1280" height="720" loading="lazy">
+  <figcaption>Elk wapenicoon komt uit het model dat je in de game vasthoudt</figcaption>
+</figure>
+<h2 id="in-de-match">In de match</h2>
+<p><strong>Wapeniconen in de kill feed.</strong> De kill feed toont nu dader, wapen en slachtoffer, met een strak silhouet van het wapen in plaats van de naam. De iconen komen rechtstreeks uit de wapenmodellen van de game, allemaal op dezelfde schaal, dus een pistool oogt als een pistool naast een geweer.</p>
+<p><strong>Je echte toetsen op het scherm.</strong> Elke hint, tip en stemregel toont de toets die jij echt hebt ingesteld, als toetskap. Zet Gebruiken op E en de hint zegt E.</p>
+<p><strong>Een tactische kaart.</strong> Houd M ingedrukt voor een bovenaanzicht van de map met beide bomsites, de vlaggen, de gebiedsnamen en de posities van je eigen team. Vijanden zie je nooit. Serverbeheerders kunnen de kaart uitzetten, bijvoorbeeld voor competitief spel.</p>
+<p><strong>Een podium na de match.</strong> Terwijl de mapstemming openstaat, staan de beste drie op een podium met hun score en kills.</p>
+<p><strong>Wat is er nieuw, één keer.</strong> Na een update toont een korte kaart de wijzigingen, de eerste keer dat je een map laadt. Typ <code>whatsnew</code> in de console om ze opnieuw te zien.</p>
+<h2 id="voor-en-na-de-match">Voor en na de match</h2>
+<p><strong>Laadschermen die de map uitleggen.</strong> Elke map laadt nu over een eigen achtergrond, met het bovenaanzicht, de setting, het tijdstip en een regel over hoe de map speelt.</p>
+<p><strong>Foutschermen die helpen.</strong> "Server vol", "verkeerde versie", "bestanden ontbreken", "je bent gekickt" en een falende grafische driver krijgen elk een heldere uitleg en een knop die het oplost: een andere server zoeken, opnieuw verbinden, downloads toestaan, afsluiten om bij te werken of overschakelen op OpenGL. De oorspronkelijke melding staat eronder voor wie ze wil lezen.</p>
+<h2 id="voor-wie-graag-screenshots-maakt">Voor wie graag screenshots maakt</h2>
+<p><strong>Fotomodus.</strong> In een lokale game, een demo of als volledige toeschouwer typ je <code>photomode</code> voor een vrije camera zonder HUD. Bewegen, kantelen, beeldhoek aanpassen, door zes kleurgradaties bladeren, een demo stilzetten en de foto nemen. Met camerapaden zet je sleutelpunten en vlieg je er vloeiend tussen.</p>
+<p><strong>HDR-uitvoer.</strong> Op een HDR-scherm met Windows HDR aan kan DirectX 12 nu echte HDR10 uitsturen. Papierwit en piekhelderheid stel je in op de pagina Graphics. Op een gewoon scherm verandert er niets.</p>
+<p><strong>Een kleurgradatie per map.</strong> Elke map krijgt op de preset Ultra een eigen, subtiele kleurgradatie, zodat sneeuw koud oogt en het rangeerterrein zijn warme avondlicht houdt.</p>
+<p><strong>Zie wat een instelling kost.</strong> De pagina Graphics meet nu je frametijd voor en na elke wijziging en toont het verschil in milliseconden, en met een voorbeeldknop wordt de pagina doorzichtig zodat je de wijziging live op de match erachter ziet.</p>
+<h2 id="de-launcher">De launcher</h2>
+<p>De pagina Spelen van de launcher kan achter het menu een korte, stille clip van elke map tonen, opgenomen in de engine zelf. Rechtsklik op het pictogram in het systeemvak voor een snel paneel met de versie, spelers online, Snel spelen en oefenen. En de hele launcher werkt nu met een controller: de D-pad beweegt, A kiest, B gaat terug, de bumpers wisselen van pagina en Start speelt.</p>
+<h2 id="overal-dezelfde-stijl">Overal dezelfde stijl</h2>
+<p>De website, de launcher, de menu's en de HUD in de game, de staftools en de Discord-bot halen hun kleuren en lettertypes nu uit één gedeeld ontwerpbestand, zodat ze niet meer uit elkaar kunnen groeien. De website gebruikt al één iconenset, en de 3D-mapviewer en de releasepagina's gingen eerder vandaag live.</p>
+<h2 id="wat-nog-openstaat">Wat nog openstaat</h2>
+<p>Dit wordt getest voor de volgende update, samen met het nieuwe menuontwerp. HDR-uitvoer moet nog op meer schermen getest worden, en de mapclips voor de launcher en het hoofdmenu nemen we op met de releasebuild zelf. Ziet een laadscherm, foutscherm of icoon er voor jou niet goed uit, laat het ons weten op Discord.</p>
+      </div>
+      <div class="post-rate" data-rate="a-new-look" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-maps-in-3d"><small>Vorig artikel</small>Elke map in 3D, in je browser</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-ultra-visuals" tabindex="-1" aria-hidden="true"><img src="../img/devlog/ultra-railhouse-ultra-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state shipped">Uitgebracht in v0.33.0</span><time datetime="2026-11-08">8 nov 2026</time><span>3 min lezen</span><span class="post-stat" data-post-stat="ultra-visuals" hidden></span></p>
+          <h2><a href="devlog-ultra-visuals">Nieuw licht voor oude maps</a></h2>
+          <p>De Ultra-preset brengt moderne belichting, echte oppervlaktematerialen en zonneschaduwen naar elke map op DirectX 12. Zo hebben we dat gebouwd zonder te veranderen hoe TC:E speelt.</p>
+          <a class="more" href="devlog-ultra-visuals">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Community">
+        <a class="post-art" href="devlog-maps-in-3d" tabindex="-1" aria-hidden="true"><img src="../img/devlog/maps-in-3d-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Community</span><time datetime="2026-11-13">13 nov 2026</time><span>2 min lezen</span><span class="post-stat" data-post-stat="maps-in-3d" hidden></span></p>
+          <h2><a href="devlog-maps-in-3d">Elke map in 3D, in je browser</a></h2>
+          <p>De zes mappagina&#x27;s hebben nu een 3D-model van de echte map dat je kunt draaien, openknippen en bestuderen voor je eerste ronde, en elke update krijgt een eigen pagina.</p>
+          <a class="more" href="devlog-maps-in-3d">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=7d4a315ae2"></script>
+</body>
+</html>
