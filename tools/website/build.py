@@ -76,6 +76,8 @@ DISCORD_SVG = ('<svg width="20" height="20" viewBox="0 0 24 24" fill="currentCol
 HEART_SVG = icons.inline("support", 16)
 SEARCH_SVG = icons.inline("search", 18)
 MENU_SVG = icons.inline("menu", 22)
+PROFILE_SVG = icons.inline("profile", 18)
+ACCOUNT_T = {'en': 'Account', 'nl': 'Account', 'de': 'Konto', 'fr': 'Compte', 'pl': 'Konto'}
 
 
 def href(page):
@@ -146,7 +148,8 @@ def nav(lang, current):
                                                ' data-devlog-new="%s"' % devlog_posts(lang)[0]["date"] if p == "devlog" else "", L[p])
         for p in main)
     menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
-    menu += '<a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"])
+    menu += '<a href="%s">%s</a><a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"],
+                                                                       href("account"), ACCOUNT_T.get(lang, "Account"))
     menu += '<hr><a href="%s">%s</a><a href="%s#graphics">%s</a><a href="%s">%s</a><a href="%s">%s</a><a href="%s">Discord</a><hr>%s' % (
         home + "#gallery", L["gallery"], home, L["graphics"], href("faq"), L["faq"], href("press"), L["press"], DISCORD, lang_links)
     menu = menu.replace('<hr>', '<hr><a href="%s">%s</a><a href="%s">%s</a>' % (href("download"), L["download"], href("truecombat-elite"), L["truecombat-elite"]), 1)
@@ -168,6 +171,7 @@ def nav(lang, current):
     <button class="nav-search" type="button" data-search-open aria-label="{L['search']}" title="{L['search']} (Ctrl K)">{SEARCH_SVG}</button>
     <details class="nav-langs"><summary aria-label="{L['language']}" title="{L['language']}">{lang.upper()}</summary><div>{lang_links}</div></details>
     <a class="nav-support" href="{href('support')}"{' aria-current="page"' if current == 'support' else ''} title="{L['support']}">{HEART_SVG}<span>{L['support']}</span></a>
+    <a class="nav-icon nav-account" href="{href('account')}"{' aria-current="page"' if current == 'account' else ''} aria-label="{ACCOUNT_T.get(lang, 'Account')}" title="{ACCOUNT_T.get(lang, 'Account')}" data-nav-account>{PROFILE_SVG}</a>
     <a class="nav-icon" href="{DISCORD}" aria-label="{L['discord']}" title="{L['discord']}">{DISCORD_SVG}</a>
     <a class="btn" href="{download}">{L['download']}</a>
   </div>
@@ -184,7 +188,7 @@ def footer(lang, page=""):
     up = upp(lang)
     cols = [
         (L["col_game"], [(href(p), L[p]) for p in ("download", "maps", "weapons", "guide", "media", "faq", "truecombat-elite")]),
-        (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "competitive")]),
+        (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "competitive")] + [(href("account"), ACCOUNT_T.get(lang, "Account"))]),
         (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press", "support", "privacy")]),
         (L["col_community"], [(DISCORD, "Discord"), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]),
     ]
