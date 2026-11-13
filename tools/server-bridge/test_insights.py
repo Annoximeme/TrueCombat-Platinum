@@ -51,7 +51,7 @@ class InsightsTest(unittest.TestCase):
 
     def hit(self, page, **kw):
         body = {"p": page, "l": kw.pop("l", "en"), "w": kw.pop("w", 1920)}
-        for k in ("r", "s", "m", "c", "t"):
+        for k in ("r", "s", "m", "c", "t", "d"):
             if k in kw:
                 body[k] = kw.pop(k)
         return self.post("/insights/hit", body, **kw)
@@ -168,6 +168,21 @@ class InsightsTest(unittest.TestCase):
         self.setUp(limit=3)
         codes = [self.hit("/")[0] for _ in range(5)]
         self.assertEqual(codes[-1], 429)
+
+    def test_bare_host_referrer_and_device_class(self):
+        self.hit("/", r="www.moddb.com", d="phone")
+        s = self.stats()
+        self.assertEqual(self.by(s["sources"])["moddb"]["visitors"], 1)
+        self.assertEqual(self.by(s["devices"])["phone"]["visitors"], 1)
+
+    def test_one_address_cannot_inflate_visitors_by_changing_browser(self):
+        for i in range(tcp_insights.IP_VISITORS + 5):
+            self.hit("/", ua=UA + " v%d" % i)
+        self.assertEqual(self.stats()["totals"]["visitors"], tcp_insights.IP_VISITORS)
+        self.assertTrue(self.hit("/", ip="198.51.100.77")[1]["counted"])  # other addresses still count
+
+    def test_deleted_rows_are_zeroed(self):
+        self.assertEqual(self.store.db.execute("PRAGMA secure_delete").fetchone()[0], 1)
 
     def test_github_counts(self):
         self.store.github({("v0.35.0-sandbox27", "TrueCombat-Platinum-Setup.exe"): 120})

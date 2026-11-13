@@ -5,8 +5,9 @@ Answers three questions for the studio: which pages people read, which channels
 (Reddit, ModDB, itch.io, YouTube, Discord, ...) bring visitors, and which of those
 visitors go on to download the game.
 
-  POST /insights/hit    {"p": "/maps", "r": "<referrer>", "s": "<utm_source>", "m": "<utm_medium>",
-                         "c": "<utm_campaign>", "t": "<utm_content>", "l": "en", "w": 1920}
+  POST /insights/hit    {"p": "/maps", "r": "<referring site>", "s": "<utm_source>", "m": "<utm_medium>",
+                         "c": "<utm_campaign>", "t": "<utm_content>", "l": "en", "d": "phone|tablet|desktop"}
+                        (older pages send "w": screen width instead of "d"; "r" may be a full URL, only the host is kept)
                         one page view
   POST /insights/event  {"e": "download", "k": "installer", "p": "/download"}
                         a click on a download button
@@ -61,6 +62,7 @@ SCHEMA = "tcp-insights/1"
 MAX_BODY = 1024
 RATE_WINDOW = 60
 RATE_MAX = 60           # requests per IP per minute; a person browsing never gets near it
+IP_VISITORS = 30       # new visitors per IP address per day (a household, office or campus behind one address)
 MAX_VALUES = 400        # distinct values per dimension per day; the rest are folded into "(other)"
 OTHER = "(other)"
 BOTS = re.compile(r"bot|crawl|spider|slurp|preview|fetch|headless|lighthouse|python|curl|wget|monitor|scan", re.I)
@@ -105,8 +107,11 @@ def token(v):
 
 
 def ref_host(ref):
+    ref = str(ref or "")[:512]
+    if ref and "//" not in ref:
+        ref = "//" + ref  # the site sends just the host name; older pages sent the full address
     try:
-        h = (urlparse(str(ref or "")[:512]).hostname or "").lower().rstrip(".")
+        h = (urlparse(ref).hostname or "").lower().rstrip(".")
     except ValueError:
         return ""
     if h.startswith("www."):
@@ -201,6 +206,8 @@ class Store:
     def __init__(self, path):
         self.lock = threading.Lock()
         self.db = sqlite3.connect(path or ":memory:", check_same_thread=False)
+        # deleted rows (yesterday's secret and hashes) are overwritten with zeros, not left in free pages
+        self.db.execute("PRAGMA secure_delete=ON")
         self.db.executescript("""
             CREATE TABLE IF NOT EXISTS daily (day TEXT NOT NULL, dim TEXT NOT NULL, val TEXT NOT NULL,
                 views INTEGER NOT NULL DEFAULT 0, visitors INTEGER NOT NULL DEFAULT 0,
@@ -212,6 +219,7 @@ class Store:
             CREATE TABLE IF NOT EXISTS visitor (h TEXT PRIMARY KEY, source TEXT NOT NULL, campaign TEXT NOT NULL,
                 downloaded INTEGER NOT NULL DEFAULT 0);
             CREATE TABLE IF NOT EXISTS seen (h TEXT PRIMARY KEY);
+            CREATE TABLE IF NOT EXISTS perip (h TEXT PRIMARY KEY, n INTEGER NOT NULL);
         """)
         self.db.commit()
         self.day, self.key = None, None
@@ -227,6 +235,7 @@ class Store:
             self.db.execute("DELETE FROM secret")
             self.db.execute("DELETE FROM visitor")
             self.db.execute("DELETE FROM seen")
+            self.db.execute("DELETE FROM perip")
             row = (secrets.token_bytes(32),)
             self.db.execute("INSERT INTO secret VALUES (?,?)", (d, row[0]))
             self.db.commit()
@@ -253,6 +262,13 @@ class Store:
             vid = self.tag("v", ip, ua)
             first = self.db.execute("SELECT 1 FROM visitor WHERE h=?", (vid,)).fetchone() is None
             if first:
+                # one connection that keeps changing its browser string is one machine inflating the count:
+                # past IP_VISITORS new visitors a day from one address, further ones are not counted
+                ih = self.tag("i", ip)
+                n = (self.db.execute("SELECT n FROM perip WHERE h=?", (ih,)).fetchone() or (0,))[0]
+                if n >= IP_VISITORS:
+                    return None
+                self.db.execute("INSERT OR REPLACE INTO perip VALUES (?,?)", (ih, n + 1))
                 host = ref_host(ref)
                 source = utm.get("s") or (channel_of(host) if host else "direct")
                 campaign = " / ".join(x for x in (source, utm.get("m", ""), utm.get("c", ""), utm.get("t", "")) if x) if utm.get("s") else ""
@@ -523,7 +539,10 @@ def make_handler(store, key, cors, site_root, limiter, geoip):
             lang = str(data.get("l", ""))[:2]
             lang = lang if lang in LANGS else "other"
             country = geoip.country(ip) if len(geoip.v4s) else "??"
-            first = store.hit(ip, ua, page, data.get("r", ""), utm, lang, device_of(data.get("w")), country)
+            device = data.get("d") if data.get("d") in ("phone", "tablet", "desktop") else device_of(data.get("w"))
+            first = store.hit(ip, ua, page, data.get("r", ""), utm, lang, device, country)
+            if first is None:
+                return self.send_json({"ok": True, "counted": False})
             self.send_json({"ok": True, "counted": True, "first": first})
 
     return Handler
