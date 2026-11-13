@@ -126,6 +126,16 @@ mode 0644 into a setgid `tcpgame` folder.
 * **Clean record** badge: account at least 30 days old, 20 matches, no sanction in 90 days. **Trusted**: clean, 60 days,
   50 matches. `trusted.txt`: `TCPTRUST1 <time>`, then one key tag per line. Official servers let a trusted player take
   a reserved slot.
+* `badges.txt`: `TCPBADGES1 <time>`, then `<key tag> clean` or `<key tag> clean,trusted` per line, for the linked PCs
+  of public accounts with a badge (hidden accounts are left out, like `badges.json`). The game server shows the
+  clean-record tick from it. Written with `names.txt`, `bans.txt` and `trusted.txt` into every `reserved_dirs` folder
+  (`<home>/tcetest/accounts/`, mode 0644).
+* **Trusted slots** are kept by the game server, not the engine: `g_trustedSlots N` (default 0) holds the last N slots
+  after `sv_privateClients` for trusted keys. The engine's `sv_privateClients` slots stay password-only.
+* Game protocol (0.37.0): the client answers `tcp_idauth <public hex> <signature hex> <address>`. The third word is the
+  address it signed (as in `tcp_staffauth`), so the server can check the signature was made for this server. The client
+  also sends its public key in userinfo `tcp_idk`, so a server can see a trusted claim when the player connects; a player
+  admitted on that claim and not verified as that key within 10 s is dropped.
 * Ranked board with accounts only: stats env `TCP_STATS_RANKED_ACCOUNTS_ONLY=1`, or `leaderboard.json?who=accounts`.
 
 ## Profiles (stats service)
@@ -140,7 +150,7 @@ Nothing here ships in 0.36.0.
 **Game server (qagame)**, reusing the staff-badge challenge code and Monocypher already in the game:
 
 1. After the first snapshot the server sends `tcp_idchal <nonce>` (32 random hex). The client answers
-   `tcp_idauth <public hex> <signature hex>`, signature = Ed25519 over
+   `tcp_idauth <public hex> <signature hex> <address>`, signature = Ed25519 over
    `"TrueCombat identity v1\n" + nonce + "\n" + <cl_currentServerIP>`. Same flood-protect timing as the staff badge.
 2. A good answer sets the client's verified key id. The tcp-match/2 writer adds `"key": "<key id>"` to that player.
 3. Every 60 s the server re-reads `tcetest/accounts/names.txt` if its mtime changed. On connect, on a name change and

@@ -932,6 +932,17 @@ class Accounts:
                 tags += [key_tag(k["kid"]) for k in self.keys_of(a["id"], active_only=True)]
         return "\n".join(lines + sorted(tags)) + "\n"
 
+    def badges_txt(self) -> str:
+        """For game servers (0.37.0 scoreboard tick): TCPBADGES1, then "<key tag> clean[,trusted]" for the active
+        keys of public accounts with a badge. Hidden accounts are left out, like badges.json."""
+        lines = ["TCPBADGES1 %d" % now()]
+        rows = []
+        for a in self.store.all("SELECT * FROM accounts WHERE visibility='public'"):
+            b = self.badges(a)
+            if b:
+                rows += ["%s %s" % (key_tag(k["kid"]), ",".join(b)) for k in self.keys_of(a["id"], active_only=True)]
+        return "\n".join(lines + sorted(rows)) + "\n"
+
     def badges_json(self) -> dict:
         out = {}
         for a in self.store.all("SELECT * FROM accounts WHERE visibility='public'"):
@@ -1117,7 +1128,8 @@ class Accounts:
     def push(self) -> list:
         """Writes the reserved list for local game servers and sends the aliases to the stats service."""
         done = []
-        files = {"names.txt": self.reserved_txt(), "bans.txt": self.bans_txt(), "trusted.txt": self.trusted_txt()}
+        files = {"names.txt": self.reserved_txt(), "bans.txt": self.bans_txt(), "trusted.txt": self.trusted_txt(),
+                 "badges.txt": self.badges_txt()}
         for folder in self.cfg.get("reserved_dirs", []):
             for fname, text in files.items():
                 done += self._write_list(folder, fname, text)
