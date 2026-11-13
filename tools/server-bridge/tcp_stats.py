@@ -547,6 +547,7 @@ CREATE INDEX IF NOT EXISTS match_vs_pid ON match_vs(pid);
 CREATE INDEX IF NOT EXISTS match_vs_opp ON match_vs(opp);
 CREATE TABLE IF NOT EXISTS review(server TEXT, match TEXT, pid TEXT, reason TEXT, created TEXT, PRIMARY KEY(server, match, pid, reason));
 CREATE TABLE IF NOT EXISTS learned(old TEXT PRIMARY KEY, new TEXT NOT NULL, at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS guid_keys(old TEXT NOT NULL, new TEXT NOT NULL, at TEXT NOT NULL, PRIMARY KEY(old, new));
 CREATE TABLE IF NOT EXISTS aliases(pid TEXT NOT NULL, canonical TEXT NOT NULL, since TEXT, until TEXT);
 CREATE INDEX IF NOT EXISTS aliases_pid ON aliases(pid);
 CREATE TABLE IF NOT EXISTS voided(kind TEXT, id TEXT, reason TEXT, created TEXT, PRIMARY KEY(kind, id));
@@ -565,6 +566,8 @@ class StatsStore:
         with self.lock:
             self.db.execute("PRAGMA journal_mode=WAL")
             self.db.executescript(DDL)
+            # accounts 1.0.2: a guid may be seen with several keys (guid_keys); the old one-key table moves over
+            self.db.execute("INSERT OR IGNORE INTO guid_keys SELECT old, new, at FROM learned")
             self.db.execute("INSERT OR IGNORE INTO meta VALUES('schema', ?)", (str(SCHEMA_VERSION),))
             # the public id of a match (match pages on the website); older databases get the column here
             if "pub" not in [c[1] for c in self.db.execute("PRAGMA table_info(matches)")]:
@@ -665,37 +668,54 @@ class StatsStore:
         for p in m["players"]:
             base = p.setdefault("pid0", p["id"])
             pid = base
-            row = db.execute("SELECT new FROM learned WHERE old=?", (pid,)).fetchone()
-            if row:
-                pid = row["new"]
+            target, why = self._guid_target(pid)
+            if target:
+                pid = target
+            elif why:
+                db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)", (server, m["id"], pid, why, now_iso()))
             for a in db.execute("SELECT canonical, since, until FROM aliases WHERE pid=?", (pid,)):
                 if (not a["since"] or when >= a["since"]) and (not a["until"] or when < a["until"]):
                     pid = a["canonical"]
                     break
-            if pid in out:            # two linked ids in one match: keep them apart and let staff look
-                db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)",
-                           (server, m["id"], pid, "two ids of one account in the same match", now_iso()))
-                pid = base
             out.append(pid)
+        # two ids of one player in the same match: every one of them keeps its own id for this match (the ids a
+        # report arrives with are unique, so this never collides) and staff get a look
+        for pid in {x for x in out if out.count(x) > 1}:
+            db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)",
+                       (server, m["id"], pid, "two ids of one account in the same match", now_iso()))
+            out = [p["pid0"] if x == pid else x for p, x in zip(m["players"], out)]
         for p, pid in zip(m["players"], out):
             p["id"] = pid
 
+    def _guid_target(self, gid):
+        """The key a guid id's history belongs to, or (None, reason). A guid seen with one verified key belongs to
+        that key. Seen with several keys, it belongs to them only when they are one player (all linked to the same
+        account at some time): a copied guid with someone else's key moves nothing, and staff see it in the review queue."""
+        keys = [r["new"] for r in self.db.execute("SELECT new FROM guid_keys WHERE old=? ORDER BY at, new", (gid,))]
+        if not keys:
+            return None, None
+        if len(keys) == 1:
+            return keys[0], None
+        shared = None
+        for k in keys:
+            mine = {r["canonical"] for r in self.db.execute("SELECT canonical FROM aliases WHERE pid=?", (k,))}
+            shared = mine if shared is None else shared & mine
+        if shared:
+            return keys[0], None
+        return None, "guid seen with the keys of different players"
+
     def learn_keys(self, m, server):
-        """First verified sighting of a key with a guid: the guid's history belongs to the key from now on.
-        Returns True when something new was learned (the caller rebuilds)."""
+        """A verified match that shows a guid together with a key: remember the pair. Returns True when the pair is
+        new (the caller rebuilds, so the guid's older matches follow the key)."""
         if not m.get("verified"):
             return False
         new = False
         for p in m["players"]:
             if not p.get("key") or not p.get("guidId"):
                 continue
-            row = self.db.execute("SELECT new FROM learned WHERE old=?", (p["guidId"],)).fetchone()
-            if row is None:
-                self.db.execute("INSERT INTO learned VALUES(?,?,?)", (p["guidId"], p.get("pid0", p["id"]), m["ended"]))
-                new = True
-            elif row["new"] != p.get("pid0", p["id"]):
-                self.db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)",
-                                (server, m["id"], p.get("pid0", p["id"]), "guid already belongs to another key", now_iso()))
+            cur = self.db.execute("INSERT OR IGNORE INTO guid_keys VALUES(?,?,?)",
+                                  (p["guidId"], p.get("pid0", p["id"]), m["ended"]))
+            new = new or cur.rowcount > 0
         return new
 
     def set_aliases(self, aliases):
@@ -726,6 +746,14 @@ class StatsStore:
                 self.db.execute("ROLLBACK")
                 raise
             return self.recompute()
+
+    def last_seen_of(self, aliases):
+        """When each account last played (its canonical id's last match), so the account service can tell an active
+        player from one who left; a name is released only after a year without either."""
+        ids = sorted({str(a.get("canonical", "")) for a in aliases or [] if isinstance(a, dict)})[:5000]
+        with self.lock:
+            return {r["pid"]: r["last_seen"] for r in self.db.execute(
+                "SELECT pid, last_seen FROM players WHERE pid IN (%s)" % ",".join("?" * len(ids)), ids)} if ids else {}
 
     def _apply(self, m, server, received=None):
         db = self.db
@@ -1147,12 +1175,16 @@ class StatsStore:
             rating = dict(rows)
             # accounts: the game looks a player up by its own id, so every id of a merged player carries its rating
             extra = {}
-            for r in self.db.execute("SELECT l.old AS pid, COALESCE(a.canonical, l.new) AS to_pid FROM learned l "
-                                     "LEFT JOIN aliases a ON a.pid=l.new AND a.until IS NULL "
-                                     "UNION SELECT a.pid, a.canonical FROM aliases a WHERE a.until IS NULL"):
-                if r["to_pid"] in rating and r["pid"] not in rating:
-                    extra[r["pid"]] = rating[r["to_pid"]]
-            rows = sorted(rows + list(extra.items()))
+            current = {r["pid"]: r["canonical"] for r in self.db.execute("SELECT pid, canonical FROM aliases WHERE until IS NULL")}
+            links = dict(current)
+            for (gid,) in self.db.execute("SELECT DISTINCT old FROM guid_keys").fetchall():
+                key, _ = self._guid_target(gid)
+                if key:
+                    links[gid] = current.get(key, key)
+            for pid, to_pid in links.items():
+                if to_pid in rating:            # a linked id plays at its account's rating, even with a few matches of its own
+                    extra[pid] = rating[to_pid]
+            rows = sorted(dict(rows, **extra).items())
         tmp = str(path) + ".tmp"
         with open(tmp, "w", encoding="ascii") as fh:
             for pid, value in rows:
@@ -1405,7 +1437,7 @@ def handle_staff(store, method, path, headers, client, body, token):
             n = store.set_aliases(d.get("aliases"))
         except (ValueError, TypeError, AttributeError) as exc:
             return 400, {"error": str(exc)}
-        return 200, {"ok": True, "rebuilt": "unchanged" if n is None else n}
+        return 200, {"ok": True, "rebuilt": "unchanged" if n is None else n, "seen": store.last_seen_of(d.get("aliases"))}
     if (not token or client not in ("127.0.0.1", "::1") or headers.get("X-Forwarded-For")
             or not hmac.compare_digest(str(headers.get("X-Staff-Token", "")), token)):
         return 404, {"error": "not found"}
