@@ -190,7 +190,7 @@ def main():
                            f"volume={gdb}dB,adelay={d}|{d}[g{j}]")
             mix.append(f"[g{j}]")
     if mix:
-        filters.append("".join(mix) + f"amix=inputs={len(mix)}:normalize=0,alimiter=limit=0.95[aout]")
+        filters.append("".join(mix) + f"amix=inputs={len(mix)}:normalize=0,alimiter=limit=0.95,apad[aout]")
         cmd = [FF, "-y", "-loglevel", "error", "-i", str(vtmp)] + inputs + [
             "-filter_complex", ";".join(filters), "-map", "0:v", "-map", "[aout]", "-c:v", "copy",
             "-c:a", "aac", "-b:a", "256k", "-t", f"{total:.3f}", "-movflags", "+faststart", a.out]
