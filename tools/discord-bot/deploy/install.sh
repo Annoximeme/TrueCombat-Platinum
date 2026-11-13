@@ -109,7 +109,7 @@ if [ "$TOKEN_STDIN" -eq 1 ]; then
 fi
 if [ -n "$SECRET_NAME" ]; then
   [ "$TOKEN_STDIN" -eq 0 ] || { echo "store the token and other secrets in separate runs" >&2; exit 2; }
-  case "$SECRET_NAME" in github-token) ;; *) echo "known secrets: github-token" >&2; exit 2 ;; esac
+  case "$SECRET_NAME" in github-token|accounts-token) ;; *) echo "known secrets: github-token, accounts-token" >&2; exit 2 ;; esac
   say "storing $SECRET_NAME"
   umask 077
   IFS= read -r SECRET || true
@@ -132,7 +132,7 @@ for pair in $RCON_FROM; do
   say "stored $name"
 done
 CREDS=""
-for f in "$ETC"/rcon-* "$ETC"/github-token; do
+for f in "$ETC"/rcon-* "$ETC"/github-token "$ETC"/accounts-token; do
   [ -f "$f" ] && CREDS="${CREDS}LoadCredential=$(basename "$f"):$f
 "
 done
