@@ -2,7 +2,7 @@
 
 > TrueCombat: Platinum is a free, native 64-bit Windows rebuild of TrueCombat: Elite (TC:E), the realistic modern-combat tactical shooter originally made as a total conversion for Wolfenstein: Enemy Territory. It has a DirectX 12 renderer with an OpenGL fallback, the original maps, weapons, movement and HUD, a launcher with signed updates, official EU servers and leaderboards. It is developed by Team Terminus.
 
-- Current version: v0.36.0 (13 Nov 2026)
+- Current version: v0.36.1 (14 Nov 2026)
 - Platform: Windows 10 and 11, 64-bit. Price: free. Status: early access.
 - Not affiliated with Team Terminator, the creators of TrueCombat: Elite. Fan project.
 - The site is also available in Dutch under https://truecombat.eu/nl/.
