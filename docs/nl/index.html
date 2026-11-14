@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-flXI31fTa6kcyfPUDRuVMwseHC73y7z9DvyPEfYDmI4='">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-KkARHFHkcM6Pqu+WkMRtYGbX6m1BK3P2Xx0S6cKpjDA='">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TrueCombat: Platinum · Gratis tactische shooter, TrueCombat: Elite herbouwd</title>
 <meta name="description" content="TrueCombat: Platinum is een gratis tactische shooter voor Windows: TrueCombat: Elite (TC:E) herbouwd als native 64-bit DirectX 12-game, met de originele maps, wapens en HUD.">
@@ -297,18 +297,18 @@
       <ul class="preset-list">
         <li><b>Low</b><span>De originele look: standaard filtering, geen extra effecten.</span></li>
         <li><b>High</b><span>Nieuwe standaard. De effecten kosten ongeveer 1,0 ms per frame op een RTX 4080 SUPER.</span></li>
-        <li><b>Ultra</b><span>Voegt NVIDIA DLAA toe op RTX-kaarten, ongeveer 1,2 ms per frame.</span></li>
+        <li><b>Ultra</b><span>Voegt oppervlaktematerialen, spiegelende glans en realtime zonneschaduwen toe op DirectX 12, met NVIDIA DLAA op RTX-kaarten.</span></li>
       </ul>
       <p class="note">HD-textures voor de wereld, modellen, HUD en menu's zijn standaard geïnstalleerd. Op RTX-kaarten zijn ook de DLSS-kwaliteitsstanden beschikbaar: typ <code>r_dx12Dlss 2</code> tot en met <code>5</code> in de console en daarna <code>vid_restart</code>.</p>
     </div>
     <div class="vf">
-      <div class="compare" id="compare" style="--pos:50%">
-        <img id="cmp-right" src="../img/preset-ultra.webp" loading="lazy" alt="Achtertuin van Railhouse op de preset Ultra" width="1280" height="680">
-        <img class="top" src="../img/preset-low.webp" loading="lazy" alt="Achtertuin van Railhouse op de preset Low" width="1280" height="680">
+      <div class="compare" id="compare" style="--pos:40%">
+        <img id="cmp-right" src="../img/preset-ultra-v2.webp" srcset="../img/preset-ultra-v2-640.webp 640w, ../img/preset-ultra-v2.webp 1280w, ../img/preset-ultra-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Achtertuin van Railhouse op de preset Ultra" width="1280" height="680">
+        <img class="top" src="../img/preset-low-v2.webp" srcset="../img/preset-low-v2-640.webp 640w, ../img/preset-low-v2.webp 1280w, ../img/preset-low-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Achtertuin van Railhouse op de preset Low" width="1280" height="680">
         <span class="tag l">Low</span>
         <span class="tag r" id="cmp-tag">Ultra</span>
         <span class="handle"></span>
-        <input type="range" id="cmp-range" min="0" max="100" value="50" aria-label="Positie van de vergelijkingslijn">
+        <input type="range" id="cmp-range" min="0" max="100" value="40" aria-label="Positie van de vergelijkingslijn">
       </div>
     </div>
   </div>
@@ -858,7 +858,9 @@
     b.addEventListener('click', function () {
       document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
       var p = b.dataset.preset;
-      right.src = '../img/preset-' + p + '.webp';
+      var base = '../img/preset-' + p + '-v2';
+      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1632.webp 1632w';
+      right.src = base + '.webp';
       right.alt = 'Achtertuin van Railhouse op de preset ' + b.textContent;
       tag.textContent = b.textContent;
     });
@@ -892,6 +894,6 @@
   });
 })();
 </script>
-<script src="../js/site.js?v=444c0d17ec"></script>
+<script src="../js/site.js?v=fc49adbeb2"></script>
 </body>
 </html>

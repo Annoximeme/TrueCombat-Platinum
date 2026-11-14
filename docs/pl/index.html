@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-o8MKrERWTSYnYeyO2jRraLN685QXImgEZBe5jRaxSBc='">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-Eg40g2jkfRjGnxVdmVSBxld/LSBvaC9kXa2RptBNyU0='">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TrueCombat: Platinum · Darmowa strzelanka taktyczna, odbudowane TrueCombat: Elite</title>
 <meta name="description" content="TrueCombat: Platinum to darmowa strzelanka taktyczna dla Windows: TrueCombat: Elite (TC:E) odbudowane jako natywna 64-bitowa gra na DirectX 12, z oryginalnymi mapami, bronią i HUD-em.">
@@ -297,18 +297,18 @@
       <ul class="preset-list">
         <li><b>Low</b><span>Oryginalny wygląd: standardowe filtrowanie, bez dodatkowych efektów.</span></li>
         <li><b>High</b><span>Nowe ustawienie domyślne. Efekty kosztują około 1,0 ms na klatkę na RTX 4080 SUPER.</span></li>
-        <li><b>Ultra</b><span>Dodaje NVIDIA DLAA na kartach RTX, około 1,2 ms na klatkę.</span></li>
+        <li><b>Ultra</b><span>Dodaje materiały powierzchni, odblaski i cienie słoneczne w czasie rzeczywistym w DirectX 12, a na kartach RTX także NVIDIA DLAA.</span></li>
       </ul>
       <p class="note">Tekstury HD świata, modeli, HUD-u i menu są instalowane domyślnie. Na kartach RTX dostępne są też tryby jakości DLSS: wpisz w konsoli <code>r_dx12Dlss 2</code> do <code>5</code>, a potem <code>vid_restart</code>.</p>
     </div>
     <div class="vf">
-      <div class="compare" id="compare" style="--pos:50%">
-        <img id="cmp-right" src="../img/preset-ultra.webp" loading="lazy" alt="Podwórze Railhouse w ustawieniu Ultra" width="1280" height="680">
-        <img class="top" src="../img/preset-low.webp" loading="lazy" alt="Podwórze Railhouse w ustawieniu Low" width="1280" height="680">
+      <div class="compare" id="compare" style="--pos:40%">
+        <img id="cmp-right" src="../img/preset-ultra-v2.webp" srcset="../img/preset-ultra-v2-640.webp 640w, ../img/preset-ultra-v2.webp 1280w, ../img/preset-ultra-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Podwórze Railhouse w ustawieniu Ultra" width="1280" height="680">
+        <img class="top" src="../img/preset-low-v2.webp" srcset="../img/preset-low-v2-640.webp 640w, ../img/preset-low-v2.webp 1280w, ../img/preset-low-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Podwórze Railhouse w ustawieniu Low" width="1280" height="680">
         <span class="tag l">Low</span>
         <span class="tag r" id="cmp-tag">Ultra</span>
         <span class="handle"></span>
-        <input type="range" id="cmp-range" min="0" max="100" value="50" aria-label="Położenie suwaka porównania">
+        <input type="range" id="cmp-range" min="0" max="100" value="40" aria-label="Położenie suwaka porównania">
       </div>
     </div>
   </div>
@@ -858,7 +858,9 @@
     b.addEventListener('click', function () {
       document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
       var p = b.dataset.preset;
-      right.src = '../img/preset-' + p + '.webp';
+      var base = '../img/preset-' + p + '-v2';
+      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1632.webp 1632w';
+      right.src = base + '.webp';
       right.alt = 'Podwórze Railhouse w ustawieniu ' + b.textContent;
       tag.textContent = b.textContent;
     });
@@ -893,6 +895,6 @@
 })();
 </script>
 <script src="../js/lang-pl.js"></script>
-<script src="../js/site.js?v=444c0d17ec"></script>
+<script src="../js/site.js?v=fc49adbeb2"></script>
 </body>
 </html>

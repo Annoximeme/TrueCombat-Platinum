@@ -614,7 +614,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  '<li><b>Low</b><span>The original look: stock filtering, no extra effects.</span></li>': '<li><b>Low</b><span>Oryginalny wygląd: standardowe filtrowanie, bez dodatkowych efektów.</span></li>',
  '<li><b>High</b><span>New default. Effects cost about 1.0 ms a frame on an RTX 4080 SUPER.</span></li>': '<li><b>High</b><span>Nowe ustawienie domyślne. Efekty kosztują około 1,0 ms na klatkę na '
                                                                                                           'RTX 4080 SUPER.</span></li>',
- '<li><b>Ultra</b><span>Adds NVIDIA DLAA on RTX cards, about 1.2 ms a frame.</span></li>': '<li><b>Ultra</b><span>Dodaje NVIDIA DLAA na kartach RTX, około 1,2 ms na klatkę.</span></li>',
+ '<li><b>Ultra</b><span>Adds surface materials, specular highlights and real-time sun shadows on DirectX 12, with NVIDIA DLAA on RTX cards.</span></li>': '<li><b>Ultra</b><span>Dodaje materiały powierzchni, odblaski i cienie słoneczne w czasie rzeczywistym w DirectX 12, a na kartach RTX także NVIDIA DLAA.</span></li>',
  'alt="Railhouse backyard on the Ultra preset"': 'alt="Podwórze Railhouse w ustawieniu Ultra"',
  'alt="Railhouse backyard on the Low preset"': 'alt="Podwórze Railhouse w ustawieniu Low"',
  'aria-label="Comparison divider position"': 'aria-label="Położenie suwaka porównania"',
@@ -1056,7 +1056,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  'A match on Northport hosted from the launcher, during warmup': 'Mecz na Northport hostowany z launchera, podczas rozgrzewki',
  '<b>NVIDIA DLAA</b><span>Railhouse backyard</span>': '<b>NVIDIA DLAA</b><span>Podwórze Railhouse</span>',
  'Railhouse backyard rendered with NVIDIA DLAA': 'Podwórze Railhouse renderowane z NVIDIA DLAA',
- '<b>Ultra preset</b><span>HDR, ambient occlusion and DLAA</span>': '<b>Ustawienie Ultra</b><span>HDR, okluzja otoczenia i DLAA</span>',
+ '<b>Ultra preset</b><span>Surface materials, specular and DLAA</span>': '<b>Ustawienie Ultra</b><span>Materiały powierzchni, odblaski i DLAA</span>',
  'Railhouse backyard on the Ultra preset': 'Podwórze Railhouse w ustawieniu Ultra',
  '<b>High preset</b><span>The default look</span>': '<b>Ustawienie High</b><span>Wygląd domyślny</span>',
  'Railhouse backyard on the High preset': 'Podwórze Railhouse w ustawieniu High',
