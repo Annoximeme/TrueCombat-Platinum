@@ -12,7 +12,7 @@ import discord
 from . import achievements as A
 from . import emoji as E
 from . import text as T
-from .sources import is_bot, release_download, release_version
+from .sources import is_bot, release_download, release_notes_url, release_version
 
 # Brand palette, taken from the website (docs/style.css)
 from .cards import GREEN as _GREEN, AMBER as _AMBER, RED as _RED  # shared design tokens
@@ -385,11 +385,17 @@ def link_done(cfg, name: str, pid: str) -> discord.Embed:
 
 
 # ================================================================ releases & devlog
+def patch_notes_url(cfg, rel: dict) -> str:
+    """The release's patch notes on truecombat.eu (never GitHub)."""
+    return release_notes_url(cfg.site, cfg["devlog"]["site_root"], rel)
+
+
 def release_announcement(cfg, rel: dict) -> discord.Embed:
     version = release_version(rel)
     parsed = T.parse_release_body(rel.get("body") or "")
-    e = discord.Embed(title="TrueCombat: Platinum %s is out" % version, url=rel.get("html_url"), colour=RED)
-    e.set_author(name="Patch notes", url=cfg.site + "/news", icon_url=site_icon(cfg))
+    notes_url = patch_notes_url(cfg, rel)
+    e = discord.Embed(title="TrueCombat: Platinum %s is out" % version, url=notes_url, colour=RED)
+    e.set_author(name="Patch notes", url=notes_url, icon_url=site_icon(cfg))
     e.set_image(url=banner(cfg, "og-news"))
     intro = parsed["intro"] or "A new update is ready to download."
     e.description = T.clip(intro, 1200)
@@ -408,7 +414,8 @@ def release_announcement(cfg, rel: dict) -> discord.Embed:
                     value=T.clip(value, 1024), inline=False)
         shown += 1
     e.add_field(name="Get it", value="The launcher updates itself on the next start. New players: [download the "
-                "installer](%s) · [full patch notes](%s)" % (release_download(rel), cfg.site + "/news.html"),
+                "installer](%s) · [full patch notes](%s)" % (release_download(rel) or cfg.site + "/download",
+                                                              notes_url),
                 inline=False)
     return _brand(e, "Version %s" % version)
 

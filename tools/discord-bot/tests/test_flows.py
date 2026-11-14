@@ -262,3 +262,32 @@ def test_reports_are_posted_and_filed(tmp_path):
     assert any(f["value"].startswith("80% (96/120)") for f in d["fields"])
     assert sorted(p.name for p in (tmp_path / "sent").iterdir()) == ["1-2-5.json", "2-3-5.json", "invalid-3-3-5.json"]
     assert list(tmp_path.glob("*.json")) == []
+
+
+def test_release_auto_mode_waits_for_website_page(tmp_path):
+    from datetime import datetime, timedelta, timezone
+    cfg = make_cfg(releases={"mode": "auto"}, devlog={"site_root": str(tmp_path)})
+    ann = FakeChannel(20)
+    bot = FakeBot(cfg, {20: ann})
+    fresh = release(4, "v0.37.0-sandbox30")
+    fresh["published_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rels = [fresh]
+    bot.releases = types.SimpleNamespace(published=lambda: _async(rels))
+    cog = news.News.__new__(news.News)
+    cog.bot, cog.cfg = bot, cfg
+    bot.store.set("releases_seen", [])
+    run(cog.check_releases())
+    assert ann.sent == []                            # page not on the website yet
+    (tmp_path / "release-0-37-0.html").write_text("<html></html>", encoding="utf-8")
+    run(cog.check_releases())
+    assert len(ann.sent) == 1
+    e = ann.sent[0].kwargs["embed"]
+    assert e.url == cfg.site + "/release-0-37-0"
+    urls = [c.url for c in ann.sent[0].kwargs["view"].children]
+    assert cfg.site + "/release-0-37-0" in urls and not any("github.com" in u for u in urls)
+    # a page that never shows up does not block the announcement forever
+    late = release(5, "v0.38.0")
+    late["published_at"] = (datetime.now(timezone.utc) - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rels.insert(0, late)
+    run(cog.check_releases())
+    assert len(ann.sent) == 2 and ann.sent[1].kwargs["embed"].url == cfg.site + "/news.html#v0.38.0"

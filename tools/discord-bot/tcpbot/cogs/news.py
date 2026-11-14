@@ -3,7 +3,9 @@
 Releases: the bot watches GitHub. With releases.mode "draft" (the default) a
 new release is staged in the private staff channel with Publish, Add patch
 notes and Skip buttons; nothing reaches the community until staff press
-Publish. With "auto" the published GitHub release is itself the approval.
+Publish. With "auto" the published GitHub release is itself the approval, and
+the post waits (up to PAGE_WAIT) until the version's patch-notes page is live
+on the website. Every patch-notes link points at truecombat.eu, never GitHub.
 
 Devlog: new articles in the website's Atom feed are posted automatically
 (they are already public on the site).
@@ -13,6 +15,7 @@ from __future__ import annotations
 
 import logging
 import re
+from datetime import datetime, timezone
 
 import discord
 from discord import app_commands
@@ -20,11 +23,12 @@ from discord.ext import commands, tasks
 
 from .. import embeds
 from ..bot import UserFacingError, staff_only
-from ..sources import article_meta, load_devlog, release_download, release_version
+from ..sources import article_meta, load_devlog, release_download, release_page_ready, release_version
 from ..text import split_notes
 
 log = logging.getLogger("tcpbot.news")
 KEEP = ("id", "tag_name", "name", "body", "html_url", "published_at", "assets")
+PAGE_WAIT = 30 * 60     # auto mode: seconds to wait for the website's release page before posting anyway
 
 
 def slim(rel: dict) -> dict:
@@ -36,8 +40,8 @@ def slim(rel: dict) -> dict:
 
 def release_buttons(cfg, rel: dict) -> discord.ui.View:
     v = discord.ui.View()
-    v.add_item(discord.ui.Button(label="Download", url=release_download(rel) or cfg.site + "/#download"))
-    v.add_item(discord.ui.Button(label="Patch notes", url=cfg.site + "/news.html"))
+    v.add_item(discord.ui.Button(label="Download", url=release_download(rel) or cfg.site + "/download"))
+    v.add_item(discord.ui.Button(label="Patch notes", url=embeds.patch_notes_url(cfg, rel)))
     return v
 
 
@@ -176,9 +180,21 @@ class News(commands.Cog):
         for rel in reversed(rels):          # oldest first
             if rel["id"] in seen:
                 continue
+            if self.cfg["releases"]["mode"] == "auto" and not self.page_ready_or_late(rel):
+                log.info("release %s: waiting for its page on the website", rel.get("tag_name"))
+                continue                    # try again on the next check
             seen.append(rel["id"])
             self.bot.store.set("releases_seen", seen[-50:])
             await self.stage(slim(rel))
+
+    def page_ready_or_late(self, rel: dict) -> bool:
+        if release_page_ready(self.cfg["devlog"]["site_root"], rel):
+            return True
+        try:
+            published = datetime.fromisoformat((rel.get("published_at") or "").replace("Z", "+00:00"))
+        except ValueError:
+            return True
+        return (datetime.now(timezone.utc) - published).total_seconds() > PAGE_WAIT
 
     async def stage(self, rel: dict, notes: str = "") -> str:
         """Stage a release: a draft in the staff channel, or an immediate post in auto mode."""
