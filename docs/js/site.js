@@ -1926,7 +1926,7 @@ var TCP_API = 'https://api.truecombat.eu';
     /* framed images wipe open on scroll */
     if (hasIO && !calm && document.documentElement.classList.contains('js-reveal')) {
       var wio = new IntersectionObserver(function (entries) { entries.forEach(function (en) { if (en.isIntersecting || en.boundingClientRect.top < 0) { en.target.classList.add('in'); wio.unobserve(en.target); } }); }, { rootMargin: '0px 0px -12% 0px' });
-      $all('.vf img, .shot-wide img').forEach(function (im) { if (im.getBoundingClientRect().top < (window.innerHeight || 800)) return; im.classList.add('wipe'); wio.observe(im); });
+      $all('.vf img, .shot-wide img').forEach(function (im) { if (im.closest('.compare')) return; /* sliders clip their own images */ if (im.getBoundingClientRect().top < (window.innerHeight || 800)) return; im.classList.add('wipe'); wio.observe(im); });
     }
   })();
 

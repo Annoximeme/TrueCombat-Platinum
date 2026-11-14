@@ -698,7 +698,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  '<li><b>Low</b><span>The original look: stock filtering, no extra effects.</span></li>': "<li><b>Low</b><span>Le rendu d'origine : filtrage standard, aucun effet ajouté.</span></li>",
  '<li><b>High</b><span>New default. Effects cost about 1.0 ms a frame on an RTX 4080 SUPER.</span></li>': '<li><b>High</b><span>Nouveau réglage par défaut. Les effets coûtent environ 1,0 ms par '
                                                                                                           'image sur une RTX 4080 SUPER.</span></li>',
- '<li><b>Ultra</b><span>Adds NVIDIA DLAA on RTX cards, about 1.2 ms a frame.</span></li>': '<li><b>Ultra</b><span>Ajoute NVIDIA DLAA sur les cartes RTX, environ 1,2 ms par image.</span></li>',
+ '<li><b>Ultra</b><span>Adds surface materials, specular highlights and real-time sun shadows on DirectX 12, with NVIDIA DLAA on RTX cards.</span></li>': '<li><b>Ultra</b><span>Ajoute des matériaux de surface, des reflets spéculaires et des ombres solaires en temps réel sous DirectX 12, avec NVIDIA DLAA sur les cartes RTX.</span></li>',
  'alt="Railhouse backyard on the Ultra preset"': 'alt="L\'arrière-cour de Railhouse avec le préréglage Ultra"',
  'alt="Railhouse backyard on the Low preset"': 'alt="L\'arrière-cour de Railhouse avec le préréglage Low"',
  'aria-label="Comparison divider position"': 'aria-label="Position du curseur de comparaison"',
@@ -1201,7 +1201,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  'A match on Northport hosted from the launcher, during warmup': "Un match sur Northport hébergé depuis le launcher, pendant l'échauffement",
  '<b>NVIDIA DLAA</b><span>Railhouse backyard</span>': '<b>NVIDIA DLAA</b><span>Arrière-cour de Railhouse</span>',
  'Railhouse backyard rendered with NVIDIA DLAA': "L'arrière-cour de Railhouse rendue avec NVIDIA DLAA",
- '<b>Ultra preset</b><span>HDR, ambient occlusion and DLAA</span>': '<b>Préréglage Ultra</b><span>HDR, occlusion ambiante et DLAA</span>',
+ '<b>Ultra preset</b><span>Surface materials, specular and DLAA</span>': '<b>Préréglage Ultra</b><span>Matériaux de surface, reflets spéculaires et DLAA</span>',
  'Railhouse backyard on the Ultra preset': "L'arrière-cour de Railhouse avec le préréglage Ultra",
  '<b>High preset</b><span>The default look</span>': '<b>Préréglage High</b><span>Le rendu par défaut</span>',
  'Railhouse backyard on the High preset': "L'arrière-cour de Railhouse avec le préréglage High",
