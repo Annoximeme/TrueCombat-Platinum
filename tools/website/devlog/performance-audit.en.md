@@ -46,7 +46,7 @@ On Linux, where the official servers run, 0.37.0 already fixes this. A server no
 
 ![Game server CPU use before and after the fix.](img/devlog/perf-server-cpu.webp "CPU use of one game server at 128 ticks per second, before and after the fix.")
 
-Windows turned out to be worse. Windows can only wait in steps of whole milliseconds, so a Windows server busy-waited for up to two milliseconds of every tick. An empty Windows server used almost a third of a CPU core. That matters if you host a server on your own PC. The fix for Windows is in testing for an upcoming update. It uses a high-precision timer that Windows 10 and 11 provide, which wakes on time without busy-waiting.
+Windows has the same habit. Windows can only wait in steps of whole milliseconds, so a Windows server can busy-wait for up to two milliseconds of every tick. That matters if you host a server on your own PC. A fix for Windows is in testing. It uses a high-precision timer that Windows 10 and 11 provide, so the server can sleep instead. In our first tests it cut an empty server's CPU use about tenfold, but its ticks were not yet as punctual as we want, so we are tuning it before it ships.
 
 None of this changes how the game plays. Ticks arrive on time, just as before. The servers simply stop working while there is nothing to do.
 
