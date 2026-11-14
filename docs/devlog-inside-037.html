@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inside 0.37.0, our biggest update yet · TrueCombat: Platinum</title>
+<meta name="description" content="A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list of fixes…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-inside-037">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-inside-037">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Inside 0.37.0, our biggest update yet">
+<meta property="og:description" content="A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list of fixes…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-inside-037.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-inside-037.jpg">
+<meta property="article:published_time" content="2026-11-14">
+<meta property="article:section" content="Release">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Inside 0.37.0, our biggest update yet","description":"A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list of fixes from your reports. Here is what changed, why, and how we tested it.","datePublished":"2026-11-14","dateModified":"2026-11-14","inLanguage":"en","articleSection":"Release","timeRequired":"PT5M","image":"https://truecombat.eu/img/og-devlog-inside-037.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-inside-037","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Inside 0.37.0, our biggest update yet">
+<meta name="twitter:description" content="A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list of fixes…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Inside 0.37.0, our biggest update yet","item":"https://truecombat.eu/devlog-inside-037"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-inside-037">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-inside-037">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-inside-037">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=987ac3854f">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news">News</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-14">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-inside-037" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-inside-037" hreflang="nl" lang="nl">Nederlands</a></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Support</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="inside-037" data-min="5">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(img/devlog/a-new-look.webp); --art-s: url(img/devlog/a-new-look-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Release</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-14">14 Nov 2026</time><span>5 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="inside-037" hidden></span></p>
+      <h1>Inside 0.37.0, our biggest update yet</h1>
+      <p class="lede">A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list of fixes from your reports. Here is what changed, why, and how we tested it.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#a-new-interface">A new interface</a></li>
+          <li><a href="#seeing-more-of-the-fight">Seeing more of the fight</a></li>
+          <li><a href="#optional-player-accounts">Optional player accounts</a></li>
+          <li><a href="#gameplay-and-fixes">Gameplay and fixes</a></li>
+          <li><a href="#bots">Bots</a></li>
+          <li><a href="#servers-and-voting">Servers and voting</a></li>
+          <li><a href="#the-launcher">The launcher</a></li>
+          <li><a href="#how-we-tested-it">How we tested it</a></li>
+          <li><a href="#what-did-not-make-it">What did not make it</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Version 0.37.0 is out, a day after the 0.36.1 hotfix. It is the largest update TrueCombat: Platinum has had. Six separate pieces of work that had been built and tested on their own were brought together into one release: a new interface, a set of visual and quality-of-life features, optional player accounts, a studio refresh, smarter bots and a batch of fixes from your playtest reports.</p>
+<p>Putting that much into one update is a risk, so we treated it as one. Every piece arrived with its own tests. They were merged one at a time, each in a way that could be taken back out cleanly, and then the whole game was tested again as a single build before it was allowed anywhere near the launcher.</p>
+<div class="callout"><p>The launcher picks up 0.37.0 by itself and your settings carry over. This first update from 0.36 is a larger one-time download, because we changed how game files are stored so that future updates can be smaller.</p></div>
+<h2 id="a-new-interface">A new interface</h2>
+<p>Every menu and the in-game HUD have been rebuilt in the new Platinum style. The goal was not decoration. It was to make the information you need easier to read at a glance: clearer type, consistent spacing and controls that behave the same way on every page.</p>
+<p>Not everyone wants change, and the old HUD has been part of TrueCombat for a long time. So the classic HUD is still there, one switch away in the options. You can also scale the menus to 100, 90 or 80 percent under <strong>Options &gt; HUD &amp; Effects &gt; Menu size</strong>, and the HUD now keeps its layout on screens narrower than 16:9.</p>
+<p>We tested the new menus at eight resolutions, from 1280x720 to 3840x2160 and from 4:3 to ultrawide, in both renderers, and checked that keyboard focus lands on the right control at every menu size.</p>
+<h2 id="seeing-more-of-the-fight">Seeing more of the fight</h2>
+<p>We wrote about these features in detail in <a href="devlog-a-new-look">A new look, from the loading screen to the kill feed</a>. The short version:</p>
+<ul>
+  <li>Every map has its own <strong>loading screen</strong>.</li>
+  <li>Hold <strong>M</strong> for a <strong>tactical map</strong> of the battlefield and your squad.</li>
+  <li>A <strong>podium</strong> at the end of every match celebrates the top players.</li>
+  <li><strong>Photo mode</strong> and camera paths for screenshots and videos.</li>
+  <li><strong>HDR10 output</strong> for HDR displays, and optional per-map colour grading.</li>
+  <li>The Graphics menu shows an estimated GPU cost and a preview for each setting.</li>
+  <li>Kill feed icons are drawn from the real weapon models.</li>
+  <li>Prompts show your actual key bindings, and error screens explain what went wrong.</li>
+</ul>
+<h2 id="optional-player-accounts">Optional player accounts</h2>
+<p>You still do not need an account to play. Your identity in TrueCombat comes from a key on your own PC, exactly as before. What 0.37.0 adds is the option to link that PC to an account, or to link in seconds with your phone. With an account you can switch between profiles in the launcher, reserve your name, and show a clean-record tick on your profile. There is also a new "Looking for a squad" option on the Servers page.</p>
+<h2 id="gameplay-and-fixes">Gameplay and fixes</h2>
+<p>Most of the fixes in this update come straight from your playtest reports after 0.36.0. 0.36.1 already shipped the most urgent movement and control fixes. 0.37.0 includes those and adds:</p>
+<ul>
+  <li><strong>Bomb is now one life per round.</strong> Players who join mid-round wait for the next round. In our bot matches this took respawns in a Bomb round from 26 to zero.</li>
+  <li>Blood effects are back.</li>
+  <li>Fixed missing textures on the hands and pliers while defusing.</li>
+  <li>The SIG 552 and SPAS-12 sights are correctly aligned.</li>
+  <li>The shotgun pumps after every shot.</li>
+  <li>Aiming down sights now has a subtle weapon sway that grows while you move and after you sprint. You asked for this, and it is adjustable.</li>
+  <li>Legs no longer flicker into the wrong animation when you run on slopes.</li>
+  <li>Bullets hitting windows show glass impacts.</li>
+  <li>Every option in the settings menus was checked to make sure it actually changes, applies and saves what it says it does. Several that did not now do.</li>
+</ul>
+<h2 id="bots">Bots</h2>
+<p>Two bot changes in this release. Bots now step clear of your line of fire as soon as you raise your sights or fire, and they pick the open side if a wall is in the way. And bots stay on the objective in Bomb and CTF instead of chasing every sound they hear.</p>
+<p>We tested the bot changes in matched matches against 0.36.0 on all six Bomb maps, with the same random seeds on both sides, to make sure nothing else changed. Plants, stalls, crashes and stuck bots all came out the same.</p>
+<h2 id="servers-and-voting">Servers and voting</h2>
+<p>Map votes now only offer maps from the server's own rotation, and a vote no longer breaks a server's mode rotation. The number of votes each player can call now also survives a map restart.</p>
+<p>We have also tightened and expanded our security measures.</p>
+<h2 id="the-launcher">The launcher</h2>
+<p>Launcher 2.4 adds a tray panel and full controller navigation. Fresh installs now start on the graphics preset recommended for your card, even if you skip the welcome page. Most importantly for the future, updates can now download individual files rather than one large package, so they are smaller and recover better from a bad connection.</p>
+<h2 id="how-we-tested-it">How we tested it</h2>
+<p>Before 0.37.0 was packaged, the final build went through the same release suite as every version before it, plus checks written for each new piece:</p>
+<ul>
+  <li>the full regression suite, covering movement, combat, network feel, graphics, settings and restarts;</li>
+  <li>hit registration under simulated lag;</li>
+  <li>128 updates per second;</li>
+  <li>voice chat on teams and in practice;</li>
+  <li>the new menus and their options, in both renderers;</li>
+  <li>the account flow;</li>
+  <li>the launcher's update path, including what happens when a file fails to download.</li>
+</ul>
+<p>A few things can only be checked by a person: the HDR output, controller navigation and a handful of key-binding screens. Those were checked by hand.</p>
+<h2 id="what-did-not-make-it">What did not make it</h2>
+<p>A fix for sound dropping out and the mouse unlocking in borderless windowed mode is written, but we could not reproduce the original problem reliably enough to prove the fix works. Rather than ship a guess, it moves to 0.37.1. So do a new weapon-switch animation, a new frag explosion and more character choices per class, which are built but not yet tested in game.</p>
+<p>As always, if something feels wrong, press <strong>F12</strong> in game to send us a report. Thank you for playing, and for telling us what to fix.</p>
+      </div>
+      <div class="post-rate" data-rate="inside-037" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-inside-036"><small>Older post</small>Inside 0.36.0, the update you can hear</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-036" tabindex="-1" aria-hidden="true"><img src="img/media-village-yard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Shipped in v0.36.0</span><time datetime="2026-11-13">13 Nov 2026</time><span>13 min read</span><span class="post-stat" data-post-stat="inside-036" hidden></span></p>
+          <h2><a href="devlog-inside-036">Inside 0.36.0, the update you can hear</a></h2>
+          <p>Voice chat, team pings, bots that read the map, a full audio overhaul and an optional 128 updates per second. This is the long version: what changed, why we built it the way we did, how it was tested, and what is still to come.</p>
+          <a class="more" href="devlog-inside-036">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-035" tabindex="-1" aria-hidden="true"><img src="img/media-village-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Shipped in v0.35.0</span><time datetime="2026-11-12">12 Nov 2026</time><span>13 min read</span><span class="post-stat" data-post-stat="inside-035" hidden></span></p>
+          <h2><a href="devlog-inside-035">Inside 0.35.0, our biggest update yet</a></h2>
+          <p>Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.</p>
+          <a class="more" href="devlog-inside-035">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=fc49adbeb2"></script>
+</body>
+</html>
