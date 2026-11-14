@@ -46,7 +46,7 @@ Op Linux, waar de officiële servers draaien, lost 0.37.0 dit al op. Een server 
 
 ![Processorgebruik van een gameserver voor en na de oplossing.](img/devlog/perf-server-cpu.webp "Processorgebruik van één gameserver op 128 ticks per seconde, voor en na de oplossing.")
 
-Windows bleek erger. Windows kan alleen wachten in stappen van hele milliseconden, dus een Windows-server bleef tot twee milliseconden van elke tick actief wachten. Een lege Windows-server gebruikte bijna een derde van een processorkern. Dat merk je als je zelf een server op je pc host. De oplossing voor Windows wordt getest voor een komende update. Ze gebruikt een nauwkeurige timer van Windows 10 en 11 die op tijd wakker wordt zonder actief te wachten.
+Windows heeft dezelfde gewoonte. Windows kan alleen wachten in stappen van hele milliseconden, dus een Windows-server kan tot twee milliseconden van elke tick actief wachten. Dat merk je als je zelf een server op je pc host. Een oplossing voor Windows wordt getest. Ze gebruikt een nauwkeurige timer van Windows 10 en 11, zodat de server kan slapen. In onze eerste tests daalde het processorgebruik van een lege server ongeveer tienvoudig, maar de ticks waren nog niet zo stipt als we willen, dus we stellen ze bij voordat de oplossing verschijnt.
 
 Niets hiervan verandert hoe het spel speelt. Ticks komen even precies als voorheen. De servers stoppen gewoon met werken als er niets te doen is.
 
