@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/nl/devlog"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog</id>
-  <updated>2026-11-13T12:00:00Z</updated>
+  <updated>2026-11-14T12:00:00Z</updated>
+  <entry>
+    <title>Inside 0.37.0, onze grootste update tot nu toe</title>
+    <link href="https://truecombat.eu/nl/devlog-inside-037"/>
+    <id>https://truecombat.eu/nl/devlog-inside-037</id>
+    <published>2026-11-14T12:00:00Z</published>
+    <updated>2026-11-14T12:00:00Z</updated>
+    <category term="Release"/>
+    <summary>Een volledig vernieuwde interface, een tactische kaart, fotomodus, optionele spelersaccounts, bots die je vuurlijn respecteren, Bomb-rondes met één leven en een lange lijst fixes uit jullie meldingen. Dit is wat er veranderd is, waarom, en hoe we het getest hebben.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Achter de schermen van 0.36.0, de update die je hoort</title>
     <link href="https://truecombat.eu/nl/devlog-inside-036"/>
