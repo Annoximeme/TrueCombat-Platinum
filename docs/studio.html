@@ -130,7 +130,7 @@
     </div>
 <!--studio-roster-->
     <div class="roster" id="roster">
-      <div class="roster-head"><svg class="tt-mark tt-big" width="40" height="40" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 3H7V14L5 11V6H2Z M16 3H9V14L11 11V6H14Z"/></svg><div><h3>Team Terminus roster</h3><p>Everyone who builds, tests and looks after Platinum. Look for the Twin T: it marks team members on their player profile.</p></div></div>
+      <div class="roster-head"><svg class="tt-mark tt-big" width="40" height="40" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 3H7V14L5 11V6H2Z M16 3H9V14L11 11V6H14Z"/></svg><div><h3>Team Terminus roster</h3><p>Everyone who builds, tests and looks after Platinum. Look for the Twin T: it marks team members beside their name in game and on their player profile.</p></div></div>
       <div class="roster-groups">
       <div class="roster-group"><h4>Founders</h4><ul><li><svg class="tt-mark" width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 3H7V14L5 11V6H2Z M16 3H9V14L11 11V6H14Z"/></svg><b>RaziC* <small>Gianni G</small></b><span>Founder · Lead Developer</span></li><li><svg class="tt-mark" width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path d="M0 3H7V14L5 11V6H2Z M16 3H9V14L11 11V6H14Z"/></svg><b>RavoC</b><span>Co-founder · Community Management</span></li></ul></div>
       </div>
@@ -150,7 +150,6 @@
     </div>
 <!--studio-workshop-->
     <ul class="workshop">
-      <li class="ws-testing"><span class="ws-state">In testing</span><b>Optional accounts: your rank on every PC, a reserved name and a public profile</b></li>
       <li class="ws-dev"><span class="ws-state">In development</span><b>Shadows from muzzle flashes and explosions</b></li>
       <li class="ws-dev"><span class="ws-state">In development</span><b>Matchmaking through a Discord pickup queue</b></li>
       <li class="ws-dev"><span class="ws-state">In development</span><b>Connection quality on the scoreboard and one-click join</b></li>
@@ -201,7 +200,8 @@
     </div>
 <!--studio-releases-->
     <ol class="releases-line">
-      <li class="rel now"><div class="rel-ver"><b>v0.36</b> <span class="latest">Latest</span><small>7 additions</small></div><ul><li>Map audit: invisible walls and textures on every map</li><li>Bots that read the map: corners, cover, lanes and aiming down sights</li><li>Location-aware pings</li><li>Reworked warm-up</li><li>2D match replays, heatmaps and a post-match coach</li><li>Weekly contracts and seasons</li><li>Friends and parties</li></ul></li>
+      <li class="rel now"><div class="rel-ver"><b>v0.37</b> <span class="latest">Latest</span><small>1 addition</small></div><ul><li>Optional accounts: your rank on every PC, a reserved name and a public profile</li></ul></li>
+      <li class="rel"><div class="rel-ver"><b>v0.36</b><small>7 additions</small></div><ul><li>Map audit: invisible walls and textures on every map</li><li>Bots that read the map: corners, cover, lanes and aiming down sights</li><li>Location-aware pings</li><li>Reworked warm-up</li><li>2D match replays, heatmaps and a post-match coach</li><li>Weekly contracts and seasons</li><li>Friends and parties</li></ul></li>
       <li class="rel"><div class="rel-ver"><b>v0.35</b><small>10 additions</small></div><ul><li>Gunplay pass: hits at range, aim point, spread and damage</li><li>Rebuilt movement core: original jump, crouch, ladder and footstep behaviour</li><li>Options page and server browser in the in-game pause menu</li><li>Chat input, team memory between maps and coloured names</li><li>Grenade cooking and working suppressors</li><li>In-game bug reporter on F12</li><li>Match record on the official servers</li><li>Bots that adapt to the players on Unranked</li><li>Busiest-times chart and player-count notifications</li><li>Detailed player stats from every verified server, ranked and unranked</li></ul></li>
       <li class="rel"><div class="rel-ver"><b>v0.34</b><small>12 additions</small></div><ul><li>Custom graphics preset with every option switchable</li><li>Weapon and view motion, shell casings and gear worn on the back</li><li>The original fall damage</li><li>Original camouflage and climbing sounds</li><li>Killed-by card, damage direction, player votes and quick radio</li><li>Loadout presets, automatic demos and accessibility options</li><li>Hor+ field of view and a centred HUD on 21:9 and 32:9</li><li>Discord Rich Presence with join from Discord</li><li>Skill-based team balance, AFK handling and in-game reports</li><li>Native Linux dedicated server</li><li>Redesigned launcher with Quick Play and server filters</li><li>Voice commands</li></ul></li>
       <li class="rel"><div class="rel-ver"><b>v0.33</b><small>10 additions</small></div><ul><li>First-person muzzle flash and sniper scope overlay</li><li>Modern Ultra visuals: new tonemapping, TAA and ambient occlusion</li><li>Ledge climbing and original first-person animations</li><li>In-game pause menu on Esc</li><li>Frame-time graph for performance tuning</li><li>Real-time sun shadows and surface materials on Ultra</li><li>NVIDIA DLSS Frame Generation and Reflex</li><li>Original bullet impacts and near-miss sounds</li><li>Sharper bot aim, movement and teamwork</li><li>Launcher with its own version and self-updates</li></ul></li>
@@ -303,7 +303,7 @@
       <article class="post-card" data-tag="Graphics">
         <a class="post-art" href="devlog-a-new-look" tabindex="-1" aria-hidden="true"><img src="img/devlog/a-new-look-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Graphics</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-13">13 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="a-new-look" hidden></span></p>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state shipped">Shipped in v0.37.0</span><time datetime="2026-11-13">13 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="a-new-look" hidden></span></p>
           <h3><a href="devlog-a-new-look">A new look, from the loading screen to the kill feed</a></h3>
           <p>Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a controller. Here is what is coming and how it was built.</p>
           <a class="more" href="devlog-a-new-look">Read the post</a>
