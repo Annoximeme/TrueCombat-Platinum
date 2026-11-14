@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Inside 0.36.0, the|update you can hear.
-text=Voice chat, team pings, bots that read the map, a full audio overhaul and an optional 128 updates per second.
+title=Inside 0.37.0, our|biggest update yet.
+text=A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list of fixes from your reports.
 button=Read the devlog
-url=https://truecombat.eu/devlog-inside-036.html
+url=https://truecombat.eu/devlog-inside-037.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
-title=Inside 0.36.0, the update you can hear
-text=Voice chat, team pings, bots that read the map, a full audio overhaul and an optional 128 updates per second.
-url=https://truecombat.eu/devlog-inside-036.html
+title=Inside 0.37.0, our biggest update yet
+text=A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list…
+url=https://truecombat.eu/devlog-inside-037.html
 [news]
 tag=Community
 title=Weekend ranked ladder
