@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/devlog</id>
   <updated>2026-11-14T12:00:00Z</updated>
   <entry>
+    <title>Measuring every millisecond</title>
+    <link href="https://truecombat.eu/devlog-performance-audit"/>
+    <id>https://truecombat.eu/devlog-performance-audit</id>
+    <published>2026-11-14T12:00:00Z</published>
+    <updated>2026-11-14T12:00:00Z</updated>
+    <category term="Testing"/>
+    <summary>We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix. Here is what we found, what is already fixed and what comes next.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Inside 0.37.0, our biggest update yet</title>
     <link href="https://truecombat.eu/devlog-inside-037"/>
     <id>https://truecombat.eu/devlog-inside-037</id>
