@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Measuring every millisecond · TrueCombat: Platinum</title>
+<meta name="description" content="We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-performance-audit">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-performance-audit">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Measuring every millisecond">
+<meta property="og:description" content="We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-performance-audit.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-performance-audit.jpg">
+<meta property="article:published_time" content="2026-11-14">
+<meta property="article:section" content="Testing">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Measuring every millisecond","description":"We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix. Here is what we found, what is already fixed and what comes next.","datePublished":"2026-11-14","dateModified":"2026-11-14","inLanguage":"en","articleSection":"Testing","timeRequired":"PT6M","image":"https://truecombat.eu/img/og-devlog-performance-audit.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-performance-audit","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Measuring every millisecond">
+<meta name="twitter:description" content="We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Measuring every millisecond","item":"https://truecombat.eu/devlog-performance-audit"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-performance-audit">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-performance-audit">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-performance-audit">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=987ac3854f">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news">News</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-14">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-performance-audit" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-performance-audit" hreflang="nl" lang="nl">Nederlands</a></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Support</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="performance-audit" data-min="6">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(img/devlog/performance-audit.webp); --art-s: url(img/devlog/performance-audit-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Testing</span><time datetime="2026-11-14">14 Nov 2026</time><span>6 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="performance-audit" hidden></span></p>
+      <h1>Measuring every millisecond</h1>
+      <p class="lede">We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix. Here is what we found, what is already fixed and what comes next.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#frame-rate-not-the-problem">Frame rate: not the problem</a></li>
+          <li><a href="#loading-under-two-seconds">Loading: under two seconds</a></li>
+          <li><a href="#your-cpu-your-battery">Your CPU, your battery</a></li>
+          <li><a href="#servers-that-wait-more-efficiently">Servers that wait more efficiently</a></li>
+          <li><a href="#a-smaller-download">A smaller download</a></li>
+          <li><a href="#faster-builds-faster-fixes">Faster builds, faster fixes</a></li>
+          <li><a href="#nine-sounds-that-never-played">Nine sounds that never played</a></li>
+          <li><a href="#what-is-next">What is next</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>TrueCombat: Platinum runs on an engine first released in 2003, which we have rebuilt piece by piece: a new DirectX 12 renderer, new audio, new menus and a new launcher. Each of those changes was tested on its own. This week we stepped back and measured the whole game in one go, to answer one question: where does it still waste your time, your CPU or your bandwidth?</p>
+<p>The rule was simple. Measure first, change second. Nothing in this post is a guess. Every number comes from a test run, and every fix was measured again afterwards.</p>
+<h2 id="frame-rate-not-the-problem">Frame rate: not the problem</h2>
+<p>We started with the question players ask first. How does it run?</p>
+<p>We ran the 0.37.0 build at 1080p and 1440p on DirectX 12 and OpenGL, on Snow and Railhouse, with 16 bots fighting on the server and the camera moving the whole time. Each run lasted a full minute.</p>
+<figure class="wide">
+  <img src="img/devlog/perf-fps.webp" alt="1% low frame rate per run. Every run averaged the 500 fps cap." width="1280" height="720" loading="lazy">
+  <figcaption>1% low frame rate per run. Every run averaged the 500 fps cap.</figcaption>
+</figure>
+<p>Every run held the engine's 500 fps cap on average, and the slowest 1% of frames never dropped below 399 fps. Across all five runs, not one frame took longer than 33 milliseconds, which is the point where you would start to feel a stutter. The worst single frame we saw took 6.7 ms.</p>
+<div class="callout"><p>The engine caps the frame rate at 500 fps, so these runs could not go higher. They show that the game holds that cap with room to spare, even at 1440p with a full server.</p></div>
+<p>These numbers come from a fast PC with an RTX 4080 SUPER, so your own results will vary. What they do tell us is that the game no longer has stutters of its own. Earlier this year, weapon models and sounds loaded the first time you saw them, which caused hitches of up to 1.9 seconds in the middle of a match. That was fixed in 0.32.0, and these runs confirm it is still fixed.</p>
+<h2 id="loading-under-two-seconds">Loading: under two seconds</h2>
+<p>A map now loads in about 1.7 seconds from the moment you connect to your first frame in game. A cold start on a fresh profile was as fast as a warm one, at 1.73 seconds against 1.75 seconds. The material cache added in 0.36.0 and the earlier loading fixes have done their job.</p>
+<p>The launcher opens its window about 0.1 seconds after you start it.</p>
+<h2 id="your-cpu-your-battery">Your CPU, your battery</h2>
+<p>Frame rate is not the only thing that matters. On a laptop, or with Discord and a browser open next to the game, CPU time also means heat, fan noise and battery life. So we measured how much CPU the game uses at different frame caps.</p>
+<figure class="wide">
+  <img src="img/devlog/perf-client-cpu.webp" alt="Game client CPU use at a 144, 240 and 500 fps cap." width="1280" height="720" loading="lazy">
+  <figcaption>Game client CPU use at a 144, 240 and 500 fps cap, in percent of one CPU core.</figcaption>
+</figure>
+<p>CPU use rises in step with the frame rate, at about 0.14% of one core for every frame per second. That is good news. It means the game does not waste time waiting between frames, so a lower cap really does save power. If you play on a 144 Hz monitor, capping at 144 fps uses less than a third of the CPU that 500 fps does.</p>
+<h2 id="servers-that-wait-more-efficiently">Servers that wait more efficiently</h2>
+<p>Our servers run at 128 ticks per second, which gives them 7.8 milliseconds between ticks. In the time between two ticks a server should sleep. We found that every server stayed busy-waiting for the last millisecond before each tick, checking the clock over and over instead of sleeping. That is about an eighth of a CPU core per server, even with nobody playing.</p>
+<p>On Linux, where the official servers run, 0.37.0 already fixes this. A server now sleeps until a quarter of a millisecond before its next tick. On our live servers that cut the CPU use of an empty server from 12.6% to 3.1% of a core, and of a server with 10 bots from 15.3% to 6.7%. Ticks arrive just as precisely as before.</p>
+<figure class="wide">
+  <img src="img/devlog/perf-server-cpu.webp" alt="Game server CPU use before and after the fix." width="1280" height="720" loading="lazy">
+  <figcaption>CPU use of one game server at 128 ticks per second, before and after the fix.</figcaption>
+</figure>
+<p>Windows turned out to be worse. Windows can only wait in steps of whole milliseconds, so a Windows server busy-waited for up to two milliseconds of every tick. An empty Windows server used almost a third of a CPU core. That matters if you host a server on your own PC. The fix for Windows is in testing for an upcoming update. It uses a high-precision timer that Windows 10 and 11 provide, which wakes on time without busy-waiting.</p>
+<p>None of this changes how the game plays. Ticks arrive on time, just as before. The servers simply stop working while there is nothing to do.</p>
+<h2 id="a-smaller-download">A smaller download</h2>
+<p>Every release used to include a full-game zip as a backup download. That zip was getting close to the 2.08 GB limit for a file on a release, and 0.37.0 would have gone over it.</p>
+<figure class="wide">
+  <img src="img/devlog/perf-zip.webp" alt="Size of the full-game zip per release." width="1280" height="720" loading="lazy">
+  <figcaption>Size of the full-game zip per release. Above the dashed line a file cannot be attached to a release.</figcaption>
+</figure>
+<p>The launcher and the installer already download individual files, so the zip was only there for older launchers. In 0.37.0 the launcher can update without it, and the zip is down from 2.04 GB to 0.82 GB because it now leaves out the HD texture packs. That fallback zip will be dropped completely in a later release. The HD packs still come with every install, exactly as before.</p>
+<h2 id="faster-builds-faster-fixes">Faster builds, faster fixes</h2>
+<p>We also measured how we build and test the game. A full test run before a release takes about 45 minutes when everything passes, but one flaky test could restart the whole run and hold the test machine for hours. The build itself was using only 6 of the test machine's 28 processor threads.</p>
+<p>Builds now use every thread, and release packaging hashes files as it streams them instead of loading more than a gigabyte into memory first. That means fixes reach you faster.</p>
+<h2 id="nine-sounds-that-never-played">Nine sounds that never played</h2>
+<p>While going through the logs from these runs, we found nine sounds that the game asked for on every start but could not find. They are referenced by the original TrueCombat: Elite data, but the files were never shipped, not even in the original game. Every one of them played as silence.</p>
+<p>Some of them you would have noticed if you knew they were missing:</p>
+<ul>
+  <li>the knife swing</li>
+  <li>the distant echo of the MAC-10 and the silenced MAC-10</li>
+  <li>the hum of the lights on Snow, Northport and Stadtrand</li>
+  <li>the sound of landing on a fence</li>
+  <li>the sounds of some breakable objects</li>
+</ul>
+<p>An upcoming update points each one at the closest matching sound the game already has: the knife's own slash sounds, the MAC-10's existing distant shot, the existing light hum, and the metal landing sound. Two of the nine are menu hover sounds that the menus were never designed around, so they stay silent on purpose. They just no longer log an error.</p>
+<h2 id="what-is-next">What is next</h2>
+<p>The Windows server fix and the missing sounds are in testing for an upcoming update. We will keep running these measurements before every major release, so that a slowdown shows up in our numbers before it shows up in your game.</p>
+<p>If you see stutters, long loading screens or high CPU use on your own PC, tell us on <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. A report that names your graphics card and settings is the fastest way for us to find it.</p>
+      </div>
+      <div class="post-rate" data-rate="performance-audit" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-inside-037"><small>Older post</small>Inside 0.37.0, our biggest update yet</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Testing">
+        <a class="post-art" href="devlog-recoil-check" tabindex="-1" aria-hidden="true"><img src="img/media-soldier-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Testing</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="recoil-check" hidden></span></p>
+          <h2><a href="devlog-recoil-check">When the test is wrong</a></h2>
+          <p>Our recoil checks flagged the Desert Eagle as broken. The game was right. Here is how we found out, and why we would rather chase a false alarm than miss a real one.</p>
+          <a class="more" href="devlog-recoil-check">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Testing">
+        <a class="post-art" href="devlog-one-update" tabindex="-1" aria-hidden="true"><img src="img/media-village-yard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Testing</span><span class="state shipped">Shipped in v0.34.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>4 min read</span><span class="post-stat" data-post-stat="one-update" hidden></span></p>
+          <h2><a href="devlog-one-update">Ten pieces of work, one update</a></h2>
+          <p>The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.</p>
+          <a class="more" href="devlog-one-update">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=fc49adbeb2"></script>
+</body>
+</html>

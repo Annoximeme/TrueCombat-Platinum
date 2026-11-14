@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Inside 0.37.0, our|biggest update yet.
-text=A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list of fixes from your reports.
+title=Measuring every|millisecond.
+text=We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix. Here is what we found, what is already fixed and what comes next.
 button=Read the devlog
-url=https://truecombat.eu/devlog-inside-037.html
+url=https://truecombat.eu/devlog-performance-audit.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
-title=Inside 0.37.0, our biggest update yet
-text=A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list…
-url=https://truecombat.eu/devlog-inside-037.html
+title=Measuring every millisecond
+text=We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix.
+url=https://truecombat.eu/devlog-performance-audit.html
 [news]
 tag=Community
 title=Weekend ranked ladder

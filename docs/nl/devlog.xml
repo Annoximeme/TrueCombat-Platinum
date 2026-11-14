@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/nl/devlog</id>
   <updated>2026-11-14T12:00:00Z</updated>
   <entry>
+    <title>Elke milliseconde gemeten</title>
+    <link href="https://truecombat.eu/nl/devlog-performance-audit"/>
+    <id>https://truecombat.eu/nl/devlog-performance-audit</id>
+    <published>2026-11-14T12:00:00Z</published>
+    <updated>2026-11-14T12:00:00Z</updated>
+    <category term="Testen"/>
+    <summary>We hebben het hele spel doorgemeten, van frametijden en laadschermen tot de servers en de download, voordat we besloten wat we zouden aanpakken. Dit vonden we, dit is al opgelost en dit komt nog.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Inside 0.37.0, onze grootste update tot nu toe</title>
     <link href="https://truecombat.eu/nl/devlog-inside-037"/>
     <id>https://truecombat.eu/nl/devlog-inside-037</id>
