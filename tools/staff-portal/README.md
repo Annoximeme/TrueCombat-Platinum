@@ -128,6 +128,33 @@ A key stops working when a newer one is made, when an admin revokes it (Staff pa
 loses staff access (revoked in the portal or Discord role removed, seen at their next portal visit), or
 after `staff_key_idle_days` (default 60, 0 = never) without signing in to the portal.
 
+### Staff certificates (game 0.38.0+, launcher 2.5+)
+
+So the badge works on every server, community and offline ones included, the portal signs each active key into
+a certificate with a root Ed25519 key. Every game server checks it against the root public keys built into the
+game (`game_src/native/tcp_staff_roots.h`, two slots for rotation), with no key list and no network call. The key
+list above stays as a second path.
+
+- Certificate line, public data (useless without the staff member's private key):
+  `TCPSTAFFCERT1 <root id> <key id> <role> <issued> <expires> <public key hex> <name hex> <signature hex>`, signed
+  over `TCP-STAFF-CERT-1\n<root id>\n<key id>\n<role>\n<issued>\n<expires>\n<public key hex>\n<name hex>`.
+- `GET /api/staffcert?id=<key id>` (no session; 60 per hour per address) returns `{"cert", "expires"}` for an
+  active key and 404 for an unknown, revoked or idle key, or while no root is set up. The launcher claim answer
+  (`POST /api/staffkey/claim`) carries the first certificate too. Certificates last `staff_cert_days` (30).
+- The launcher stores it as `profile\staff.cert` and renews it at most once a day while it has less than 10 days
+  left; the game writes the public key id to `profile\staff.keyid` for that. A revoked key stops working when its
+  certificate runs out; for faster removal list the key id in `tcp_staff_revoked.h` in the next release.
+
+Root key (once; never in the repo, a release or a project file):
+
+    sudo python3 /opt/tcp/staff-portal/tcp_staff_portal.py --config /etc/tcp-staff-portal/config.json \
+        --make-staff-root r1 --root-out /etc/tcp-staff-portal/staff-root     # root:root 0600, never overwritten
+
+It prints only the public key line for `tcp_staff_roots.h` (slot r1). Then uncomment
+`LoadCredential=staff-root:...` in the unit, `systemctl daemon-reload`, restart the portal, and ship a game
+release with that public key. Rotation: make r2 the same way, ship it next to r1, switch the credential to r2,
+then drop r1 in a later release.
+
 ## Run and test
 
 ```
