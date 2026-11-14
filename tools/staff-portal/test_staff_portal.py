@@ -1094,5 +1094,69 @@ class PortalTest(unittest.TestCase):
             srv.server_close()
 
 
+    def test_35_staff_certificates(self):
+        """0.38.0: the portal signs active staff keys into certificates every game server checks offline."""
+        root_seed, staff_seed = bytes([0x11]) * 32, bytes([0x22]) * 32
+        staff_pub = tsp.ed25519_public(staff_seed).hex()
+        rootfile = Path(self.tmp.name) / "staff-root"
+        for attr in ("_staff_root", "_staff_certs"):
+            if hasattr(self.portal, attr):
+                delattr(self.portal, attr)
+        self.portal.cfg.pop("staff_root_file", None)
+        st, k = self.call("moderator", "POST", "/api/staffkey", {"public": staff_pub})
+        self.assertEqual(st, 201)
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=" + k["id"])[0], 404)      # no root set up yet
+        rootfile.write_text("TCPSTAFFROOT1 p1 %s\n" % root_seed.hex())
+        self.portal.cfg["staff_root_file"] = str(rootfile)
+        del self.portal._staff_root
+        st, c = self.call(None, "GET", "/api/staffcert?id=" + k["id"])                       # public: no session
+        self.assertEqual(st, 200)
+        f = c["cert"].split()
+        self.assertEqual((f[0], f[1], f[2], f[3], f[6]), ("TCPSTAFFCERT1", "p1", k["id"], "1", staff_pub))
+        issued, expires = int(f[4]), int(f[5])
+        self.assertEqual(expires - issued, 30 * 86400)
+        self.assertEqual(bytes.fromhex(f[7]).decode(), "Moderator")
+        msg = tsp.staff_cert_message("p1", k["id"], 1, issued, expires, staff_pub, f[7])
+        root_pub = tsp.ed25519_public(root_seed)
+        self.assertTrue(tsp.ed25519_verify(root_pub, msg, bytes.fromhex(f[8])))
+        self.assertFalse(tsp.ed25519_verify(root_pub, msg + b"x", bytes.fromhex(f[8])))
+        self.assertEqual(root_pub.hex(), "d04ab232742bb4ab3a1368bd4615e4e6d0224ab71a016baf8520a332c9778737")  # = game probe root p1
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=" + k["id"])[1]["cert"], c["cert"])   # cached
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=kzzzz")[0], 404)
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=k0000000000")[0], 404)
+        self.assertEqual(self.call("moderator", "POST", "/api/staffkey/revoke", {"id": k["id"]})[0], 200)
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=" + k["id"])[0], 404)      # revoked: no new certificate
+        self.portal.cfg.pop("staff_root_file", None)
+        del self.portal._staff_root
+
+
+class Ed25519Test(unittest.TestCase):
+    def test_rfc8032_vectors(self):
+        for sk, pk, msg, sig in (
+            ("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+             "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", "",
+             "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b"),
+            ("4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb",
+             "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c", "72",
+             "92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00")):
+            s, p, m = bytes.fromhex(sk), bytes.fromhex(pk), bytes.fromhex(msg)
+            self.assertEqual(tsp.ed25519_public(s), p)
+            self.assertEqual(tsp.ed25519_sign(s, m).hex(), sig)
+            self.assertTrue(tsp.ed25519_verify(p, m, bytes.fromhex(sig)))
+
+    def test_make_staff_root(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "staff-root"
+            cfgfile = Path(d) / "c.json"
+            cfgfile.write_text("{}")
+            self.assertEqual(tsp.main(["--config", str(cfgfile), "--make-staff-root", "r1", "--root-out", str(out)]), 0)
+            parts = out.read_text().split()
+            self.assertEqual((parts[0], parts[1], len(parts[2])), ("TCPSTAFFROOT1", "r1", 64))
+            if os.name == "posix":
+                self.assertEqual(out.stat().st_mode & 0o777, 0o600)
+            with self.assertRaises(FileExistsError):                                     # never overwrites a root
+                tsp.main(["--config", str(cfgfile), "--make-staff-root", "r1", "--root-out", str(out)])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

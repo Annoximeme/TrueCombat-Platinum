@@ -20,6 +20,7 @@
   "chat_days": 30,
   "bugreport_per_hour": 6,
   "staff_key_idle_days": 60,
+  "staff_cert_days": 30,
   "bugshot_max_mb": 500,
   "launcher_key_install": false,
   "require_2fa": true,
