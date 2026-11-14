@@ -220,3 +220,19 @@ def test_presence_line():
     assert presence_line(idle, 0, "x") == "Village on Official #1 · join now"
     assert presence_line(idle, 3, "x") == "Snow on Official #2 · join now"
     assert presence_line(idle, 2, "truecombat.eu") == "truecombat.eu"
+
+
+def test_release_links_point_to_the_website(cfg, tmp_path):
+    cfg["devlog"]["site_root"] = str(tmp_path)
+    # page not built yet: the version's entry on the patch notes page
+    d = check(embeds.release_announcement(cfg, RELEASE))
+    assert d["url"] == cfg.site + "/news.html#v0.33.0"
+    (tmp_path / "release-0-33-0.html").write_text("<html></html>", encoding="utf-8")
+    d = check(embeds.release_announcement(cfg, RELEASE))
+    assert d["url"] == cfg.site + "/release-0-33-0"
+    assert d["author"]["url"] == cfg.site + "/release-0-33-0"
+    assert "(%s/release-0-33-0)" % cfg.site in d["fields"][-1]["value"]
+    assert "github.com" not in str(d)
+    no_installer = dict(RELEASE, assets=[])
+    d = check(embeds.release_announcement(cfg, no_installer))
+    assert "github.com" not in str(d) and cfg.site + "/download" in d["fields"][-1]["value"]

@@ -3,7 +3,8 @@
 * Game servers: UDP ``getstatus``, the same query the server browser sends.
 * Stats bridge: http://127.0.0.1:8090 (the service behind api.truecombat.eu).
 * Devlog: the Atom feed in the website folder Caddy serves.
-* Releases: the public GitHub Releases API, with conditional requests.
+* Releases: the public GitHub Releases API, with conditional requests. Every
+  link the bot posts for a release points at truecombat.eu, never at GitHub.
 """
 
 from __future__ import annotations
@@ -253,10 +254,41 @@ def release_version(rel: dict) -> str:
 
 
 def release_download(rel: dict) -> str:
+    """The installer file itself, or "" (callers then link the website's download page)."""
     for a in rel.get("assets") or []:
         if a.get("name") == "TrueCombat-Platinum-Setup.exe":
             return a["browser_download_url"]
-    return rel.get("html_url") or ""
+    return ""
+
+
+def release_slug(rel: dict) -> str:
+    """'v0.37.0-sandbox30' -> 'release-0-37-0', the website's page for that version
+    (same rule as slug() in tools/website/releases.py)."""
+    m = re.search(r"(\d+\.\d+\.\d+)", rel.get("tag_name") or rel.get("name") or "")
+    return "release-" + m.group(1).replace(".", "-") if m else ""
+
+
+def release_page_ready(site_root: str, rel: dict) -> bool:
+    """True once the website copy on this box has the version's own patch-notes page.
+    The site rebuilds itself a few minutes after a release is published."""
+    slug = release_slug(rel)
+    if not slug:
+        return False
+    root = Path(site_root or "")
+    if not site_root or not root.is_dir():
+        return True     # no local copy to look at: trust the site to have it
+    return (root / (slug + ".html")).is_file()
+
+
+def release_notes_url(site: str, site_root: str, rel: dict) -> str:
+    """Where a release's patch notes live on truecombat.eu: the version's own page
+    when it is up, otherwise its entry on the patch notes page."""
+    site = site.rstrip("/")
+    slug = release_slug(rel)
+    if slug and release_page_ready(site_root, rel):
+        return "%s/%s" % (site, slug)
+    m = re.search(r"(\d+\.\d+\.\d+)", rel.get("tag_name") or rel.get("name") or "")
+    return "%s/news.html#v%s" % (site, m.group(1)) if m else site + "/news.html"
 
 
 # ---------------------------------------------------------------- devlog
