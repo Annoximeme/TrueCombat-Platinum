@@ -43,7 +43,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.3.1"
+VERSION = "1.4.0"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -592,6 +592,147 @@ def totp_match(secret: str, code: str, last_step: int, t: float | None = None) -
 # ----------------------------------------------------------------------------- rcon
 
 PREFIX = b"\xff\xff\xff\xff"
+
+
+# ---------------------------------------------------------------- staff certificates (0.38.0+)
+# The portal signs each active staff key with a root Ed25519 key into a certificate the game sends with its staff
+# answer; every server checks it offline against the root public keys built into the game (tcp_staff_cert.h).
+# Pure-Python Ed25519 (RFC 8032 5.1 reference algorithm): a few signatures a day, so speed does not matter.
+_P = 2 ** 255 - 19
+_L = 2 ** 252 + 27742317777372353535851937790883648493
+_D = -121665 * pow(121666, _P - 2, _P) % _P
+_I = pow(2, (_P - 1) // 4, _P)
+
+
+def _sha512(b: bytes) -> bytes:
+    return hashlib.sha512(b).digest()
+
+
+def _add(a, b):
+    A = (a[1] - a[0]) * (b[1] - b[0]) % _P
+    B = (a[1] + a[0]) * (b[1] + b[0]) % _P
+    C = 2 * a[3] * b[3] * _D % _P
+    Dd = 2 * a[2] * b[2] % _P
+    E, F, G, H = B - A, Dd - C, Dd + C, B + A
+    return (E * F % _P, G * H % _P, F * G % _P, E * H % _P)
+
+
+def _mul(s: int, pt):
+    q = (0, 1, 1, 0)
+    while s > 0:
+        if s & 1:
+            q = _add(q, pt)
+        pt = _add(pt, pt)
+        s >>= 1
+    return q
+
+
+def _recover_x(y: int, sign: int):
+    if y >= _P:
+        return None
+    x2 = (y * y - 1) * pow(_D * y * y + 1, _P - 2, _P)
+    if x2 == 0:
+        return None if sign else 0
+    x = pow(x2, (_P + 3) // 8, _P)
+    if (x * x - x2) % _P != 0:
+        x = x * _I % _P
+    if (x * x - x2) % _P != 0:
+        return None
+    if (x & 1) != sign:
+        x = _P - x
+    return x
+
+
+_GY = 4 * pow(5, _P - 2, _P) % _P
+_GX = _recover_x(_GY, 0)
+_G = (_GX, _GY, 1, _GX * _GY % _P)
+
+
+def _compress(pt) -> bytes:
+    zinv = pow(pt[2], _P - 2, _P)
+    x, y = pt[0] * zinv % _P, pt[1] * zinv % _P
+    return int.to_bytes(y | ((x & 1) << 255), 32, 'little')
+
+
+def _decompress(s: bytes):
+    if len(s) != 32:
+        return None
+    y = int.from_bytes(s, 'little')
+    sign = y >> 255
+    y &= (1 << 255) - 1
+    x = _recover_x(y, sign)
+    return None if x is None else (x, y, 1, x * y % _P)
+
+
+def _expand(seed: bytes):
+    if len(seed) != 32:
+        raise ValueError('Ed25519 seed must be 32 bytes')
+    h = _sha512(seed)
+    a = int.from_bytes(h[:32], 'little')
+    a &= (1 << 254) - 8
+    a |= 1 << 254
+    return a, h[32:]
+
+
+def ed25519_public(seed: bytes) -> bytes:
+    a, _ = _expand(seed)
+    return _compress(_mul(a, _G))
+
+
+def ed25519_sign(seed: bytes, msg: bytes) -> bytes:
+    a, prefix = _expand(seed)
+    A = _compress(_mul(a, _G))
+    r = int.from_bytes(_sha512(prefix + msg), 'little') % _L
+    R = _compress(_mul(r, _G))
+    h = int.from_bytes(_sha512(R + A + msg), 'little') % _L
+    s = (r + h * a) % _L
+    return R + int.to_bytes(s, 32, 'little')
+
+
+def ed25519_verify(public: bytes, msg: bytes, sig: bytes) -> bool:
+    if len(public) != 32 or len(sig) != 64:
+        return False
+    A = _decompress(public)
+    R = _decompress(sig[:32])
+    if A is None or R is None:
+        return False
+    s = int.from_bytes(sig[32:], 'little')
+    if s >= _L:
+        return False
+    h = int.from_bytes(_sha512(sig[:32] + public + msg), 'little') % _L
+    sB = _mul(s, _G)
+    hA = _mul(h, A)
+    lhs, rhs = sB, _add(R, hA)
+    return (lhs[0] * rhs[2] - rhs[0] * lhs[2]) % _P == 0 and (lhs[1] * rhs[2] - rhs[1] * lhs[2]) % _P == 0
+
+
+STAFF_CERT_TAG = "TCPSTAFFCERT1"
+
+
+def staff_cert_message(root_id: str, kid: str, role: int, issued: int, expires: int, pub_hex: str, name_hex: str) -> bytes:
+    return ("TCP-STAFF-CERT-1\n%s\n%s\n%d\n%d\n%d\n%s\n%s" % (root_id, kid, role, issued, expires, pub_hex, name_hex)).encode()
+
+
+def load_staff_root(cfg: dict):
+    """(root id, seed, public) from the systemd credential 'staff-root' or cfg staff_root_file: one line
+    "TCPSTAFFROOT1 <id> <64 hex seed>". None when not set up: the portal then issues no certificates."""
+    names = []
+    cred = os.environ.get("CREDENTIALS_DIRECTORY")
+    if cred:
+        names.append(Path(cred) / "staff-root")
+    if cfg.get("staff_root_file"):
+        names.append(Path(cfg["staff_root_file"]))
+    for p in names:
+        try:
+            parts = p.read_text(encoding="ascii").split()
+        except OSError:
+            continue
+        if len(parts) == 3 and parts[0] == "TCPSTAFFROOT1" and re.fullmatch(r"[A-Za-z0-9_-]{1,15}", parts[1]) \
+                and re.fullmatch(r"[0-9a-f]{64}", parts[2]):
+            seed = bytes.fromhex(parts[2])
+            return parts[1], seed, ed25519_public(seed)
+        log.warning("staff root in %s is not a TCPSTAFFROOT1 line; no certificates", p)
+    return None
 
 
 class RconError(Exception):
@@ -2676,6 +2817,31 @@ class Portal(Moderation, Watchers, Operations):
             out.append("TCPSTAFFKEY1 %s 1 %s %s" % (k["id"], k["public"], k["name"]))
         return "\n".join(out) + "\n"
 
+    def staff_cert(self, kid: str) -> dict | None:
+        """A fresh certificate for an active staff key, or None (unknown, revoked, idle, or no root set up).
+        Certificates last staff_cert_days (30); a cached one is reused while it has at least 25 days left."""
+        if not hasattr(self, "_staff_root"):
+            self._staff_root, self._staff_certs = load_staff_root(self.cfg), {}
+        if not self._staff_root or not re.fullmatch(r"k[0-9a-f]{10}", kid or ""):
+            return None
+        sql, args = self.staff_key_valid_sql()
+        k = self.store.one("SELECT * FROM (%s) WHERE id=?" % sql, args + [kid])
+        if not k:
+            self._staff_certs.pop(kid, None)
+            return None
+        days = max(1, min(90, int(self.cfg.get("staff_cert_days", 30))))
+        hit = self._staff_certs.get(kid)
+        if hit and hit["public"] == k["public"] and hit["expires"] - now() > (days - 5) * 86400:
+            return hit
+        root_id, seed, _pub = self._staff_root
+        issued = now() - 60
+        expires = issued + days * 86400
+        name_hex = (k["name"] or "staff").encode("ascii", "replace")[:24].hex()
+        sig = ed25519_sign(seed, staff_cert_message(root_id, kid, 1, issued, expires, k["public"], name_hex))
+        line = " ".join([STAFF_CERT_TAG, root_id, kid, "1", str(issued), str(expires), k["public"], name_hex, sig.hex()])
+        self._staff_certs[kid] = {"cert": line, "expires": expires, "public": k["public"]}
+        return self._staff_certs[kid]
+
     def publish_staff_keys(self) -> list:
         """Writes the key list for every server that has staff_keys_file and asks it to reload. Returns problems."""
         text, problems = self.staff_key_lines(), []
@@ -3075,6 +3241,8 @@ def make_handler(portal: Portal):
                     return self.bugreport()
                 if path == "/api/staffkey/claim" and method == "POST":
                     return self.staffkey_claim()
+                if path == "/api/staffcert" and method == "GET":
+                    return self.staffcert(qs)
                 if path in ("/appeal", "/appeal/") and method == "GET":
                     return self.static("appeal.html")
                 if path.startswith("/appeal/"):
@@ -3171,6 +3339,15 @@ def make_handler(portal: Portal):
                 return self.json({"ok": True}, extra={"Set-Cookie": [self.set_cookie(cookie_name, "", 0)]})
             raise ApiError(404, "Not found.")
 
+        # -- the launcher renews the certificate of an installed key (public data; no session needed)
+        def staffcert(self, qs: dict) -> None:
+            if portal.limited("staffcert:" + self.client_ip(), 60, 3600):
+                raise ApiError(429, "Too many tries. Try again later.")
+            c = portal.staff_cert(str(qs.get("id", "")))
+            if not c:
+                raise ApiError(404, "No certificate for this key.")
+            return self.json({"cert": c["cert"], "expires": c["expires"]})
+
         # -- the launcher claims a one-time "Install in game" link: it sends the public half of a key pair it made
         def staffkey_claim(self) -> None:
             ip = self.client_ip()
@@ -3196,7 +3373,8 @@ def make_handler(portal: Portal):
             kid, problems = portal.create_staff_key(row["discord_id"], row["name"], pub)
             portal.store.audit({"discord_id": row["discord_id"], "name": row["name"]}, "staff key made", target=kid,
                                detail="installed by the launcher")
-            self.json({"id": kid, "name": row["name"]}, 201)
+            c = portal.staff_cert(kid)
+            self.json(dict({"id": kid, "name": row["name"]}, **({"cert": c["cert"], "expires": c["expires"]} if c else {})), 201)
 
         # -- public bug report intake: F12 in game (0.36.0+) posts JSON "tcp-bugreport/1"; older tools post plain text
         def bugreport(self) -> None:
@@ -3938,8 +4116,24 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--config", required=True)
     ap.add_argument("--listen", help="host:port (default from the config, 127.0.0.1:8097)")
+    ap.add_argument("--make-staff-root", metavar="ROOT_ID", help="write a new staff certificate root to the --root-out file "
+                    "(0600) and print its PUBLIC key for tcp_staff_roots.h, then exit")
+    ap.add_argument("--root-out", metavar="FILE", help="with --make-staff-root: where the root line goes (must not exist)")
     ap.add_argument("--reset-2fa", metavar="DISCORD_ID", help="turn off two-step sign-in for one account (lost phone) and exit")
     a = ap.parse_args(argv)
+    if a.make_staff_root:
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,15}", a.make_staff_root) or not a.root_out:
+            print("usage: --make-staff-root r1 --root-out /etc/tcp-staff-portal/staff-root", file=sys.stderr)
+            return 2
+        out = Path(a.root_out)
+        seed = secrets.token_bytes(32)
+        fd = os.open(str(out), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w", encoding="ascii") as fh:
+            fh.write("TCPSTAFFROOT1 %s %s\n" % (a.make_staff_root, seed.hex()))
+        pub = ed25519_public(seed)
+        print("root %s public key (paste into game_src/native/tcp_staff_roots.h):" % a.make_staff_root)
+        print("    {\"%s\",{%s}}," % (a.make_staff_root, ",".join("0x%02x" % b for b in pub)))
+        return 0
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     cfg = load_config(a.config)
     if a.reset_2fa:
