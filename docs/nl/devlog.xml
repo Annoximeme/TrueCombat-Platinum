@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/nl/devlog"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog</id>
-  <updated>2026-11-14T12:00:00Z</updated>
+  <updated>2026-11-15T12:00:00Z</updated>
+  <entry>
+    <title>Inside 0.37.1, bijgesteld op jullie meldingen</title>
+    <link href="https://truecombat.eu/nl/devlog-inside-0371"/>
+    <id>https://truecombat.eu/nl/devlog-inside-0371</id>
+    <published>2026-11-15T12:00:00Z</published>
+    <updated>2026-11-15T12:00:00Z</updated>
+    <category term="Release"/>
+    <summary>Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweergave in de geest van het origineel, wapens weer op hun echte vuursnelheid, soepeler laden van kaarten en optionele HD-texturen. Dit is wat er in 0.37.1 veranderd is, en waarom.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Elke milliseconde gemeten</title>
     <link href="https://truecombat.eu/nl/devlog-performance-audit"/>

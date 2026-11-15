@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inside 0.37.1, bijgesteld op jullie meldingen · TrueCombat: Platinum</title>
+<meta name="description" content="Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweergave in de geest van het origineel, wapens weer op hun echte vuursnelheid, soepeler laden…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-inside-0371">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-inside-0371">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Inside 0.37.1, bijgesteld op jullie meldingen">
+<meta property="og:description" content="Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweergave in de geest van het origineel, wapens weer op hun echte vuursnelheid, soepeler laden…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-inside-0371.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-inside-0371.jpg">
+<meta property="article:published_time" content="2026-11-15">
+<meta property="article:section" content="Release">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Inside 0.37.1, bijgesteld op jullie meldingen","description":"Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweergave in de geest van het origineel, wapens weer op hun echte vuursnelheid, soepeler laden van kaarten en optionele HD-texturen. Dit is wat er in 0.37.1 veranderd is, en waarom.","datePublished":"2026-11-15","dateModified":"2026-11-15","inLanguage":"nl","articleSection":"Release","timeRequired":"PT6M","image":"https://truecombat.eu/img/og-devlog-inside-0371.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-inside-0371","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Inside 0.37.1, bijgesteld op jullie meldingen">
+<meta name="twitter:description" content="Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweergave in de geest van het origineel, wapens weer op hun echte vuursnelheid, soepeler laden…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Inside 0.37.1, bijgesteld op jullie meldingen","item":"https://truecombat.eu/nl/devlog-inside-0371"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-inside-0371">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-inside-0371">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-inside-0371">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=987ac3854f">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Wapens</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Gids</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Ranglijsten</a></li>
+      <li><a href="competitive">Competitief</a></li>
+      <li><a href="news">Nieuws</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-15">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Zoeken</button><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="media">Media</a><a href="guide">Gids</a><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Steun ons</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq">Vragen</a><a href="press">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-inside-0371" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-inside-0371" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Steun ons</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="inside-0371" data-min="6">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/media-soldier-hd.webp); --art-s: url(../img/media-soldier-hd-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.37.1</span><time datetime="2026-11-15">15 nov 2026</time><span>6 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="inside-0371" hidden></span></p>
+      <h1>Inside 0.37.1, bijgesteld op jullie meldingen</h1>
+      <p class="lede">Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweergave in de geest van het origineel, wapens weer op hun echte vuursnelheid, soepeler laden van kaarten en optionele HD-texturen. Dit is wat er in 0.37.1 veranderd is, en waarom.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#een-hud-die-bij-je-scherm-past">Een HUD die bij je scherm past</a></li>
+          <li><a href="#munitie-en-gezondheid-zoals-vroeger">Munitie en gezondheid, zoals vroeger</a></li>
+          <li><a href="#wapens-weer-op-hun-echte-snelheid">Wapens weer op hun echte snelheid</a></li>
+          <li><a href="#bots">Bots</a></li>
+          <li><a href="#soepeler-laden-van-kaarten">Soepeler laden van kaarten</a></li>
+          <li><a href="#graphics">Graphics</a></li>
+          <li><a href="#namen-accounts-en-meldingen">Namen, accounts en meldingen</a></li>
+          <li><a href="#launcher-2-5">Launcher 2.5</a></li>
+          <li><a href="#een-nieuwe-intro">Een nieuwe intro</a></li>
+          <li><a href="#hoe-we-het-getest-hebben">Hoe we het getest hebben</a></li>
+          <li><a href="#nog-op-onze-lijst">Nog op onze lijst</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>0.37.0 was de grootste update die Platinum ooit gehad heeft, en zette in één keer veel nieuws voor veel spelers neer. Jullie lieten snel weten wat goed voelde en wat niet. Versie 0.37.1 is ons antwoord op die meldingen. Het is een vervolg en geen nieuwe lading functies, maar klein is het niet: de update raakt de HUD, de gunplay, de bots, de prestaties en de launcher.</p>
+<div class="callout"><p>De launcher installeert 0.37.1 vanzelf en je instellingen blijven behouden. Wil je een kleinere installatie, dan kun je HD-texturen nu uitschakelen in de launcher.</p></div>
+<h2 id="een-hud-die-bij-je-scherm-past">Een HUD die bij je scherm past</h2>
+<p>De nieuwe interface in 0.37.0 kwam met drie vaste menugroottes. Dat bleek niet genoeg. Spelers met grote monitoren wilden een kleinere HUD, spelers op een laptop een grotere, en bijna iedereen wilde de chat minder in de weg.</p>
+<p>Daarom zijn de groottes nu schuifregelaars. <strong>Menugrootte</strong> loopt van 50 tot 100 procent en <strong>Grootte in-game UI</strong> van 50 tot 150 procent, allebei in stappen van 5 procent. De doorzichtigheid is in drieën gesplitst: je kunt de HUD-panelen vervagen zonder de tekst en icoontjes erop kwijt te raken, en de chat apart instellen. De rondetimer en de teamscores kun je elk afzonderlijk tonen of verbergen.</p>
+<p>Een paar dingen gingen ook uit de weg. De melding "You killed" midden in beeld is verdwenen, want die bedekte precies de plek waar je op richtte. De doodskaart staat nu rechtsonder en verdwijnt na ongeveer tweeënhalve seconde. De laadschermen van de kaarten zijn terug, en de optie voor de FPS-teller doet eindelijk wat ze belooft.</p>
+<p>Ook de toetstoewijzing had twee eigen problemen. <strong>Standaardinstellingen</strong> zet nu de juiste Platinum-indeling terug, en de launcher overschrijft geen toetsen meer die je in het spel hebt aangepast. Nieuwe spelers krijgen bovendien meteen <strong>F3</strong> om een stemming te starten.</p>
+<h2 id="munitie-en-gezondheid-zoals-vroeger">Munitie en gezondheid, zoals vroeger</h2>
+<p>Het originele TrueCombat toonde nooit hoeveel kogels je nog had. Je zag een magazijn en hoeveel reservemagazijnen je bij je droeg, en je leerde je schoten tellen. 0.37.1 brengt dat terug. Het munitiepaneel toont een magazijnicoon met het exacte aantal reservemagazijnen, samen met het icoon van het wapen dat je vasthoudt. Wil je weten hoe vol je huidige magazijn is, dan vertelt de nieuwe toets <strong>Magazijn controleren</strong> het je.</p>
+<p>Om dezelfde reden is de herlaadmelding verdwenen. In de plaats daarvan klikt een leeg wapen luider, zodat je meteen weet dat je droog staat.</p>
+<p>Gezondheid werkt in dezelfde geest. Een silhouet van je lichaam laat zien waar je geraakt bent, en waarschuwt als je mank loopt of bijna dood bent. In ranked matches krijg je alleen het silhouet, zodat iedereen dezelfde informatie ziet. In unranked kun je exacte gezondheidscijfers aanzetten in de opties als je dat liever hebt.</p>
+<h2 id="wapens-weer-op-hun-echte-snelheid">Wapens weer op hun echte snelheid</h2>
+<p>Vuursnelheid was na 0.37.0 een van de meest gehoorde opmerkingen. We hebben elk wapen naast het originele TrueCombat:Elite gelegd en de wapens die waren afgeweken rechtgezet:</p>
+<ul>
+  <li>Automatische wapens vuren precies op hun oorspronkelijke snelheid.</li>
+  <li>Grendelgeweren herladen weer op hun oorspronkelijke tempo.</li>
+  <li>Pompgeweren hebben nu een volledige pompbeweging tussen twee schoten nodig, waardoor ze weer op de juiste snelheid vuren. Ook het herlaadgeluid is opgelost: één patroon, één geluid, in plaats van een dubbel en vertraagd effect.</li>
+</ul>
+<p>Bij het sprinten kozen we bewust voor een verandering. In het origineel kon je blijven sprinten terwijl je door het vizier richtte, en zelfs met een lege staminabalk. Dat zijn trouwe details, maar in de praktijk voelden gevechten daardoor niet juist, en het was een van de duidelijkste klachten uit de playtests. In 0.37.1 stopt je sprint zodra je richt, en met een lege staminabalk sprint je niet meer. De oorspronkelijke kost van springen tijdens het sprinten blijft ongewijzigd.</p>
+<p>Verschillende visuele details staan weer waar ze horen. Wisselen van wapen speelt de juiste animatie af, granaatexplosies zien er weer uit zoals in het origineel, in zowel DirectX 12 als OpenGL, elke klasse gebruikt haar eigen personagemodel, en een geworpen fraggranaat lijkt in de lucht niet langer op een rookgranaat. Kogelgaten en bloed worden aan het begin van elke ronde opgeruimd, en in randloos venstermodus blijft de muis op het scherm van het spel.</p>
+<h2 id="bots">Bots</h2>
+<p>Bots vinden hun weg op de kaarten beter. Verbeterde routeplanning zorgt ervoor dat ze minder vast komen te zitten en betere routes kiezen, en ze blijven beter uit je vuurlijn.</p>
+<h2 id="soepeler-laden-van-kaarten">Soepeler laden van kaarten</h2>
+<p>Sommigen van jullie merkten een hapering telkens als een nieuwe kaart begon. De oorzaak was een grafische cache die één keer per kaart opgebouwd moest worden, maar bij elke keer laden opnieuw werd gemaakt. Die wordt nu één keer opgebouwd, op de achtergrond bewaard en hergebruikt, zodat de eerste seconden van een kaart even soepel lopen als de rest.</p>
+<p>Daarnaast hebben we verschillende gevallen opgelost waarin het spel kon blijven hangen tijdens het opstarten of bij het verbinden. Frame Generation pauzeert nu als het spel geminimaliseerd is of op de achtergrond staat. Negen geluiden die ontbraken, zijn terug. En het consolelogboek van je vorige sessie wordt nu bewaard, waardoor je crashmeldingen voor ons veel bruikbaarder worden.</p>
+<h2 id="graphics">Graphics</h2>
+<p>Meer texturen in de wereld hebben nu speculaire details op de Ultra-preset, voor een rijker en gedetailleerder beeld van dichtbij. HDR-reflecties zijn bijgesteld voor een natuurlijkere look.</p>
+<h2 id="namen-accounts-en-meldingen">Namen, accounts en meldingen</h2>
+<p>Oranje is nu voor iedereen beschikbaar in de kleurkiezer voor namen. Accounthouders van wie het account even nodig had om geverifieerd te worden, kwamen soms binnen als "Player####". Dat gebeurt niet meer: je naam wordt hersteld zodra de controle klaar is. Foutmeldingen via <strong>F12</strong> bewaren je concept nu tot ze echt verstuurd zijn, zodat een verbroken verbinding je niet meer kost wat je geschreven had.</p>
+<p>Daarnaast hebben we onze beveiligingsmaatregelen aangescherpt en uitgebreid.</p>
+<h2 id="launcher-2-5">Launcher 2.5</h2>
+<p>De grootste verandering in de launcher is keuze. <strong>HD-texturen zijn nu optioneel.</strong> Schakel ze uit via <strong>Instellingen &gt; Updates</strong> om schijfruimte en downloadtijd te besparen. Je kunt nog steeds op elke server spelen zonder ze eerst te downloaden, en als je ze weer aanzet, haalt de launcher op wat ontbreekt.</p>
+<p>De rest is afwerking. De nieuwspagina en de patch notes laden weer. "What's New" overlapt de Support-knop niet meer, en de indeling blijft overeind in gemaximaliseerde en grotere vensters. Er draait nog maar één launcher per installatie, dus dubbele icoontjes in het systeemvak zijn verleden tijd. Je bureaubladsnelkoppeling overleeft voortaan updates. De downloadvoortgang leest duidelijker, en de Duitse, Franse en Poolse vertalingen zijn verbeterd.</p>
+<h2 id="een-nieuwe-intro">Een nieuwe intro</h2>
+<p>Het spel opent nu met een kaart van Team Terminus, gevolgd door het Platinum-logo. Die vervangen de oude intromovies en afsluitschermen. De intromuziek is "Venom" van Scott Buckley, gebruikt onder de CC BY 4.0-licentie.</p>
+<h2 id="hoe-we-het-getest-hebben">Hoe we het getest hebben</h2>
+<p>0.37.1 ging door dezelfde releasetests als elke versie ervoor: de volledige regressietests voor beweging, gevechten, netwerkgevoel, graphics, instellingen en herstarts, in zowel DirectX 12 als OpenGL, plus het updatepad van de launcher. Elke fix in deze release is bovendien apart getest voordat hij werd samengevoegd, en de timing van de wapens is vergeleken met het originele spel.</p>
+<h2 id="nog-op-onze-lijst">Nog op onze lijst</h2>
+<p>Eén melding uit 0.37.0 is in deze release nog niet opgelost. Bij sommige spelers valt al het geluid weg na alt-tab of na een wijziging aan hun audioapparaat, en het blijft stil tot ze het spel herstarten. We weten nu waarom dat gebeurt, en een fix wordt getest voor een volgende update. Tot dan brengt een herstart van het spel het geluid terug.</p>
+<p>Zoals altijd: als iets niet goed voelt, druk dan op <strong>F12</strong> in het spel om ons een melding te sturen. Deze update bestaat omdat jullie dat deden. Bedankt voor het spelen.</p>
+      </div>
+      <div class="post-rate" data-rate="inside-0371" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-performance-audit"><small>Vorig artikel</small>Elke milliseconde gemeten</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-037" tabindex="-1" aria-hidden="true"><img src="../img/devlog/a-new-look-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.37.0</span><time datetime="2026-11-14">14 nov 2026</time><span>5 min lezen</span><span class="post-stat" data-post-stat="inside-037" hidden></span></p>
+          <h2><a href="devlog-inside-037">Inside 0.37.0, onze grootste update tot nu toe</a></h2>
+          <p>Een volledig vernieuwde interface, een tactische kaart, fotomodus, optionele spelersaccounts, bots die je vuurlijn respecteren, Bomb-rondes met één leven en een lange lijst fixes uit jullie meldingen. Dit is wat er veranderd is, waarom, en hoe we het getest hebben.</p>
+          <a class="more" href="devlog-inside-037">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-036" tabindex="-1" aria-hidden="true"><img src="../img/media-village-yard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.36.0</span><time datetime="2026-11-13">13 nov 2026</time><span>13 min lezen</span><span class="post-stat" data-post-stat="inside-036" hidden></span></p>
+          <h2><a href="devlog-inside-036">Achter de schermen van 0.36.0, de update die je hoort</a></h2>
+          <p>Voicechat, teampings, bots die de map lezen, een volledig vernieuwde audio en optioneel 128 updates per seconde. Dit is de lange versie: wat er veranderde, waarom we het zo bouwden, hoe we het testten en wat er nog komt.</p>
+          <a class="more" href="devlog-inside-036">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=fc49adbeb2"></script>
+</body>
+</html>
