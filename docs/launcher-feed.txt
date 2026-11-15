@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Measuring every|millisecond.
-text=We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix. Here is what we found, what is already fixed and what comes next.
+title=Inside 0.37.1,|tuned to your reports.
+text=A HUD you can size to your screen, a magazine and health readout in the spirit of the original, weapons back at their true fire rates, smoother map loads and optional HD textures.
 button=Read the devlog
-url=https://truecombat.eu/devlog-performance-audit.html
+url=https://truecombat.eu/devlog-inside-0371.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
-title=Measuring every millisecond
-text=We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix.
-url=https://truecombat.eu/devlog-performance-audit.html
+title=Inside 0.37.1, tuned to your reports
+text=A HUD you can size to your screen, a magazine and health readout in the spirit of the original, weapons back at their true fire rates, smoother map…
+url=https://truecombat.eu/devlog-inside-0371.html
 [news]
 tag=Community
 title=Weekend ranked ladder
