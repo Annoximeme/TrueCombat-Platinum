@@ -2,7 +2,7 @@
  "music": "trailer_music_bed_v2_venom.wav",
  "music_start": 50.84,
  "game_audio_db": -15,
- "fade_out": 0.3,
+ "fade_out": 0.0,
  "segments": [
   {
    "clip": "stadtrand_double_frag_tp.mp4",

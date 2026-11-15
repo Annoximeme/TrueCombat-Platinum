@@ -250,3 +250,65 @@ if __name__ == "__main__":
     for name, fn, t in (("intro_still.jpg", intro_frame, 2.6), ("end_still.jpg", end_frame, 4.5)):
         fn(int(t * FPS)).save(out / name, quality=92)
     print("done", out)
+
+
+# ---------- native 9:16 end card (1080x1920) for the vertical cut
+VW, VH = 1080, 1920
+_vrng = np.random.default_rng(11)
+
+
+def end_frame_vertical(i, dur=5.0):
+    t = i / FPS
+    bg = background(t, glow=0.75)
+    cw = int(H * VW / VH)  # crop a 9:16 window out of the 16:9 background
+    bg = bg.crop(((W - cw) // 2, 0, (W - cw) // 2 + cw, H)).resize((VW, VH), Image.BICUBIC)
+    im = bg.convert("RGBA")
+    k = ease_out(ramp(t, 0.0, 0.32))
+    lg = scaled(LOGO, 1000, 1.25 - 0.25 * k)
+    lg = sweep(lg, ramp(t, 0.9, 2.1), width=0.08)
+    blur = max(0.0, 6 * (1 - k))
+    if blur > 0.3:
+        lg = lg.filter(ImageFilter.GaussianBlur(blur))
+    shake = int(10 * math.sin(t * 90) * (0.55 - t) / 0.25) if 0.30 < t < 0.55 else 0
+    op = ease_out(ramp(t, 0.0, 0.12))
+    if op < 1:
+        a = np.asarray(lg).copy()
+        a[..., 3] = (a[..., 3].astype(np.float32) * op).astype(np.uint8)
+        lg = Image.fromarray(a, "RGBA")
+    im.paste(lg, ((VW - lg.width) // 2, VH // 2 - 330 - lg.height // 2 + shake), lg)
+    im = im.convert("RGB")
+    flash = max(0.0, 1 - abs(t - 0.32) / 0.12) * 0.55
+    if flash > 0:
+        im = Image.fromarray(np.clip(np.asarray(im).astype(np.float32) + 255 * flash, 0, 255).astype(np.uint8))
+    lay = Image.new("RGBA", (VW, VH), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lay)
+    a1 = int(255 * ease_out(ramp(t, 1.2, 1.8)))
+    a2 = int(255 * ease_out(ramp(t, 1.6, 2.2)))
+    a3 = int(255 * ease_out(ramp(t, 2.1, 2.7)))
+    y0 = VH // 2 + 120
+    spaced_text(d, VW / 2, y0, "FREE ON WINDOWS", font(62), (235, 235, 238, a1), 12)
+    rw = int(260 * ease_out(ramp(t, 1.2, 1.8)))
+    d.rectangle((VW / 2 - rw, y0 + 100, VW / 2 + rw, y0 + 105), fill=RED + (a1,))
+    spaced_text(d, VW / 2, y0 + 135, "TRUECOMBAT.EU", font(92), (255, 255, 255, a2), 8)
+    f = font(26, plex=True)
+    lines = ["Music: 'Venom' by Scott Buckley, CC-BY 4.0",
+             "www.scottbuckley.com.au",
+             "A fan project by Team Terminus. TrueCombat: Elite by Team Terminator.",
+             "Not affiliated with Team Terminator, Splash Damage, id Software or Activision."]
+    y = VH - 60 - 38 * len(lines)
+    for ln in lines:
+        fs = f if d.textlength(ln, font=f) < VW - 60 else font(22, plex=True)
+        d.text(((VW - d.textlength(ln, font=fs)) / 2, y), ln, font=fs, fill=(160, 160, 165, int(a3 * 0.85)))
+        y += 38
+    im = Image.alpha_composite(im.convert("RGBA"), lay)
+    em = scaled(EMBLEM, 130)
+    if a3 > 0:
+        a = np.asarray(em).copy()
+        a[..., 3] = (a[..., 3].astype(np.float32) * a3 / 255).astype(np.uint8)
+        em = Image.fromarray(a, "RGBA")
+        im.paste(em, ((VW - em.width) // 2, VH - 60 - 38 * len(lines) - em.height - 30), em)
+    im = im.convert("RGB")
+    fade = 1 - ease_in_out(ramp(t, dur - 0.5, dur))
+    arr = np.asarray(im).astype(np.float32) * fade
+    arr += _vrng.normal(0, 5, (VH, VW, 1))
+    return Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
