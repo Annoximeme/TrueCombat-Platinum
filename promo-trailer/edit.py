@@ -68,6 +68,10 @@ def has_audio(path):
 
 
 def brand_frames(kind, dur, w, h, vertical):
+    if kind == "end" and vertical:
+        for i in range(int(round(dur * FPS))):
+            yield B.end_frame_vertical(i, dur)
+        return
     fn = B.intro_frame if kind == "intro" else B.end_frame
     for i in range(int(round(dur * FPS))):
         im = fn(i).convert("RGB")
@@ -158,7 +162,7 @@ def main():
             last = im
             t = k / FPS
             im = flash(card_overlay(im, t, seg.get("card"), a.vertical), t, seg)
-            g = (nframes_total - fi) / (fade * FPS)
+            g = (nframes_total - fi) / (fade * FPS) if fade > 0 else 1.0
             if g < 1:
                 im = Image.fromarray((np.asarray(im).astype(np.float32) * max(g, 0)).astype(np.uint8))
             p.stdin.write(im.convert("RGB").tobytes())
@@ -178,7 +182,8 @@ def main():
     if music:
         mp = Path(music) if Path(music).is_absolute() else Path(a.music) / music
         inputs += ["-ss", str(edl.get("music_start", 0.0)), "-i", str(mp)]
-        filters.append(f"[1:a]atrim=0:{total:.3f},afade=t=out:st={total - fade:.3f}:d={fade}[m]")
+        fo = f",afade=t=out:st={total - fade:.3f}:d={fade}" if fade > 0 else ""
+        filters.append(f"[1:a]atrim=0:{total:.3f}{fo}[m]")
         mix.append("[m]")
     gdb = edl.get("game_audio_db", -16)
     if gdb is not None:
