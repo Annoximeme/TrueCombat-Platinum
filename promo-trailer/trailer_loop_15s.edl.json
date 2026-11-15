@@ -1,0 +1,77 @@
+{
+ "music": "trailer_music_bed_v2_venom.wav",
+ "music_start": 50.84,
+ "game_audio_db": -15,
+ "fade_out": 0.3,
+ "segments": [
+  {
+   "clip": "stadtrand_double_frag_tp.mp4",
+   "in": 0.5,
+   "dur": 1.0
+  },
+  {
+   "clip": "snow_plant_tp.mp4",
+   "in": 3,
+   "dur": 1.0
+  },
+  {
+   "clip": "village_plant_slowmo.mp4",
+   "in": 2,
+   "dur": 2.0,
+   "mute": true
+  },
+  {
+   "clip": "delta_plant_r2_tp.mp4",
+   "in": 5,
+   "dur": 1.0
+  },
+  {
+   "clip": "village_flash_then_plant_tp.mp4",
+   "in": 3.0,
+   "dur": 1.0
+  },
+  {
+   "clip": "stadtrand_frag_slowmo.mp4",
+   "in": 2.5,
+   "dur": 2.0,
+   "mute": true
+  },
+  {
+   "clip": "delta_defuse_tp.mp4",
+   "in": 0.5,
+   "dur": 2.0
+  },
+  {
+   "clip": "snow_detonation_triple_slowmo.mp4",
+   "in": 0.8,
+   "dur": 1.0,
+   "mute": true,
+   "flash": true
+  },
+  {
+   "clip": "village_flash_then_plant_tp.mp4",
+   "in": 6,
+   "dur": 1.0
+  },
+  {
+   "clip": "snow_squad_move_tp.mp4",
+   "in": 6,
+   "dur": 1.0
+  },
+  {
+   "clip": "delta_detonation_tp.mp4",
+   "in": 0,
+   "dur": 1.0
+  },
+  {
+   "clip": "village_frags_tp.mp4",
+   "in": 4,
+   "dur": 1.0
+  },
+  {
+   "clip": "stadtrand_double_frag_tp.mp4",
+   "in": 3.84,
+   "dur": 0.36
+  }
+ ]
+}
