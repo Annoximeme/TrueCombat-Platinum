@@ -91,8 +91,81 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.37.0" data-ver="v0.37.0" open>
-        <summary><span class="ver">v0.37.0<span class="latest">Latest</span></span><span class="sum">Our biggest update yet. A completely redesigned interface, new ways to see the battlefield, optional player accounts, smarter bots, and a long list of fixes from your reports.</span><span class="meta">#60 · 0.37.0-sandbox30 · 14 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.37.1" data-ver="v0.37.1" open>
+        <summary><span class="ver">v0.37.1<span class="latest">Latest</span></span><span class="sum">A big follow-up to 0.37.0. A HUD you can size and tune to your liking, a cleaner ammo and health readout, tighter shotgun and sprint handling, smoother map loads, and a long list of fixes from your reports.</span><span class="meta">#61 · 0.37.1-sandbox31 · 15 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Hud &amp; interface</h3><ul>
+            <li>New <b>Menu size</b> (50-100%) and <b>In-game UI size</b> (50-150%) sliders, adjustable in 5% steps.</li>
+            <li>Opacity is now split three ways: HUD panels, HUD text and icons, and chat.</li>
+            <li>The centre-screen "You killed" notice is gone. The death card now sits bottom-right and fades out after about 2.5 seconds.</li>
+            <li>Map loading screens are back.</li>
+            <li>The HUD round timer and team scores can now be shown or hidden separately.</li>
+            <li>The FPS counter option now works.</li>
+            <li>Default Settings restores the correct Platinum key layout, and new players get F3 for Call a vote.</li>
+            <li>Key changes made in game are no longer overwritten by the launcher.</li>
+          </ul></section>
+          <section><h3>Ammo &amp; health</h3><ul>
+            <li>Your ammo is now shown as a magazine icon with an exact count of spare magazines, just like the original.</li>
+            <li>The ammo panel shows the icon of the weapon in your hands.</li>
+            <li>New <b>Check Magazine</b> key to see how full your current magazine is.</li>
+            <li>The reload prompt has been removed, and the empty-gun click is louder so you know when you're dry.</li>
+            <li>A body silhouette now shows where you've been hit, and warns you when you're limping or close to death.</li>
+            <li>Ranked shows the silhouette only. In unranked, health numbers can be turned on in the options.</li>
+          </ul></section>
+          <section><h3>Gameplay</h3><ul>
+            <li>Automatic weapons now fire at exactly their original TrueCombat:Elite rates.</li>
+            <li>Bolt-action rifles cycle at their original speed again.</li>
+            <li>Pump shotguns now fire at the correct rate, with a full pump between shots.</li>
+            <li>The shotgun reload no longer plays a doubled, delayed sound. You hear one shell going in at a time.</li>
+            <li>Aiming down sights now ends a sprint, and you can no longer sprint on an empty stamina bar.</li>
+            <li>Weapon switching now plays its proper animation.</li>
+            <li>Frag grenade explosions have been restored to their original look in both DirectX 12 and OpenGL.</li>
+            <li>Each class now uses its own character model.</li>
+            <li>Thrown frag grenades no longer show the smoke grenade model.</li>
+            <li>Bullet holes and blood are cleared at the start of every round.</li>
+            <li>In borderless window mode, the mouse now stays on the game's monitor.</li>
+          </ul></section>
+          <section><h3>Bots</h3><ul>
+            <li>Improved bot pathfinding, so bots get stuck less and take better routes.</li>
+            <li>Bots are better at keeping out of your line of fire.</li>
+          </ul></section>
+          <section><h3>Performance &amp; stability</h3><ul>
+            <li>Fixed stutter caused by the graphics cache being rebuilt on every map load.</li>
+            <li>Fixed several cases where the game could hang during startup or while connecting.</li>
+            <li>Frame Generation now pauses while the game is minimised or in the background.</li>
+            <li>The previous session's console log is now kept, which makes crash reports more useful.</li>
+            <li>Restored nine sounds that were missing.</li>
+          </ul></section>
+          <section><h3>Graphics</h3><ul>
+            <li>More world textures now have specular detail on the Ultra preset.</li>
+            <li>HDR reflections have been tuned for a more natural look.</li>
+          </ul></section>
+          <section><h3>Names, accounts &amp; reports</h3><ul>
+            <li>Orange is now available to everyone in the name colour picker.</li>
+            <li>Fixed account holders sometimes joining as "Player####" when their account took a moment to verify.</li>
+            <li>Bug reports (F12) now keep your draft until it has been sent.</li>
+            <li>We've tightened and expanded our security measures.</li>
+          </ul></section>
+          <section><h3>Launcher 2.5</h3><ul>
+            <li><b>HD textures are now optional.</b> Turn them off under Settings &gt; Updates to save disk space and download time. If any HD files are missing, the launcher fetches them for you.</li>
+            <li>With HD textures off, you can still join any server without downloading them first.</li>
+            <li>The News page and patch notes load again.</li>
+            <li>"What's New" no longer overlaps the Support button, and the layout holds up in maximised and larger windows.</li>
+            <li>Only one launcher runs per install, so no more duplicate tray icons.</li>
+            <li>Your desktop shortcut no longer disappears after an update.</li>
+            <li>Cleaner download progress text and improved German, French and Polish translations.</li>
+          </ul></section>
+          <section><h3>Studio</h3><ul>
+            <li>A new intro: the Team Terminus card, followed by the Platinum logo. The old intro movies and exit screens have been replaced.</li>
+            <li>Intro music: "Venom" by Scott Buckley, licensed under CC BY 4.0.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.37.1-sandbox31">GitHub ↗</a></p>
+          <p class="rel-page"><a href="release-0-37-1">Release page →</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.37.0" data-ver="v0.37.0">
+        <summary><span class="ver">v0.37.0</span><span class="sum">Our biggest update yet. A completely redesigned interface, new ways to see the battlefield, optional player accounts, smarter bots, and a long list of fixes from your reports.</span><span class="meta">#60 · 0.37.0-sandbox30 · 14 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>A new look</h3><ul>
             <li>Every menu and the HUD have been rebuilt in the new Platinum style.</li>
