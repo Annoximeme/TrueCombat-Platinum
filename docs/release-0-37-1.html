@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TrueCombat: Platinum v0.37.1 · Release notes · TrueCombat: Platinum</title>
+<meta name="description" content="A big follow-up to 0.37.0. A HUD you can size and tune to your liking, a cleaner ammo and health readout, tighter shotgun and sprint handling, smoother map…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/release-0-37-1">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://truecombat.eu/release-0-37-1">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="TrueCombat: Platinum v0.37.1 · Release notes">
+<meta property="og:description" content="A big follow-up to 0.37.0. A HUD you can size and tune to your liking, a cleaner ammo and health readout, tighter shotgun and sprint handling, smoother map loads, and a long list of fixes from your reports.">
+<meta property="og:image" content="https://truecombat.eu/img/og-news.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-news.jpg">
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="TrueCombat: Platinum v0.37.1 · Release notes">
+<meta name="twitter:description" content="A big follow-up to 0.37.0. A HUD you can size and tune to your liking, a cleaner ammo and health readout, tighter shotgun and sprint handling, smoother map loads, and a long list of fixes from your reports.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"News","item":"https://truecombat.eu/news"},{"@type":"ListItem","position":3,"name":"TrueCombat: Platinum 0.37.1","item":"https://truecombat.eu/release-0-37-1"}]}</script>
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/release-0-37-1">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/release-0-37-1">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=987ac3854f">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news" aria-current="page">News</a></li>
+      <li><a href="devlog" data-devlog-new="2026-11-14">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Support</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<section class="page-head rel-head">
+  <div class="head-art" style="--art: url(img/media-village-hd.webp); --art-s: url(img/media-village-hd-640.webp)" aria-hidden="true"></div>
+  <div class="wrap">
+    <a class="pf-back" href="news">← Patch notes</a>
+    <span class="eyebrow">Release · Latest · 15 Nov 2026</span>
+    <h1>TrueCombat: Platinum 0.37.1</h1>
+    <p class="lede">A big follow-up to 0.37.0. A HUD you can size and tune to your liking, a cleaner ammo and health readout, tighter shotgun and sprint handling, smoother map loads, and a long list of fixes from your reports.</p>
+    <p class="rel-facts"><span>47 changes</span><span>9 areas</span><span>#61 · 0.37.1-sandbox31 · 15 Nov 2026</span></p>
+    <div class="hero-cta"><a class="btn" href="download">Download the latest version</a><a class="btn btn-ghost" href="news#v0.37.1">All patch notes</a></div>
+  </div>
+</section>
+
+<section class="band rel-glance">
+  <div class="wrap">
+    <h2 class="eyebrow">At a glance</h2>
+    <ul class="rel-cards">
+      <li><a href="#s-hud-interface"><b>Hud &amp; interface</b><span>8 changes</span><p>New Menu size (50-100%) and In-game UI size (50-150%) sliders, adjustable in 5%</p></a></li>
+      <li><a href="#s-ammo-health"><b>Ammo &amp; health</b><span>6 changes</span><p>Your ammo is now shown as a magazine icon with an exact count of spare magazines, just like the</p></a></li>
+      <li><a href="#s-gameplay"><b>Gameplay</b><span>11 changes</span><p>Automatic weapons now fire at exactly their original TrueCombat:Elite</p></a></li>
+      <li><a href="#s-bots"><b>Bots</b><span>2 changes</span><p>Improved bot pathfinding, so bots get stuck less and take better</p></a></li>
+      <li><a href="#s-performance-stability"><b>Performance &amp; stability</b><span>5 changes</span><p>Fixed stutter caused by the graphics cache being rebuilt on every map</p></a></li>
+      <li><a href="#s-graphics"><b>Graphics</b><span>2 changes</span><p>More world textures now have specular detail on the Ultra</p></a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="band band-alt rel-notes">
+  <div class="wrap">
+    <section class="rel-sec" id="s-hud-interface"><h2>Hud &amp; interface</h2><ul>
+      <li>New <b>Menu size</b> (50-100%) and <b>In-game UI size</b> (50-150%) sliders, adjustable in 5% steps.</li>
+      <li>Opacity is now split three ways: HUD panels, HUD text and icons, and chat.</li>
+      <li>The centre-screen "You killed" notice is gone. The death card now sits bottom-right and fades out after about 2.5 seconds.</li>
+      <li>Map loading screens are back.</li>
+      <li>The HUD round timer and team scores can now be shown or hidden separately.</li>
+      <li>The FPS counter option now works.</li>
+      <li>Default Settings restores the correct Platinum key layout, and new players get F3 for Call a vote.</li>
+      <li>Key changes made in game are no longer overwritten by the launcher.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-ammo-health"><h2>Ammo &amp; health</h2><ul>
+      <li>Your ammo is now shown as a magazine icon with an exact count of spare magazines, just like the original.</li>
+      <li>The ammo panel shows the icon of the weapon in your hands.</li>
+      <li>New <b>Check Magazine</b> key to see how full your current magazine is.</li>
+      <li>The reload prompt has been removed, and the empty-gun click is louder so you know when you're dry.</li>
+      <li>A body silhouette now shows where you've been hit, and warns you when you're limping or close to death.</li>
+      <li>Ranked shows the silhouette only. In unranked, health numbers can be turned on in the options.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-gameplay"><h2>Gameplay</h2><ul>
+      <li>Automatic weapons now fire at exactly their original TrueCombat:Elite rates.</li>
+      <li>Bolt-action rifles cycle at their original speed again.</li>
+      <li>Pump shotguns now fire at the correct rate, with a full pump between shots.</li>
+      <li>The shotgun reload no longer plays a doubled, delayed sound. You hear one shell going in at a time.</li>
+      <li>Aiming down sights now ends a sprint, and you can no longer sprint on an empty stamina bar.</li>
+      <li>Weapon switching now plays its proper animation.</li>
+      <li>Frag grenade explosions have been restored to their original look in both DirectX 12 and OpenGL.</li>
+      <li>Each class now uses its own character model.</li>
+      <li>Thrown frag grenades no longer show the smoke grenade model.</li>
+      <li>Bullet holes and blood are cleared at the start of every round.</li>
+      <li>In borderless window mode, the mouse now stays on the game's monitor.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-bots"><h2>Bots</h2><ul>
+      <li>Improved bot pathfinding, so bots get stuck less and take better routes.</li>
+      <li>Bots are better at keeping out of your line of fire.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-performance-stability"><h2>Performance &amp; stability</h2><ul>
+      <li>Fixed stutter caused by the graphics cache being rebuilt on every map load.</li>
+      <li>Fixed several cases where the game could hang during startup or while connecting.</li>
+      <li>Frame Generation now pauses while the game is minimised or in the background.</li>
+      <li>The previous session's console log is now kept, which makes crash reports more useful.</li>
+      <li>Restored nine sounds that were missing.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-graphics"><h2>Graphics</h2><ul>
+      <li>More world textures now have specular detail on the Ultra preset.</li>
+      <li>HDR reflections have been tuned for a more natural look.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-names-accounts-reports"><h2>Names, accounts &amp; reports</h2><ul>
+      <li>Orange is now available to everyone in the name colour picker.</li>
+      <li>Fixed account holders sometimes joining as "Player####" when their account took a moment to verify.</li>
+      <li>Bug reports (F12) now keep your draft until it has been sent.</li>
+      <li>We've tightened and expanded our security measures.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-launcher-2-5"><h2>Launcher 2.5</h2><ul>
+      <li><b>HD textures are now optional.</b> Turn them off under Settings &gt; Updates to save disk space and download time. If any HD files are missing, the launcher fetches them for you.</li>
+      <li>With HD textures off, you can still join any server without downloading them first.</li>
+      <li>The News page and patch notes load again.</li>
+      <li>"What's New" no longer overlaps the Support button, and the layout holds up in maximised and larger windows.</li>
+      <li>Only one launcher runs per install, so no more duplicate tray icons.</li>
+      <li>Your desktop shortcut no longer disappears after an update.</li>
+      <li>Cleaner download progress text and improved German, French and Polish translations.</li>
+    </ul></section>
+    <section class="rel-sec" id="s-studio"><h2>Studio</h2><ul>
+      <li>A new intro: the Team Terminus card, followed by the Platinum logo. The old intro movies and exit screens have been replaced.</li>
+      <li>Intro music: "Venom" by Scott Buckley, licensed under CC BY 4.0.</li>
+    </ul></section>
+    <nav class="rel-pager" aria-label="Other releases"><a class="rel-prev" href="release-0-37-0"><span>Previous release</span><b>v0.37.0</b></a></nav>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-performance-audit"><time datetime="2026-11-14">14 Nov 2026</time><span>Measuring every millisecond</span></a><a href="devlog-inside-037"><time datetime="2026-11-14">14 Nov 2026</time><span>Inside 0.37.0, our biggest update yet</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=fc49adbeb2"></script>
+</body>
+</html>
