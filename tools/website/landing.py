@@ -208,7 +208,7 @@ FAQ = {
                 ("linux", "Is there a Linux version?", "The dedicated server runs natively on Linux, and both official servers use it. The game itself is for Windows."),
             ]),
             ("project", "The project", [
-                ("complete", "Is this complete TC:E?", "Very nearly. Every weapon, all seven game modes, the original movement speed, leaning, ladders and swimming are in. The <a href=\"./#roadmap\">roadmap</a> shows what is playable now and what follows."),
+                ("complete", "Is this complete TC:E?", "Yes, and more. Every weapon, all seven game modes, the original movement speed, leaning, ladders, swimming, ledge climbing and the sniper scope are in, joined by additions such as the live minimap and a competitive match mode. The <a href=\"./#roadmap\">roadmap</a> shows what is playable now and what follows."),
                 ("official", "Is it an official TrueCombat release?", "No. TrueCombat: Elite was created by Team Terminator. TrueCombat: Platinum is a fan project by Team Terminus and is not affiliated with or endorsed by the original team."),
                 ("who", "Who makes it?", "<a href=\"studio.html\">Team Terminus</a>: two TrueCombat: Elite veterans. RaziC* leads development and RavoC leads the community."),
                 ("follow", "How do I follow development?", "The <a href=\"devlog.html\">devlog</a> explains what is being built and why, the <a href=\"news.html\">patch notes</a> list every change, and new versions are announced on Discord first."),
@@ -250,7 +250,7 @@ FAQ = {
                 ("linux", "Is er een Linux-versie?", "De dedicated server draait native op Linux, en beide officiële servers gebruiken die. Het spel zelf is voor Windows."),
             ]),
             ("project", "Het project", [
-                ("complete", "Is dit de complete TC:E?", "Bijna helemaal. Elk wapen, alle zeven spelmodi, de originele bewegingssnelheid, leunen, ladders en zwemmen zitten erin. De <a href=\"./#roadmap\">roadmap</a> toont wat nu speelbaar is en wat volgt."),
+                ("complete", "Is dit de complete TC:E?", "Ja, en meer. Elk wapen, alle zeven spelmodi, de originele bewegingssnelheid, leunen, ladders, zwemmen, klimmen op randen en het sluipschuttersvizier zitten erin, aangevuld met nieuwe onderdelen zoals de live minimap en een competitieve wedstrijdmodus. De <a href=\"./#roadmap\">roadmap</a> toont wat nu speelbaar is en wat volgt."),
                 ("official", "Is dit een officiële TrueCombat-release?", "Nee. TrueCombat: Elite is gemaakt door Team Terminator. TrueCombat: Platinum is een fanproject van Team Terminus en is niet verbonden aan of goedgekeurd door het oorspronkelijke team."),
                 ("who", "Wie maakt het?", "<a href=\"studio.html\">Team Terminus</a>: twee TrueCombat: Elite-veteranen. RaziC* leidt de ontwikkeling en RavoC de community."),
                 ("follow", "Hoe volg ik de ontwikkeling?", "De <a href=\"devlog.html\">devlog</a> legt uit wat er gebouwd wordt en waarom, de <a href=\"news.html\">patchnotes</a> tonen elke wijziging, en nieuwe versies worden als eerste op Discord aangekondigd."),

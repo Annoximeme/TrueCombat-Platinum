@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-P6+472zU1K2EL4S75HTOFWaxKjo2/LAAcR/DXkTie8U='">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-djzaZ7r1ib2BA7pkS2nAng+AsO9dGJNPc/nr9v9Eiv0='">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TrueCombat: Platinum · Kostenloser Taktik-Shooter, TrueCombat: Elite neu aufgebaut</title>
 <meta name="description" content="TrueCombat: Platinum ist ein kostenloser Taktik-Shooter für Windows: TrueCombat: Elite (TC:E), neu aufgebaut als natives 64-Bit-Spiel mit DirectX 12, mit den originalen Maps, Waffen und dem HUD.">
@@ -127,7 +127,7 @@
 <div class="status">
   <div class="wrap">
     <strong>Early Access</strong>
-    <span>Das komplette TC:E-Arsenal, alle sieben Spielmodi, die originale Bewegung, Ultra-Grafik, ein kompetitiver Match-Modus und zwei offizielle EU-Server sind live. Für das nächste Update in Arbeit: eine Überarbeitung des Gunplays bei Treffern auf Distanz, Streuung und Schaden, ein neu gebauter Bewegungskern sowie Optionen und ein Serverbrowser im Pausenmenü. <a href="#roadmap">Zur Roadmap</a></span>
+    <span>Das komplette TC:E-Arsenal, alle sieben Spielmodi, die originale Bewegung, Ultra-Grafik, eine Live-Minimap, Treffer- und Niederhalte-Feedback, optionale Spielerkonten und zwei offizielle EU-Server sind live. In Arbeit für 0.38: Waffen gefallener Spieler aufheben, über niedrige Deckung springen, intensivere Feuergefechte und klügere Bots. <a href="#roadmap">Zur Roadmap</a></span>
   </div>
 </div>
 
@@ -188,9 +188,9 @@
     </div>
 
     <div class="trio">
-      <figure><img src="../img/media-deployment.webp" srcset="../img/media-deployment-640.webp 640w, ../img/media-deployment.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Das originale Deployment Menu im Warmup auf Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>Deployment Menu</b><span>Team, Rolle und Ausrüstung</span></figcaption></figure>
-      <figure><img src="../img/media-village-yard.webp" srcset="../img/media-village-yard-640.webp 640w, ../img/media-village-yard.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Ein Soldat überquert den Hof von Village mit der Voreinstellung Ultra" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Voreinstellung Ultra, HD-Texturen</span></figcaption></figure>
-      <figure><img src="../img/media-grenade.webp" srcset="../img/media-grenade-640.webp 640w, ../img/media-grenade.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Eine Splittergranate detoniert im Hinterhof von Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>Splittergranate</b><span>Hinterhof von Railhouse</span></figcaption></figure>
+      <figure><img src="../img/shot-railhouse-boxcar.webp" srcset="../img/shot-railhouse-boxcar-640.webp 640w, ../img/shot-railhouse-boxcar.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Ein Schütze sichert den Bahnsteig neben einem Güterwagen auf Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>Railhouse</b><span>Feindkontakt am Güterwagen</span></figcaption></figure>
+      <figure><img src="../img/shot-delta-rooftop.webp" srcset="../img/shot-delta-rooftop-640.webp 640w, ../img/shot-delta-rooftop.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Ein M4 auf den Dächern über der Westerly road auf Delta, unter einem Gewitterhimmel" width="1280" height="720" loading="lazy"><figcaption><b>Delta</b><span>Dächer über der Westerly road</span></figcaption></figure>
+      <figure><img src="../img/shot-stadtrand-factory.webp" srcset="../img/shot-stadtrand-factory-640.webp 640w, ../img/shot-stadtrand-factory.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Ein Soldat hält die Fabrikhalle auf Stadtrand neben rostigen Treibstofftanks" width="1280" height="720" loading="lazy"><figcaption><b>Stadtrand</b><span>Die Fabrikhalle halten</span></figcaption></figure>
     </div>
   </div>
 </section>
@@ -270,8 +270,8 @@
       <a class="btn btn-ghost" href="media">Alle Screenshots</a>
     </div>
     <div class="gallery" id="gallery-grid">
-      <figure class="shot wide"><img src="../img/map-northport.webp" srcset="../img/map-northport-640.webp 640w, ../img/map-northport.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Die Docks von Northport bei Tageslicht" width="1280" height="720" loading="lazy"><figcaption><b>Northport</b><span>Distanznebel, DX12</span></figcaption><button type="button" aria-label="Northport vergrößern"></button></figure>
-      <figure class="shot wide"><img src="../img/map-railhouse.webp" srcset="../img/map-railhouse-640.webp 640w, ../img/map-railhouse.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" alt="Railhouse bei Nacht, ein Torbogen über den Gleisen" width="1280" height="720" loading="lazy"><figcaption><b>Railhouse</b><span>Nacht, DX12</span></figcaption><button type="button" aria-label="Railhouse vergrößern"></button></figure>
+      <figure class="shot wide"><img src="../img/shot-delta-night.webp" srcset="../img/shot-delta-night-640.webp 640w, ../img/shot-delta-night.webp 1280w, ../img/shot-delta-night-1920.webp 1920w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" data-full="../img/shot-delta-night-1920.webp" alt="Ein Repetiergewehr mit Zielfernrohr an der Laderampe auf Delta unter einem Nachthimmel" width="1280" height="720" loading="lazy"><figcaption><b>Delta</b><span>Laderampe bei Nacht</span></figcaption><button type="button" aria-label="Delta vergrößern"></button></figure>
+      <figure class="shot wide"><img src="../img/shot-railhouse-platform.webp" srcset="../img/shot-railhouse-platform-640.webp 640w, ../img/shot-railhouse-platform.webp 1280w, ../img/shot-railhouse-platform-1920.webp 1920w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 590px" data-full="../img/shot-railhouse-platform-1920.webp" alt="Einem Teamkameraden über den Bahnsteig von Railhouse folgen, vorbei an den Güterwagen" width="1280" height="720" loading="lazy"><figcaption><b>Railhouse</b><span>Der Bahnsteig</span></figcaption><button type="button" aria-label="Railhouse vergrößern"></button></figure>
       <figure class="shot"><img src="../img/map-stadtrand.webp" srcset="../img/map-stadtrand-640.webp 640w, ../img/map-stadtrand.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Stadtrand, eine enge Gasse im Nebel" width="1280" height="720" loading="lazy"><figcaption><b>Stadtrand</b><span>Gasse im Nebel</span></figcaption><button type="button" aria-label="Stadtrand vergrößern"></button></figure>
       <figure class="shot"><img src="../img/map-village.webp" srcset="../img/map-village-640.webp 640w, ../img/map-village.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Das Innere der Scheune in Village mit Heuballen" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Scheune</span></figcaption><button type="button" aria-label="Village vergrößern"></button></figure>
       <figure class="shot"><img src="../img/map-snow.webp" srcset="../img/map-snow-640.webp 640w, ../img/map-snow.webp 1280w" sizes="(max-width: 520px) 100vw, (max-width: 860px) 50vw, 390px" alt="Die Map Snow, ein überdachter Ladebereich" width="1280" height="720" loading="lazy"><figcaption><b>Snow</b><span>Verschneite Laderampe</span></figcaption><button type="button" aria-label="Snow vergrößern"></button></figure>
@@ -710,10 +710,18 @@
           <li>Hit and suppression feedback, with friendly fire on</li>
         </ul>
       </div>
+      <div class="road-col next">
+        <h3>Als Nächstes <small>v0.38</small></h3>
+        <ul>
+          <li>Waffen gefallener Spieler aufheben</li>
+          <li>Über niedrige Mauern und Deckung springen</li>
+          <li>Intensivere Feuergefechte: Atmung, Einschläge und eine fallende Kamera</li>
+          <li>Klügere Bots: abwechslungsreiche Routen, sauberere Schusslinien, seltener festgefahren</li>
+        </ul>
+      </div>
       <div class="road-col later">
         <h3>Danach</h3>
         <ul>
-          <li>Easy Anti-Cheat</li>
           <li>Schatten durch Mündungsfeuer und Explosionen</li>
           <li>Matchmaking über eine Pickup-Warteschlange auf Discord</li>
           <li>Verbindungsqualität im Scoreboard und Beitritt mit einem Klick</li>
@@ -770,7 +778,7 @@
       <div><h3>Ist es kostenlos?</h3><p>Ja. Lade es bei GitHub Releases herunter und spiel los. Jede Version enthält ihren Quellcode und die Lizenzen der originalen Spieldateien.</p></div>
       <div><h3>Ich möchte darüber berichten</h3><p>Hol dir das <a href="../press">Pressekit</a> mit Logos, Screenshots und einem Faktenblatt.</p></div>
       <div><h3>Kann ich online spielen?</h3><p>Ja. Wähle im Servers-Tab des Launchers einen offiziellen EU-Server, ranked oder unranked, tritt einem anderen öffentlichen Server bei oder hoste mit wenigen Klicks dein eigenes Match.</p></div>
-      <div><h3>Ist das das komplette TC:E?</h3><p>Fast. Jede Waffe, alle sieben Spielmodi, das originale Bewegungstempo, Lehnen, Leitern und Schwimmen sind drin. Das Klettern an Kanten, das Mündungsfeuer in der Ego-Ansicht und das Scharfschützen-Zielfernrohr kommen als Nächstes, und die <a href="#roadmap">Roadmap</a> zeigt, was danach folgt.</p></div>
+      <div><h3>Ist das das komplette TC:E?</h3><p>Ja, und mehr. Jede Waffe, alle sieben Spielmodi, das originale Bewegungstempo, Lehnen, Leitern, Schwimmen, das Klettern an Kanten und das Scharfschützen-Zielfernrohr sind drin, ergänzt um Neues wie die Live-Minimap und einen kompetitiven Match-Modus. Die <a href="#roadmap">Roadmap</a> zeigt, was danach folgt.</p></div>
       <div><h3>Wo finde ich Mitspieler?</h3><p>Komm auf den <a href="https://discord.gg/8kcHdg2Hch">Discord von TrueCombat: Platinum</a>. Dort werden Matches organisiert, Server geteilt und neue Versionen zuerst angekündigt.</p></div>
       <div><h3>DirectX 12 startet nicht. Was nun?</h3><p>Drück im Launcher auf <b>Safe start</b>. Damit läuft das Spiel mit OpenGL in einem Fenster mit 1280 × 720, und es weicht auch von selbst auf OpenGL aus, wenn DirectX 12 scheitert.</p></div>
     </div>
@@ -874,7 +882,7 @@
   function open(i) {
     at = (i + shots.length) % shots.length;
     var img = shots[at].querySelector('img');
-    lbImg.src = img.src; lbImg.alt = img.alt;
+    lbImg.src = img.dataset.full || img.src; lbImg.alt = img.alt;
     lbCap.textContent = shots[at].querySelector('b').textContent + ' · ' + img.alt;
     lb.hidden = false;
     lb.querySelector('.lb-close').focus();
