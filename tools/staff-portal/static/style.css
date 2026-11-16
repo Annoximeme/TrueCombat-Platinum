@@ -351,3 +351,33 @@ a.tile:hover { border-color: var(--line-hi); }
 .grid-3 { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr); }
 @media (max-width: 1280px) { .grid-3 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
 @media (max-width: 900px) { .grid-3 { grid-template-columns: minmax(0, 1fr); } }
+
+/* 1.4.1: live updates, cases, timeline, evidence */
+.me { position: relative; }
+.live-dot { position: absolute; right: 6px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--line, #444); }
+.live-dot.on { background: #4fbf7a; box-shadow: 0 0 0 3px rgba(79, 191, 122, .18); }
+.case-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--line, #2a2a2a); color: inherit; text-decoration: none; }
+.case-row:hover { background: rgba(255, 255, 255, .03); }
+.case-row .id { font-family: ui-monospace, monospace; color: var(--dim, #888); }
+.case-row .t { font-weight: 600; }
+.case-row .s { text-align: right; }
+.tl { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line, #2a2a2a); }
+.tl li { position: relative; padding: 6px 0 10px 12px; }
+.tl li::before { content: ""; position: absolute; left: -20px; top: 11px; width: 10px; height: 10px; border-radius: 50%; background: var(--line, #555); }
+.tl li.bad::before { background: #d63b3b; }
+.tl li.warn::before { background: #e7a73c; }
+.tl li.ok::before { background: #4fbf7a; }
+.tl li.session::before { background: transparent; border: 2px solid #5b8def; width: 8px; height: 8px; }
+.tl .when { color: var(--dim, #888); font-size: 12px; }
+.tl .what { font-weight: 600; }
+.tl .det { color: var(--muted, #aaa); word-break: break-word; }
+.ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.ev { border: 1px solid var(--line, #2a2a2a); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ev img { width: 100%; height: 100px; object-fit: cover; border-radius: 4px; background: #000; }
+.ev .t { font-weight: 600; font-size: 13px; overflow-wrap: anywhere; }
+.ev .d { font-size: 12px; color: var(--dim, #888); }
+.case-items { list-style: none; margin: 0; padding: 0; }
+.case-items li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line, #2a2a2a); align-items: flex-start; }
+.case-items li > div { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.chat-excerpt { max-height: 320px; overflow: auto; font-size: 13px; }
+@media (max-width: 760px) { .case-row { grid-template-columns: 48px 1fr; } .case-row .s { grid-column: 2; text-align: left; } }
