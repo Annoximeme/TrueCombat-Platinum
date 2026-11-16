@@ -42,32 +42,45 @@
 </div>
 
 <div id="app" class="app" hidden>
-  <aside class="side">
-    <a class="brand" href="#/servers">
+  <header class="topbar">
+    <button class="icon-btn" id="nav-toggle" type="button" aria-label="Menu" aria-controls="side" aria-expanded="false"><span class="burger"></span></button>
+    <a class="brand brand-top" href="#/home"><img src="/static/favicon.png" alt="" width="24" height="24"><span><b>STAFF</b> PORTAL</span></a>
+    <button class="icon-btn" id="search-top" type="button" aria-label="Search"><span class="mag"></span></button>
+  </header>
+  <aside class="side" id="side">
+    <a class="brand" href="#/home">
       <img src="/static/favicon.png" alt="" width="28" height="28">
       <span><b>STAFF</b> PORTAL</span>
     </a>
+    <button class="search-btn" id="search-open" type="button"><span class="mag"></span><span>Search or jump to</span><kbd>Ctrl K</kbd></button>
     <nav id="nav">
-      <span class="nav-group">Live</span>
-      <a href="#/servers" data-page="servers">Servers</a>
-      <a href="#/chat" data-page="chat">Live chat</a>
-      <a href="#/alerts" data-page="alerts">Alerts <span class="count" id="nav-alerts" hidden></span></a>
-      <span class="nav-group">Cases</span>
-      <a href="#/reports" data-page="reports">Reports <span class="count" id="nav-reports" hidden></span></a>
-      <a href="#/players" data-page="players">Players</a>
-      <a href="#/bans" data-page="bans">Bans</a>
-      <a href="#/watchlist" data-page="watchlist">Watchlist</a>
-      <a href="#/review" data-page="review" data-perm="review">Stats review</a>
-      <span class="nav-group">Community</span>
-      <a href="#/insights" data-page="insights" data-perm="insights">Insights</a>
-      <span class="nav-group">Setup</span>
-      <a href="#/schedule" data-page="schedule">Schedule</a>
-      <a href="#/filter" data-page="filter">Chat filter</a>
-      <a href="#/replies" data-page="replies">Saved replies</a>
-      <a href="#/weekly" data-page="weekly" data-perm="weekly">Weekly report</a>
-      <a href="#/audit" data-page="audit" data-perm="audit">Audit log</a>
-      <a href="#/staff" data-page="staff" data-perm="staff.manage">Staff</a>
-      <a href="#/health" data-page="health" data-perm="health">Health</a>
+      <a href="#/home" data-page="home" data-key="h">Home</a>
+      <div class="nav-group" data-group="live"><button type="button" class="nav-head">Live</button>
+        <a href="#/servers" data-page="servers" data-key="s">Servers</a>
+        <a href="#/chat" data-page="chat" data-key="c">Live chat</a>
+        <a href="#/alerts" data-page="alerts" data-key="a">Alerts <span class="count" id="nav-alerts" hidden></span></a>
+      </div>
+      <div class="nav-group" data-group="moderation"><button type="button" class="nav-head">Moderation</button>
+        <a href="#/reports" data-page="reports" data-key="r">Reports <span class="count" id="nav-reports" hidden></span></a>
+        <a href="#/players" data-page="players" data-key="p">Players</a>
+        <a href="#/bans" data-page="bans" data-key="b">Bans</a>
+        <a href="#/watchlist" data-page="watchlist" data-key="w">Watchlist</a>
+        <a href="#/review" data-page="review" data-perm="review">Stats review</a>
+      </div>
+      <div class="nav-group" data-group="tools"><button type="button" class="nav-head">Server tools</button>
+        <a href="#/schedule" data-page="schedule">Schedule</a>
+        <a href="#/filter" data-page="filter">Chat filter</a>
+        <a href="#/replies" data-page="replies">Saved replies</a>
+      </div>
+      <div class="nav-group" data-group="insights"><button type="button" class="nav-head">Insights</button>
+        <a href="#/insights" data-page="insights" data-perm="insights">Website and launcher</a>
+        <a href="#/weekly" data-page="weekly" data-perm="weekly">Weekly report</a>
+      </div>
+      <div class="nav-group" data-group="admin"><button type="button" class="nav-head">Admin</button>
+        <a href="#/audit" data-page="audit" data-perm="audit" data-key="l">Audit log</a>
+        <a href="#/staff" data-page="staff" data-perm="staff.manage">Staff</a>
+        <a href="#/health" data-page="health" data-perm="health" data-key="e">Health</a>
+      </div>
     </nav>
     <div class="me">
       <img id="me-avatar" alt="" width="32" height="32" hidden>
@@ -75,6 +88,7 @@
       <button id="logout" class="link" type="button">Sign out</button>
     </div>
   </aside>
+  <div class="scrim" id="scrim" hidden></div>
   <main id="main" class="main" tabindex="-1"></main>
 </div>
 
@@ -89,6 +103,13 @@
       <button type="submit" class="btn btn-primary" id="modal-ok">Confirm</button>
     </div>
   </form>
+</div>
+<div id="palette" class="palette" hidden>
+  <div class="palette-card" role="dialog" aria-modal="true" aria-label="Search">
+    <div class="palette-input"><span class="mag"></span><input id="palette-q" autocomplete="off" spellcheck="false" placeholder="Player, ban code, report #, page, or a command such as warn Viper"></div>
+    <div id="palette-list" class="palette-list" role="listbox"></div>
+    <div class="palette-foot dim small"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span><span><kbd>?</kbd> shortcuts</span></div>
+  </div>
 </div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </body>
