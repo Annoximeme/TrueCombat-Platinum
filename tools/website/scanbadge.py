@@ -139,9 +139,10 @@ def _date(iso_text):
     return "%d %s %s" % (int(iso_text[8:10]), MONTHS[int(iso_text[5:7]) - 1], iso_text[:4])
 
 
-def chip(lang, s):
-    """The small badge that sits beside a download button. Empty until the installer has been scanned."""
-    if not s or not s["scanned"]:
+def chip(lang, s, flagged_ok=False):
+    """The small badge that sits beside a download button. Shown only once the installer has been
+    scanned with no detections; any other result is explained in full on the download page."""
+    if not s or not s["scanned"] or (s["flagged"] and not flagged_ok):
         return ""
     L = T.get(lang, T["en"])
     ok = s["flagged"] == 0
@@ -199,7 +200,11 @@ def release_row(s):
     """The check on a release page (English only, like the release pages)."""
     if not s:
         return ""
-    return '<div class="rel-scan">%s%s</div>' % (chip("en", s), sha_row("en", s))
+    if s["scanned"] and s["flagged"]:
+        badge = '<a class="btn btn-ghost" href="%s" target="_blank" rel="noopener">VirusTotal report ↗</a>' % s["report"]
+    else:
+        badge = chip("en", s)
+    return '<div class="rel-scan">%s%s</div>' % (badge, sha_row("en", s))
 
 
 def version_of(tag):
