@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/devlog</id>
   <updated>2026-11-16T12:00:00Z</updated>
   <entry>
+    <title>Fixing crashes on the PCs you actually play on</title>
+    <link href="https://truecombat.eu/devlog-crash-reports"/>
+    <id>https://truecombat.eu/devlog-crash-reports</id>
+    <published>2026-11-16T12:00:00Z</published>
+    <updated>2026-11-16T12:00:00Z</updated>
+    <category term="Launcher"/>
+    <summary>The launcher can now tell us where the game crashed and what hardware it runs on, if you say yes. It asks once, it is anonymous, and you can see the exact report before it leaves your PC.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Inside 0.37.2, eyes up</title>
     <link href="https://truecombat.eu/devlog-inside-0372"/>
     <id>https://truecombat.eu/devlog-inside-0372</id>

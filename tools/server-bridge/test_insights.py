@@ -189,6 +189,90 @@ class InsightsTest(unittest.TestCase):
         g = self.stats()["github"]
         self.assertEqual(g["releases"][0]["downloads"], 120)
 
+    # ---- launcher reports ----
+    REPORT = {"v": 1, "launcher": "2.6.0", "game": "0.38.0-sandbox34",
+              "hw": {"os": "10.0.22631", "cpu": "AMD Ryzen 7 5800X3D 8-Core Processor", "threads": 16, "ram": 32,
+                     "gpu": "NVIDIA GeForce RTX 4070", "vram": 12, "dx12": 1, "display": "2560x1440", "hz": 165, "lang": "nl"},
+              "use": {"launches": 4, "safe": 1},
+              "crashes": [{"program": "client", "kind": "unhandled exception", "code": "0xC0000005",
+                           "at": "renderer_dx12_x64.dll+0x1A2B3", "frames": ["renderer_dx12_x64.dll+0x1a2b3", "platinum-engine.bin+0x4400"],
+                           "up": 12, "game": "0.38.0-sandbox34"}]}
+
+    def launcher(self, report=None, ip="203.0.113.7"):
+        return self.post("/insights/launcher", report or self.REPORT, ip=ip, ua="TrueCombatPlatinumLauncher/2.6.0")
+
+    def test_launcher_report_is_counted(self):
+        code, body = self.launcher()
+        self.assertEqual((code, body["counted"]), (200, True))
+        lr = self.stats()["launcher"]
+        self.assertEqual(lr["totals"]["launches"], 4)
+        self.assertEqual(lr["totals"]["safe"], 1)
+        self.assertEqual(lr["totals"]["crashes"], 1)
+        v = lr["versions"][0]
+        self.assertEqual((v["game"], v["crash_rate"]), ("0.38.0-sandbox34", 0.25))
+        c = lr["crashes"][0]
+        self.assertEqual((c["program"], c["code"], c["at"], c["count"]), ("client", "0xc0000005", "renderer_dx12_x64.dll+0x1a2b3", 1))
+        self.assertEqual(c["gpuvendors"], {"NVIDIA": 1})
+        hw = {d: {r["name"]: r["count"] for r in rows} for d, rows in lr["hardware"].items()}
+        self.assertEqual(hw["cpu"], {"AMD Ryzen 7 5800X3D": 1})
+        self.assertEqual(hw["os"], {"Windows 11 (22631)": 1})
+        self.assertEqual(hw["ram"], {"32 GB or less": 1})
+        self.assertEqual(hw["vram"], {"12 GB or less": 1})
+        self.assertEqual(hw["country"], {"BE": 1})
+        self.assertEqual(hw["display"], {"2560x1440": 1})
+        self.assertEqual(lr["hardware_reports"], 1)
+
+    def test_same_crash_twice_is_one_signature(self):
+        self.launcher()
+        self.launcher(ip="198.51.100.9")
+        lr = self.stats()["launcher"]
+        self.assertEqual(len(lr["crashes"]), 1)
+        self.assertEqual(lr["crashes"][0]["count"], 2)
+
+    def test_launcher_report_keeps_nothing_identifying(self):
+        r = json.loads(json.dumps(self.REPORT))
+        r["guid"] = "SECRETGUID"
+        r["name"] = "RaziC"
+        r["crashes"][0]["at"] = "C:\\Users\\gianni\\x.dll+0x10"
+        self.launcher(r)
+        dump = "\n".join(self.store.db.iterdump())
+        for needle in ("203.0.113.7", "SECRETGUID", "RaziC", "Launcher/2.6.0"):
+            self.assertNotIn(needle, dump)
+        self.assertNotIn("Users", dump)   # a crash location that is a path is dropped, not stored
+
+    def test_bad_launcher_reports_are_refused(self):
+        self.assertEqual(self.launcher({"v": 2})[0], 400)
+        self.assertEqual(self.launcher({"v": 1, "game": "0.38.0"})[0], 400)
+        bad = {"v": 1, "game": "0.38.0", "crashes": [{"code": "boom", "at": "x"}]}
+        self.assertEqual(self.launcher(bad)[0], 400)
+        big = {"v": 1, "game": "0.38.0", "pad": "x" * 7000}
+        self.assertEqual(self.launcher(big)[0], 413)
+
+    def test_launcher_daily_cap_per_address(self):
+        for _ in range(tcp_insights.LAUNCHER_PER_IP):
+            self.assertTrue(self.launcher()[1]["counted"])
+        self.assertFalse(self.launcher()[1]["counted"])
+        self.assertTrue(self.launcher(ip="198.51.100.4")[1]["counted"])
+
+    def test_launcher_retention(self):
+        self.launcher()
+        self.store.db.execute("UPDATE luse SET day='2000-01-01'")
+        self.store.db.execute("UPDATE lcrashday SET day='2000-01-01'")
+        self.store.db.execute("UPDATE lcrash SET last_day='2000-01-01'")
+        self.store.db.execute("UPDATE lhw SET month='2000-01'")
+        self.store.day = "2000-01-01"
+        self.store.db.execute("UPDATE secret SET day='2000-01-01'")
+        self.store.roll()
+        for t in ("luse", "lcrashday", "lcrash", "lhw"):
+            self.assertEqual(self.store.db.execute("SELECT COUNT(*) FROM %s" % t).fetchone()[0], 0, t)
+
+    def test_usage_only_report(self):
+        code, body = self.launcher({"v": 1, "launcher": "2.6.0", "game": "0.38.0", "use": {"launches": 2, "safe": 0}, "gpu": "AMD Radeon RX 7800 XT"})
+        self.assertEqual(code, 200)
+        lr = self.stats()["launcher"]
+        self.assertEqual(lr["totals"]["launches"], 2)
+        self.assertEqual(lr["hardware"], {})
+
 
 if __name__ == "__main__":
     unittest.main()

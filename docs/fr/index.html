@@ -100,7 +100,7 @@
       </a>
       <a class="btn btn-ghost" href="#patch-notes">Nouveautés</a>
 <!--devlog-hero-->
-    <a class="hero-log" href="../devlog-inside-0372"><b>Nouveau devlog</b><span>Inside 0.37.2, eyes up</span><time datetime="2026-11-16">16 nov. 2026</time></a>
+    <a class="hero-log" href="../devlog-crash-reports"><b>Nouveau devlog</b><span>Fixing crashes on the PCs you actually play on</span><time datetime="2026-11-16">16 nov. 2026</time></a>
 <!--/devlog-hero-->
     </div>
     <div class="hero-meta">
@@ -201,10 +201,16 @@
   <div class="wrap">
     <div class="section-head head-row">
       <div><span class="eyebrow">En développement</span><h2>Suivez le développement</h2><p class="lede">TrueCombat: Platinum se construit au grand jour. Chaque chantier important a son article : ce qui a changé, pourquoi, et ce qui vient ensuite. Les articles sont en anglais.</p></div>
-      <div class="hero-cta"><a class="btn btn-ghost" href="../devlog">Tous les articles du devlog (25)</a></div>
+      <div class="hero-cta"><a class="btn btn-ghost" href="../devlog">Tous les articles du devlog (26)</a></div>
     </div>
     <div class="log-cards">
-      <a class="log-card lead" href="../devlog-inside-0372">
+      <a class="log-card lead" href="../devlog-crash-reports">
+        <img src="../img/devlog/launcher-2-play-640.webp" alt="" width="640" height="360" loading="lazy">
+        <div><span class="eyebrow">Launcher · <time datetime="2026-11-16">16 nov. 2026</time></span>
+        <h3>Fixing crashes on the PCs you actually play on</h3>
+        <p>The launcher can now tell us where the game crashed and what hardware it runs on, if you say yes. It asks once, it is anonymous, and you can see the exact report before it leaves your PC.</p></div>
+      </a>
+      <a class="log-card" href="../devlog-inside-0372">
         <img src="../img/media-soldier-hd-640.webp" alt="" width="640" height="360" loading="lazy">
         <div><span class="eyebrow">Release · <time datetime="2026-11-16">16 nov. 2026</time></span>
         <h3>Inside 0.37.2, eyes up</h3>
@@ -215,12 +221,6 @@
         <div><span class="eyebrow">Release · <time datetime="2026-11-15">15 nov. 2026</time></span>
         <h3>Inside 0.37.1, tuned to your reports</h3>
         <p>A HUD you can size to your screen, a magazine and health readout in the spirit of the original, weapons back at their true fire rates, smoother map loads and optional HD textures. Here is what changed in 0.37.1, and why.</p></div>
-      </a>
-      <a class="log-card" href="../devlog-performance-audit">
-        <img src="../img/devlog/performance-audit-640.webp" alt="" width="640" height="360" loading="lazy">
-        <div><span class="eyebrow">Testing · <time datetime="2026-11-14">14 nov. 2026</time></span>
-        <h3>Measuring every millisecond</h3>
-        <p>We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix. Here is what we found, what is already fixed and what comes next.</p></div>
       </a>
     </div>
   </div>
@@ -714,6 +714,7 @@
       <div class="road-col next">
         <h3>Ensuite <small>v0.38</small></h3>
         <ul>
+          <li>Données anonymes et facultatives de plantage et de matériel depuis le launcher</li>
           <li>Ramasser les armes des joueurs tombés</li>
           <li>Franchir les murets et les obstacles bas</li>
           <li>Des fusillades plus immersives : respiration, impacts et caméra qui chute</li>
@@ -728,7 +729,6 @@
           <li>Qualité de connexion au tableau des scores et connexion en un clic</li>
           <li>Des bots aux sens honnêtes, avec personnalités et plans d&#x27;équipe</li>
           <li>Des bots qui apprennent trajets et visée à partir de vrais matchs</li>
-          <li>Optional performance and crash data from the launcher</li>
         </ul>
       </div>
     </div>

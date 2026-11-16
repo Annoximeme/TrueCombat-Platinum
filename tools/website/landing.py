@@ -438,7 +438,7 @@ PRIVACY = """<section class="page-head">
 <section class="band">
   <div class="wrap doc">
     <nav class="doc-toc" aria-label="[[toc]]">
-      <a href="#short">[[n1]]</a><a href="#website">[[n2]]</a><a href="#game">[[n3]]</a><a href="#choices">[[n4]]</a><a href="#changes">[[n5]]</a>
+      <a href="#short">[[n1]]</a><a href="#website">[[n2]]</a><a href="#game">[[n3]]</a><a href="#launcher">[[n6]]</a><a href="#choices">[[n4]]</a><a href="#changes">[[n5]]</a>
     </nav>
     <div class="doc-body">
       <section id="short">
@@ -481,11 +481,25 @@ PRIVACY = """<section class="page-head">
           <li>[[g_d]]</li>
           <li>[[g_e]]</li>
         </ul>
+      </section>
+
+      <section id="launcher">
+        <span class="eyebrow">04</span>
+        <h2>[[l_h]]</h2>
+        <p>[[l1]]</p>
+        <p>[[l2]]</p>
+        <ul>
+          <li>[[l_a]]</li>
+          <li>[[l_b]]</li>
+          <li>[[l_c]]</li>
+        </ul>
+        <p>[[l3]]</p>
+        <p>[[l4]]</p>
         <p class="callout">[[g_note]]</p>
       </section>
 
       <section id="choices">
-        <span class="eyebrow">04</span>
+        <span class="eyebrow">05</span>
         <h2>[[c_h]]</h2>
         <p>[[c1]]</p>
         <p>[[c2]]</p>
@@ -493,7 +507,7 @@ PRIVACY = """<section class="page-head">
       </section>
 
       <section id="changes">
-        <span class="eyebrow">05</span>
+        <span class="eyebrow">06</span>
         <h2>[[x_h]]</h2>
         <p>[[x1]]</p>
         <p class="yt-note">[[credit]]</p>
@@ -515,7 +529,7 @@ PRIVACY_T = {
         "s_a": "<b>No tracking cookies, no ad trackers, no analytics companies.</b> Nothing from Google, Meta or anyone else is loaded on this site.",
         "s_b": "<b>We count visits, not visitors.</b> The website keeps daily totals and nothing that points back to a person.",
         "s_c": "<b>Your browser says no, we listen.</b> With Global Privacy Control or Do Not Track switched on, you are not counted at all.",
-        "s_d": "<b>The game sends usage data only if you ask it to.</b> That switch is off until you turn it on.",
+        "s_d": "<b>The launcher shares crash and hardware data only if you say yes.</b> It asks once, with two equal buttons, and you can change your answer at any time.",
         "w_h": "This website",
         "w1": "When a page opens, your browser sends one short message to our own server: the page, the site that linked you here (the site name only, never the full address), the campaign tag in the link if there is one, the page language, and whether the screen is a phone, tablet or desktop size. A click on a download button sends one more message saying a download started.",
         "w2": "To count you once per day instead of on every page, the server makes a one-way fingerprint from your connection address and browser, mixed with a random secret that only exists for that day. The same fingerprint lets a download count toward the site that brought you here that day. At midnight UTC the secret and every fingerprint are deleted. After that, nobody can connect one day to the next, including us.",
@@ -533,15 +547,24 @@ PRIVACY_T = {
         "g_a": "<b>Online play.</b> Game servers see your connection address, as every online game does. Our moderation tools keep it for up to 90 days to deal with cheating and abuse, and a ban record keeps the address that was banned.",
         "g_b": "<b>Leaderboards.</b> Ranked matches on official and verified servers record your in-game name, a player ID made from your game key, and your match statistics. That is what fills the leaderboards and your public profile.",
         "g_c": "<b>Anti-cheat.</b> Official servers use Easy Anti-Cheat, which runs under the <a href=\"https://www.epicgames.com/site/privacypolicy\">Epic Games privacy policy</a>.",
-        "g_d": "<b>Crash reports</b> stay on your PC. They only reach us if you attach them to a bug report yourself.",
+        "g_d": "<b>Crash reports and memory dumps</b> stay on your PC. They only reach us if you attach them to a bug report yourself. If you choose to share launcher data, only the crash location is sent, as described below.",
         "g_e": "<b>Bug reports</b> you send from the game include what you write, a screenshot and technical details such as the map, frame rate and graphics card, so we can reproduce the problem.",
-        "g_note": "<b>Coming soon: optional usage data.</b> A future update adds a switch in the launcher that shares anonymous performance and crash data to help us fix problems on the hardware you actually play on. It is off unless you switch it on, and this page will list exactly what it sends before it ships.",
+        "g_note": "<b>See it for yourself.</b> Settings &gt; Privacy &gt; What is shared in the launcher shows the exact report your PC would send next, before it leaves your computer.",
         "c_h": "Your choices",
         "c1": "To stop being counted on this website, switch on Global Privacy Control or Do Not Track in your browser. Blocking <code>api.truecombat.eu/insights</code> works too, and the site keeps working exactly the same.",
         "c2": "Questions, or want something removed? Ask us on <a href=\"https://discord.gg/8kcHdg2Hch\">Discord</a> or open an issue on <a href=\"https://github.com/Annoximeme/TrueCombat-Platinum\">GitHub</a>. All of the counting code is in the public repository, so you never have to take our word for it.",
         "c3": "We count website visits because we have a legitimate interest in knowing how the site is used (GDPR Article 6(1)(f)), with the safeguards described above. Usage data from the game is only collected with your consent, which you can withdraw at any time in the launcher. TrueCombat: Platinum is run by Team Terminus, led by RaziC*. If you believe we handle your data wrongly, you can complain to a data protection authority; in Belgium, where we are based, that is the <a href=\"https://www.dataprotectionauthority.be\">Data Protection Authority</a>.",
+        "n6": "The launcher",
+        "l_h": "Crash and hardware data from the launcher",
+        "l1": "From launcher 2.6.0, the Play page asks once whether you want to share anonymous crash and hardware data. Nothing is sent until you choose Share, and nothing at all if you choose No thanks. The same switch is in Settings &gt; Privacy, and turning it off stops sharing straight away.",
+        "l2": "When sharing is on, the launcher sends at most one short report a day to <code>api.truecombat.eu</code>, and only when there is something new to report:",
+        "l_a": "<b>Crashes.</b> For each new crash: whether the game or the server crashed, the Windows error code, the place in the program where it happened (a file name and a position in it, such as <code>renderer_dx12_x64.dll+0x1a2b3</code>), up to five steps leading to it in the same form, and how many minutes the game had been running. Crash reports and memory dumps themselves stay on your PC.",
+        "l_b": "<b>Game starts.</b> How many times the game was started since the last report, how many of those were Safe starts, and the game and launcher version.",
+        "l_c": "<b>Hardware, at most once a month.</b> Your Windows version, processor model and thread count, memory and video memory in whole gigabytes, graphics card model, whether DirectX 12 works, desktop resolution and refresh rate, and the launcher language.",
+        "l3": "A report never contains your player name, game key, player ID, an install ID, file or folder names on your PC, server addresses or your connection address. Nothing in one report links it to the next, so we cannot tell whether two reports came from the same PC. As with the website, our server looks up the country of the connection, keeps only the two-letter code and forgets the address.",
+        "l4": "We keep crash locations and daily counts of starts and crashes per game version for 90 days after we last saw them, and monthly counts per hardware value (for example, how many launchers reported a given graphics card) for 13 months. Memory is grouped into ranges so an unusual amount cannot single anyone out. Because no report carries anything that points to you, there is nothing we could look up to show or delete \"your\" data, and that is by design.",
         "x_h": "Changes to this page",
-        "x1": "If what we collect changes, this page changes first, and the devlog says so. Last updated 13 November 2026.",
+        "x1": "If what we collect changes, this page changes first, and the devlog says so. Last updated 16 November 2026.",
         "credit": "Country lookup uses IP to Country Lite by <a href=\"https://db-ip.com\">DB-IP</a>, licensed under CC BY 4.0.",
     },
     "nl": {
@@ -555,7 +578,7 @@ PRIVACY_T = {
         "s_a": "<b>Geen trackingcookies, geen advertentietrackers, geen analysebedrijven.</b> Er wordt niets van Google, Meta of iemand anders op deze site geladen.",
         "s_b": "<b>We tellen bezoeken, geen bezoekers.</b> De website bewaart dagtotalen en niets dat naar een persoon terugleidt.",
         "s_c": "<b>Zegt je browser nee, dan luisteren we.</b> Met Global Privacy Control of Do Not Track aan word je helemaal niet geteld.",
-        "s_d": "<b>De game stuurt alleen gebruiksgegevens als jij dat wilt.</b> Die schakelaar staat uit tot je hem aanzet.",
+        "s_d": "<b>De launcher deelt crash- en hardwaregegevens alleen als je ja zegt.</b> Hij vraagt het één keer, met twee gelijke knoppen, en je kunt je antwoord altijd wijzigen.",
         "w_h": "Deze website",
         "w1": "Wanneer een pagina opent, stuurt je browser één kort bericht naar onze eigen server: de pagina, de site die naar ons linkte (alleen de naam van de site, nooit het volledige adres), de campagnetag in de link als die er is, de taal van de pagina, en of het scherm de grootte van een telefoon, tablet of desktop heeft. Een klik op een downloadknop stuurt nog één bericht dat er een download is gestart.",
         "w2": "Om je één keer per dag te tellen in plaats van op elke pagina, maakt de server een eenrichtingsvingerafdruk van je verbindingsadres en browser, gemengd met een willekeurig geheim dat alleen die dag bestaat. Met dezelfde vingerafdruk telt een download mee voor de site die je die dag naar ons bracht. Om middernacht UTC worden het geheim en alle vingerafdrukken gewist. Daarna kan niemand de ene dag nog aan de volgende koppelen, ook wij niet.",
@@ -573,15 +596,24 @@ PRIVACY_T = {
         "g_a": "<b>Online spelen.</b> Gameservers zien je verbindingsadres, zoals bij elke online game. Onze moderatietools bewaren het tot 90 dagen om valsspelen en misbruik aan te pakken, en een ban bewaart het adres dat geband werd.",
         "g_b": "<b>Ranglijsten.</b> Ranked potjes op officiële en geverifieerde servers leggen je spelnaam vast, een speler-ID afgeleid van je gamesleutel en je wedstrijdstatistieken. Daarmee worden de ranglijsten en je openbare profiel gevuld.",
         "g_c": "<b>Anti-cheat.</b> Officiële servers gebruiken Easy Anti-Cheat, dat valt onder het <a href=\"https://www.epicgames.com/site/privacypolicy\">privacybeleid van Epic Games</a>.",
-        "g_d": "<b>Crashrapporten</b> blijven op je pc. Ze komen alleen bij ons als je ze zelf bij een bugmelding voegt.",
+        "g_d": "<b>Crashrapporten en geheugendumps</b> blijven op je pc. Ze komen alleen bij ons als je ze zelf bij een bugmelding voegt. Kies je ervoor om launchergegevens te delen, dan wordt alleen de plek van de crash verstuurd, zoals hieronder beschreven.",
         "g_e": "<b>Bugmeldingen</b> die je vanuit de game verstuurt bevatten wat je schrijft, een screenshot en technische details zoals de map, framerate en grafische kaart, zodat we het probleem kunnen nabootsen.",
-        "g_note": "<b>Binnenkort: optionele gebruiksgegevens.</b> Een toekomstige update voegt een schakelaar in de launcher toe die anonieme prestatie- en crashgegevens deelt, zodat we problemen kunnen oplossen op de hardware waarop je echt speelt. Hij staat uit tenzij je hem aanzet, en deze pagina vermeldt precies wat hij verstuurt voordat hij verschijnt.",
+        "g_note": "<b>Bekijk het zelf.</b> Instellingen &gt; Privacy &gt; Wat wordt gedeeld in de launcher toont precies het rapport dat je pc als volgende zou versturen, nog voor het je computer verlaat.",
         "c_h": "Jouw keuzes",
         "c1": "Wil je niet geteld worden op deze website, zet dan Global Privacy Control of Do Not Track aan in je browser. Ook <code>api.truecombat.eu/insights</code> blokkeren werkt, en de site blijft precies hetzelfde werken.",
         "c2": "Vragen, of wil je iets laten verwijderen? Vraag het ons op <a href=\"https://discord.gg/8kcHdg2Hch\">Discord</a> of open een issue op <a href=\"https://github.com/Annoximeme/TrueCombat-Platinum\">GitHub</a>. Alle telcode staat in de openbare repository, dus je hoeft ons nooit op ons woord te geloven.",
         "c3": "We tellen websitebezoeken omdat we een gerechtvaardigd belang hebben bij weten hoe de site gebruikt wordt (AVG artikel 6, lid 1, f), met de waarborgen hierboven. Gebruiksgegevens uit de game verzamelen we alleen met jouw toestemming, die je op elk moment in de launcher kunt intrekken. TrueCombat: Platinum wordt gemaakt door Team Terminus, onder leiding van RaziC*. Vind je dat we verkeerd met je gegevens omgaan, dan kun je klacht indienen bij een toezichthouder; in België, waar we gevestigd zijn, is dat de <a href=\"https://www.gegevensbeschermingsautoriteit.be\">Gegevensbeschermingsautoriteit</a>.",
+        "n6": "De launcher",
+        "l_h": "Crash- en hardwaregegevens uit de launcher",
+        "l1": "Vanaf launcher 2.6.0 vraagt de Spelen-pagina één keer of je anonieme crash- en hardwaregegevens wilt delen. Er wordt niets verstuurd tot je Delen kiest, en helemaal niets als je Nee, bedankt kiest. Dezelfde schakelaar staat bij Instellingen &gt; Privacy, en uitzetten stopt het delen meteen.",
+        "l2": "Staat delen aan, dan stuurt de launcher hoogstens één kort rapport per dag naar <code>api.truecombat.eu</code>, en alleen als er iets nieuws te melden is:",
+        "l_a": "<b>Crashes.</b> Voor elke nieuwe crash: of de game of de server crashte, de Windows-foutcode, de plek in het programma waar het gebeurde (een bestandsnaam en een positie daarin, zoals <code>renderer_dx12_x64.dll+0x1a2b3</code>), tot vijf stappen die eraan voorafgingen in dezelfde vorm, en hoeveel minuten de game al draaide. De crashrapporten en geheugendumps zelf blijven op je pc.",
+        "l_b": "<b>Gamestarts.</b> Hoe vaak de game sinds het vorige rapport is gestart, hoeveel daarvan een Veilige start waren, en de versie van de game en de launcher.",
+        "l_c": "<b>Hardware, hoogstens één keer per maand.</b> Je Windows-versie, processormodel en aantal threads, werkgeheugen en videogeheugen in hele gigabytes, het model van je grafische kaart, of DirectX 12 werkt, je bureaubladresolutie en verversingssnelheid, en de taal van de launcher.",
+        "l3": "Een rapport bevat nooit je spelnaam, gamesleutel, speler-ID, een installatie-ID, namen van bestanden of mappen op je pc, serveradressen of je verbindingsadres. Niets in een rapport koppelt het aan het volgende, dus we kunnen niet zien of twee rapporten van dezelfde pc komen. Net als bij de website zoekt onze server het land van de verbinding op, bewaart alleen de landcode van twee letters en vergeet het adres.",
+        "l4": "We bewaren crashplekken en dagtellingen van starts en crashes per gameversie tot 90 dagen nadat we ze voor het laatst zagen, en maandtellingen per hardwarewaarde (bijvoorbeeld hoeveel launchers een bepaalde grafische kaart meldden) 13 maanden. Geheugen wordt in groepen ingedeeld, zodat een ongewone hoeveelheid niemand herkenbaar maakt. Omdat geen enkel rapport iets bevat dat naar jou wijst, is er niets dat we kunnen opzoeken om \"jouw\" gegevens te tonen of te wissen, en dat is bewust zo.",
         "x_h": "Wijzigingen aan deze pagina",
-        "x1": "Als er verandert wat we verzamelen, verandert eerst deze pagina, en de devlog meldt het. Laatst bijgewerkt op 13 november 2026.",
+        "x1": "Als er verandert wat we verzamelen, verandert eerst deze pagina, en de devlog meldt het. Laatst bijgewerkt op 16 november 2026.",
         "credit": "Het opzoeken van landen gebruikt IP to Country Lite van <a href=\"https://db-ip.com\">DB-IP</a>, onder licentie CC BY 4.0.",
     },
 }

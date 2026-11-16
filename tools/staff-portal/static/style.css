@@ -256,3 +256,4 @@ ol.steps { padding-left: 20px; display: grid; gap: 8px; }
 .in-key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; vertical-align: -1px; }
 .in-key.in-v { background: var(--line-hi); }
 .in-key.in-d { background: var(--amber); }
+.in-section { margin-top: 28px; }
