@@ -1063,6 +1063,87 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(d["server_label"], "TrueCombat Platinum | Example")    # not ours: kept as reported
         self.assertTrue(d["shot"] and d["console"] and d["hw"] and d["match"] and d["puid"])
         self.assertNotIn("^3", d["console"])
+    def test_40_dashboard_and_search(self):
+        wait_for(lambda: self.portal.servers["one"].view().get("online"))
+        self.portal.record_samples(force=True)
+        self.assertGreaterEqual(self.portal.store.one("SELECT COUNT(*) n FROM samples")["n"], 2)
+        code, d = self.call("moderator", "GET", "/api/dashboard")
+        self.assertEqual(code, 200)
+        self.assertEqual(len(d["servers"]), 2)
+        self.assertIn("reports", d)
+        self.assertNotIn("backup", d)                       # admin only
+        self.assertTrue(d["spark"])
+        self.assertGreaterEqual(d["players_online"], 1)
+        self.assertIn("backup", self.call("owner", "GET", "/api/dashboard")[1])
+        self.assertEqual(self.call(None, "GET", "/api/dashboard")[0], 401)
+        # search: online player, a ban by its appeal code and by number, a report by number
+        code, r = self.call("moderator", "GET", "/api/search?q=vip")
+        self.assertEqual(code, 200)
+        self.assertTrue(any(o["name"] == "Viper" for o in r["online"]))
+        bid = self.portal.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_name,appeal_code,active) "
+                                  "VALUES('aaaaaaaaaaaaaaaa','','','','Searchable','spam',1,0,'t','QWERTZ',0)")
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=qwertz")[1]["bans"][0]["id"], bid)
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=%23" + str(bid))[1]["bans"][0]["name"], "Searchable")
+        rid = self.portal.store.one("SELECT MIN(id) i FROM reports")["i"]
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=%d" % rid)[1]["reports"][0]["id"], rid)
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=searchable")[1]["staff"], [])   # staff list: admins only
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=")[1]["players"], [])
+
+    def test_41_addresses_only_for_admins(self):
+        wait_for(lambda: self.portal.servers["one"].view().get("players"))
+        mod = [p for s in self.call("moderator", "GET", "/api/servers")[1]["servers"] for p in s["players"] if not p["bot"]]
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=admin&id=dev-admin-ip&name=IpAdmin")
+        cookie = c.getresponse().getheader("Set-Cookie").split(";")[0]
+        c.close()
+        adm = [p for s in self.call(None, "GET", "/api/servers", cookie=cookie)[1]["servers"] for p in s["players"] if not p["bot"]]
+        self.assertTrue(mod and adm)
+        self.assertTrue(all("ip" not in p and "guid" not in p for p in mod))
+        self.assertTrue(any(p.get("ip") for p in adm))
+        self.assertTrue(self.portal.servers["one"].view()["players"][0].get("ip") is not None)   # the snapshot itself is untouched
+
+    def test_42_database_snapshot(self):
+        import sqlite3
+        self.assertEqual(self.call("moderator", "GET", "/api/backup")[0], 403)
+        code, st = self.call("owner", "POST", "/api/backup", {})
+        self.assertEqual(code, 200)
+        self.assertTrue(st["ok"], st)
+        con = sqlite3.connect(st["file"])
+        try:
+            self.assertEqual(con.execute("SELECT COUNT(*) FROM sessions").fetchone()[0], 0)     # no sign-in tokens leave
+            self.assertGreater(con.execute("SELECT COUNT(*) FROM audit").fetchone()[0], 0)
+        finally:
+            con.close()
+        self.assertGreater(self.portal.store.one("SELECT COUNT(*) n FROM sessions")["n"], 0)   # the live database keeps them
+        self.assertEqual(oct(os.stat(st["file"]).st_mode & 0o777), "0o640")
+        got = self.call("owner", "GET", "/api/backup")[1]
+        self.assertTrue(got["ok"] and not got["stale"])
+        self.assertTrue(self.call("owner", "GET", "/api/dashboard")[1]["backup"]["ok"])
+
+    def test_43_portal_watch(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "deploy"))
+        import tcp_staff_watch as watch
+        state = tempfile.mkdtemp()
+        hook = Path(state) / "hook"
+        hook.write_text(self.portal.cfg["stats_api"] + "/webhook")
+        snap = Path(state) / "snap.db"
+        snap.write_text("x")
+        before = len(HOOKS)
+        dead = "http://127.0.0.1:9/healthz"
+        args = ["--state", state, "--webhook", str(hook), "--snapshot", str(snap)]
+        watch.main(["--url", dead] + args)
+        self.assertEqual(len(HOOKS), before)                                   # one miss is not an alert
+        watch.main(["--url", dead] + args)
+        self.assertTrue(wait_for(lambda: len(HOOKS) == before + 1, 3))
+        self.assertIn("down", HOOKS[-1]["embeds"][0]["title"])
+        watch.main(["--url", dead] + args)
+        self.assertEqual(len(HOOKS), before + 1)                               # no repeat while it stays down
+        watch.main(["--url", "http://127.0.0.1:%d/healthz" % self.port] + args)
+        self.assertIn("back", HOOKS[-1]["embeds"][0]["title"])
+        snap.unlink()
+        watch.main(["--url", "http://127.0.0.1:%d/healthz" % self.port] + args)
+        self.assertIn("snapshot", HOOKS[-1]["embeds"][0]["title"])
+
     def test_insights_page_reads_the_insights_service(self):
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "server-bridge"))

@@ -87,6 +87,7 @@ PERMS = {
     "review": "admin",
     "weekly": "admin",
     "insights": "admin",              # website visits, channels and downloads (tools/server-bridge/tcp_insights.py)
+    "backup": "admin",                # database snapshot status, run one now
     "2fa.reset": "owner",
 }
 MOD_BAN_LIMIT = 24 * 60
@@ -151,8 +152,13 @@ CVAR_VALUE = re.compile(r"^[A-Za-z0-9 ._-]{0,64}$")
 EVENT_PRESET = {"g_password": "*random*", "bot_minplayers": "0", "g_autoBalance": "0", "g_allowVote": "0"}
 
 
-def allowed(role: str | None, perm: str) -> bool:
-    return bool(role) and RANK.get(role, 0) >= RANK[PERMS[perm]]
+def allowed(who, perm: str) -> bool:
+    """who: a role name, or a session / actor dict. A dict with "perms" (the person's own grants, 1.4) uses those."""
+    if isinstance(who, dict):
+        if who.get("perms") is not None:
+            return perm in who["perms"]
+        who = who.get("role")
+    return bool(who) and RANK.get(who, 0) >= RANK[PERMS[perm]]
 
 
 # ----------------------------------------------------------------------------- small helpers
@@ -993,6 +999,8 @@ CREATE INDEX IF NOT EXISTS warnings_pid ON warnings(pid);
 CREATE INDEX IF NOT EXISTS sightings_puid ON sightings(puid);
 CREATE INDEX IF NOT EXISTS alerts_at ON alerts(at);
 CREATE TABLE IF NOT EXISTS undo(audit_id INTEGER PRIMARY KEY, kind TEXT, ref INTEGER, by_id TEXT, expires INTEGER, done INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS samples(at INTEGER, server TEXT, online INTEGER, humans INTEGER, bots INTEGER, map TEXT);
+CREATE INDEX IF NOT EXISTS samples_at ON samples(at);
 """
 
 # Columns added after 1.0.0, applied to an existing database on start.
@@ -1520,10 +1528,10 @@ class Watchers:
 
     COLOURS = {"server_down": 0xD63B3B, "server_up": 0x4FBF7A, "suspicion": 0xD63B3B, "dodger": 0xD63B3B,
                "reports": 0xE7A73C, "mod_ban": 0x5B9BD5, "watch": 0xE7A73C, "appeal": 0x5B9BD5, "filter": 0xE7A73C,
-               "teamkill": 0xE7A73C, "weekly": 0xFF9914, "bugreport": 0x9AA3B3}
+               "teamkill": 0xE7A73C, "weekly": 0xFF9914, "bugreport": 0x9AA3B3, "backup": 0xD63B3B}
     LINKS = {"suspicion": "player", "dodger": "player", "reports": "reports", "watch": "player", "appeal": "reports",
              "mod_ban": "bans", "filter": "chat", "teamkill": "player", "server_down": "health", "server_up": "health",
-             "weekly": "weekly", "bugreport": "reports"}
+             "weekly": "weekly", "bugreport": "reports", "backup": "health"}
 
     def alert_loop(self) -> None:
         import queue
@@ -2303,9 +2311,216 @@ class Operations:
                 "h": layout["h"]} if layout else None, "players": out, "updated": at}
 
 
+# ----------------------------------------------------------------------------- overview (1.4)
+# The home dashboard, global search, player-count samples for the history charts, and the nightly database
+# snapshot that the off-site backup picks up.
+
+MODERATION_ACTIONS = ("kick", "warn", "mute", "unmute", "ban", "unban", "move", "undo ban", "undo mute", "report closed",
+                      "report claimed", "appeal accepted", "appeal denied", "watch")
+APPEAL_CODE = re.compile(r"^[A-HJ-NP-Z2-9]{6}$")
+
+
+class Overview:
+    # -- player-count samples (every sample_seconds, 90 days): the dashboard sparkline and the history page
+    def record_samples(self, force: bool = False) -> int:
+        t = now()
+        every = int(self.cfg.get("sample_seconds", 300))
+        if not force and t - getattr(self, "_sampled_at", 0) < every:
+            return 0
+        self._sampled_at = t
+        n = 0
+        for key in self.order:
+            v = self.servers[key].view()
+            online = bool(v.get("online"))
+            self.store.x("INSERT INTO samples(at,server,online,humans,bots,map) VALUES(?,?,?,?,?,?)",
+                         (t, key, 1 if online else 0, int(v.get("humans") or 0) if online else 0,
+                          int(v.get("bots") or 0) if online else 0, str(v.get("map") or "")[:48]))
+            n += 1
+        return n
+
+    # -- the home dashboard
+    def dashboard(self, who: dict) -> dict:
+        t = now()
+        out = {"time": t, "version": VERSION}
+        servers = []
+        for key in self.order:
+            v = self.servers[key].view()
+            servers.append({k: v.get(k) for k in ("key", "name", "online", "humans", "bots", "max_players", "map", "mode",
+                                                  "ranked", "eac", "error", "kind", "needpass")})
+        out["servers"] = servers
+        out["players_online"] = sum(int(s["humans"] or 0) for s in servers if s["online"])
+        out["servers_up"] = sum(1 for s in servers if s["online"])
+        if allowed(who, "reports"):
+            rows = self.store.q("SELECT source, status, COUNT(*) n FROM reports WHERE status<>'closed' GROUP BY source, status")
+            out["reports"] = {"open": sum(r["n"] for r in rows if r["status"] == "open"),
+                              "claimed": sum(r["n"] for r in rows if r["status"] == "claimed"),
+                              "by_source": {}}
+            for r in rows:
+                out["reports"]["by_source"][r["source"]] = out["reports"]["by_source"].get(r["source"], 0) + r["n"]
+            out["reports"]["mine"] = self.store.one("SELECT COUNT(*) n FROM reports WHERE status='claimed' AND claimed_by=?",
+                                                    (who.get("name", ""),))["n"]
+            oldest = self.store.one("SELECT MIN(received) t FROM reports WHERE status='open' AND source IN ('player','auto','appeal')")
+            out["reports"]["oldest_open"] = oldest["t"] if oldest else None
+        out["alerts"] = self.store.q("SELECT id, at, kind, title, pid, server FROM alerts WHERE at>? ORDER BY id DESC LIMIT 8",
+                                     (t - 86400,))
+        out["alerts_24h"] = self.store.one("SELECT COUNT(*) n FROM alerts WHERE at>?", (t - 86400,))["n"]
+        out["urgent_24h"] = self.store.one("SELECT COUNT(*) n FROM alerts WHERE at>? AND kind IN ('server_down','dodger','suspicion')",
+                                           (t - 86400,))["n"]
+        marks = ",".join("?" * len(MODERATION_ACTIONS))
+        out["activity"] = self.store.q("SELECT id, at, staff, role, action, server, target, target_pid FROM audit WHERE ok=1 AND "
+                                       "action IN (%s) ORDER BY id DESC LIMIT 12" % marks, MODERATION_ACTIONS)
+        online = {p.get("pid"): (s.key, p["name"]) for s in self.servers.values() for p in s.view().get("players", []) if p.get("pid")}
+        sus = self.store.q("SELECT pid, name, score, reasons FROM suspicion WHERE updated>? AND score>=25 ORDER BY score DESC LIMIT 5",
+                           (t - 600,))
+        for r in sus:
+            r["reasons"] = json.loads(r["reasons"] or "[]")[:2]
+            r["server"] = online.get(r["pid"], ("", ""))[0]
+        out["suspicion"] = sus
+        watched = self.store.q("SELECT pid, name, reason FROM watchlist")
+        out["watch_online"] = [dict(w, server=online[w["pid"]][0]) for w in watched if w["pid"] in online]
+        out["bans_24h"] = self.store.one("SELECT COUNT(*) n FROM bans WHERE created>?", (t - 86400,))["n"]
+        out["bans_active"] = self.store.one("SELECT COUNT(*) n FROM bans WHERE active=1")["n"]
+        out["appeals_open"] = self.store.one("SELECT COUNT(*) n FROM appeals WHERE status='open'")["n"]
+        out["schedule"] = self.store.q("SELECT id, server, action, arg, next_at, every_min FROM schedule WHERE active=1 "
+                                       "ORDER BY next_at LIMIT 4")
+        out["events"] = self.store.q("SELECT server, started, by_name, note FROM events")
+        # players online over the last 24 hours, every server added up, one point per sample time
+        rows = self.store.q("SELECT at, SUM(humans) humans FROM samples WHERE at>? GROUP BY at ORDER BY at", (t - 86400,))
+        out["spark"] = [[r["at"], r["humans"]] for r in rows]
+        day = time.strftime("%Y-%m-%d", time.gmtime(t))
+        peak = self.store.one("SELECT MAX(s) p FROM (SELECT SUM(humans) s FROM samples WHERE at>=? GROUP BY at)",
+                              (t - t % 86400,))
+        out["peak_today"] = max(int((peak or {}).get("p") or 0), out["players_online"])
+        out["new_players_24h"] = self.store.one("SELECT COUNT(*) n FROM (SELECT pid, MIN(first_seen) f FROM sightings GROUP BY pid) "
+                                                "WHERE f>?", (t - 86400,))["n"]
+        out["day"] = day
+        if allowed(who, "health"):
+            h = self.health()
+            out["services_down"] = [{"name": u["name"], "state": u["state"]} for u in h.get("services", [])
+                                    if u.get("state") not in ("active", "unknown")]
+            if h.get("disk_total_gb"):
+                out["disk_used_pct"] = round(100 - 100 * h["disk_free_gb"] / h["disk_total_gb"])
+            if h.get("mem_total_mb"):
+                out["mem_used_pct"] = round(100 - 100 * h["mem_available_mb"] / h["mem_total_mb"])
+        if allowed(who, "audit"):
+            out["backup"] = self.backup_status()
+        return out
+
+    # -- global search (Ctrl+K)
+    def search(self, who: dict, query: str) -> dict:
+        q = str(query or "").strip()[:80]
+        out = {"q": q, "players": [], "online": [], "bans": [], "reports": [], "staff": []}
+        if not q:
+            return out
+        low = q.lower().lstrip("@")
+        for s in self.servers.values():
+            for p in s.view().get("players", []):
+                if p.get("bot"):
+                    continue
+                if low in plain(p["name"]).lower() or (p.get("pid") and p["pid"] == low):
+                    out["online"].append({"server": s.key, "server_name": s.name, "slot": p["slot"], "name": p["name"],
+                                          "pid": p.get("pid", ""), "muted": bool(p.get("muted_s"))})
+        out["online"] = out["online"][:8]
+        if allowed(who, "lookup") and len(q) >= 2:
+            out["players"] = self.lookup(q, allowed(who, "lookup.ip"))[:8]
+        num = re.fullmatch(r"#?(\d{1,9})", q)
+        code = q.upper() if APPEAL_CODE.match(q.upper()) else ""
+        if num:
+            out["bans"] = self.store.q("SELECT id, pid, name, reason, active, expires FROM bans WHERE id=?", (int(num.group(1)),))
+        elif code:
+            out["bans"] = self.store.q("SELECT id, pid, name, reason, active, expires FROM bans WHERE appeal_code=?", (code,))
+        if len(q) >= 2 and not out["bans"]:
+            like = "%" + q.replace("%", "").replace("_", "") + "%"
+            out["bans"] = self.store.q("SELECT id, pid, name, reason, active, expires FROM bans WHERE name LIKE ? OR reason LIKE ? "
+                                       "ORDER BY active DESC, id DESC LIMIT 5", (like, like))
+        if allowed(who, "reports"):
+            if num:
+                rows = self.store.q("SELECT * FROM reports WHERE id=?", (int(num.group(1)),))
+            elif len(q) >= 3:
+                like = "%" + q.replace("%", "").replace("_", "") + "%"
+                rows = self.store.q("SELECT * FROM reports WHERE target_name LIKE ? OR data LIKE ? ORDER BY id DESC LIMIT 5", (like, like))
+            else:
+                rows = []
+            for r in rows:
+                d = self._report_row(r).get("data") or {}
+                out["reports"].append({"id": r["id"], "source": r["source"], "status": r["status"], "target_name": r["target_name"],
+                                       "target_pid": r["target_pid"], "received": r["received"],
+                                       "summary": str(d.get("summary") or d.get("reason") or d.get("text") or "")[:120]})
+        if allowed(who, "staff.manage") and len(q) >= 2:
+            like = "%" + q.replace("%", "").replace("_", "") + "%"
+            out["staff"] = self.store.q("SELECT discord_id, name, role, last_login FROM staff WHERE name LIKE ? OR discord_id=? LIMIT 5",
+                                        (like, q))
+        return out
+
+    # -- nightly database snapshot for the off-site backup
+    # The copy leaves out sign-in sessions (they hold Discord tokens), one-time key links and the undo list; the
+    # off-site backup (tcp_offsite_backup.py) encrypts it with its own passphrase before it leaves the machine.
+    def backup_dir(self) -> Path:
+        return Path(self.cfg.get("data_dir", "/var/lib/tcp-staff-portal")) / "backups"
+
+    def backup_now(self) -> dict:
+        d = self.backup_dir()
+        d.mkdir(parents=True, exist_ok=True)
+        os.chmod(d, 0o750)
+        tmp = d / (".snapshot-%s.tmp" % secrets.token_hex(4))
+        status = {"at": now(), "ok": False}
+        try:
+            dst = sqlite3.connect(str(tmp))
+            try:
+                with self.store.lock:
+                    self.store.db.backup(dst)
+                for table in ("sessions", "staff_key_codes", "undo"):
+                    dst.execute("DELETE FROM %s" % table)
+                dst.commit()
+                dst.execute("VACUUM")
+                tables = dst.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table'").fetchone()[0]
+                ok = dst.execute("PRAGMA integrity_check").fetchone()[0]
+            finally:
+                dst.close()
+            if ok != "ok":
+                raise sqlite3.DatabaseError("integrity check: %s" % ok)
+            os.chmod(tmp, 0o640)
+            target = d / "portal-snapshot.db"
+            os.replace(tmp, target)
+            h = hashlib.sha256(target.read_bytes()).hexdigest()
+            status.update(ok=True, file=str(target), size=target.stat().st_size, sha256=h, tables=tables)
+        except (OSError, sqlite3.Error) as e:
+            status["error"] = str(e)[:300]
+            log.warning("database snapshot failed: %s", e)
+        finally:
+            try:
+                tmp.unlink()
+            except OSError:
+                pass
+        self.meta("backup_status", json.dumps(status))
+        if not status["ok"]:
+            self.alert("backup", "Staff portal snapshot failed", status.get("error", "unknown error"), key="backup-fail", window=20 * 3600)
+        return status
+
+    def backup_status(self) -> dict:
+        try:
+            st = json.loads(self.meta("backup_status") or "{}")
+        except ValueError:
+            st = {}
+        st["hour_utc"] = self.cfg.get("backup_time_utc", "04:20")
+        st["stale"] = not st.get("ok") or now() - int(st.get("at") or 0) > 30 * 3600
+        return st
+
+    def backup_loop(self) -> None:
+        while not self.stop.is_set():
+            hh, _, mm = str(self.cfg.get("backup_time_utc", "04:20")).partition(":")
+            g = time.gmtime()
+            day = time.strftime("%Y-%m-%d", g)
+            due = (g.tm_hour, g.tm_min) >= (int(hh or 4), int(mm or 0))
+            if due and self.meta("backup_day") != day:
+                self.meta("backup_day", day)
+                self.backup_now()
+            self.stop.wait(300)
+
+
 # ----------------------------------------------------------------------------- the portal
 
-class Portal(Moderation, Watchers, Operations):
+class Portal(Moderation, Watchers, Operations, Overview):
     def __init__(self, cfg: dict):
         self.cfg = cfg
         data = Path(cfg.get("data_dir", "/var/lib/tcp-staff-portal"))
@@ -2348,7 +2563,8 @@ class Portal(Moderation, Watchers, Operations):
     def start(self) -> None:
         loops = [(self.poll_loop, "poll"), (self.report_loop, "reports"), (self.ban_loop, "bans"),
                  (self.prune_loop, "prune"), (self.alert_loop, "alerts"), (self.suspicion_loop, "suspicion"),
-                 (self.schedule_loop, "schedule"), (self.enforce_loop, "enforce"), (self.weekly_loop, "weekly")]
+                 (self.schedule_loop, "schedule"), (self.enforce_loop, "enforce"), (self.weekly_loop, "weekly"),
+                 (self.backup_loop, "backup")]
         for s in self.servers.values():
             loops.append((lambda s=s: self.chat_loop(s), "chat-" + s.key))
         for fn, name in loops:
@@ -2376,6 +2592,10 @@ class Portal(Moderation, Watchers, Operations):
                     self.watch(srv)
                 except Exception:  # noqa: BLE001  (a watcher bug must never stop the live view)
                     log.exception("watchers failed for %s", srv.key)
+            try:
+                self.record_samples()
+            except sqlite3.Error:
+                log.exception("player-count sample failed")
             self.stop.wait(max(0.5, every - (time.time() - started)))
 
     # chat comes from the game's own log line: TCP_NATIVE_SAY slot=N team=T text
@@ -2584,6 +2804,7 @@ class Portal(Moderation, Watchers, Operations):
         self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
         self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
         self.store.x("DELETE FROM staff_key_codes WHERE expires<?", (now(),))
+        self.store.x("DELETE FROM samples WHERE at<?", (now() - int(self.cfg.get("history_days", 90)) * 86400,))
 
     # ------------------------------------------------------------------ queries used by the API
     def server(self, key: str) -> GameServer:
@@ -2592,10 +2813,14 @@ class Portal(Moderation, Watchers, Operations):
             raise ApiError(404, "Unknown server.")
         return s
 
-    def servers_view(self) -> list:
+    def servers_view(self, show_ip: bool = False) -> list:
         out = []
         for key in self.order:
             v = self.servers[key].view()
+            if not show_ip:                          # addresses are admin-only, as on the player page
+                for p in v.get("players", []):
+                    p.pop("ip", None)
+                    p.pop("guid", None)
             pids = [p.get("pid") for p in v.get("players", []) if p.get("pid")]
             flags = self._flags(pids)
             for p in v.get("players", []):
@@ -3443,8 +3668,26 @@ def make_handler(portal: Portal):
                                   "mod_ban_limit": MOD_BAN_LIMIT, "version": VERSION,
                                   "maps": cfg.get("maps", []), "site": cfg.get("site", "https://truecombat.eu")})
             if route == "servers" and method == "GET":
-                self.need(s, "view")
-                return self.json({"servers": portal.servers_view(), "time": now()})
+                who = self.need(s, "view")
+                return self.json({"servers": portal.servers_view(allowed(who, "lookup.ip")), "time": now()})
+            if route == "dashboard" and method == "GET":
+                who = self.need(s, "view")
+                return self.json(portal.dashboard(who))
+            if route == "search" and method == "GET":
+                who = self.need(s, "view")
+                if portal.limited("search:" + who["discord_id"], 120, 60):
+                    raise ApiError(429, "Slow down a little.")
+                return self.json(portal.search(who, qs.get("q", "")))
+            if route == "backup" and method == "GET":
+                self.need(s, "backup")
+                return self.json(portal.backup_status())
+            if route == "backup" and method == "POST":
+                who = self.need(s, "backup")
+                if portal.limited("backup-now", 3, 3600):
+                    raise ApiError(429, "Three snapshots were made in the last hour. Try again later.")
+                st = portal.backup_now()
+                portal.store.audit(who, "backup snapshot", ok=st["ok"], result=st.get("error", "") or "%d bytes" % st.get("size", 0))
+                return self.json(st)
             if route == "chat" and method == "GET":
                 self.need(s, "view")
                 after = int(qs.get("after") or 0)
@@ -3877,8 +4120,11 @@ def make_handler(portal: Portal):
                 sql, args = portal.staff_key_valid_sql()
                 live = {r["id"] for r in portal.store.q(sql, args)}
                 rows = portal.store.q("SELECT id, discord_id, name, created FROM staff_keys WHERE revoked=0 ORDER BY created DESC")
+                portal.staff_cert("")                       # loads the root once
+                root = getattr(portal, "_staff_root", None)
                 return self.json({"keys": [dict(r, active=r["id"] in live) for r in rows],
-                                  "idle_days": int(cfg.get("staff_key_idle_days", 60))})
+                                  "idle_days": int(cfg.get("staff_key_idle_days", 60)),
+                                  "cert_root": root[0] if root else None, "cert_days": int(cfg.get("staff_cert_days", 30))})
             if route == "staffkey/revoke" and P:
                 who = self.need(s, "view")
                 d = self.body_json()
