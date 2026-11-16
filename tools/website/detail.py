@@ -441,7 +441,7 @@ def weapon_body(lang, w, allw, modes):
 """
     facts = "\n".join("          <dt>%s</dt><dd>%s</dd>" % r for r in rows)
     return f"""<section class="page-head">
-  <div class="head-art" style="--art: url(img/media-grenade.webp); --art-s: url(img/media-grenade-640.webp)" aria-hidden="true"></div>
+  <div class="head-art" style="--art: url(img/hero-delta-night.webp); --art-s: url(img/hero-delta-night-640.webp)" aria-hidden="true"></div>
   <div class="wrap">
     <a class="back" href="weapons.html#{w['group']}">{e(w['group_title'])}</a>
     <h1>{e(w['label'])}</h1>
