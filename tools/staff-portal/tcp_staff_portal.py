@@ -45,23 +45,24 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.4.1"
+VERSION = "1.4.2"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
 log = logging.getLogger("tcp-staff")
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 # ----------------------------------------------------------------------------- roles
 
-ROLES = ["moderator", "admin", "owner"]          # lowest to highest
+ROLES = ["trial", "moderator", "admin", "owner"] # lowest to highest; trial: new staff who watch, warn and write up
 RANK = {r: i + 1 for i, r in enumerate(ROLES)}
 
 # Lowest role that may do each thing.
 PERMS = {
-    "view": "moderator",
+    "view": "trial",
     "chat.reply": "moderator",
     "player.kick": "moderator",
-    "player.warn": "moderator",
+    "player.warn": "trial",
     "player.mute": "moderator",
     "player.move": "moderator",
     "ban.temp": "moderator",          # up to MOD_BAN_LIMIT minutes
@@ -70,12 +71,12 @@ PERMS = {
     "server.say": "moderator",
     "server.map": "admin",
     "server.restart": "admin",
-    "reports": "moderator",
-    "lookup": "moderator",
+    "reports": "trial",
+    "lookup": "trial",
     "lookup.ip": "admin",
     "audit": "admin",
     "staff.manage": "admin",
-    "health": "moderator",
+    "health": "trial",
     "health.restart": "admin",
     "punish": "moderator",            # punishment ladder; steps past MOD_BAN_LIMIT need an admin
     "watch": "moderator",
@@ -90,9 +91,13 @@ PERMS = {
     "weekly": "admin",
     "insights": "admin",              # website visits, channels and downloads (tools/server-bridge/tcp_insights.py)
     "backup": "admin",                # database snapshot status, run one now
-    "cases": "moderator",             # cases: open, take, link, note, close
-    "evidence": "moderator",          # add screenshots, demos, chat excerpts and links; download them
+    "cases": "trial",             # cases: open, take, link, note, close
+    "evidence": "trial",          # add screenshots, demos, chat excerpts and links; download them
     "evidence.delete": "admin",
+    "history": "trial",               # player counts over time, uptime, busiest hours
+    "quality": "admin",               # what each staff member did and how it held up
+    "anticheat": "admin",             # anti-cheat review queue
+    "duty": "trial",                  # go on duty: phone alerts for everything, not only urgent ones
     "2fa.reset": "owner",
 }
 MOD_BAN_LIMIT = 24 * 60
@@ -1021,6 +1026,13 @@ CREATE TABLE IF NOT EXISTS evidence(id INTEGER PRIMARY KEY AUTOINCREMENT, case_i
   mime TEXT, size INTEGER, sha256 TEXT, text TEXT, at INTEGER, by_name TEXT, deleted INTEGER DEFAULT 0);
 CREATE INDEX IF NOT EXISTS evidence_case ON evidence(case_id);
 CREATE INDEX IF NOT EXISTS evidence_pid ON evidence(pid);
+CREATE TABLE IF NOT EXISTS duty(discord_id TEXT PRIMARY KEY, name TEXT, since INTEGER, until INTEGER);
+CREATE TABLE IF NOT EXISTS push_subs(endpoint TEXT PRIMARY KEY, discord_id TEXT, name TEXT, created INTEGER, last_ok INTEGER,
+  fails INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS ac_queue(id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT, pid TEXT, name TEXT, server TEXT, at INTEGER,
+  detail TEXT, score INTEGER DEFAULT 0, status TEXT DEFAULT 'open', by_name TEXT, resolved INTEGER, note TEXT);
+CREATE INDEX IF NOT EXISTS ac_queue_status ON ac_queue(status, at);
+CREATE INDEX IF NOT EXISTS ac_queue_pid ON ac_queue(pid, kind);
 """
 
 # Columns added after 1.0.0, applied to an existing database on start.
@@ -1030,6 +1042,8 @@ MIGRATIONS = [
     "ALTER TABLE chat ADD COLUMN flag TEXT",
     "ALTER TABLE mutes ADD COLUMN server TEXT",
     "CREATE INDEX IF NOT EXISTS bans_code ON bans(appeal_code)",
+    "ALTER TABLE staff ADD COLUMN perms_add TEXT",
+    "ALTER TABLE staff ADD COLUMN perms_remove TEXT",
 ]
 
 
@@ -1379,7 +1393,7 @@ class Moderation:
             raise ApiError(404, "There is nothing to undo for that action.")
         if u["expires"] < now():
             raise ApiError(409, "The 5-minute undo window has passed. Lift it the normal way.")
-        if u["by_id"] != who["discord_id"] and not allowed(who["role"], "ban.remove"):
+        if u["by_id"] != who["discord_id"] and not allowed(who, "ban.remove"):
             raise ApiError(403, "Only the person who did it, or an admin, can undo this.")
         self.store.x("UPDATE undo SET done=1 WHERE audit_id=?", (audit_id,))
         if u["kind"] == "ban":
@@ -1425,7 +1439,7 @@ class Moderation:
         nxt = self.next_step(pid, offence)
         action, minutes = parse_step(nxt["step"])
         reason = safe_arg(nxt["label"] + (": " + note if note else ""), 100)
-        if action == "ban" and (minutes == 0 or minutes > MOD_BAN_LIMIT) and not allowed(who["role"], "ban.perm"):
+        if action == "ban" and (minutes == 0 or minutes > MOD_BAN_LIMIT) and not allowed(who, "ban.perm"):
             raise ApiError(403, "This is step %d of %d for %s: %s. Ask an admin to apply it." % (
                 nxt["index"] + 1, nxt["of"], nxt["label"].lower(), nxt["action"].lower()))
         via = " (ladder step %d of %d)" % (nxt["index"] + 1, nxt["of"])
@@ -1533,6 +1547,12 @@ class Watchers:
         aid = self.store.x("INSERT INTO alerts(key,at,kind,title,text,pid,server) VALUES(?,?,?,?,?,?,?)",
                            (key, now(), kind, title[:200], text[:1800], pid, server))
         self.bus.emit("alert", kind=kind, id=aid)
+        self.push_queue.put((aid, urgent))
+        if kind in ("suspicion", "dodger") and pid:
+            name = self.store.one("SELECT name FROM sightings WHERE pid=? ORDER BY last_seen DESC LIMIT 1", (pid,))
+            score = re.match(r"Suspicion (\d+)", title)
+            self.ac_add(kind, pid, name["name"] if name else "", server, plain(text).replace("**", ""),
+                        score=int(score.group(1)) if score else (90 if urgent else 60))
         kinds = self.cfg.get("alerts", {}).get("kinds")
         if kinds is None or kind in kinds:
             self.alert_queue.put((aid, urgent))
@@ -1637,6 +1657,7 @@ class Watchers:
                 self.on_join(srv, p, first=(pid not in self.online.get(srv.key, {})))
         self.online[srv.key] = online
         self.track_sessions(srv, online, {p["pid"]: p["name"] for p in players if p.get("pid")}, True)
+        self.ac_watch(srv, players)
         self.afk_and_tk(srv, v, players)
 
     def on_join(self, srv: GameServer, p: dict, first: bool) -> None:
@@ -2388,6 +2409,7 @@ class Overview:
                                                     (who.get("name", ""),))["n"]
             oldest = self.store.one("SELECT MIN(received) t FROM reports WHERE status='open' AND source IN ('player','auto','appeal')")
             out["reports"]["oldest_open"] = oldest["t"] if oldest else None
+        out["on_duty"] = [{"name": d["name"], "until": d["until"]} for d in self.duty_list()]
         if allowed(who, "cases"):
             out["cases"] = {"open": self.store.one("SELECT COUNT(*) n FROM cases WHERE status='open'")["n"],
                             "mine": self.store.one("SELECT COUNT(*) n FROM cases WHERE status='open' AND assignee=?",
@@ -3026,8 +3048,393 @@ class Casework:
             self.store.x("UPDATE evidence SET deleted=? WHERE id=?", (now(), e["id"]))
             self._drop_file(e["file"])
 
+# ----------------------------------------------------------------------------- 1.4.2: push, roles, duty, history, quality, anti-cheat queue
 
-class Portal(Moderation, Watchers, Operations, Overview, Casework):
+# P-256 (secp256r1) for VAPID: Web Push needs an ES256-signed token. Standard library only, so the curve is here.
+_P256_P = 0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF
+_P256_N = 0xFFFFFFFF00000000FFFFFFFFFFFFFFFFBCE6FAADA7179E84F3B9CAC2FC632551
+_P256_A = _P256_P - 3
+_P256_B = 0x5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B
+_P256_G = (0x6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296,
+           0x4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5)
+
+
+def _p256_add(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    p = _P256_P
+    if a[0] == b[0]:
+        if (a[1] + b[1]) % p == 0:
+            return None
+        lam = (3 * a[0] * a[0] + _P256_A) * pow(2 * a[1], p - 2, p) % p
+    else:
+        lam = (b[1] - a[1]) * pow(b[0] - a[0], p - 2, p) % p
+    x = (lam * lam - a[0] - b[0]) % p
+    return x, (lam * (a[0] - x) - a[1]) % p
+
+
+def _p256_mul(k: int, pt=_P256_G):
+    out = None
+    while k:
+        if k & 1:
+            out = _p256_add(out, pt)
+        pt = _p256_add(pt, pt)
+        k >>= 1
+    return out
+
+
+def p256_keypair() -> tuple:
+    d = secrets.randbelow(_P256_N - 1) + 1
+    x, y = _p256_mul(d)
+    return d, b"\x04" + x.to_bytes(32, "big") + y.to_bytes(32, "big")
+
+
+def p256_public(d: int) -> bytes:
+    x, y = _p256_mul(d)
+    return b"\x04" + x.to_bytes(32, "big") + y.to_bytes(32, "big")
+
+
+def es256_sign(d: int, msg: bytes) -> bytes:
+    z = int.from_bytes(hashlib.sha256(msg).digest(), "big")
+    while True:
+        k = secrets.randbelow(_P256_N - 1) + 1
+        r = _p256_mul(k)[0] % _P256_N
+        if not r:
+            continue
+        s = pow(k, _P256_N - 2, _P256_N) * (z + r * d) % _P256_N
+        if s:
+            return r.to_bytes(32, "big") + s.to_bytes(32, "big")
+
+
+def b64url(b: bytes) -> str:
+    return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+
+
+def vapid_header(d: int, public: bytes, endpoint: str, subject: str) -> str:
+    u = urllib.parse.urlsplit(endpoint)
+    head = b64url(json.dumps({"typ": "JWT", "alg": "ES256"}, separators=(",", ":")).encode())
+    body = b64url(json.dumps({"aud": "%s://%s" % (u.scheme, u.netloc), "exp": now() + 12 * 3600, "sub": subject},
+                             separators=(",", ":")).encode())
+    sig = b64url(es256_sign(d, ("%s.%s" % (head, body)).encode()))
+    return "vapid t=%s.%s.%s, k=%s" % (head, body, sig, b64url(public))
+
+
+# browsers' own push services; a subscription anywhere else is refused (the portal would otherwise call any URL)
+PUSH_HOSTS = re.compile(r"^(fcm\.googleapis\.com|updates\.push\.services\.mozilla\.com|[a-z0-9.-]+\.push\.apple\.com|"
+                        r"[a-z0-9.-]+\.notify\.windows\.com|push\.services\.mozilla\.com)$")
+
+# per-person extras on top of a role (1.4.2); admin-level grants still need two-step sign-in
+GRANT_PRESETS = {
+    "event-host": {"label": "Event host", "perms": ["event", "schedule", "server.map"]},
+    "appeals": {"label": "Appeals reviewer", "perms": ["appeals.answer"]},
+    "anticheat": {"label": "Anti-cheat reviewer", "perms": ["anticheat", "review"]},
+    "readonly": {"label": "Read only", "remove": ["player.kick", "player.mute", "player.move", "ban.temp", "punish", "chat.reply",
+                                                  "server.say"]},
+}
+
+
+def grants_of(row) -> tuple:
+    try:
+        add = [p for p in json.loads((row or {}).get("perms_add") or "[]") if p in PERMS]
+        rem = [p for p in json.loads((row or {}).get("perms_remove") or "[]") if p in PERMS]
+    except (TypeError, ValueError):
+        add, rem = [], []
+    return add, rem
+
+
+AC_KINDS = {"detection": "Anti-cheat detection", "suspicion": "High suspicion score", "dodger": "Ban dodger or alt", "review": "Stats stand out"}
+
+
+class Team:
+    # -- per-person permissions
+    def effective_perms(self, discord_id: str, role: str):
+        """None when the person has no extras (the role decides), else the full list of what they may do."""
+        if role == "owner":
+            return None
+        row = self.store.one("SELECT perms_add, perms_remove FROM staff WHERE discord_id=?", (discord_id,))
+        add, rem = grants_of(row)
+        if not add and not rem:
+            return None
+        base = {p for p in PERMS if allowed(role, p)}
+        return sorted((base | set(add)) - set(rem))
+
+    def set_grants(self, who: dict, did: str, add: list, remove: list) -> dict:
+        add = sorted({p for p in add if p in PERMS})
+        remove = sorted({p for p in remove if p in PERMS} - set(add))
+        if not self.store.one("SELECT discord_id FROM staff WHERE discord_id=?", (did,)):
+            raise ApiError(404, "Add this person to the staff list first.")
+        if did in {str(x) for x in self.cfg.get("owners", [])}:
+            raise ApiError(403, "Owners have every right already.")
+        high = [p for p in add if RANK[PERMS[p]] >= RANK["admin"]]
+        if high and who.get("role") != "owner":
+            raise ApiError(403, "Only the owner grants admin tools: %s." % ", ".join(high))
+        if any(p in ("staff.manage", "2fa.reset") for p in add):
+            raise ApiError(403, "Staff management comes with the admin role only.")
+        self.store.x("UPDATE staff SET perms_add=?, perms_remove=? WHERE discord_id=?", (json.dumps(add), json.dumps(remove), did))
+        self.store.x("UPDATE sessions SET checked=0 WHERE discord_id=?", (did,))
+        self.store.audit(who, "staff rights", target=did, detail="+%s -%s" % (",".join(add) or "none", ",".join(remove) or "none"))
+        return {"add": add, "remove": remove}
+
+    # -- on duty
+    def duty_list(self) -> list:
+        return self.store.q("SELECT discord_id, name, since, until FROM duty WHERE until>? ORDER BY since", (now(),))
+
+    def duty_set(self, who: dict, on: bool, hours: float = 4) -> dict:
+        t = now()
+        if on:
+            hours = max(0.5, min(12.0, float(hours or 4)))
+            self.store.x("INSERT INTO duty(discord_id,name,since,until) VALUES(?,?,?,?) ON CONFLICT(discord_id) DO UPDATE SET "
+                         "name=excluded.name, since=CASE WHEN duty.until>? THEN duty.since ELSE excluded.since END, until=excluded.until",
+                         (who["discord_id"], who["name"], t, t + int(hours * 3600), t))
+        else:
+            self.store.x("UPDATE duty SET until=? WHERE discord_id=?", (t, who["discord_id"]))
+        self.store.audit(who, "duty on" if on else "duty off", detail=("%g h" % hours) if on else "")
+        self.bus.emit("duty")
+        r = self.store.one("SELECT since, until FROM duty WHERE discord_id=? AND until>?", (who["discord_id"], t))
+        return {"on": bool(r), "since": r["since"] if r else None, "until": r["until"] if r else None}
+
+    # -- phone and desktop notifications (Web Push, no payload: the service worker fetches the alert itself)
+    def vapid(self) -> tuple:
+        d = self.meta("vapid_d")
+        if not d:
+            d_int, _ = p256_keypair()
+            self.meta("vapid_d", "%064x" % d_int)
+            d = self.meta("vapid_d")
+        d_int = int(d, 16)
+        if getattr(self, "_vapid", (None,))[0] != d_int:
+            self._vapid = (d_int, p256_public(d_int))
+        return self._vapid
+
+    def push_subscribe(self, who: dict, endpoint: str) -> None:
+        u = urllib.parse.urlsplit(str(endpoint or ""))
+        if u.scheme != "https" or not PUSH_HOSTS.match(u.hostname or "") or u.port not in (None, 443) or len(endpoint) > 1000:
+            if not (os.environ.get("TCP_STAFF_DEV") == "1" and str(endpoint).startswith("http://127.0.0.1:")):
+                raise ApiError(400, "That is not a browser push address.")
+        self.store.x("INSERT INTO push_subs(endpoint,discord_id,name,created,last_ok,fails) VALUES(?,?,?,?,NULL,0) "
+                     "ON CONFLICT(endpoint) DO UPDATE SET discord_id=excluded.discord_id, name=excluded.name, fails=0",
+                     (endpoint, who["discord_id"], who["name"], now()))
+        self.store.audit(who, "push on", detail=u.hostname or "")
+
+    def push_targets(self, urgent: bool) -> list:
+        subs = self.store.q("SELECT * FROM push_subs")
+        if urgent:
+            return subs
+        on = {d["discord_id"] for d in self.duty_list()}
+        return [s for s in subs if s["discord_id"] in on]
+
+    def push_send(self, sub: dict, urgent: bool) -> bool:
+        d, pub = self.vapid()
+        subject = self.cfg.get("push_subject") or self.cfg.get("public_url") or "https://staff.truecombat.eu"
+        req = urllib.request.Request(sub["endpoint"], data=b"", method="POST", headers={
+            "TTL": "3600", "Urgency": "high" if urgent else "normal", "Content-Length": "0",
+            "Authorization": vapid_header(d, pub, sub["endpoint"], subject)})
+        try:
+            urllib.request.urlopen(req, timeout=8).read()
+            self.store.x("UPDATE push_subs SET last_ok=?, fails=0 WHERE endpoint=?", (now(), sub["endpoint"]))
+            return True
+        except urllib.error.HTTPError as e:
+            if e.code in (404, 410):                       # the browser dropped the subscription
+                self.store.x("DELETE FROM push_subs WHERE endpoint=?", (sub["endpoint"],))
+            else:
+                self.store.x("UPDATE push_subs SET fails=fails+1 WHERE endpoint=?", (sub["endpoint"],))
+                log.warning("push refused (%d) for %s", e.code, sub["name"])
+        except (urllib.error.URLError, OSError) as e:
+            self.store.x("UPDATE push_subs SET fails=fails+1 WHERE endpoint=?", (sub["endpoint"],))
+            log.warning("push failed for %s: %s", sub["name"], e)
+        self.store.x("DELETE FROM push_subs WHERE fails>=20")
+        return False
+
+    def push_loop(self) -> None:
+        import queue
+        while not self.stop.is_set():
+            try:
+                aid, urgent = self.push_queue.get(timeout=5)
+            except queue.Empty:
+                continue
+            kinds = self.cfg.get("push_kinds")
+            a = self.store.one("SELECT kind FROM alerts WHERE id=?", (aid,))
+            if not a or a["kind"] == "push_test" or (kinds is not None and a["kind"] not in kinds and not urgent):
+                continue
+            for sub in self.push_targets(urgent):
+                self.push_send(sub, urgent)
+
+    def push_latest(self, who: dict) -> dict:
+        a = self.store.one("SELECT id, at, kind, title, text, pid, server FROM alerts WHERE at>? ORDER BY id DESC LIMIT 1", (now() - 900,))
+        if not a:
+            return {"alert": None}
+        page = self.LINKS.get(a["kind"], "alerts")
+        if page == "player":
+            page = "player/" + a["pid"] if a["pid"] else "alerts"
+        text = plain(a["text"]).replace("**", "")
+        return {"alert": {"id": a["id"], "title": plain(a["title"]), "body": text[:180], "url": "/#/" + page, "kind": a["kind"]}}
+
+    # -- history: player counts over time
+    def history(self, days: int, server: str = "") -> dict:
+        days = max(1, min(int(self.cfg.get("history_days", 90)), int(days or 7)))
+        t = now()
+        start = t - days * 86400
+        bucket = 3600 if days <= 14 else 3 * 3600 if days <= 45 else 6 * 3600
+        where, args = "at>=?", [start]
+        if server:
+            where += " AND server=?"
+            args.append(server)
+        rows = self.store.q("SELECT at, server, online, humans, bots FROM samples WHERE %s ORDER BY at" % where, args)
+        by_at = {}
+        for r in rows:
+            by_at.setdefault(r["at"], []).append(r)
+        series = {}
+        for at, rs in by_at.items():
+            b = at - at % bucket
+            s = series.setdefault(b, {"t": b, "sum": 0, "n": 0, "peak": 0})
+            total = sum(r["humans"] for r in rs if r["online"])
+            s["sum"] += total
+            s["n"] += 1
+            s["peak"] = max(s["peak"], total)
+        points = [{"t": s["t"], "avg": round(s["sum"] / s["n"], 1), "peak": s["peak"]} for s in sorted(series.values(), key=lambda x: x["t"])]
+        servers = {}
+        for r in rows:
+            s = servers.setdefault(r["server"], {"key": r["server"], "samples": 0, "up": 0, "humans": 0, "peak": 0})
+            s["samples"] += 1
+            s["up"] += 1 if r["online"] else 0
+            s["humans"] += r["humans"] if r["online"] else 0
+            s["peak"] = max(s["peak"], r["humans"] if r["online"] else 0)
+        for s in servers.values():
+            s["uptime_pct"] = round(100.0 * s["up"] / s["samples"], 1) if s["samples"] else None
+            s["avg"] = round(s["humans"] / s["samples"], 1) if s["samples"] else 0
+            s["name"] = self.servers[s["key"]].name if s["key"] in self.servers else s["key"]
+        # busiest hours, Belgian time: average players per weekday and hour
+        heat = [[[0, 0] for _ in range(24)] for _ in range(7)]
+        for at, rs in by_at.items():
+            lt = brussels(at)
+            cell = heat[lt.weekday()][lt.hour]
+            cell[0] += sum(r["humans"] for r in rs if r["online"])
+            cell[1] += 1
+        heatmap = [[round(c[0] / c[1], 1) if c[1] else None for c in row] for row in heat]
+        daily = self.store.q("SELECT day, SUM(peak) peak FROM peaks WHERE day>=? %s GROUP BY day ORDER BY day" %
+                             ("AND server=?" if server else ""), [time.strftime("%Y-%m-%d", time.gmtime(start))] + ([server] if server else []))
+        maps = self.store.q("SELECT map, COUNT(*) n, AVG(humans) avg FROM samples WHERE %s AND online=1 AND map<>'' GROUP BY map "
+                            "ORDER BY avg DESC LIMIT 12" % where, args)
+        for m in maps:
+            m["avg"] = round(m["avg"] or 0, 1)
+            m["hours"] = round(m["n"] * int(self.cfg.get("sample_seconds", 300)) / 3600, 1)
+        return {"days": days, "bucket": bucket, "points": points, "servers": sorted(servers.values(), key=lambda s: s["key"]),
+                "heatmap": heatmap, "daily": daily, "maps": maps, "samples": len(rows)}
+
+    # -- moderator quality: what each staff member did and how it held up
+    def quality(self, days: int) -> dict:
+        days = max(1, min(365, int(days or 30)))
+        start = now() - days * 86400
+        staff = {}
+
+        def row(name):
+            return staff.setdefault(name, {"name": name, "actions": 0, "bans": 0, "kicks": 0, "mutes": 0, "warns": 0,
+                                           "reports_closed": 0, "take_minutes": [], "close_minutes": [], "bans_overturned": 0,
+                                           "bans_lifted": 0, "undos": 0, "appeals_answered": 0, "cases_closed": 0, "notes": 0})
+        for a in self.store.q("SELECT staff, action FROM audit WHERE at>=? AND ok=1 AND role<>'system' AND staff<>'Portal'", (start,)):
+            r = row(a["staff"])
+            act = a["action"]
+            if act in MODERATION_ACTIONS:
+                r["actions"] += 1
+            for k, word in (("bans", "ban"), ("kicks", "kick"), ("mutes", "mute"), ("warns", "warn"), ("notes", "note"),
+                            ("cases_closed", "case closed")):
+                if act == word:
+                    r[k] += 1
+            if act in ("undo ban", "undo mute"):
+                r["undos"] += 1
+            if act in ("appeal accepted", "appeal denied"):
+                r["appeals_answered"] += 1
+        for rep in self.store.q("SELECT id, received FROM reports WHERE received>=? AND source IN ('player','auto')", (start,)):
+            mark = re.compile(r"#%d(?!\d)" % rep["id"])
+            evs = [e for e in self.store.q("SELECT at, staff, action, detail FROM audit WHERE action IN ('report claimed','report closed') "
+                                           "AND at>=? AND detail LIKE ? ORDER BY id", (rep["received"], "#%d%%" % rep["id"]))
+                   if mark.match(e["detail"] or "")]
+            took = next((e for e in evs if e["action"] == "report claimed"), None)
+            closed = next((e for e in evs if e["action"] == "report closed"), None)
+            if took:
+                row(took["staff"])["take_minutes"].append((took["at"] - rep["received"]) / 60)
+            if closed:
+                r = row(closed["staff"])
+                r["reports_closed"] += 1
+                r["close_minutes"].append((closed["at"] - rep["received"]) / 60)
+        for b in self.store.q("SELECT by_name, lifted, lifted_by, lift_reason FROM bans WHERE created>=?", (start,)):
+            if b["lifted"] and b["lifted_by"] and b["lifted_by"] != b["by_name"] and b["lifted_by"] != "expired":
+                row(b["by_name"])["bans_lifted"] += 1
+        for ap in self.store.q("SELECT a.status, b.by_name FROM appeals a JOIN bans b ON b.id=a.ban_id WHERE a.created>=?", (start,)):
+            if ap["status"] == "accepted":
+                row(ap["by_name"])["bans_overturned"] += 1
+
+        def median(xs):
+            xs = sorted(xs)
+            return round(xs[len(xs) // 2], 1) if xs else None
+        out = []
+        for r in staff.values():
+            r["take_median_min"] = median(r.pop("take_minutes"))
+            r["close_median_min"] = median(r.pop("close_minutes"))
+            r["overturn_pct"] = round(100.0 * r["bans_overturned"] / r["bans"], 1) if r["bans"] else None
+            if any(r[k] for k in ("actions", "reports_closed", "appeals_answered", "cases_closed", "notes")):
+                out.append(r)
+        out.sort(key=lambda r: -(r["actions"] + r["reports_closed"]))
+        team = {"reports": self.store.one("SELECT COUNT(*) n FROM reports WHERE received>=? AND source IN ('player','auto')", (start,))["n"],
+                "untouched": self.store.one("SELECT COUNT(*) n FROM reports WHERE received>=? AND source IN ('player','auto') AND "
+                                            "status='open' AND received<?", (start, now() - 86400))["n"],
+                "appeals": self.store.one("SELECT COUNT(*) n FROM appeals WHERE created>=?", (start,))["n"],
+                "accepted": self.store.one("SELECT COUNT(*) n FROM appeals WHERE created>=? AND status='accepted'", (start,))["n"]}
+        return {"days": days, "staff": out, "team": team}
+
+    # -- anti-cheat review queue (admins)
+    def ac_add(self, kind: str, pid: str, name: str, server: str, detail: str, score: int = 0) -> bool:
+        if not pid or kind not in AC_KINDS:
+            return False
+        if self.store.one("SELECT id FROM ac_queue WHERE pid=? AND kind=? AND (status='open' OR at>?)", (pid, kind, now() - 86400)):
+            self.store.x("UPDATE ac_queue SET detail=?, score=MAX(score, ?), at=? WHERE pid=? AND kind=? AND status='open'",
+                         (detail[:500], score, now(), pid, kind))
+            return False
+        self.store.x("INSERT INTO ac_queue(kind,pid,name,server,at,detail,score,status) VALUES(?,?,?,?,?,?,?,'open')",
+                     (kind, pid, plain(name)[:64], server, now(), detail[:500], score))
+        self.bus.emit("anticheat")
+        return True
+
+    def ac_watch(self, srv, players: list) -> None:
+        """A rise in a player's anti-cheat detection count puts them in the queue."""
+        for p in players:
+            pid = p.get("pid")
+            if not pid:
+                continue
+            n = int(p.get("detections") or 0)
+            key = (srv.key, pid)
+            before = self.ac_seen.get(key, 0)
+            self.ac_seen[key] = n
+            if n > before:
+                self.ac_add("detection", pid, p["name"], srv.key, "%d detection%s this session (anti-cheat %s, files %s)" % (
+                    n, "" if n == 1 else "s", p.get("eac") or "?", p.get("files") or "?"), score=min(100, 50 + 10 * n))
+
+    def ac_list(self, status: str = "open") -> list:
+        rows = self.store.q("SELECT * FROM ac_queue WHERE %s ORDER BY status='open' DESC, score DESC, at DESC LIMIT 300" %
+                            ("status='open'" if status == "open" else "status<>'open'" if status == "done" else "1=1"))
+        online = {p.get("pid"): s.key for s in self.servers.values() for p in s.view().get("players", []) if p.get("pid")}
+        for r in rows:
+            r["online"] = online.get(r["pid"], "")
+            r["banned"] = bool(self.store.one("SELECT id FROM bans WHERE pid=? AND active=1", (r["pid"],)))
+            sus = self.store.one("SELECT score FROM suspicion WHERE pid=?", (r["pid"],))
+            r["suspicion"] = sus["score"] if sus else None
+            r["label"] = AC_KINDS.get(r["kind"], r["kind"])
+        return rows
+
+    def ac_resolve(self, who: dict, qid: int, outcome: str, note: str = "") -> None:
+        if outcome not in ("cleared", "actioned", "case", "open"):
+            raise ApiError(400, "Unknown outcome.")
+        r = self.store.one("SELECT * FROM ac_queue WHERE id=?", (int(qid or 0),))
+        if not r:
+            raise ApiError(404, "No such item.")
+        self.store.x("UPDATE ac_queue SET status=?, by_name=?, resolved=?, note=? WHERE id=?",
+                     (outcome, who["name"] if outcome != "open" else None, now() if outcome != "open" else None, note[:300], r["id"]))
+        self.store.audit(who, "anti-cheat " + outcome, target=r["name"], pid=r["pid"], detail="#%d %s %s" % (r["id"], r["kind"], note[:200]))
+        self.bus.emit("anticheat")
+
+
+class Portal(Moderation, Watchers, Operations, Overview, Casework, Team):
     def __init__(self, cfg: dict):
         self.cfg = cfg
         data = Path(cfg.get("data_dir", "/var/lib/tcp-staff-portal"))
@@ -3043,6 +3450,8 @@ class Portal(Moderation, Watchers, Operations, Overview, Casework):
         self.health_cache = (0, None)
         import queue
         self.alert_queue = queue.Queue()
+        self.push_queue = queue.Queue()
+        self.ac_seen = {}          # (server, pid) -> anti-cheat detections seen this session
         self._filters = None
         self._layouts = None
         self.watch_cache = {}      # (server, slot) -> identity last checked for watchlist / ban dodgers
@@ -3075,7 +3484,7 @@ class Portal(Moderation, Watchers, Operations, Overview, Casework):
         loops = [(self.poll_loop, "poll"), (self.report_loop, "reports"), (self.ban_loop, "bans"),
                  (self.prune_loop, "prune"), (self.alert_loop, "alerts"), (self.suspicion_loop, "suspicion"),
                  (self.schedule_loop, "schedule"), (self.enforce_loop, "enforce"), (self.weekly_loop, "weekly"),
-                 (self.backup_loop, "backup")]
+                 (self.backup_loop, "backup"), (self.push_loop, "push")]
         for s in self.servers.values():
             loops.append((lambda s=s: self.chat_loop(s), "chat-" + s.key))
         for fn, name in loops:
@@ -3321,6 +3730,8 @@ class Portal(Moderation, Watchers, Operations, Overview, Casework):
         self.store.x("DELETE FROM samples WHERE at<?", (now() - int(self.cfg.get("history_days", 90)) * 86400,))
         self.store.x("DELETE FROM player_sessions WHERE joined<? AND left_at IS NOT NULL", (cut,))
         self.prune_evidence()
+        self.store.x("DELETE FROM ac_queue WHERE status<>'open' AND resolved<?", (cut,))
+        self.store.x("DELETE FROM duty WHERE until<?", (now() - 86400,))
 
     # ------------------------------------------------------------------ queries used by the API
     def server(self, key: str) -> GameServer:
@@ -3762,11 +4173,12 @@ def resolve_role(portal: Portal, discord_id: str, member_roles: list) -> str | N
     row = portal.store.one("SELECT role FROM staff WHERE discord_id=?", (discord_id,))
     if row and row["role"] == "revoked":
         return None
-    best = row["role"] if row and row["role"] in ("moderator", "admin") else None     # owner only ever from the config
+    best = row["role"] if row and row["role"] in ("trial", "moderator", "admin") else None     # owner only ever from the config
     if str(discord_id) in {str(x) for x in portal.cfg.get("owners", [])}:
         best = "owner"
     roles = {str(r) for r in member_roles or []}
-    for role, ids in (("admin", d.get("admin_role_ids", [])), ("moderator", d.get("moderator_role_ids", []))):
+    for role, ids in (("admin", d.get("admin_role_ids", [])), ("moderator", d.get("moderator_role_ids", [])),
+                      ("trial", d.get("trial_role_ids", []))):
         if roles & {str(x) for x in ids} and RANK[role] > RANK.get(best, 0):
             best = role
     return best
@@ -3907,6 +4319,7 @@ def make_handler(portal: Portal):
                 portal.store.x("UPDATE sessions SET role=?, checked=? WHERE id=?", (role, t, s["id"]))
             if t - s["seen"] > 60:
                 portal.store.x("UPDATE sessions SET seen=? WHERE id=?", (t, s["id"]))
+            s["perms"] = portal.effective_perms(s["discord_id"], s["role"])
             return s
 
         def recheck(self, s: dict) -> str | None:
@@ -3942,7 +4355,7 @@ def make_handler(portal: Portal):
         def need(self, s: dict | None, perm: str) -> dict:
             if not s:
                 raise ApiError(401, "Please sign in.")
-            if not allowed(s["role"], perm):
+            if not allowed(s, perm):
                 raise ApiError(403, "Your role cannot do that.")
             if RANK[PERMS[perm]] >= RANK["admin"] and cfg.get("require_2fa", True) and not self.totp_on(s):
                 raise ApiError(403, "Admin tools need two-step sign-in. Turn it on under your name, bottom left.")
@@ -3972,6 +4385,8 @@ def make_handler(portal: Portal):
             try:
                 if method == "GET" and (path == "/" or path == "/index.html"):
                     return self.static("index.html")
+                if method == "GET" and path == "/sw.js":         # at the root, so it may handle the whole portal
+                    return self.static("sw.js")
                 if method == "GET" and path.startswith("/static/"):
                     return self.static(path[len("/static/"):])
                 if path == "/healthz":
@@ -4173,7 +4588,7 @@ def make_handler(portal: Portal):
             if route == "me" and method == "GET":
                 if not s:
                     return self.json({"signed_in": False, "dev_login": dev_login})
-                perms = sorted(p for p in PERMS if allowed(s["role"], p))
+                perms = sorted(p for p in PERMS if allowed(s, p))
                 return self.json({"signed_in": True, "name": s["name"], "avatar": s["avatar"], "role": s["role"],
                                   "discord_id": s["discord_id"], "csrf": s["csrf"], "perms": perms,
                                   "mfa_pending": self.mfa_pending(s), "mfa_on": self.totp_on(s),
@@ -4229,7 +4644,7 @@ def make_handler(portal: Portal):
                 bans = portal.store.q("SELECT id,pid,name,reason,created,expires,by_name,active,lifted,lifted_by,lift_reason,appeal_code,"
                                       "guid<>'' has_guid, ip<>'' has_ip, puid<>'' has_puid, (SELECT audit_id FROM undo WHERE kind='ban' "
                                       "AND ref=bans.id AND done=0 AND expires>? AND (by_id=? OR ?)) undo FROM bans WHERE %s "
-                                      "ORDER BY id DESC LIMIT 500" % where, (now(), s["discord_id"], 1 if allowed(s["role"], "ban.remove") else 0))
+                                      "ORDER BY id DESC LIMIT 500" % where, (now(), s["discord_id"], 1 if allowed(s, "ban.remove") else 0))
                 return self.json({"bans": bans})
             if route == "bans" and method == "POST":
                 return self.ban(s, self.body_json())
@@ -4251,10 +4666,10 @@ def make_handler(portal: Portal):
                 return self.json({"result": rep})
             if route == "lookup" and method == "GET":
                 who = self.need(s, "lookup")
-                return self.json({"players": portal.lookup(qs.get("q", ""), allowed(who["role"], "lookup.ip"))})
+                return self.json({"players": portal.lookup(qs.get("q", ""), allowed(who, "lookup.ip"))})
             if route.startswith("player/") and method == "GET":
                 who = self.need(s, "lookup")
-                return self.json(portal.player(route[len("player/"):], allowed(who["role"], "lookup.ip")))
+                return self.json(portal.player(route[len("player/"):], allowed(who, "lookup.ip")))
             if route == "notes" and method == "POST":
                 who = self.need(s, "lookup")
                 d = self.body_json()
@@ -4304,7 +4719,7 @@ def make_handler(portal: Portal):
                 portal.store.x("UPDATE reports SET status=?, claimed_by=?, resolution=?, updated=? WHERE id=?",
                                (status, who["name"] if status != "open" else None, resolution or r["resolution"], now(), r["id"]))
                 portal.store.audit(who, "report " + status, server=r["server"], target=r["target_name"],
-                                   pid=r["target_pid"], detail=resolution or ("#%d" % r["id"]))
+                                   pid=r["target_pid"], detail=("#%d %s" % (r["id"], resolution)).strip())
                 return self.json({"ok": True})
             if route == "audit" and method == "GET":
                 self.need(s, "audit")
@@ -4333,6 +4748,77 @@ def make_handler(portal: Portal):
         # -- API, round two: moderation tools, alerts, operations and two-step sign-in
         def api2(self, method: str, route: str, qs: dict, s: dict | None) -> None:
             G, P = method == "GET", method == "POST"
+            # 1.4.2: push, duty, history, quality, anti-cheat queue, per-person rights
+            if route == "push/key" and G:
+                self.need(s, "view")
+                return self.json({"key": b64url(portal.vapid()[1])})
+            if route == "push/subscribe" and P:
+                who = self.need(s, "view")
+                d = self.body_json()
+                portal.push_subscribe(who, str(d.get("endpoint") or ""))
+                return self.json({"ok": True})
+            if route == "push/unsubscribe" and P:
+                who = self.need(s, "view")
+                d = self.body_json()
+                portal.store.x("DELETE FROM push_subs WHERE endpoint=? AND discord_id=?", (str(d.get("endpoint") or ""), who["discord_id"]))
+                return self.json({"ok": True})
+            if route == "push/test" and P:
+                who = self.need(s, "view")
+                if portal.limited("pushtest:" + who["discord_id"], 5, 600):
+                    raise ApiError(429, "Five test notifications in ten minutes is enough.")
+                portal.alert("push_test", "Test notification", "%s checked that alerts reach their device." % who["name"],
+                             key="push-test:%s:%d" % (who["discord_id"], now()))
+                subs = portal.store.q("SELECT * FROM push_subs WHERE discord_id=?", (who["discord_id"],))
+                sent = sum(1 for x in subs if portal.push_send(x, True))
+                return self.json({"ok": True, "devices": len(subs), "sent": sent})
+            if route == "push/latest" and G:
+                who = self.need(s, "view")
+                return self.json(portal.push_latest(who))
+            if route == "duty" and G:
+                who = self.need(s, "view")
+                mine = portal.store.one("SELECT since, until FROM duty WHERE discord_id=? AND until>?", (who["discord_id"], now()))
+                return self.json({"on_duty": portal.duty_list(), "me": {"on": bool(mine), **(mine or {})},
+                                  "devices": portal.store.one("SELECT COUNT(*) n FROM push_subs WHERE discord_id=?", (who["discord_id"],))["n"]})
+            if route == "duty" and P:
+                who = self.need(s, "duty")
+                d = self.body_json()
+                return self.json(portal.duty_set(who, bool(d.get("on")), d.get("hours") or 4))
+            if route == "history" and G:
+                self.need(s, "history")
+                server = qs.get("server", "")
+                if server and server not in portal.servers:
+                    raise ApiError(404, "Unknown server.")
+                return self.json(portal.history(int(qs.get("days") or 7), server))
+            if route == "quality" and G:
+                self.need(s, "quality")
+                return self.json(portal.quality(int(qs.get("days") or 30)))
+            if route == "anticheat" and G:
+                self.need(s, "anticheat")
+                return self.json({"items": portal.ac_list(qs.get("status", "open")),
+                                  "counts": {r["status"]: r["n"] for r in portal.store.q("SELECT status, COUNT(*) n FROM ac_queue GROUP BY status")}})
+            if route == "anticheat" and P:
+                who = self.need(s, "anticheat")
+                d = self.body_json()
+                portal.ac_resolve(who, int(d.get("id") or 0), str(d.get("outcome") or ""), str(d.get("note") or ""))
+                return self.json({"ok": True})
+            if route == "staff/rights" and G:
+                self.need(s, "staff.manage")
+                did = qs.get("id", "")
+                row = portal.store.one("SELECT discord_id, name, role, perms_add, perms_remove FROM staff WHERE discord_id=?", (did,))
+                if not row:
+                    raise ApiError(404, "Not on the staff list.")
+                add, rem = grants_of(row)
+                return self.json({"discord_id": did, "name": row["name"], "role": row["role"], "add": add, "remove": rem,
+                                  "perms": {k: v for k, v in PERMS.items()}, "presets": GRANT_PRESETS, "roles": ROLES})
+            if route == "staff/rights" and P:
+                who = self.need(s, "staff.manage")
+                d = self.body_json()
+                did = str(d.get("discord_id") or "")
+                target = portal.store.one("SELECT role FROM staff WHERE discord_id=?", (did,))
+                live = portal.store.one("SELECT 1 x FROM sessions WHERE discord_id=? AND role IN ('admin','owner')", (did,))
+                if ((target and target["role"] == "admin") or live) and who["role"] != "owner":
+                    raise ApiError(403, "Only the owner changes an admin.")
+                return self.json({"ok": True, **portal.set_grants(who, did, list(d.get("add") or []), list(d.get("remove") or []))})
             # live updates (1.4.1)
             if route == "stream" and G:
                 return self.stream(self.need(s, "view"))
@@ -4586,8 +5072,8 @@ def make_handler(portal: Portal):
                 rows = portal.store.q("SELECT server, started, by_name, preset, note FROM events")
                 for r in rows:
                     r["preset"] = json.loads(r["preset"] or "{}")
-                    r["password"] = r["preset"].get("g_password", "") if allowed(s["role"], "event") else ""
-                    if not allowed(s["role"], "event"):
+                    r["password"] = r["preset"].get("g_password", "") if allowed(s, "event") else ""
+                    if not allowed(s, "event"):
                         r["preset"].pop("g_password", None)
                 return self.json({"events": rows})
             if route == "event" and P:
@@ -4931,7 +5417,7 @@ def make_handler(portal: Portal):
             role = d.get("role")
             if not re.fullmatch(r"\d{15,21}", did):
                 raise ApiError(400, "Use the Discord user id (Developer Mode, right-click the user, Copy User ID).")
-            if role not in ("moderator", "admin", "revoked", "discord"):
+            if role not in ("trial", "moderator", "admin", "revoked", "discord"):
                 raise ApiError(400, "Unknown role.")
             if did in {str(x) for x in cfg.get("owners", [])}:
                 raise ApiError(403, "Owners are set in the portal configuration.")
