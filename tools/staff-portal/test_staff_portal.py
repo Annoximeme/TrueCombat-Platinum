@@ -1374,6 +1374,55 @@ class PortalTest(unittest.TestCase):
         unit = (Path(__file__).resolve().parent / "deploy" / "tcp-staff-portal.service").read_text()
         self.assertIn("#LoadCredential=staff-root:/etc/tcp-staff-portal/staff-root", unit)
 
+    def bot(self, method, path, body=None, did="300000000000000003", roles="555", token="bt", xff=None):
+        c = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+        h = {"X-Bot-Token": token, "X-Discord-Id": did, "X-Discord-Roles": roles, "X-Discord-Name": "Disc%20Mod"}
+        if xff:
+            h["X-Forwarded-For"] = xff
+        data = None
+        if body is not None:
+            data = json.dumps(body)
+            h["Content-Type"] = "application/json"
+        c.request(method, path, body=data, headers=h)
+        r = c.getresponse()
+        out = json.loads(r.read() or b"{}")
+        c.close()
+        return r.status, out
+
+    def test_53_discord_bot_commands(self):
+        self.assertEqual(self.bot("GET", "/bot/me")[0], 404)                  # no token set up: the route does not exist
+        self.portal.cfg.setdefault("discord", {})
+        self.portal.cfg["discord"]["bot_api_token"] = "bt"
+        self.portal.cfg["discord"]["moderator_role_ids"] = ["555"]
+        try:
+            self.assertEqual(self.bot("GET", "/bot/me", token="wrong")[0], 401)
+            self.assertEqual(self.bot("GET", "/bot/me", xff="203.0.113.5")[0], 404)       # never through the reverse proxy
+            self.assertEqual(self.bot("GET", "/bot/me", roles="")[0], 403)                # not staff
+            code, me = self.bot("GET", "/bot/me")
+            self.assertEqual((code, me["role"]), (200, "moderator"))
+            self.assertNotIn("ban.perm", me["perms"])
+            self.assertEqual(self.bot("GET", "/bot/summary")[0], 200)
+            wait_for(lambda: self.portal.servers["one"].view().get("online"))
+            online = self.bot("GET", "/bot/online")[1]["servers"]
+            viper = next(p for x in online if x["key"] == "one" for p in x["players"] if p["name"] == "Viper")
+            self.assertNotIn("ip", viper)
+            code, r = self.bot("POST", "/bot/action", {"server": "one", "slot": viper["slot"], "action": "warn", "reason": "from Discord"})
+            self.assertEqual(code, 200, r)
+            self.assertIn("warn %d from Discord" % viper["slot"], self.game.commands)
+            self.assertEqual(self.bot("POST", "/bot/action", {"server": "one", "slot": viper["slot"], "action": "ban", "length": "0",
+                                                              "reason": "x"})[0], 403)                      # permanent: admins in the portal
+            rid = self.portal.store.one("SELECT MIN(id) i FROM reports WHERE source IN ('player','auto')")["i"]
+            self.assertEqual(self.bot("POST", "/bot/report", {"id": rid, "action": "close"})[0], 400)
+            self.assertEqual(self.bot("POST", "/bot/report", {"id": rid, "action": "take"})[0], 200)
+            self.assertEqual(self.portal.store.one("SELECT claimed_by FROM reports WHERE id=?", (rid,))["claimed_by"], "Disc Mod")
+            self.assertTrue(self.bot("GET", "/bot/reports")[1]["reports"])
+            self.assertTrue(self.bot("GET", "/bot/lookup?q=vip")[1]["players"])
+            self.assertTrue(self.bot("POST", "/bot/duty", {"on": True, "hours": 1})[1]["on"])
+            self.assertTrue(self.portal.store.one("SELECT id FROM audit WHERE staff='Disc Mod' AND action='warn'"))
+        finally:
+            self.portal.cfg["discord"].pop("bot_api_token", None)
+            self.portal.cfg["discord"].pop("moderator_role_ids", None)
+
     def test_insights_page_reads_the_insights_service(self):
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "server-bridge"))

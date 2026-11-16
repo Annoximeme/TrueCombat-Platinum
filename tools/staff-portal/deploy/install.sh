@@ -6,6 +6,7 @@
 #   sudo ./deploy/install.sh caddy               adds staff.truecombat.eu to Caddy (backup + validate + reload)
 #   sudo ./deploy/install.sh stats-link          lets the portal use the stats service's review queue (token + drop-in, restarts tcp-bridge)
 #   sudo ./deploy/install.sh insights-link       lets the portal read the website insights service (copies its studio key)
+#   sudo ./deploy/install.sh bot-link            lets our Discord bot run /staff commands (shared token for the bot)
 #   sudo ./deploy/install.sh uninstall           stops and removes the service (keeps data and config)
 #
 # Before install: put the Discord OAuth client secret in /etc/tcp-staff-portal/client-secret (one line),
@@ -51,6 +52,7 @@ inspect() {
   say "webhook: $( filled $ETC/staff-webhook && echo present || echo 'none (alerts stay in the portal)')"
   say "stats:   $( filled $ETC/stats-token && echo 'review queue linked' || echo 'review queue not linked (install.sh stats-link)')"
   say "insights: $( filled $ETC/insights-key && echo 'linked' || echo 'not linked (install.sh insights-link)')"
+  say "discord bot: $( filled $ETC/bot-api-token && echo 'linked' || echo 'not linked (install.sh bot-link)')"
   say "botdb:   $( [ -f $BOTDB/bot.db ] && echo "$BOTDB/bot.db (linked Discord accounts)" || echo 'no Discord bot database')"
   for entry in $SERVERS; do
     key=${entry%%:*}; home=${entry#*:}
@@ -91,7 +93,7 @@ install_portal() {
   chown root:root "$ETC/client-secret"; chmod 0600 "$ETC/client-secret"
   if grep -q 'DISCORD_' "$ETC/config.json"; then say "fill owners, client_id and guild_id in $ETC/config.json first"; exit 1; fi
   # optional credentials: an empty file switches the feature off
-  for f in staff-webhook stats-token insights-key; do
+  for f in staff-webhook stats-token insights-key bot-api-token; do
     [ -f "$ETC/$f" ] || : > "$ETC/$f"
     chown root:root "$ETC/$f"; chmod 0600 "$ETC/$f"
   done
@@ -216,6 +218,25 @@ insights_link() {
   systemctl restart $UNIT 2>/dev/null || true
 }
 
+bot_link() {
+  need_root
+  BOT=/etc/tcp-discord-bot
+  [ -d "$BOT" ] || { say "no $BOT: install the Discord bot first"; exit 1; }
+  getent group tcpbot >/dev/null || { say "no tcpbot group: install the Discord bot first"; exit 1; }
+  if ! filled "$ETC/bot-api-token"; then
+    umask 077; head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > "$ETC/bot-api-token"; umask 022
+  fi
+  chown root:root "$ETC/bot-api-token"; chmod 0600 "$ETC/bot-api-token"
+  install -m 0640 -o root -g tcpbot "$ETC/bot-api-token" "$BOT/portal-token"
+  systemctl restart $UNIT
+  sleep 2
+  H=$(mktemp); chmod 0600 "$H"; printf 'X-Bot-Token: %s\nX-Discord-Id: 100000000000000000\n' "$(cat "$ETC/bot-api-token")" > "$H"
+  code=$(curl -s -o /dev/null -w '%{http_code}' -H @"$H" http://127.0.0.1:8097/bot/me); rm -f "$H"
+  # 403 = the token works and that made-up user is not staff
+  [ "$code" = "403" ] && say "bot linked: token in $BOT/portal-token (the bot reads it as credential portal-token)" \
+    || { say "the portal answered $code to the bot token check"; exit 1; }
+}
+
 uninstall() {
   need_root
   systemctl disable --now $UNIT tcp-staff-watch.timer 2>/dev/null || true
@@ -231,6 +252,7 @@ case "$MODE" in
   caddy) add_caddy ;;
   stats-link) stats_link ;;
   insights-link) insights_link ;;
+  bot-link) bot_link ;;
   uninstall) uninstall ;;
-  *) say "usage: $0 inspect|install|caddy|stats-link|insights-link|uninstall"; exit 2 ;;
+  *) say "usage: $0 inspect|install|caddy|stats-link|insights-link|bot-link|uninstall"; exit 2 ;;
 esac

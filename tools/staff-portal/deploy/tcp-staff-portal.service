@@ -22,6 +22,8 @@ LoadCredential=staff-webhook:/etc/tcp-staff-portal/staff-webhook
 LoadCredential=stats-token:/etc/tcp-staff-portal/stats-token
 # Studio key of the website insights service (empty file = Insights page off).
 LoadCredential=insights-key:/etc/tcp-staff-portal/insights-key
+# Shared token for /staff commands from our Discord bot (empty file = off; install.sh bot-link fills it).
+LoadCredential=bot-api-token:/etc/tcp-staff-portal/bot-api-token
 # Staff certificate root (0.38.0+): "TCPSTAFFROOT1 <id> <seed hex>", made once with --make-staff-root (see
 # README, "Staff certificates"). Uncomment only after the file exists: a missing credential stops the service.
 #LoadCredential=staff-root:/etc/tcp-staff-portal/staff-root
