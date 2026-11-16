@@ -273,7 +273,7 @@ SPECULATION = ('<script type="speculationrules">{"prefetch":[{"where":{"and":[{"
                '{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},'
                '{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>\n')
 
-SHOTS = ["map-northport", "map-railhouse", "map-delta", "map-stadtrand", "map-village", "map-snow", "hud-scoreboard", "media-deployment"]
+SHOTS = ["shot-railhouse-boxcar", "shot-delta-night", "shot-delta-rooftop", "map-northport", "map-railhouse", "map-delta", "map-stadtrand", "map-village", "map-snow", "hud-scoreboard", "media-deployment"]
 GAME_DESC = {
     "en": "A free, native 64-bit DirectX 12 rebuild of TrueCombat: Elite, the realistic tactical shooter, for Windows 10 and 11.",
     "nl": "Een gratis, native 64-bit DirectX 12-versie van TrueCombat: Elite, de realistische tactische shooter, voor Windows 10 en 11.",
