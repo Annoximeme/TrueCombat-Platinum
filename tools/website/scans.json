@@ -18,8 +18,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:38:17Z",
-   "checked": "2026-11-16T17:31:28Z",
-   "settle": false
+   "checked": "2026-11-16T18:25:07Z",
+   "settle": false,
+   "flagged_by": []
   },
   "0a08d8f8bef67d2dd169d993ccdc437fa13e3bc738d00b4cfe4523f8c59312dd": {
    "name": "cgame_mp_x64.dll",
@@ -33,7 +34,14 @@
   },
   "116ff41ada1bb891f233ec9b30bff27b5c880fc6cba2fee1637c3ed585329d0a": {
    "name": "qagame_mp_x64.dll",
-   "bytes": 424448
+   "bytes": 424448,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 61,
+   "analysed": "2026-11-16T18:35:15Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:44:32Z",
+   "settle": true
   },
   "120f9604478ccacb52b0424a3327b8d31a674e04f21fca3a55c4643c95c89999": {
    "name": "renderer_dx12_x64.dll",
@@ -47,7 +55,14 @@
   },
   "136575743cecc9514ae228c0ca859c25b40c1cfc7d50a7ced0b91e74582314e2": {
    "name": "renderer_dx12_x64.dll",
-   "bytes": 2382336
+   "bytes": 2382336,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-16T18:33:39Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:39:12Z",
+   "settle": true
   },
   "145310b2af3ced6c0dcdc3804780284a0f31d200b45e237fd94bfb63a7e9baed": {
    "name": "qagame_mp_x64.dll",
@@ -66,8 +81,9 @@
    "suspicious": 0,
    "engines": 66,
    "analysed": "2026-11-16T05:40:45Z",
-   "checked": "2026-11-16T17:30:08Z",
-   "settle": false
+   "checked": "2026-11-16T18:23:47Z",
+   "settle": false,
+   "flagged_by": []
   },
   "18f8b418fc01a262c6128252a5cfde4291b59de3f222df07eb0f967a9bbc8091": {
    "name": "cgame_mp_x64.dll",
@@ -96,8 +112,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:34:48Z",
-   "checked": "2026-11-16T17:28:16Z",
-   "settle": false
+   "checked": "2026-11-16T18:21:55Z",
+   "settle": false,
+   "flagged_by": []
   },
   "26891642f2a88bff63e398404863f193156b1ac5e637850e90aa4dcc467fb66e": {
    "name": "renderer_opengl1_x64.dll",
@@ -121,7 +138,14 @@
   },
   "28b03b0fe603a9bf8cf2570e518f79587459fe3987632bd4efa972a89689f312": {
    "name": "renderer_opengl1_x64.dll",
-   "bytes": 1796608
+   "bytes": 1796608,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-16T18:31:00Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:37:52Z",
+   "settle": true
   },
   "299a2384c412a7b60b58115f6d021cbab9b2fe446df744b945ab9d59da3f4474": {
    "name": "renderer_dx12_x64.dll",
@@ -160,8 +184,9 @@
    "suspicious": 0,
    "engines": 69,
    "analysed": "2026-11-15T17:06:19Z",
-   "checked": "2026-11-16T17:29:53Z",
-   "settle": false
+   "checked": "2026-11-16T18:23:31Z",
+   "settle": false,
+   "flagged_by": []
   },
   "3913a3896035fcf783b61882dfbcb513826ef3ee45dcc7b5f633f29eedf9f3a2": {
    "name": "cgame_mp_x64.dll",
@@ -190,8 +215,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:35:15Z",
-   "checked": "2026-11-16T17:28:48Z",
-   "settle": false
+   "checked": "2026-11-16T18:22:27Z",
+   "settle": false,
+   "flagged_by": []
   },
   "3ed9538df724993bea8a050195a6a78b9c8c8a566d5b05ade477aab3c390e90f": {
    "name": "sl.dlss_g.dll",
@@ -200,8 +226,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-15T21:43:49Z",
-   "checked": "2026-11-16T17:30:25Z",
-   "settle": false
+   "checked": "2026-11-16T18:24:03Z",
+   "settle": false,
+   "flagged_by": []
   },
   "40f39e8cee5f5a531b4010e18b807e8fe265b908dc58f959ecb7ebc6ea6cb11a": {
    "name": "vcruntime140_threads.dll",
@@ -210,8 +237,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:41:17Z",
-   "checked": "2026-11-16T17:32:16Z",
-   "settle": false
+   "checked": "2026-11-16T18:25:55Z",
+   "settle": false,
+   "flagged_by": []
   },
   "443577e869352436ff7ec8f4d9c90418d3e95368436ce219261e0f4f07a38122": {
    "name": "sl.reflex.dll",
@@ -220,8 +248,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-12T03:04:33Z",
-   "checked": "2026-11-16T17:31:12Z",
-   "settle": false
+   "checked": "2026-11-16T18:24:51Z",
+   "settle": false,
+   "flagged_by": []
   },
   "4554ae35d85d6073a6fa2ef5da99e5d84adf37b268a46f6fe29f0e56af293ad3": {
    "name": "renderer_dx12_x64.dll",
@@ -235,7 +264,16 @@
   },
   "461e49b759a62c40168fa6b69aa5fef402624adafababcbf7a94e320abb54111": {
    "name": "TrueCombatPlatinum.exe",
-   "bytes": 6409216
+   "bytes": 6409216,
+   "malicious": 1,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-16T18:29:55Z",
+   "flagged_by": [
+    "Trapmine: malicious.high.ml.score"
+   ],
+   "checked": "2026-11-16T18:37:20Z",
+   "settle": true
   },
   "46d2552552ac95c436389a2c9f1aba6fda37ab998acf9b9ee026f3262dd70c53": {
    "name": "TrueCombatPlatinum_EAC.exe",
@@ -244,12 +282,20 @@
    "suspicious": 0,
    "engines": 60,
    "analysed": "2026-11-11T18:50:35Z",
-   "checked": "2026-11-16T17:26:40Z",
-   "settle": false
+   "checked": "2026-11-16T18:20:35Z",
+   "settle": false,
+   "flagged_by": []
   },
   "49e3075697ecf14f068744797b68d3c0661086f083f94c08d6ac665d44e9fd75": {
    "name": "cgame_mp_x64.dll",
-   "bytes": 468480
+   "bytes": 468480,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-16T18:28:19Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:36:32Z",
+   "settle": true
   },
   "4ac2b632b8907f9a7619bb9d71f0ae2fd3d816536d9821aaf9467a775f56affc": {
    "name": "qagame_mp_x64.dll",
@@ -288,8 +334,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-15T10:19:53Z",
-   "checked": "2026-11-16T17:27:44Z",
-   "settle": false
+   "checked": "2026-11-16T18:21:23Z",
+   "settle": false,
+   "flagged_by": []
   },
   "5698c38e722318681f215c9fe68e45b9bedd51378acc699d8eee26e961e57770": {
    "name": "sl.pcl.dll",
@@ -298,8 +345,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-12T03:03:59Z",
-   "checked": "2026-11-16T17:30:56Z",
-   "settle": false
+   "checked": "2026-11-16T18:24:35Z",
+   "settle": false,
+   "flagged_by": []
   },
   "5d4d9e9b358ed297eb3669c342a2f3485369eebdbafcfb883185e258935e1a7e": {
    "name": "qagame_mp_x64.dll",
@@ -368,16 +416,33 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:33:52Z",
-   "checked": "2026-11-16T17:53:38Z",
-   "settle": true
+   "checked": "2026-11-16T18:26:43Z",
+   "settle": true,
+   "flagged_by": [
+    "Cynet: Malicious (score: 100)"
+   ]
   },
   "68c8eccc8579dd00b8fb1f0aa71fc5c6548f05dee55d3a8e9483cfe058dbef98": {
    "name": "renderer_opengl1_x64.dll",
-   "bytes": 1796608
+   "bytes": 1796608,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 69,
+   "analysed": "2026-11-16T18:27:47Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:36:16Z",
+   "settle": true
   },
   "727bf01a9cf305f9c1b2003bf0717accb8b4baf7444817e64e347d4c0907965e": {
    "name": "qagame_mp_x64.dll",
-   "bytes": 476672
+   "bytes": 476672,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-16T18:28:51Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:36:48Z",
+   "settle": true
   },
   "74fda10b1c51640faec7c2272ea256580cec437cff8b9bfe96dfd5cfad004762": {
    "name": "ui_mp_x64.dll",
@@ -396,8 +461,9 @@
    "suspicious": 0,
    "engines": 70,
    "analysed": "2026-11-16T17:34:24Z",
-   "checked": "2026-11-16T17:53:53Z",
-   "settle": true
+   "checked": "2026-11-16T18:26:59Z",
+   "settle": true,
+   "flagged_by": []
   },
   "79ef984fc23faf248d92ded8cce80e0796939f5de6058044b4d3dfd6bd9bf1a6": {
    "name": "qagame_mp_x64.dll",
@@ -426,8 +492,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-15T04:27:23Z",
-   "checked": "2026-11-16T17:28:00Z",
-   "settle": false
+   "checked": "2026-11-16T18:21:39Z",
+   "settle": false,
+   "flagged_by": []
   },
   "861959ba3b730c1e0e13f98472c5ac9f83fefdd75013763c43b1203ec74b2728": {
    "name": "ui_mp_x64.dll",
@@ -450,8 +517,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:35:22Z",
-   "checked": "2026-11-16T17:29:04Z",
-   "settle": false
+   "checked": "2026-11-16T18:22:43Z",
+   "settle": false,
+   "flagged_by": []
   },
   "8b60d4e8962ee5b4b7130afabb029673e284367bc22a590293d14f089c9f46a0": {
    "name": "EasyAntiCheat_EOS_Setup.exe",
@@ -460,8 +528,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-10-22T00:24:16Z",
-   "checked": "2026-11-16T17:26:25Z",
-   "settle": false
+   "checked": "2026-11-16T18:20:19Z",
+   "settle": false,
+   "flagged_by": []
   },
   "8d59d49b36410dd6b62fef2503a5871d347415bd85d943fa0848563a95dd50c7": {
    "name": "nvngx_dlssg.dll",
@@ -470,8 +539,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-02T05:57:30Z",
-   "checked": "2026-11-16T17:29:36Z",
-   "settle": false
+   "checked": "2026-11-16T18:23:15Z",
+   "settle": false,
+   "flagged_by": []
   },
   "8ef444d3b24665b06653e0cd55d632e4f1c7f2e784c1a3e0d08ca61b05b0e8f8": {
    "name": "TrueCombatPlatinum.exe",
@@ -510,12 +580,23 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:27:29Z",
-   "checked": "2026-11-16T17:52:49Z",
-   "settle": true
+   "checked": "2026-11-16T18:21:07Z",
+   "settle": true,
+   "flagged_by": [
+    "Cynet: Malicious (score: 100)",
+    "Skyhigh: BehavesLike.Win64.Dropper.dc"
+   ]
   },
   "9b366989fff1ab27a35f926099817eb46674f2c28aac0eac38ab1e8d570a63d3": {
    "name": "qagame_mp_x64.dll",
-   "bytes": 441344
+   "bytes": 441344,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-16T18:32:04Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:38:24Z",
+   "settle": true
   },
   "9de4e445bc417aa07593785e745fc76f5679b7fbbfd27b90ebf21d56f2bdbbd6": {
    "name": "qagame_mp_x64.dll",
@@ -544,8 +625,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T10:34:11Z",
-   "checked": "2026-11-16T17:32:00Z",
-   "settle": false
+   "checked": "2026-11-16T18:25:39Z",
+   "settle": false,
+   "flagged_by": []
   },
   "ab25af350c48856633d671a16e8469277f9acee39186d69fe5b2a26100d738e8": {
    "name": "EOSSDK-Win64-Shipping.dll",
@@ -554,8 +636,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-10-15T06:19:37Z",
-   "checked": "2026-11-16T17:26:56Z",
-   "settle": false
+   "checked": "2026-11-16T18:20:51Z",
+   "settle": false,
+   "flagged_by": []
   },
   "b1d7395aebd7b9722841d64dcf7433680020b6a8e421f851c16d5ba0c2182edf": {
    "name": "sl.interposer.dll",
@@ -564,8 +647,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-15T17:06:50Z",
-   "checked": "2026-11-16T17:30:40Z",
-   "settle": false
+   "checked": "2026-11-16T18:24:19Z",
+   "settle": false,
+   "flagged_by": []
   },
   "b1ec65685308117bfb6bb4d491f2f0a82d63fbd67869971c3ead699be2589184": {
    "name": "ui_mp_x64.dll",
@@ -574,8 +658,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:34:56Z",
-   "checked": "2026-11-16T17:54:09Z",
-   "settle": true
+   "checked": "2026-11-16T18:27:17Z",
+   "settle": true,
+   "flagged_by": []
   },
   "b222fc30e9b0a939dbe72b3ae42aa6ed3aa633f28e8c988aae6c831775c296b5": {
    "name": "renderer_dx12_x64.dll",
@@ -594,12 +679,26 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:21:54Z",
-   "checked": "2026-11-16T17:52:18Z",
-   "settle": true
+   "checked": "2026-11-16T18:19:47Z",
+   "settle": true,
+   "flagged_by": [
+    "APEX: Malicious",
+    "Bkav: W32.Malware.8C7CC47E",
+    "Cylance: Unsafe",
+    "Elastic: malicious (moderate confidence)",
+    "Trapmine: malicious.moderate.ml.score"
+   ]
   },
   "b4dac59944d24bd793fdee5d7cb440b41ed7d3c2dad50507e7d9d0f6dae37096": {
    "name": "ui_mp_x64.dll",
-   "bytes": 406528
+   "bytes": 406528,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-16T18:29:23Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:37:04Z",
+   "settle": true
   },
   "b52c5acec22e5d9599ec13de1b9802c61c649c033876dff59ff0c3af5c3e9d52": {
    "name": "renderer_opengl1_x64.dll",
@@ -668,8 +767,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:32:49Z",
-   "checked": "2026-11-16T17:53:06Z",
-   "settle": true
+   "checked": "2026-11-16T18:26:11Z",
+   "settle": true,
+   "flagged_by": []
   },
   "cd8419aea97ac3c46f44b165765066ed2a47ce6412b3cf0ae9befd2dae5f5f7e": {
    "name": "renderer_dx12_x64.dll",
@@ -688,8 +788,9 @@
    "suspicious": 0,
    "engines": 70,
    "analysed": "2026-11-07T09:14:06Z",
-   "checked": "2026-11-16T17:29:20Z",
-   "settle": false
+   "checked": "2026-11-16T18:22:59Z",
+   "settle": false,
+   "flagged_by": []
   },
   "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7": {
    "name": "vcruntime140.dll",
@@ -698,8 +799,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T10:33:11Z",
-   "checked": "2026-11-16T17:31:44Z",
-   "settle": false
+   "checked": "2026-11-16T18:25:23Z",
+   "settle": false,
+   "flagged_by": []
   },
   "d2fb5c872dae626b6c516ce8257d40a16e9c990dd3ae4f36e033b3c92d2d14ab": {
    "name": "cgame_mp_x64.dll",
@@ -713,7 +815,14 @@
   },
   "d3efd10249a09f6984ada624e774308803d263b35de0a7f1867bd613378e69f9": {
    "name": "cgame_mp_x64.dll",
-   "bytes": 390144
+   "bytes": 390144,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-16T18:34:43Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:39:44Z",
+   "settle": true
   },
   "d50d7883f20d1dc6191768d3746f52dd9cac89c346ffaed5be1f110c2f34a838": {
    "name": "msvcp140_2.dll",
@@ -722,8 +831,9 @@
    "suspicious": 0,
    "engines": 70,
    "analysed": "2026-11-13T21:34:54Z",
-   "checked": "2026-11-16T17:28:32Z",
-   "settle": false
+   "checked": "2026-11-16T18:22:11Z",
+   "settle": false,
+   "flagged_by": []
   },
   "d5cf8864a0b8649aa2c25d3b71a31ba194d5298f8ffe444053ef2f1065767d0d": {
    "name": "TrueCombat-Platinum-Setup.exe",
@@ -737,7 +847,14 @@
   },
   "d760bd946027abb968cfc114081450f07e2d3e38996181ac726bd35eebf88ffd": {
    "name": "ui_mp_x64.dll",
-   "bytes": 406528
+   "bytes": 406528,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-16T18:32:35Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:38:40Z",
+   "settle": true
   },
   "e0e13d8e4350082a8ab1a2cf2873a07e25df1a89753cb8174a77b0d0e187491e": {
    "name": "renderer_opengl1_x64.dll",
@@ -746,8 +863,9 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:33:20Z",
-   "checked": "2026-11-16T17:53:21Z",
-   "settle": true
+   "checked": "2026-11-16T18:26:27Z",
+   "settle": true,
+   "flagged_by": []
   },
   "eb6802fdbce7e35d9d252e8ec7ebf508dbd2056b26cea56d356df3216b48c343": {
    "name": "TrueCombatPlatinum.exe",
@@ -756,16 +874,33 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:26:09Z",
-   "checked": "2026-11-16T17:52:33Z",
-   "settle": true
+   "checked": "2026-11-16T18:20:03Z",
+   "settle": true,
+   "flagged_by": [
+    "Trapmine: malicious.moderate.ml.score"
+   ]
   },
   "eb736e6ae35993bb1f397c7a1cba76c900ac04e7a5934f3d0956e43369e121c7": {
    "name": "renderer_dx12_x64.dll",
-   "bytes": 2531328
+   "bytes": 2531328,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-16T18:30:27Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:37:36Z",
+   "settle": true
   },
   "ec72f8d7323b63555323ddefc03f06ba86ae43e2716e33cde4ce7a3848f6a27b": {
    "name": "renderer_opengl1_x64.dll",
-   "bytes": 1796608
+   "bytes": 1796608,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-16T18:34:11Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:39:28Z",
+   "settle": true
   },
   "ef84fce7c54dcbde57d563eef811491d2e23251b23e93cd48bc3925216c40665": {
    "name": "renderer_opengl1_x64.dll",
@@ -779,7 +914,14 @@
   },
   "f1337e86b32a1396f28b5c98211260432c3f4270b9719dd73a79eb95e4d674cb": {
    "name": "cgame_mp_x64.dll",
-   "bytes": 406016
+   "bytes": 406016,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-16T18:31:31Z",
+   "flagged_by": [],
+   "checked": "2026-11-16T18:38:08Z",
+   "settle": true
   },
   "f1a9e4ccabe42e0771827b196b545f54b647570739d2f03d4d2f9294af6f35a3": {
    "name": "cgame_mp_x64.dll",
@@ -813,7 +955,16 @@
   },
   "f70ee7c023304aa2a04116281d5821fb283d53e8296e0cb3521e246b5b7a0f38": {
    "name": "TrueCombatPlatinum.exe",
-   "bytes": 6396928
+   "bytes": 6396928,
+   "malicious": 1,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-16T18:33:08Z",
+   "flagged_by": [
+    "Trapmine: malicious.high.ml.score"
+   ],
+   "checked": "2026-11-16T18:38:57Z",
+   "settle": true
   },
   "fbc8e61aa6a7ed6b5b3dfb75e2fc21c5a600d01ec5a2e5d918156b290b5523cb": {
    "name": "ui_mp_x64.dll",
