@@ -1,7 +1,7 @@
 /* Staff portal front end. Plain JavaScript, no build step. Every value from the servers is escaped before it is shown. */
 "use strict";
 
-const S = { me: null, servers: [], timers: [], chatAfter: 0, page: "", templates: null, events: {} };
+const S = { me: null, servers: [], timers: [], subs: [], live: false, chatAfter: 0, page: "", templates: null, events: {} };
 const $ = (sel, root = document) => root.querySelector(sel);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const can = (perm) => !!(S.me && S.me.perms.includes(perm));
@@ -155,6 +155,8 @@ async function boot() {
   window.addEventListener("hashchange", route);
   every(refreshReportCount, 30000);
   every(refreshAlertCount, 30000);
+  every(refreshCaseCount, 60000);
+  liveSetup();
   route();
 }
 
@@ -273,10 +275,17 @@ async function staffKeyDownload() {
     onOk: () => {} });
 }
 
-function every(fn, ms, page) {
+/* fn now and every ms; with live updates on, a page that names the event kinds it shows refreshes when they happen
+   and its timer only runs every fourth time, as a safety net */
+function every(fn, ms, page, kinds) {
   fn();
-  const id = setInterval(() => { if (!page || S.page === page) fn(); }, ms);
-  if (page) S.timers.push(id);
+  let tick = 0;
+  const id = setInterval(() => {
+    if (page && S.page !== page) return;
+    if (kinds && S.live && ++tick % 4) return;
+    fn();
+  }, ms);
+  if (page) { S.timers.push(id); if (kinds) S.subs.push({ fn, kinds, page }); }
   return id;
 }
 
@@ -294,17 +303,18 @@ function route() {
   closeModal();                 // a dialog belongs to the page it was opened on
   S.timers.forEach(clearInterval);
   S.timers = [];
+  S.subs = [];
   closeNav();
   const parts = (location.hash || "#/home").slice(2).split("/");
   const page = parts[0] || "home";
   S.page = page + (parts[1] ? "/" + parts[1] : "");
-  for (const a of document.querySelectorAll("#nav a")) a.classList.toggle("on", a.dataset.page === page || (page === "server" && a.dataset.page === "servers") || (page === "player" && a.dataset.page === "players"));
+  for (const a of document.querySelectorAll("#nav a")) a.classList.toggle("on", a.dataset.page === page || (page === "server" && a.dataset.page === "servers") || (page === "player" && a.dataset.page === "players") || (page === "case" && a.dataset.page === "cases"));
   const main = $("#main");
   main.innerHTML = '<p class="empty">Loading…</p>';
   const pages = { home: pageHome, servers: pageServers, server: pageServer, chat: pageChat, reports: pageReports, players: pagePlayers,
     player: pagePlayer, bans: pageBans, audit: pageAudit, staff: pageStaff, health: pageHealth, alerts: pageAlerts,
     watchlist: pageWatchlist, review: pageReview, schedule: pageSchedule, filter: pageFilter, replies: pageReplies,
-    weekly: pageWeekly, settings: pageSettings, insights: pageInsights };
+    weekly: pageWeekly, settings: pageSettings, insights: pageInsights, cases: pageCases, case: pageCase };
   let arg = "";
   try { arg = decodeURIComponent(parts[1] || ""); } catch (e) { arg = ""; }      // a broken link opens the page, not a blank screen
   (pages[page] || pageHome)(main, arg);
@@ -344,7 +354,7 @@ function pageServers(main) {
           <div class="big">${s.online ? s.humans : "–"}<small> players${s.bots ? " · " + s.bots + " bots" : ""} · ${s.max_players || "?"} slots</small></div>
         </a>`).join("") || '<p class="empty">No servers configured.</p>';
     } catch (e) { toast(e.message, true); }
-  }, 5000, "servers");
+  }, 5000, "servers", ["servers"]);
 }
 
 function pageServer(main, key) {
@@ -382,8 +392,8 @@ function pageServer(main, key) {
     mt.textContent = on ? "Hide live map" : "Show live map";
     if (on) { S.mapTimer = every(() => drawMap(key), 2000, "server/" + key); } else { clearInterval(S.mapTimer); $("#livemap").innerHTML = ""; }
   };
-  every(() => drawServer(key), 3000, "server/" + key);
-  every(() => pollChat(key), 2000, "server/" + key);
+  every(() => drawServer(key), 3000, "server/" + key, ["servers", "action"]);
+  every(() => pollChat(key), 2000, "server/" + key, ["chat"]);
 }
 
 async function drawServer(key) {
@@ -474,7 +484,7 @@ function pageChat(main) {
       try { await api("server", { server: form.server.value, action: "chat", text }); form.text.value = ""; } catch (err) { toast(err.message, true); }
     };
   }
-  every(() => pollChat(""), 2000, "chat");
+  every(() => pollChat(""), 2000, "chat", ["chat"]);
 }
 
 /* ------------------------------------------------------------------ actions */
@@ -573,6 +583,8 @@ function pageReports(main) {
     if (bug) return bugDetails(+bug.dataset.bug).catch((err) => toast(err.message, true));
     const ap = e.target.closest("button[data-appeal]");
     if (ap) return appealDialog(+ap.dataset.appeal, ap.dataset.decision, ap.dataset.name, draw);
+    const cf = e.target.closest("button[data-case-from]");
+    if (cf) return newCaseDialog({ report: +cf.dataset.caseFrom, name: cf.dataset.name });
     const b = e.target.closest("button[data-id]"); if (!b) return;
     const set = async (status, resolution) => { await api("reports/update", { id: +b.dataset.id, status, resolution }); toast("Report updated."); draw(); refreshReportCount(); };
     if (b.dataset.do === "close") modal({ title: "Close report", ok: "Close", body: tplSelect("close", "r") + '<label>What was done</label><input name="r" maxlength="200" placeholder="Watched the demo, banned 7 days">', onOk: (f) => set("closed", f.r) });
@@ -583,14 +595,15 @@ function pageReports(main) {
     if (!r) return;
     $("#r-list").innerHTML = r.reports.map(reportCard).join("") || '<p class="empty">Nothing here. Good.</p>';
   }
-  every(draw, 20000, "reports");
+  every(draw, 20000, "reports", ["reports", "alert", "action"]);
 }
 
 function reportCard(r) {
   const d = r.data || {};
   const status = r.status === "open" ? '<span class="tag bad">Open</span>' : r.status === "claimed" ? `<span class="tag warn">${esc(r.claimed_by || "In progress")}</span>` : '<span class="tag ok">Closed</span>';
   const buttons = [r.status !== "claimed" && r.status !== "closed" ? `<button class="btn btn-small" data-id="${r.id}" data-do="claim">Take it</button>` : "",
-    r.source === "appeal" ? "" : r.status !== "closed" ? `<button class="btn btn-small" data-id="${r.id}" data-do="close">Close</button>` : `<button class="btn btn-small" data-id="${r.id}" data-do="reopen">Reopen</button>`].join("");
+    r.source === "appeal" ? "" : r.status !== "closed" ? `<button class="btn btn-small" data-id="${r.id}" data-do="close">Close</button>` : `<button class="btn btn-small" data-id="${r.id}" data-do="reopen">Reopen</button>`,
+    can("cases") && r.source !== "bug" ? `<button class="btn btn-small" data-case-from="${r.id}" data-name="${esc(r.target_name || "")}">Open a case</button>` : ""].join("");
   if (r.source === "appeal") {
     const ban = d.ban || {};
     const decide = r.status !== "closed" && can("appeals.answer") ? `<button class="btn btn-small" data-appeal="${esc(d.appeal_id)}" data-decision="accept" data-name="${esc(r.target_name)}">Accept, lift ban</button><button class="btn btn-small btn-danger" data-appeal="${esc(d.appeal_id)}" data-decision="deny" data-name="${esc(r.target_name)}">Deny</button>` : "";
@@ -675,11 +688,13 @@ async function pagePlayer(main, pid) {
       ${activeBan ? `<span class="tag bad">Banned · ${esc(until(activeBan.expires))}</span>` : ""}<span class="tag mono">${esc(pid)}</span></div></div>
     <div class="actions"><a class="btn" href="${esc(p.profile_url)}" target="_blank" rel="noopener">Public profile</a>
       ${can("watch") ? `<button class="btn" id="p-watch">${p.watch ? "Stop watching" : "Watch"}</button>` : ""}
+      ${can("cases") ? '<button class="btn" id="p-case">Open a case</button>' : ""}
       ${can("punish") && !activeBan ? '<button class="btn" id="p-punish">Punish</button>' : ""}
       ${can("ban.temp") && !activeBan ? '<button class="btn btn-danger" id="p-ban">Ban</button>' : ""}</div></div>
     ${p.watch ? `<div class="banner"><span>On the watchlist: ${esc(p.watch.reason || "no reason given")} · ${esc(p.watch.by_name)}, ${when(p.watch.created)}</span></div>` : ""}
     <div class="grid grid-2"><div>
-      <div class="panel"><h3>Record</h3><ul class="list" id="p-record"></ul></div>
+      <div class="panel"><div class="head"><h3>Timeline</h3><div class="tabs" id="p-tl-tabs"><button class="btn btn-small on" data-f="">All</button><button class="btn btn-small" data-f="mod">Moderation</button><button class="btn btn-small" data-f="report">Reports</button><button class="btn btn-small" data-f="session">Play sessions</button></div></div>
+        <ul class="tl" id="p-tl"><li class="dim">Loading…</li></ul><p class="tags"><button class="btn btn-small" id="p-tl-more" hidden>Show more</button></p></div>
       <div class="panel"><h3>Recent matches</h3><div class="table-wrap">${p.matches.length ? `<table><tr><th>Ended</th><th>Map</th><th class="num">K</th><th class="num">D</th><th class="num">HS</th><th>Result</th></tr>${p.matches.map((m) => `<tr><td>${esc(String(m.ended || "").replace("T", " ").slice(0, 16))}</td><td>${esc(m.map)}</td><td class="num">${m.kills}</td><td class="num">${m.deaths}</td><td class="num">${m.headshots}</td><td>${m.won ? "Won" : "Lost"}</td></tr>`).join("")}</table>` : '<p class="empty">No stats-tracked matches yet.</p>'}</div></div>
       <div class="panel"><h3>Recent chat</h3><div class="chat-log" id="p-chat"></div></div>
     </div><div>
@@ -696,19 +711,18 @@ async function pagePlayer(main, pid) {
       <div class="panel"><h3>Names used</h3><ul class="list">${p.names.map((n) => `<li>${esc(n.name)} <span class="dim">· ${ago(n.last_seen)}</span></li>`).join("") || '<li class="dim">None recorded.</li>'}</ul></div>
       ${p.ips ? `<div class="panel"><h3>Addresses (admin only)</h3><ul class="list">${p.ips.map((i) => `<li class="mono">${esc(i.ip)} <span class="dim">· ${ago(i.last_seen)}</span></li>`).join("") || '<li class="dim">None.</li>'}</ul>
         ${p.shared_ip && p.shared_ip.length ? `<p class="muted">Other players seen on these addresses: ${p.shared_ip.map((x) => `<a class="mono" href="#/player/${esc(x)}">${esc(x)}</a>`).join(", ")}</p>` : ""}</div>` : ""}
+      ${can("cases") ? '<div class="panel"><h3>Cases</h3><ul class="list" id="p-cases"><li class="dim">Loading…</li></ul></div>' : ""}
+      ${can("evidence") ? '<div class="panel" id="p-evidence"></div>' : ""}
       <div class="panel"><h3>Staff notes</h3><ul class="list">${p.notes.map((n) => `<li>${esc(n.text)} <div class="dim">${esc(n.by_name)} · ${when(n.created)}</div></li>`).join("") || '<li class="dim">No notes yet.</li>'}</ul>
         <form id="p-note" class="chat-form"><input name="text" maxlength="1000" placeholder="Add a note for other staff"><button class="btn">Add</button></form></div>
     </div></div>`;
-  const record = [];
-  for (const b of p.bans) record.push([b.created, `<span class="tag bad">Ban</span> ${esc(b.reason)} <span class="dim">· ${esc(b.by_name)} · ${b.active ? esc(until(b.expires)) : "lifted" + (b.lifted_by ? " by " + esc(b.lifted_by) : "")}</span>`]);
-  for (const m of p.mutes) record.push([m.created, `<span class="tag warn">Mute</span> ${esc(m.reason)} <span class="dim">· ${esc(m.by_name)}</span>`]);
-  for (const w of p.warnings) record.push([w.created, `<span class="tag warn">Warning</span> ${esc(w.text)} <span class="dim">· ${esc(w.by_name)}</span>`]);
-  for (const x of p.punishments || []) record.push([x.created, `<span class="tag staff">Ladder</span> ${esc((S.me.ladder[x.offence] || {}).label || x.offence)}: ${esc(x.step)} <span class="dim">· ${esc(x.by_name)}</span>`]);
-  for (const x of p.appeals || []) record.push([x.created, `<span class="tag">Appeal</span> ${esc(x.status)}${x.answer ? ": " + esc(x.answer) : ""} <span class="dim">· ${esc(x.answered_by || "waiting")}</span>`]);
-  for (const r of p.reports) record.push([r.received, `<span class="tag">${r.source === "auto" ? "Flag" : "Report"}</span> ${esc((r.data && r.data.reason) || "")} <span class="dim">· ${esc(r.status)}</span>`]);
-  for (const a of p.actions.filter((x) => ["kick", "move", "unmute", "unban"].includes(x.action))) record.push([a.at, `<span class="tag">${esc(a.action)}</span> ${esc(a.detail)} <span class="dim">· ${esc(a.staff)}</span>`]);
-  record.sort((a, b) => b[0] - a[0]);
-  $("#p-record").innerHTML = record.map(([t, h]) => `<li>${h} <span class="dim">· ${when(t)}</span></li>`).join("") || '<li class="dim">Clean record.</li>';
+  drawTimeline(pid);
+  if (can("cases")) api("cases?pid=" + encodeURIComponent(pid)).then((r) => {
+    $("#p-cases").innerHTML = r.cases.map((c) => `<li><a href="#/case/${c.id}">#${c.id} ${esc(c.title)}</a> ${c.status === "open" ? '<span class="tag warn">Open</span>' : '<span class="tag ok">Closed</span>'} <span class="dim">· ${esc(c.assignee || "nobody")} · ${ago(c.updated)}</span></li>`).join("") || '<li class="dim">No cases.</li>';
+  }).catch(() => {});
+  if (can("evidence")) evidencePanel($("#p-evidence"), { pid });
+  const pc = $("#p-case");
+  if (pc) pc.onclick = () => newCaseDialog({ pid, name });
   const chat = $("#p-chat");
   chat.innerHTML = p.chat.map((l) => `<div class="chat-line ${esc(l.kind)}"><time>${when(l.at)}</time><span class="srv">${esc(l.server)}</span><span class="who">${esc(l.name)}:</span> ${esc(l.text)}</div>`).join("") || '<p class="empty">No chat recorded.</p>';
   $("#p-note").onsubmit = async (e) => {
@@ -764,7 +778,7 @@ function pageBans(main) {
       <td>${b.active ? `<span class="tag bad">${esc(until(b.expires))}</span>` : `<span class="tag">Lifted${b.lifted_by ? " · " + esc(b.lifted_by) : ""}</span>`}</td>
       <td><div class="row-actions">${b.active && b.undo ? `<button class="btn btn-small" data-undo="${b.undo}">Undo</button>` : ""}${b.active && can("ban.remove") ? `<button class="btn btn-small" data-lift="${b.id}" data-name="${esc(b.name)}">Lift</button>` : ""}</div></td></tr>`).join("")}</table>` : '<p class="empty">No bans.</p>';
   }
-  every(draw, 30000, "bans");
+  every(draw, 30000, "bans", ["action"]);
 }
 
 /* ------------------------------------------------------------------ audit */
@@ -1026,7 +1040,7 @@ function pageAlerts(main) {
     $("#al-sus").innerHTML = sus.players.length ? `<table><tr><th>Player</th><th class="num">Score</th></tr>${sus.players.map((x) => `<tr><td class="pname"><a href="#/player/${esc(x.pid)}">${esc(x.name)}</a><div class="dim small">${esc(x.reasons.join(" · "))}</div></td><td class="num">${susTag(x.score) || x.score}</td></tr>`).join("")}</table>`
       : '<p class="empty">Nobody online stands out.</p>';
   }
-  every(draw, 15000, "alerts");
+  every(draw, 15000, "alerts", ["alert"]);
 }
 
 /* ------------------------------------------------------------------ watchlist */
@@ -1420,6 +1434,7 @@ function paletteLocal(q) {
   }
   if ("announce".startsWith(verb) && verb.length >= 3 && can("server.say")) out.push({ kind: "Command", label: "Message every server", sub: "announce", act: () => sayDialog("*") });
   if (/^(sched)/.test(verb) && can("server.say")) out.push({ kind: "Command", label: "Schedule an action", sub: "", act: () => scheduleDialog("") });
+  if (/^(case|new c)/.test(low) && can("cases")) out.push({ kind: "Command", label: "Open a new case", sub: "", act: () => newCaseDialog({}) });
   if (/^(short|keys|help)/.test(verb)) out.push({ kind: "Command", label: "Keyboard shortcuts", sub: "?", act: shortcutHelp });
   for (const e of pageEntries()) if (!low || e.label.toLowerCase().includes(low) || e.sub.toLowerCase().includes(low)) out.push(e);
   for (const s of S.servers) if (!low || s.name.toLowerCase().includes(low) || s.key.includes(low)) out.push({ kind: "Server", label: s.name, sub: s.online ? `${s.map} · ${s.humans} players` : "offline", href: "#/server/" + s.key });
@@ -1438,6 +1453,7 @@ async function paletteSearch() {
   for (const p of r.players) if (!r.online.some((o) => o.pid === p.pid)) found.push({ kind: "Player", label: p.names[0] || p.pid, sub: (p.banned ? "banned · " : "") + (p.last_seen ? "seen " + ago(p.last_seen) : "stats only"), href: "#/player/" + p.pid });
   for (const b of r.bans) found.push({ kind: "Ban", label: `#${b.id} ${b.name}`, sub: (b.active ? until(b.expires) : "lifted") + " · " + b.reason, href: b.pid ? "#/player/" + b.pid : "#/bans" });
   for (const x of r.reports) found.push({ kind: x.source === "bug" ? "Bug" : x.source === "appeal" ? "Appeal" : "Report", label: `#${x.id} ${x.target_name || x.summary}`, sub: x.status + " · " + x.summary, href: "#/reports" });
+  for (const c of r.cases || []) found.push({ kind: "Case", label: `#${c.id} ${c.title}`, sub: c.status + (c.assignee ? " · " + c.assignee : ""), href: "#/case/" + c.id });
   for (const x of r.staff) found.push({ kind: "Staff", label: x.name || x.discord_id, sub: x.role || "Discord role", href: "#/staff" });
   paletteDraw(found.concat(local), false);
 }
@@ -1508,6 +1524,7 @@ function pageHome(main) {
       tile("#/reports", "Appeals waiting", d.appeals_open, "answered by an admin who did not make the ban", d.appeals_open ? "warm" : ""),
       tile("#/alerts", "Alerts, 24 h", d.alerts_24h, d.urgent_24h ? d.urgent_24h + " urgent" : "nothing urgent", d.urgent_24h ? "hot" : ""),
       tile("#/bans", "Active bans", d.bans_active, d.bans_24h + " new in 24 h"),
+      d.cases ? tile("#/cases", "Open cases", d.cases.open, d.cases.mine + " yours") : "",
     ].join("");
     const attn = [];
     for (const s of d.servers.filter((x) => !x.online)) attn.push(["bad", `<a href="#/server/${esc(s.key)}"><b>${esc(s.name)}</b> is not answering</a>`, esc(s.error || "")]);
@@ -1535,7 +1552,230 @@ function pageHome(main) {
     const label = { say: "Announcement", restart: "Match restart", map: "Map change", nextmap: "Next map" };
     $("#h-up-wrap").hidden = !d.schedule.length;
     $("#h-up").innerHTML = d.schedule.map((j) => `<li><time>${clock(j.next_at)}</time><span>${esc(label[j.action] || j.action)} <span class="dim small">· ${esc(j.server === "*" ? "every server" : j.server)}</span><div class="dim small">${esc(j.arg || "")}</div></span></li>`).join("");
-  }, 10000, "home");
+  }, 10000, "home", ["alert", "reports", "action", "cases", "servers"]);
+}
+
+/* ------------------------------------------------------------------ 1.4.1: live updates */
+const LIVE = { es: null, runs: new Map() };
+function liveSetup() {
+  if (!window.EventSource) return;
+  const es = new EventSource("/api/stream");
+  LIVE.es = es;
+  const dot = (on) => { S.live = on; const d = $("#live-dot"); if (d) { d.classList.toggle("on", on); d.title = on ? "Live: pages update the moment something happens" : "Live updates are off: pages refresh on a timer"; } };
+  es.onopen = () => dot(true);
+  es.onerror = () => dot(false);
+  for (const k of ["servers", "chat", "alert", "reports", "action", "cases"]) es.addEventListener(k, (e) => liveEvent(k, e));
+}
+function liveEvent(kind, e) {
+  let d = {};
+  try { d = JSON.parse(e.data || "{}"); } catch (err) { d = {}; }
+  if (kind === "alert") liveRun("alerts", refreshAlertCount);
+  if (kind === "reports" || (kind === "alert" && ["bugreport", "appeal", "reports"].includes(d.kind)) || (kind === "action" && /^(report|appeal)/.test(d.action || ""))) liveRun("reports", refreshReportCount);
+  if (kind === "cases") liveRun("cases", refreshCaseCount);
+  for (const sub of S.subs) if (sub.page === S.page && sub.kinds.includes(kind)) liveRun(sub, sub.fn);
+}
+/* at most once per 1.5 s per refresher, and the last event in a burst always gets its refresh */
+function liveRun(key, fn) {
+  const st = LIVE.runs.get(key) || { at: 0, timer: 0 };
+  LIVE.runs.set(key, st);
+  if (st.timer) return;
+  const wait = st.at + 1500 - Date.now();
+  const go = () => { st.timer = 0; st.at = Date.now(); if (typeof key === "object" && key.page !== S.page) return; Promise.resolve(fn()).catch(() => {}); };
+  if (wait <= 0) go(); else st.timer = setTimeout(go, wait);
+}
+
+/* ------------------------------------------------------------------ 1.4.1: cases */
+async function refreshCaseCount() {
+  if (!can("cases")) return;
+  try {
+    const r = await api("cases?mine=1");
+    const n = r.cases.filter((c) => c.status === "open").length;
+    $("#nav-cases").textContent = n;
+    $("#nav-cases").hidden = !n;
+  } catch (e) { /* ignore */ }
+}
+function caseTag(c) { return c.status === "open" ? '<span class="tag warn">Open</span>' : '<span class="tag ok">Closed</span>'; }
+function newCaseDialog({ pid = "", name = "", report = 0 }) {
+  modal({ title: "Open a case", sub: name ? "About " + name : "Collect reports, bans, appeals, notes and evidence about one problem in one place.", ok: "Open case",
+    body: `<label>Title</label><input name="title" maxlength="120" placeholder="${esc(name ? name + ": suspected wallhack" : "Team killing ring on #2")}" value="">
+      ${pid || report ? "" : '<label>Player id <span class="dim">(optional)</span></label><input name="pid" maxlength="32" class="mono" placeholder="32 hex characters">'}
+      <label>What is it about</label><textarea name="summary" maxlength="2000" rows="3" placeholder="What happened, what to check"></textarea>`,
+    onOk: async (f) => {
+      const r = await api("cases", { title: f.title, summary: f.summary, pid: pid || (f.pid || "").trim(), name, report });
+      toast("Case #" + r.id + " opened.");
+      location.hash = "#/case/" + r.id;
+    } });
+}
+function pageCases(main) {
+  const state = { status: "open", mine: "" };
+  main.innerHTML = `<div class="head"><div><p class="eyebrow">Moderation</p><h1>Cases</h1></div><div class="actions"><button class="btn btn-primary" id="c-new">Open a case</button></div></div>
+    <div class="tabs" id="c-tabs"><button class="btn btn-small on" data-s="open">Open</button><button class="btn btn-small" data-s="mine">Mine</button><button class="btn btn-small" data-s="closed">Closed</button><button class="btn btn-small" data-s="all">All</button></div>
+    <div class="panel" id="c-list"></div>`;
+  $("#c-new").onclick = () => newCaseDialog({});
+  $("#c-tabs").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    for (const x of $("#c-tabs").children) x.classList.toggle("on", x === b);
+    state.status = b.dataset.s === "mine" ? "open" : b.dataset.s; state.mine = b.dataset.s === "mine" ? "1" : ""; draw();
+  };
+  async function draw() {
+    const r = await api(`cases?status=${state.status}&mine=${state.mine}`).catch((e) => { toast(e.message, true); return null; });
+    if (!r) return;
+    $("#c-list").innerHTML = r.cases.map((c) => `<a class="case-row" href="#/case/${c.id}"><span class="id">#${c.id}</span>
+      <span><span class="t">${esc(c.title)}</span><div class="dim small">${c.name ? esc(c.name) + " · " : ""}${c.items} item${c.items === 1 ? "" : "s"} · ${c.evidence} evidence · opened by ${esc(c.created_by)} ${ago(c.created)}</div></span>
+      <span class="s">${caseTag(c)}<div class="dim small">${esc(c.assignee || "nobody")} · ${ago(c.updated)}</div></span></a>`).join("") || '<p class="empty">No cases here.</p>';
+  }
+  every(draw, 30000, "cases", ["cases"]);
+}
+const ITEM_LABEL = { report: "Report", ban: "Ban", appeal: "Appeal", action: "Staff action", evidence: "Evidence", note: "Note", status: "Status" };
+function caseItem(it) {
+  const r = it.row;
+  let body = "";
+  if (it.kind === "note" || it.kind === "status") body = esc(it.text);
+  else if (!r) body = '<span class="dim">This item no longer exists.</span>';
+  else if (it.kind === "report") body = `<b>${esc(r.source === "auto" ? "Automatic flag" : r.source === "appeal" ? "Ban appeal" : "Player report")} #${it.ref}</b> on ${esc(r.target_name || "")} <span class="dim">· ${esc(r.server || "")} · ${esc(r.status)}</span><div>${esc(r.text)}</div>`;
+  else if (it.kind === "ban") body = `<b>Ban #${r.id}</b> ${esc(r.reason)} <span class="dim">· ${esc(r.by_name)} · ${r.active ? esc(until(r.expires)) : "lifted" + (r.lifted_by ? " by " + esc(r.lifted_by) : "")}</span>`;
+  else if (it.kind === "appeal") body = `<b>Appeal #${r.id}</b> <span class="dim">· ${esc(r.status)}</span><div>“${esc(r.text)}”</div>${r.answer ? `<div class="dim">${esc(r.answered_by || "")}: ${esc(r.answer)}</div>` : ""}`;
+  else if (it.kind === "action") body = `<b>${esc(r.staff)}</b> ${esc(ACTION_WORD[r.action] || r.action)} ${esc(r.target)} <span class="dim">· ${esc(r.server || "")} · ${when(r.at)}</span><div class="dim">${esc(r.detail)}</div>`;
+  else if (it.kind === "evidence") body = `<b>Evidence:</b> ${esc(r.title)} <span class="dim">· ${esc(r.kind)}</span>`;
+  const rm = it.kind !== "status" ? `<button class="btn btn-small" data-unlink="${it.id}" title="Remove from this case">Remove</button>` : "";
+  return `<li><span class="tag${it.kind === "ban" ? " bad" : it.kind === "status" ? " staff" : ""}">${ITEM_LABEL[it.kind] || esc(it.kind)}</span><div>${body}<div class="dim small">${esc(it.by_name)} · ${when(it.at)}</div></div>${rm}</li>`;
+}
+async function pageCase(main, id) {
+  async function draw() {
+    let c;
+    try { c = await api("case/" + encodeURIComponent(id)); } catch (e) { main.innerHTML = `<p class="empty">${esc(e.message)}</p>`; return; }
+    const keep = $("#k-note") ? $("#k-note").text.value : "";
+    main.innerHTML = `<div class="head"><div><p class="eyebrow"><a href="#/cases">Cases</a> · #${c.id}</p><h1>${esc(c.title)}</h1>
+        <div class="tags">${caseTag(c)}${c.pid ? `<a class="tag" href="#/player/${esc(c.pid)}">${esc(c.name || c.pid)}</a>` : ""}<span class="tag">${c.assignee ? "With " + esc(c.assignee) : "Nobody has it"}</span><span class="dim small">opened by ${esc(c.created_by)} ${ago(c.created)}</span></div></div>
+      <div class="actions">${c.status === "open" && c.assignee !== S.me.name ? '<button class="btn" id="k-take">Take it</button>' : ""}
+        <button class="btn" id="k-edit">Edit</button>
+        ${c.status === "open" ? '<button class="btn btn-primary" id="k-close">Close case</button>' : '<button class="btn" id="k-reopen">Reopen</button>'}</div></div>
+      ${c.outcome && c.status === "closed" ? `<div class="banner"><span>Outcome: ${esc(c.outcome)}</span></div>` : ""}
+      <div class="grid grid-2"><div>
+        <div class="panel"><h3>What it is about</h3><p class="text-block">${esc(c.summary || "No summary yet.")}</p></div>
+        <div class="panel"><div class="head"><h3>History</h3>${c.suggest.length ? '<button class="btn btn-small" id="k-link">Add from this player</button>' : ""}</div>
+          <form id="k-note" class="chat-form"><input name="text" maxlength="2000" placeholder="Add a note to the case"><button class="btn">Add</button></form>
+          <ul class="case-items" id="k-items">${c.items.map(caseItem).join("") || '<li class="dim">Nothing in this case yet.</li>'}</ul></div>
+      </div><div><div class="panel" id="k-evidence"></div></div></div>`;
+    $("#k-note").text.value = keep;
+    $("#k-note").onsubmit = async (e) => {
+      e.preventDefault();
+      const text = e.target.text.value.trim(); if (!text) return;
+      try { await api("case/note", { id: c.id, text }); e.target.text.value = ""; draw(); } catch (err) { toast(err.message, true); }
+    };
+    $("#k-items").onclick = async (e) => {
+      const b = e.target.closest("button[data-unlink]"); if (!b) return;
+      try { await api("case/unlink", { id: c.id, item: +b.dataset.unlink }); draw(); } catch (err) { toast(err.message, true); }
+    };
+    const upd = (body, msg) => api("case/update", Object.assign({ id: c.id }, body)).then(() => { toast(msg); draw(); refreshCaseCount(); });
+    const take = $("#k-take");
+    if (take) take.onclick = () => upd({ assignee: "me" }, "The case is yours.").catch((e) => toast(e.message, true));
+    const close = $("#k-close");
+    if (close) close.onclick = () => modal({ title: "Close case #" + c.id, ok: "Close case", body: '<label>Outcome</label><textarea name="o" maxlength="500" rows="3" placeholder="Banned 30 days after the demo review, appeal denied"></textarea>', onOk: (f) => upd({ status: "closed", outcome: f.o }, "Case closed.") });
+    const reopen = $("#k-reopen");
+    if (reopen) reopen.onclick = () => upd({ status: "open" }, "Case reopened.").catch((e) => toast(e.message, true));
+    $("#k-edit").onclick = () => modal({ title: "Edit case #" + c.id, ok: "Save",
+      body: `<label>Title</label><input name="title" maxlength="120" value="${esc(c.title)}"><label>What it is about</label><textarea name="summary" maxlength="2000" rows="5">${esc(c.summary || "")}</textarea>`,
+      onOk: (f) => upd({ title: f.title, summary: f.summary }, "Saved.") });
+    const link = $("#k-link");
+    if (link) link.onclick = () => modal({ title: "Add to case #" + c.id, sub: "Reports, bans, appeals, staff actions and evidence about " + (c.name || "this player") + " that are not in the case yet.", ok: "Add",
+      body: `<div class="list">${c.suggest.map((x, i) => `<label class="check"><input type="checkbox" name="s${i}"> ${esc(x.label)} <span class="dim small">· ${when(x.at)}</span></label>`).join("")}</div>`,
+      onOk: async (f) => {
+        for (const [k, v] of Object.entries(f)) if (v) { const x = c.suggest[+k.slice(1)]; await api("case/link", { id: c.id, kind: x.kind, ref: x.ref }); }
+        draw();
+      } });
+    evidencePanel($("#k-evidence"), { caseId: c.id, pid: c.pid, list: c.evidence });
+  }
+  await draw();
+  every(() => { if (!$("#modal").hidden || document.activeElement && document.activeElement.closest("#k-note")) return; draw(); }, 60000, "case/" + id, ["cases"]);
+}
+
+/* ------------------------------------------------------------------ 1.4.1: player timeline */
+const TL_MOD = ["ban", "unban", "mute", "warning", "action", "ladder", "note", "case", "evidence"];
+async function drawTimeline(pid) {
+  let r;
+  try { r = await api("timeline/" + encodeURIComponent(pid)); } catch (e) { $("#p-tl").innerHTML = `<li class="dim">${esc(e.message)}</li>`; return; }
+  let filter = "", shown = 60;
+  const draw = () => {
+    const list = r.events.filter((e) => !filter || (filter === "mod" ? TL_MOD.includes(e.kind) : filter === "report" ? ["report", "flag", "alert"].includes(e.kind) : e.kind === filter));
+    $("#p-tl").innerHTML = list.slice(0, shown).map((e) => {
+      const head = e.link ? `<a href="${esc(e.link)}">${esc(e.title)}</a>` : esc(e.title);
+      const extra = e.kind === "session" ? ` <span class="dim">· ${e.until ? dur(e.minutes * 60) : "playing now"}${e.chat ? " · " + e.chat + " chat line" + (e.chat === 1 ? "" : "s") : ""}</span>` : "";
+      return `<li class="${esc(e.tone || "")} ${e.kind === "session" ? "session" : ""}"><div class="when">${when(e.at)}${e.server && e.kind !== "session" ? " · " + esc(e.server) : ""}${e.by ? " · " + esc(e.by) : ""}</div>
+        <div><span class="what">${head}</span>${extra}</div>${e.detail ? `<div class="det">${esc(e.detail)}</div>` : ""}</li>`;
+    }).join("") || '<li class="dim">Nothing recorded.</li>';
+    $("#p-tl-more").hidden = list.length <= shown;
+  };
+  $("#p-tl-tabs").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    for (const x of $("#p-tl-tabs").children) x.classList.toggle("on", x === b);
+    filter = b.dataset.f; shown = 60; draw();
+  };
+  $("#p-tl-more").onclick = () => { shown += 100; draw(); };
+  draw();
+}
+
+/* ------------------------------------------------------------------ 1.4.1: evidence locker */
+function readFile(file) {
+  return new Promise((ok, bad) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(",")[1] || ""); fr.onerror = () => bad(new Error("Could not read that file.")); fr.readAsDataURL(file); });
+}
+function evidenceCard(e) {
+  const del = can("evidence.delete") ? `<button class="btn btn-small" data-ev-del="${e.id}">Remove</button>` : "";
+  let body = "";
+  if (e.kind === "image") body = `<a href="/api/evidence/file?id=${e.id}" target="_blank" rel="noopener"><img src="/api/evidence/file?id=${e.id}" alt="${esc(e.title)}" loading="lazy"></a>`;
+  else if (e.kind === "demo") body = `<a class="btn btn-small" href="/api/evidence/file?id=${e.id}">Download demo</a><span class="d">${e.text ? "jump to " + dur(e.text.offset_s) : ""} · ${(e.size / 1048576).toFixed(1)} MB</span>`;
+  else if (e.kind === "chat") body = `<button class="btn btn-small" data-ev-chat="${e.id}">Read ${Array.isArray(e.text) ? e.text.length : 0} lines</button>`;
+  else if (e.kind === "link") body = `<a href="${esc(e.text)}" target="_blank" rel="noopener noreferrer" class="small">${esc(e.text.replace(/^https:\/\//, "").slice(0, 60))}</a>`;
+  else body = `<span class="d">${esc(String(e.text || "").slice(0, 200))}</span>`;
+  return `<div class="ev"><span class="t">${esc(e.title)}</span>${body}<span class="d">${esc(e.by_name)} · ${when(e.at)}${e.case_id ? ` · <a href="#/case/${e.case_id}">case #${e.case_id}</a>` : ""}</span>${del}</div>`;
+}
+async function evidencePanel(el, { caseId = 0, pid = "", list = null }) {
+  if (!el) return;
+  if (!list) {
+    try { list = (await api(caseId ? "evidence?case=" + caseId : "evidence?pid=" + encodeURIComponent(pid))).evidence; } catch (e) { el.innerHTML = `<h3>Evidence</h3><p class="dim">${esc(e.message)}</p>`; return; }
+  }
+  const reload = () => evidencePanel(el, { caseId, pid });
+  el.innerHTML = `<div class="head"><h3>Evidence</h3><div class="actions">
+      <button class="btn btn-small" data-ev-add="image">Screenshot</button><button class="btn btn-small" data-ev-add="chat">Chat excerpt</button>
+      <button class="btn btn-small" data-ev-add="link">Link</button><button class="btn btn-small" data-ev-add="text">Statement</button></div></div>
+    <div class="ev-grid">${list.map(evidenceCard).join("") || '<p class="dim">No evidence yet. Screenshots, server demos (from a report), chat and links stay here.</p>'}</div>`;
+  el.onclick = async (e) => {
+    const add = e.target.closest("button[data-ev-add]");
+    const del = e.target.closest("button[data-ev-del]");
+    const chat = e.target.closest("button[data-ev-chat]");
+    if (chat) {
+      const ev = list.find((x) => x.id === +chat.dataset.evChat);
+      return modal({ title: ev.title, ok: "Close", body: `<div class="chat-log chat-excerpt">${(ev.text || []).map((l) => `<div class="chat-line ${esc(l.kind)}"><time>${clock(l.at)}</time><span class="srv">${esc(l.server)}</span><span class="who">${esc(l.name)}:</span> ${esc(l.text)}</div>`).join("")}</div>`, onOk: () => {} });
+    }
+    if (del) return modal({ title: "Remove evidence", sub: "The file is deleted for good. The audit log keeps that you removed it.", ok: "Remove", danger: true,
+      body: '<label>Why</label><input name="reason" maxlength="200">', onOk: async (f) => { await api("evidence/delete", { id: +del.dataset.evDel, reason: f.reason }); reload(); } });
+    if (!add) return;
+    const base = { case: caseId || undefined, pid: pid || undefined };
+    const kind = add.dataset.evAdd;
+    if (kind === "image") return modal({ title: "Add a screenshot", sub: "JPEG, PNG or WebP, up to 8 MB.", ok: "Upload",
+      body: '<label>Title</label><input name="title" maxlength="160" placeholder="Wall-tracking through the train hall"><label>Picture</label><input type="file" name="file" accept="image/jpeg,image/png,image/webp">',
+      onOk: async () => {
+        const f = $("#modal-body input[type=file]").files[0];
+        if (!f) throw new Error("Pick a picture first.");
+        if (f.size > 8 * 1024 * 1024) throw new Error("That picture is bigger than 8 MB.");
+        await api("evidence", Object.assign({ kind: "image", title: $("#modal-body [name=title]").value, data: await readFile(f) }, base));
+        toast("Saved."); reload();
+      } });
+    if (kind === "chat") {
+      const servers = S.servers.length ? S.servers : await loadServers().catch(() => []);
+      return modal({ title: "Save a chat excerpt", sub: "Keeps a copy of the chat around a moment, so it outlives the 30-day chat history.", ok: "Save",
+        body: `<label>Around</label><input type="datetime-local" name="at" value="${localInput(Date.now() / 1000)}"><label>Minutes either side</label><input name="minutes" type="number" min="1" max="60" value="10">
+          <label>From</label><select name="server">${pid ? '<option value="">Only this player\'s lines</option>' : ""}${servers.map((x) => `<option value="${esc(x.key)}">Everything on ${esc(x.name)}</option>`).join("")}</select>
+          <label>Title <span class="dim">(optional)</span></label><input name="title" maxlength="160">`,
+        onOk: async (f) => { await api("evidence", Object.assign({ kind: "chat", at: Math.floor(new Date(f.at).getTime() / 1000), minutes: +f.minutes, server: f.server, title: f.title }, base)); toast("Saved."); reload(); } });
+    }
+    if (kind === "link") return modal({ title: "Add a link", sub: "A clip, a forum post or anything else on the web.", ok: "Add",
+      body: '<label>Link</label><input name="url" maxlength="500" placeholder="https://"><label>Title</label><input name="title" maxlength="160">',
+      onOk: async (f) => { await api("evidence", Object.assign({ kind: "link", url: f.url.trim(), title: f.title }, base)); reload(); } });
+    if (kind === "text") return modal({ title: "Add a statement", sub: "What a player or staff member told you, in their words.", ok: "Add",
+      body: '<label>Title</label><input name="title" maxlength="160" placeholder="Statement from the reporter"><label>Text</label><textarea name="text" rows="6" maxlength="4000"></textarea>',
+      onOk: async (f) => { await api("evidence", Object.assign({ kind: "text", title: f.title, text: f.text }, base)); reload(); } });
+  };
 }
 
 boot();

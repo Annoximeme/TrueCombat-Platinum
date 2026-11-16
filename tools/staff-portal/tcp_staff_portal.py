@@ -21,6 +21,8 @@ from __future__ import annotations
 
 import argparse
 import base64
+import binascii
+import collections
 import hashlib
 import hmac
 import ipaddress
@@ -43,7 +45,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.4.0"
+VERSION = "1.4.1"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -88,6 +90,9 @@ PERMS = {
     "weekly": "admin",
     "insights": "admin",              # website visits, channels and downloads (tools/server-bridge/tcp_insights.py)
     "backup": "admin",                # database snapshot status, run one now
+    "cases": "moderator",             # cases: open, take, link, note, close
+    "evidence": "moderator",          # add screenshots, demos, chat excerpts and links; download them
+    "evidence.delete": "admin",
     "2fa.reset": "owner",
 }
 MOD_BAN_LIMIT = 24 * 60
@@ -1001,6 +1006,21 @@ CREATE INDEX IF NOT EXISTS alerts_at ON alerts(at);
 CREATE TABLE IF NOT EXISTS undo(audit_id INTEGER PRIMARY KEY, kind TEXT, ref INTEGER, by_id TEXT, expires INTEGER, done INTEGER DEFAULT 0);
 CREATE TABLE IF NOT EXISTS samples(at INTEGER, server TEXT, online INTEGER, humans INTEGER, bots INTEGER, map TEXT);
 CREATE INDEX IF NOT EXISTS samples_at ON samples(at);
+CREATE TABLE IF NOT EXISTS player_sessions(id INTEGER PRIMARY KEY AUTOINCREMENT, pid TEXT, server TEXT, name TEXT, joined INTEGER,
+  left_at INTEGER);
+CREATE INDEX IF NOT EXISTS player_sessions_pid ON player_sessions(pid, joined);
+CREATE INDEX IF NOT EXISTS player_sessions_open ON player_sessions(left_at);
+CREATE TABLE IF NOT EXISTS cases(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, status TEXT DEFAULT 'open', pid TEXT, name TEXT,
+  summary TEXT, assignee TEXT, created INTEGER, created_by TEXT, updated INTEGER, outcome TEXT);
+CREATE INDEX IF NOT EXISTS cases_status ON cases(status, updated);
+CREATE INDEX IF NOT EXISTS cases_pid ON cases(pid);
+CREATE TABLE IF NOT EXISTS case_items(id INTEGER PRIMARY KEY AUTOINCREMENT, case_id INTEGER, at INTEGER, by_name TEXT, kind TEXT,
+  ref INTEGER, text TEXT);
+CREATE INDEX IF NOT EXISTS case_items_case ON case_items(case_id);
+CREATE TABLE IF NOT EXISTS evidence(id INTEGER PRIMARY KEY AUTOINCREMENT, case_id INTEGER, pid TEXT, kind TEXT, title TEXT, file TEXT,
+  mime TEXT, size INTEGER, sha256 TEXT, text TEXT, at INTEGER, by_name TEXT, deleted INTEGER DEFAULT 0);
+CREATE INDEX IF NOT EXISTS evidence_case ON evidence(case_id);
+CREATE INDEX IF NOT EXISTS evidence_pid ON evidence(pid);
 """
 
 # Columns added after 1.0.0, applied to an existing database on start.
@@ -1040,8 +1060,12 @@ class Store:
             cur = self.db.execute(sql, args)
             return cur.lastrowid
 
+    on_audit = None
+
     def audit(self, who: dict, action: str, server: str = "", target: str = "", pid: str = "",
               detail: str = "", ok: bool = True, result: str = "") -> int:
+        if self.on_audit:
+            self.on_audit(action)
         return self.x("INSERT INTO audit(at,discord_id,staff,role,action,server,target,target_pid,detail,ok,result) "
                "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                (now(), who.get("discord_id", ""), who.get("name", "system"), who.get("role", ""), action, server,
@@ -1508,6 +1532,7 @@ class Watchers:
             return False
         aid = self.store.x("INSERT INTO alerts(key,at,kind,title,text,pid,server) VALUES(?,?,?,?,?,?,?)",
                            (key, now(), kind, title[:200], text[:1800], pid, server))
+        self.bus.emit("alert", kind=kind, id=aid)
         kinds = self.cfg.get("alerts", {}).get("kinds")
         if kinds is None or kind in kinds:
             self.alert_queue.put((aid, urgent))
@@ -1589,6 +1614,7 @@ class Watchers:
                 self.down_alerted.add(srv.key)
                 self.alert("server_down", "%s is down" % srv.name, "No answer for %d seconds: %s" % (t - first, v.get("error") or "no reply"),
                            key="down:" + srv.key, server=srv.key, urgent=True)
+            self.track_sessions(srv, {}, {}, False)
             return
         if srv.key in self.down_alerted:
             self.down_alerted.discard(srv.key)
@@ -1610,6 +1636,7 @@ class Watchers:
                 self.watch_cache[(srv.key, p["slot"])] = mark
                 self.on_join(srv, p, first=(pid not in self.online.get(srv.key, {})))
         self.online[srv.key] = online
+        self.track_sessions(srv, online, {p["pid"]: p["name"] for p in players if p.get("pid")}, True)
         self.afk_and_tk(srv, v, players)
 
     def on_join(self, srv: GameServer, p: dict, first: bool) -> None:
@@ -2361,6 +2388,10 @@ class Overview:
                                                     (who.get("name", ""),))["n"]
             oldest = self.store.one("SELECT MIN(received) t FROM reports WHERE status='open' AND source IN ('player','auto','appeal')")
             out["reports"]["oldest_open"] = oldest["t"] if oldest else None
+        if allowed(who, "cases"):
+            out["cases"] = {"open": self.store.one("SELECT COUNT(*) n FROM cases WHERE status='open'")["n"],
+                            "mine": self.store.one("SELECT COUNT(*) n FROM cases WHERE status='open' AND assignee=?",
+                                                   (who.get("name", ""),))["n"]}
         out["alerts"] = self.store.q("SELECT id, at, kind, title, pid, server FROM alerts WHERE at>? ORDER BY id DESC LIMIT 8",
                                      (t - 86400,))
         out["alerts_24h"] = self.store.one("SELECT COUNT(*) n FROM alerts WHERE at>?", (t - 86400,))["n"]
@@ -2446,6 +2477,15 @@ class Overview:
                 out["reports"].append({"id": r["id"], "source": r["source"], "status": r["status"], "target_name": r["target_name"],
                                        "target_pid": r["target_pid"], "received": r["received"],
                                        "summary": str(d.get("summary") or d.get("reason") or d.get("text") or "")[:120]})
+        out["cases"] = []
+        if allowed(who, "cases"):
+            cnum = re.fullmatch(r"(?:case\s*)?#?(\d{1,9})", q, re.I)
+            if cnum:
+                out["cases"] = self.store.q("SELECT id, title, status, name, pid, assignee FROM cases WHERE id=?", (int(cnum.group(1)),))
+            if len(q) >= 3 and not out["cases"]:
+                like = "%" + q.replace("%", "").replace("_", "") + "%"
+                out["cases"] = self.store.q("SELECT id, title, status, name, pid, assignee FROM cases WHERE title LIKE ? OR name LIKE ? "
+                                            "OR pid=? ORDER BY status='closed', updated DESC LIMIT 5", (like, like, q))
         if allowed(who, "staff.manage") and len(q) >= 2:
             like = "%" + q.replace("%", "").replace("_", "") + "%"
             out["staff"] = self.store.q("SELECT discord_id, name, role, last_login FROM staff WHERE name LIKE ? OR discord_id=? LIMIT 5",
@@ -2520,7 +2560,474 @@ class Overview:
 
 # ----------------------------------------------------------------------------- the portal
 
-class Portal(Moderation, Watchers, Operations, Overview):
+# ----------------------------------------------------------------------------- live updates, cases, timeline, evidence (1.4.1)
+
+class EventBus:
+    """What changed, for the open portal pages (/api/stream). Events name a kind and an id, never content: the page asks
+    the normal API for the data, so every permission check stays where it is."""
+
+    def __init__(self, keep: int = 300):
+        self.cond = threading.Condition()
+        self.seq = 0
+        self.items = collections.deque(maxlen=keep)
+        self.streams = {}                       # discord_id -> open streams
+        self.lock = threading.Lock()
+
+    def emit(self, event: str, **data) -> None:
+        with self.cond:
+            if event == "servers" and self.items and self.items[-1][1] == "servers":
+                self.items.pop()                # one pending "servers" is enough
+            self.seq += 1
+            self.items.append((self.seq, event, data))
+            self.cond.notify_all()
+
+    def since(self, after: int, timeout: float) -> list:
+        with self.cond:
+            if after > self.seq:                # the portal restarted: start from now
+                after = self.seq
+            if not self.items or self.items[-1][0] <= after:
+                self.cond.wait(timeout)
+            return [i for i in self.items if i[0] > after]
+
+    def open(self, who: str, per_person: int, total: int) -> bool:
+        with self.lock:
+            if self.streams.get(who, 0) >= per_person or sum(self.streams.values()) >= total:
+                return False
+            self.streams[who] = self.streams.get(who, 0) + 1
+            return True
+
+    def close(self, who: str) -> None:
+        with self.lock:
+            n = self.streams.get(who, 0) - 1
+            if n > 0:
+                self.streams[who] = n
+            else:
+                self.streams.pop(who, None)
+
+
+CASE_LINKS = ("report", "ban", "appeal", "action", "evidence")
+IMAGE_MAGIC = ((b"\xff\xd8\xff", "image/jpeg", "jpg"), (b"\x89PNG\r\n\x1a\n", "image/png", "png"))
+
+
+def image_kind(data: bytes):
+    for magic, mime, ext in IMAGE_MAGIC:
+        if data.startswith(magic):
+            return mime, ext
+    if len(data) > 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp", "webp"
+    return None
+
+
+class Casework:
+    # -- play sessions, for the player timeline
+    def track_sessions(self, srv, online: dict, names: dict, up: bool) -> None:
+        t = now()
+        before = self.session_open.get(srv.key, set())
+        current = set(online) if up else set()
+        for pid in current - before:
+            self.store.x("INSERT INTO player_sessions(pid,server,name,joined) VALUES(?,?,?,?)", (pid, srv.key, names.get(pid, "")[:64], t))
+        for pid in before - current:
+            self.store.x("UPDATE player_sessions SET left_at=? WHERE pid=? AND server=? AND left_at IS NULL", (t, pid, srv.key))
+        self.session_open[srv.key] = current
+
+    def close_stale_sessions(self) -> None:
+        """After a restart: sessions left open end at the player's last sighting on that server."""
+        self.store.x("UPDATE player_sessions SET left_at=MAX(joined, COALESCE((SELECT MAX(last_seen) FROM sightings s WHERE "
+                     "s.pid=player_sessions.pid AND s.server=player_sessions.server), joined)) WHERE left_at IS NULL")
+
+    def timeline(self, pid: str, show_ip: bool) -> dict:
+        if not PID.match(pid):
+            raise ApiError(400, "That is not a player id.")
+        ev = []
+
+        def add(at, kind, title, detail="", server="", tone="", link="", **extra):
+            if at:
+                ev.append(dict(at=int(at), kind=kind, title=title, detail=str(detail or "")[:300], server=server or "",
+                               tone=tone, link=link, **extra))
+        chat_at = [r["at"] for r in self.store.q("SELECT at FROM chat WHERE pid=? ORDER BY at DESC LIMIT 5000", (pid,))]
+        for s in self.store.q("SELECT * FROM player_sessions WHERE pid=? ORDER BY joined DESC LIMIT 200", (pid,)):
+            end = s["left_at"] or now()
+            said = sum(1 for a in chat_at if s["joined"] <= a <= end)
+            add(s["joined"], "session", "Played on %s" % s["server"], "as %s" % s["name"], s["server"],
+                until=s["left_at"], minutes=max(1, (end - s["joined"]) // 60), chat=said)
+        names = {}
+        for r in self.store.q("SELECT name, MIN(first_seen) f FROM sightings WHERE pid=? GROUP BY name", (pid,)):
+            names[r["name"]] = r["f"]
+        first = min(names.values(), default=None)
+        for n, f in names.items():
+            add(f, "name", "First seen" if f == first else "New name", n)
+        for b in self.store.q("SELECT * FROM bans WHERE pid=?", (pid,)):
+            add(b["created"], "ban", "Banned" + ("" if b["expires"] else " permanently"), b["reason"], tone="bad", by=b["by_name"],
+                ref=b["id"], expires=b["expires"])
+            if b["lifted"]:
+                add(b["lifted"], "unban", "Ban lifted", b["lift_reason"], tone="ok", by=b["lifted_by"], ref=b["id"])
+        for m in self.store.q("SELECT * FROM mutes WHERE pid=?", (pid,)):
+            add(m["created"], "mute", "Muted", m["reason"], m["server"] or "", tone="warn", by=m["by_name"])
+        for w in self.store.q("SELECT * FROM warnings WHERE pid=?", (pid,)):
+            add(w["created"], "warning", "Warned", w["text"], w["server"], tone="warn", by=w["by_name"])
+        for a in self.store.q("SELECT * FROM audit WHERE target_pid=? AND ok=1 AND action IN ('kick','move','unmute','watch',"
+                              "'unwatch','undo ban','undo mute') ORDER BY id DESC LIMIT 200", (pid,)):
+            add(a["at"], "action", a["action"].capitalize(), a["detail"], a["server"], by=a["staff"], ref=a["id"])
+        for n in self.store.q("SELECT * FROM notes WHERE pid=?", (pid,)):
+            add(n["created"], "note", "Staff note", n["text"], by=n["by_name"])
+        for r in self.store.q("SELECT * FROM reports WHERE target_pid=? ORDER BY id DESC LIMIT 100", (pid,)):
+            d = self._report_row(r).get("data") or {}
+            title = {"auto": "Automatic flag", "appeal": "Ban appeal", "bug": "Sent a bug report"}.get(r["source"], "Reported")
+            add(r["received"], "report", title, d.get("reason") or d.get("summary") or d.get("text") or "", r["server"],
+                tone="" if r["source"] == "bug" else "warn", ref=r["id"], status=r["status"])
+        for f in self.store.q("SELECT * FROM flags WHERE pid=? ORDER BY id DESC LIMIT 100", (pid,)):
+            add(f["at"], "flag", f["kind"].capitalize(), f["detail"], f["server"], tone="bad" if f["kind"] == "ban dodger" else "warn")
+        for a in self.store.q("SELECT * FROM alerts WHERE pid=? AND kind IN ('watch','suspicion','reports') ORDER BY id DESC LIMIT 50", (pid,)):
+            add(a["at"], "alert", plain(a["title"]), plain(a["text"]).replace("**", ""), a["server"])
+        for p in self.store.q("SELECT * FROM punishments WHERE pid=?", (pid,)):
+            add(p["created"], "ladder", "Punishment ladder: %s" % self.ladder().get(p["offence"], {}).get("label", p["offence"]),
+                step_label(p["step"]), p["server"], by=p["by_name"])
+        for c in self.store.q("SELECT * FROM cases WHERE pid=?", (pid,)):
+            add(c["created"], "case", "Case #%d opened" % c["id"], c["title"], by=c["created_by"], link="#/case/%d" % c["id"])
+        for e in self.store.q("SELECT id, kind, title, at, by_name, case_id FROM evidence WHERE pid=? AND deleted=0", (pid,)):
+            add(e["at"], "evidence", "Evidence saved", e["title"], by=e["by_name"],
+                link=("#/case/%d" % e["case_id"]) if e["case_id"] else "")
+        ev.sort(key=lambda e: -e["at"])
+        return {"pid": pid, "events": ev[:600], "online": [s.key for s in self.servers.values()
+                                                           for p in s.view().get("players", []) if p.get("pid") == pid]}
+
+    # -- cases: one place for everything about one problem
+    def case_row(self, cid: int) -> dict:
+        c = self.store.one("SELECT * FROM cases WHERE id=?", (int(cid or 0),))
+        if not c:
+            raise ApiError(404, "No such case.")
+        return c
+
+    def cases(self, status: str = "open", mine: str = "", pid: str = "") -> list:
+        where, args = [], []
+        if status in ("open", "closed"):
+            where.append("status=?")
+            args.append(status)
+        if mine:
+            where.append("assignee=?")
+            args.append(mine)
+        if pid:
+            where.append("pid=?")
+            args.append(pid)
+        return self.store.q("SELECT c.*, (SELECT COUNT(*) FROM case_items i WHERE i.case_id=c.id) items, (SELECT COUNT(*) FROM "
+                            "evidence e WHERE e.case_id=c.id AND e.deleted=0) evidence FROM cases c%s ORDER BY status='closed', "
+                            "updated DESC LIMIT 300" % (" WHERE " + " AND ".join(where) if where else ""), args)
+
+    def case_open(self, who: dict, title: str, pid: str = "", name: str = "", summary: str = "", report: int = 0) -> int:
+        r = None
+        if report:
+            r = self.store.one("SELECT * FROM reports WHERE id=?", (int(report),))
+            if not r:
+                raise ApiError(404, "No such report.")
+            pid = pid or r["target_pid"] or ""
+            name = name or r["target_name"] or ""
+        if pid and not PID.match(pid):
+            raise ApiError(400, "That is not a player id.")
+        if pid and not name:
+            n = self.store.one("SELECT name FROM sightings WHERE pid=? ORDER BY last_seen DESC LIMIT 1", (pid,))
+            name = n["name"] if n else ""
+        title = str(title or "").strip()[:120] or ("%s" % (name or "New case"))
+        t = now()
+        cid = self.store.x("INSERT INTO cases(title,status,pid,name,summary,assignee,created,created_by,updated) VALUES(?,?,?,?,?,?,?,?,?)",
+                           (title, "open", pid, plain(name)[:64], str(summary or "")[:2000], who["name"], t, who["name"], t))
+        if r:
+            self.case_link(who, cid, "report", r["id"], quiet=True)
+        self.store.audit(who, "case opened", target=name or title, pid=pid, detail="#%d %s" % (cid, title))
+        self.bus.emit("cases", id=cid)
+        return cid
+
+    def case_update(self, who: dict, cid: int, d: dict) -> dict:
+        c = self.case_row(cid)
+        sets, args, notes = [], [], []
+        if "title" in d and str(d["title"]).strip():
+            sets.append("title=?")
+            args.append(str(d["title"]).strip()[:120])
+        if "summary" in d:
+            sets.append("summary=?")
+            args.append(str(d["summary"] or "")[:2000])
+        if "assignee" in d:
+            a = who["name"] if d["assignee"] == "me" else str(d["assignee"] or "")[:64]
+            sets.append("assignee=?")
+            args.append(a)
+            notes.append("taken by %s" % a if a else "left unassigned")
+        if d.get("status") in ("open", "closed") and d["status"] != c["status"]:
+            sets.append("status=?")
+            args.append(d["status"])
+            if d["status"] == "closed":
+                outcome = str(d.get("outcome") or "").strip()[:500]
+                if not outcome:
+                    raise ApiError(400, "Write what came out of the case before you close it.")
+                sets.append("outcome=?")
+                args.append(outcome)
+                notes.append("closed: " + outcome)
+            else:
+                notes.append("reopened")
+        if not sets:
+            raise ApiError(400, "Nothing to change.")
+        sets.append("updated=?")
+        args.append(now())
+        self.store.x("UPDATE cases SET %s WHERE id=?" % ", ".join(sets), args + [c["id"]])
+        for n in notes:
+            self.store.x("INSERT INTO case_items(case_id,at,by_name,kind,ref,text) VALUES(?,?,?,?,NULL,?)",
+                         (c["id"], now(), who["name"], "status", n))
+        action = "case closed" if d.get("status") == "closed" and c["status"] != "closed" else "case updated"
+        self.store.audit(who, action, target=c["name"] or c["title"], pid=c["pid"], detail="#%d %s" % (c["id"], "; ".join(notes))[:300])
+        self.bus.emit("cases", id=c["id"])
+        return self.case_row(c["id"])
+
+    def case_link(self, who: dict, cid: int, kind: str, ref: int, quiet: bool = False) -> None:
+        c = self.case_row(cid)
+        if kind not in CASE_LINKS:
+            raise ApiError(400, "Unknown kind of item.")
+        table = {"report": "reports", "ban": "bans", "appeal": "appeals", "action": "audit", "evidence": "evidence"}[kind]
+        if not self.store.one("SELECT id FROM %s WHERE id=?" % table, (int(ref),)):
+            raise ApiError(404, "That %s does not exist." % kind)
+        if self.store.one("SELECT id FROM case_items WHERE case_id=? AND kind=? AND ref=?", (c["id"], kind, int(ref))):
+            raise ApiError(409, "Already in this case.")
+        self.store.x("INSERT INTO case_items(case_id,at,by_name,kind,ref,text) VALUES(?,?,?,?,?,'')", (c["id"], now(), who["name"], kind, int(ref)))
+        if kind == "evidence":
+            self.store.x("UPDATE evidence SET case_id=? WHERE id=? AND case_id IS NULL", (c["id"], int(ref)))
+        self.store.x("UPDATE cases SET updated=? WHERE id=?", (now(), c["id"]))
+        if not quiet:
+            self.bus.emit("cases", id=c["id"])
+
+    def case_note(self, who: dict, cid: int, text: str) -> None:
+        c = self.case_row(cid)
+        text = str(text or "").strip()[:2000]
+        if not text:
+            raise ApiError(400, "Write a note first.")
+        self.store.x("INSERT INTO case_items(case_id,at,by_name,kind,ref,text) VALUES(?,?,?,?,NULL,?)", (c["id"], now(), who["name"], "note", text))
+        self.store.x("UPDATE cases SET updated=? WHERE id=?", (now(), c["id"]))
+        self.bus.emit("cases", id=c["id"])
+
+    def case_unlink(self, who: dict, cid: int, item: int) -> None:
+        c = self.case_row(cid)
+        it = self.store.one("SELECT * FROM case_items WHERE id=? AND case_id=?", (int(item), c["id"]))
+        if not it:
+            raise ApiError(404, "No such item in this case.")
+        if it["kind"] == "status":
+            raise ApiError(409, "Status changes stay in the case history.")
+        if it["kind"] == "note" and it["by_name"] != who["name"] and not allowed(who, "audit"):
+            raise ApiError(403, "Only the writer or an admin removes a note.")
+        self.store.x("DELETE FROM case_items WHERE id=?", (it["id"],))
+        if it["kind"] == "evidence":
+            self.store.x("UPDATE evidence SET case_id=NULL WHERE id=? AND case_id=?", (it["ref"], c["id"]))
+        self.store.audit(who, "case updated", target=c["name"] or c["title"], pid=c["pid"],
+                         detail="#%d removed %s%s" % (c["id"], it["kind"], (" #%d" % it["ref"]) if it["ref"] else ""))
+        self.bus.emit("cases", id=c["id"])
+
+    def case_view(self, who: dict, cid: int) -> dict:
+        c = self.case_row(cid)
+        items = []
+        for it in self.store.q("SELECT * FROM case_items WHERE case_id=? ORDER BY at DESC, id DESC", (c["id"],)):
+            ref, row = it["ref"], None
+            if it["kind"] == "report":
+                r = self.store.one("SELECT * FROM reports WHERE id=?", (ref,))
+                if r:
+                    d = self._report_row(r).get("data") or {}
+                    row = {"source": r["source"], "status": r["status"], "server": r["server"], "received": r["received"],
+                           "target_name": r["target_name"], "text": str(d.get("reason") or d.get("summary") or d.get("text") or "")[:300]}
+            elif it["kind"] == "ban":
+                row = self.store.one("SELECT id, name, reason, created, expires, by_name, active, lifted_by FROM bans WHERE id=?", (ref,))
+            elif it["kind"] == "appeal":
+                row = self.store.one("SELECT id, name, status, text, answer, answered_by, created FROM appeals WHERE id=?", (ref,))
+            elif it["kind"] == "action":
+                row = self.store.one("SELECT id, at, staff, action, server, target, detail FROM audit WHERE id=?", (ref,))
+            elif it["kind"] == "evidence":
+                row = self.evidence_row(ref)
+            items.append(dict(it, row=row))
+        out = dict(c, items=items, evidence=self.evidence_list(case_id=c["id"]))
+        if c["pid"]:
+            linked = {(i["kind"], i["ref"]) for i in items}
+            sug = []
+            for r in self.store.q("SELECT id, source, status, received, target_name FROM reports WHERE target_pid=? ORDER BY id DESC LIMIT 15", (c["pid"],)):
+                if ("report", r["id"]) not in linked:
+                    sug.append({"kind": "report", "ref": r["id"], "at": r["received"], "label": "%s report #%d (%s)" % (r["source"], r["id"], r["status"])})
+            for b in self.store.q("SELECT id, reason, created FROM bans WHERE pid=? ORDER BY id DESC LIMIT 10", (c["pid"],)):
+                if ("ban", b["id"]) not in linked:
+                    sug.append({"kind": "ban", "ref": b["id"], "at": b["created"], "label": "Ban #%d: %s" % (b["id"], b["reason"])})
+            for a in self.store.q("SELECT id, code, status, created FROM appeals WHERE pid=? ORDER BY id DESC LIMIT 5", (c["pid"],)):
+                if ("appeal", a["id"]) not in linked:
+                    sug.append({"kind": "appeal", "ref": a["id"], "at": a["created"], "label": "Appeal #%d (%s)" % (a["id"], a["status"])})
+            for a in self.store.q("SELECT id, at, staff, action, detail FROM audit WHERE target_pid=? AND ok=1 AND action IN (%s) "
+                                  "ORDER BY id DESC LIMIT 15" % ",".join("?" * len(MODERATION_ACTIONS)), (c["pid"],) + MODERATION_ACTIONS):
+                if ("action", a["id"]) not in linked:
+                    sug.append({"kind": "action", "ref": a["id"], "at": a["at"], "label": "%s by %s: %s" % (a["action"], a["staff"], a["detail"])[:140]})
+            for e in self.store.q("SELECT id, title, at FROM evidence WHERE pid=? AND case_id IS NULL AND deleted=0 ORDER BY id DESC LIMIT 10", (c["pid"],)):
+                sug.append({"kind": "evidence", "ref": e["id"], "at": e["at"], "label": "Evidence: %s" % e["title"]})
+            out["suggest"] = sorted(sug, key=lambda x: -x["at"])[:30]
+        else:
+            out["suggest"] = []
+        return out
+
+    # -- evidence locker: screenshots, server demos, chat excerpts and links, kept with a case or a player
+    def evidence_dir(self) -> Path:
+        d = Path(self.cfg.get("data_dir", "/var/lib/tcp-staff-portal")) / "evidence"
+        d.mkdir(parents=True, exist_ok=True)
+        os.chmod(d, 0o750)
+        return d
+
+    def evidence_bytes(self) -> int:
+        return int(self.store.one("SELECT COALESCE(SUM(size),0) n FROM (SELECT DISTINCT file, size FROM evidence WHERE deleted=0 "
+                                  "AND file<>'')")["n"])
+
+    def evidence_row(self, eid: int):
+        e = self.store.one("SELECT id, case_id, pid, kind, title, mime, size, sha256, text, at, by_name FROM evidence WHERE id=? AND deleted=0",
+                           (int(eid or 0),))
+        if e and e["kind"] in ("chat", "demo"):
+            try:
+                e["text"] = json.loads(e["text"] or "null")
+            except ValueError:
+                pass
+        return e
+
+    def evidence_list(self, case_id: int = 0, pid: str = "") -> list:
+        if case_id:
+            rows = self.store.q("SELECT id FROM evidence WHERE case_id=? AND deleted=0 ORDER BY id DESC", (case_id,))
+        else:
+            rows = self.store.q("SELECT id FROM evidence WHERE pid=? AND deleted=0 ORDER BY id DESC LIMIT 100", (pid,))
+        return [self.evidence_row(r["id"]) for r in rows]
+
+    def _store_file(self, data: bytes, ext: str) -> tuple:
+        h = hashlib.sha256(data).hexdigest()
+        name = "%s.%s" % (h, ext)
+        path = self.evidence_dir() / name
+        if not path.exists():
+            tmp = path.with_suffix(".tmp-%s" % secrets.token_hex(3))
+            tmp.write_bytes(data)
+            os.chmod(tmp, 0o640)
+            os.replace(tmp, path)
+        return name, h
+
+    def evidence_add(self, who: dict, d: dict) -> int:
+        kind = d.get("kind")
+        case_id = int(d.get("case") or 0) or None
+        pid = str(d.get("pid") or "")
+        if case_id:
+            c = self.case_row(case_id)
+            pid = pid or c["pid"] or ""
+        if pid and not PID.match(pid):
+            raise ApiError(400, "That is not a player id.")
+        if not case_id and not pid:
+            raise ApiError(400, "Evidence belongs to a case or a player.")
+        title = str(d.get("title") or "").strip()[:160]
+        file, mime, size, h, text = "", "", 0, "", ""
+        if kind == "image":
+            try:
+                data = base64.b64decode(str(d.get("data") or ""), validate=True)
+            except (ValueError, binascii.Error) as e:
+                raise ApiError(400, "The picture did not arrive in one piece.") from e
+            got = image_kind(data)
+            if not got:
+                raise ApiError(415, "Only JPEG, PNG or WebP pictures.")
+            if len(data) > int(self.cfg.get("evidence_image_mb", 8)) * 1024 * 1024:
+                raise ApiError(413, "That picture is too big.")
+            if self.evidence_bytes() + len(data) > int(self.cfg.get("evidence_quota_mb", 2000)) * 1024 * 1024:
+                raise ApiError(507, "The evidence locker is full. An admin can remove old evidence.")
+            mime = got[0]
+            file, h = self._store_file(data, got[1])
+            size = len(data)
+            title = title or "Screenshot"
+        elif kind == "demo":
+            rep = int(d.get("report") or 0)
+            dm = self.demo_for(rep)
+            limit = int(self.cfg.get("evidence_demo_mb", 300)) * 1024 * 1024
+            if dm["size"] > limit:
+                raise ApiError(413, "That demo is too big to keep.")
+            if self.evidence_bytes() + dm["size"] > int(self.cfg.get("evidence_quota_mb", 2000)) * 1024 * 1024:
+                raise ApiError(507, "The evidence locker is full. An admin can remove old evidence.")
+            src = Path(dm["path"])
+            hs = hashlib.sha256()
+            with src.open("rb") as f:
+                for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                    hs.update(chunk)
+            h = hs.hexdigest()
+            ext = src.suffix.lstrip(".")[:8] or "dm"
+            file = "%s.%s" % (h, re.sub(r"[^A-Za-z0-9]", "", ext))
+            dst = self.evidence_dir() / file
+            if not dst.exists():
+                tmp = dst.with_suffix(".tmp-%s" % secrets.token_hex(3))
+                shutil.copyfile(src, tmp)
+                os.chmod(tmp, 0o640)
+                os.replace(tmp, dst)
+            size = dm["size"]
+            text = json.dumps({"file": dm["file"], "offset_s": dm["offset_s"], "server": dm["server"], "report": rep})
+            title = title or "Server demo for report #%d" % rep
+        elif kind == "chat":
+            at = int(d.get("at") or now())
+            minutes = max(1, min(60, int(d.get("minutes") or 10)))
+            server = str(d.get("server") or "")
+            if server and server not in self.servers:
+                raise ApiError(400, "Unknown server.")
+            if server:
+                rows = self.store.q("SELECT server, at, kind, pid, name, text, flag FROM chat WHERE server=? AND at BETWEEN ? AND ? "
+                                    "ORDER BY id LIMIT 400", (server, at - minutes * 60, at + minutes * 60))
+            elif pid:
+                rows = self.store.q("SELECT server, at, kind, pid, name, text, flag FROM chat WHERE pid=? AND at BETWEEN ? AND ? "
+                                    "ORDER BY id LIMIT 400", (pid, at - minutes * 60, at + minutes * 60))
+            else:
+                rows = []
+            if not rows:
+                raise ApiError(404, "No chat recorded around that time.")
+            text = json.dumps(rows)
+            title = title or "Chat %s, %d minutes either side" % (time.strftime("%d %b %H:%M UTC", time.gmtime(at)), minutes)
+        elif kind == "link":
+            url = str(d.get("url") or "").strip()
+            if not re.fullmatch(r"https://[^\s<>\"']{4,500}", url):
+                raise ApiError(400, "Use a full https:// link.")
+            text = url
+            title = title or url[:160]
+        elif kind == "text":
+            text = str(d.get("text") or "").strip()[:4000]
+            if not text:
+                raise ApiError(400, "Write something first.")
+            title = title or "Statement"
+        else:
+            raise ApiError(400, "Unknown kind of evidence.")
+        eid = self.store.x("INSERT INTO evidence(case_id,pid,kind,title,file,mime,size,sha256,text,at,by_name) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+                           (case_id, pid, kind, title, file, mime, size, h, text, now(), who["name"]))
+        if case_id:
+            self.case_link(who, case_id, "evidence", eid)
+        self.store.audit(who, "evidence added", target=title, pid=pid, detail="#%d %s%s" % (eid, kind, (" case #%d" % case_id) if case_id else ""))
+        return eid
+
+    def evidence_file(self, eid: int):
+        e = self.store.one("SELECT * FROM evidence WHERE id=? AND deleted=0 AND file<>''", (int(eid or 0),))
+        if not e:
+            raise ApiError(404, "No such file.")
+        path = self.evidence_dir() / e["file"]
+        if not re.fullmatch(r"[0-9a-f]{64}\.[A-Za-z0-9]{1,8}", e["file"]) or not path.is_file():
+            raise ApiError(404, "The file is gone.")
+        return e, path
+
+    def evidence_delete(self, who: dict, eid: int, reason: str = "") -> None:
+        e = self.store.one("SELECT * FROM evidence WHERE id=? AND deleted=0", (int(eid or 0),))
+        if not e:
+            raise ApiError(404, "No such evidence.")
+        self.store.x("UPDATE evidence SET deleted=? WHERE id=?", (now(), e["id"]))
+        self.store.x("DELETE FROM case_items WHERE kind='evidence' AND ref=?", (e["id"],))
+        self._drop_file(e["file"])
+        self.store.audit(who, "evidence removed", target=e["title"], pid=e["pid"], detail="#%d %s" % (e["id"], reason[:200]))
+        if e["case_id"]:
+            self.bus.emit("cases", id=e["case_id"])
+
+    def _drop_file(self, file: str) -> None:
+        if file and not self.store.one("SELECT id FROM evidence WHERE file=? AND deleted=0", (file,)):
+            try:
+                (self.evidence_dir() / file).unlink()
+            except OSError:
+                pass
+
+    def prune_evidence(self) -> None:
+        """Evidence outside an open case goes after evidence_days (365); the files go with the last reference."""
+        cut = now() - int(self.cfg.get("evidence_days", 365)) * 86400
+        for e in self.store.q("SELECT e.id, e.file FROM evidence e LEFT JOIN cases c ON c.id=e.case_id WHERE e.deleted=0 AND e.at<? "
+                              "AND (c.id IS NULL OR c.status='closed')", (cut,)):
+            self.store.x("UPDATE evidence SET deleted=? WHERE id=?", (now(), e["id"]))
+            self._drop_file(e["file"])
+
+
+class Portal(Moderation, Watchers, Operations, Overview, Casework):
     def __init__(self, cfg: dict):
         self.cfg = cfg
         data = Path(cfg.get("data_dir", "/var/lib/tcp-staff-portal"))
@@ -2546,6 +3053,10 @@ class Portal(Moderation, Watchers, Operations, Overview):
         self.down_alerted = set()
         self.stats_cache = {}
         self.map_views = set()
+        self.bus = EventBus()
+        self.session_open = {}     # server -> pids with an open play session
+        self.store.on_audit = lambda action: self.bus.emit("action", action=action)
+        self.close_stale_sessions()
         if not self.meta("templates_seeded"):
             for kind, title, text in DEFAULT_TEMPLATES:
                 self.store.x("INSERT INTO templates(kind,title,text,created,by_name) VALUES(?,?,?,?,?)", (kind, title, text, now(), "Portal"))
@@ -2596,6 +3107,7 @@ class Portal(Moderation, Watchers, Operations, Overview):
                 self.record_samples()
             except sqlite3.Error:
                 log.exception("player-count sample failed")
+            self.bus.emit("servers")
             self.stop.wait(max(0.5, every - (time.time() - started)))
 
     # chat comes from the game's own log line: TCP_NATIVE_SAY slot=N team=T text
@@ -2623,6 +3135,7 @@ class Portal(Moderation, Watchers, Operations, Overview):
             cid = self.store.x("INSERT INTO chat(server,at,slot,team,pid,name,text,kind) VALUES(?,?,?,?,?,?,?,?)",
                                (server.key, now(), slot, p.get("team") if team else None, p.get("pid", ""), name, text[:300],
                                 "team" if team else "all"))
+            self.bus.emit("chat", server=server.key, id=cid)
             try:
                 self.check_chat(server, slot, p, text[:300], cid)
             except Exception:  # noqa: BLE001
@@ -2694,6 +3207,7 @@ class Portal(Moderation, Watchers, Operations, Overview):
                                  ("auto" if r.get("auto") else "player", key, s.key, now(), json.dumps(r),
                                   str(who.get("id") or ""), plain(who.get("name"))[:64], "open", now()))
                     added += 1
+                    self.bus.emit("reports")
                     pid = str(who.get("id") or "")
                     if PID.match(pid):
                         n = self.store.one("SELECT COUNT(*) n FROM reports WHERE target_pid=? AND received>? AND source IN ('player','auto')",
@@ -2805,6 +3319,8 @@ class Portal(Moderation, Watchers, Operations, Overview):
         self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
         self.store.x("DELETE FROM staff_key_codes WHERE expires<?", (now(),))
         self.store.x("DELETE FROM samples WHERE at<?", (now() - int(self.cfg.get("history_days", 90)) * 86400,))
+        self.store.x("DELETE FROM player_sessions WHERE joined<? AND left_at IS NOT NULL", (cut,))
+        self.prune_evidence()
 
     # ------------------------------------------------------------------ queries used by the API
     def server(self, key: str) -> GameServer:
@@ -3349,9 +3865,9 @@ def make_handler(portal: Portal):
             self._body_read = True
             return self.rfile.read(n) if n else b""
 
-        def body_json(self) -> dict:
+        def body_json(self, limit: int = 65536) -> dict:
             try:
-                data = json.loads(self.body() or b"{}")
+                data = json.loads(self.body(limit) or b"{}")
             except ValueError as e:
                 raise ApiError(400, "Bad JSON.") from e
             if not isinstance(data, dict):
@@ -3817,6 +4333,81 @@ def make_handler(portal: Portal):
         # -- API, round two: moderation tools, alerts, operations and two-step sign-in
         def api2(self, method: str, route: str, qs: dict, s: dict | None) -> None:
             G, P = method == "GET", method == "POST"
+            # live updates (1.4.1)
+            if route == "stream" and G:
+                return self.stream(self.need(s, "view"))
+            # cases
+            if route == "cases" and G:
+                who = self.need(s, "cases")
+                mine = who["name"] if qs.get("mine") else ""
+                pid = qs.get("pid", "")
+                return self.json({"cases": portal.cases(qs.get("status", "open") if not pid else "all", mine, pid)})
+            if route.startswith("case/") and route[5:].isdigit() and G:
+                who = self.need(s, "cases")
+                return self.json(portal.case_view(who, int(route[5:])))
+            if route == "cases" and P:
+                who = self.need(s, "cases")
+                d = self.body_json()
+                if portal.limited("case:" + who["discord_id"], 30, 3600):
+                    raise ApiError(429, "That is a lot of new cases. Wait a little.")
+                cid = portal.case_open(who, d.get("title", ""), str(d.get("pid") or ""), str(d.get("name") or ""),
+                                       str(d.get("summary") or ""), int(d.get("report") or 0))
+                return self.json({"ok": True, "id": cid}, 201)
+            if route == "case/update" and P:
+                who = self.need(s, "cases")
+                d = self.body_json()
+                return self.json({"ok": True, "case": portal.case_update(who, int(d.get("id") or 0), d)})
+            if route == "case/link" and P:
+                who = self.need(s, "cases")
+                d = self.body_json()
+                portal.case_link(who, int(d.get("id") or 0), str(d.get("kind") or ""), int(d.get("ref") or 0))
+                c = portal.case_row(int(d.get("id") or 0))
+                portal.store.audit(who, "case updated", target=c["name"] or c["title"], pid=c["pid"],
+                                   detail="#%d added %s #%d" % (c["id"], d.get("kind"), int(d.get("ref") or 0)))
+                return self.json({"ok": True})
+            if route == "case/unlink" and P:
+                who = self.need(s, "cases")
+                d = self.body_json()
+                portal.case_unlink(who, int(d.get("id") or 0), int(d.get("item") or 0))
+                return self.json({"ok": True})
+            if route == "case/note" and P:
+                who = self.need(s, "cases")
+                d = self.body_json()
+                portal.case_note(who, int(d.get("id") or 0), d.get("text", ""))
+                return self.json({"ok": True})
+            # player timeline
+            if route.startswith("timeline/") and G:
+                who = self.need(s, "lookup")
+                return self.json(portal.timeline(route[len("timeline/"):], allowed(who, "lookup.ip")))
+            # evidence locker
+            if route == "evidence" and G:
+                self.need(s, "evidence")
+                if qs.get("case"):
+                    return self.json({"evidence": portal.evidence_list(case_id=int(qs["case"] or 0))})
+                if not PID.match(qs.get("pid", "")):
+                    raise ApiError(400, "Name a case or a player.")
+                return self.json({"evidence": portal.evidence_list(pid=qs["pid"]),
+                                  "used_mb": round(portal.evidence_bytes() / 1048576, 1),
+                                  "quota_mb": int(cfg.get("evidence_quota_mb", 2000))})
+            if route == "evidence" and P:
+                who = self.need(s, "evidence")
+                if portal.limited("evidence:" + who["discord_id"], 60, 3600):
+                    raise ApiError(429, "That is a lot of evidence in an hour. Wait a little.")
+                d = self.body_json(limit=int(cfg.get("evidence_image_mb", 8)) * 1024 * 1024 * 4 // 3 + 4096)
+                return self.json({"ok": True, "id": portal.evidence_add(who, d)}, 201)
+            if route == "evidence/file" and G:
+                who = self.need(s, "evidence")
+                e, path = portal.evidence_file(int(qs.get("id") or 0))
+                if e["kind"] == "image":
+                    return self.send_file(path, path.name, e["mime"], cache="private, max-age=86400")
+                portal.store.audit(who, "evidence download", target=e["title"], pid=e["pid"], detail="#%d" % e["id"])
+                meta = json.loads(e["text"] or "{}") if e["kind"] == "demo" else {}
+                return self.send_file(path, meta.get("file") or path.name)
+            if route == "evidence/delete" and P:
+                who = self.need(s, "evidence.delete")
+                d = self.body_json()
+                portal.evidence_delete(who, int(d.get("id") or 0), str(d.get("reason") or ""))
+                return self.json({"ok": True})
             if route == "undo" and P:
                 who = self.need(s, "view")
                 d = self.body_json()
@@ -4191,6 +4782,49 @@ def make_handler(portal: Portal):
                 portal.store.audit(who, "2fa reset", target=did)
                 return self.json({"ok": True})
             raise ApiError(404, "Not found.")
+
+        def stream(self, who: dict) -> None:
+            """Server-sent events: what changed, so open pages refresh at once instead of waiting for their next poll."""
+            key = who["discord_id"] or who["name"]
+            if not portal.bus.open(key, int(cfg.get("stream_per_person", 4)), int(cfg.get("stream_max", 60))):
+                raise ApiError(429, "Too many open live connections.")
+            try:
+                self.close_connection = True
+                self.send_response(200)
+                self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+                self.send_header("Cache-Control", "no-store")
+                self.send_header("Connection", "close")
+                self.send_header("X-Accel-Buffering", "no")
+                for k, v in SECURITY_HEADERS.items():
+                    self.send_header(k, v)
+                self.end_headers()
+                try:
+                    last = int(self.headers.get("Last-Event-ID") or 0)
+                except ValueError:
+                    last = 0
+                last = last or portal.bus.seq
+                self.wfile.write(b"retry: 4000\n: live\n\n")
+                self.wfile.flush()
+                ends = time.time() + int(cfg.get("stream_seconds", 1800))
+                checked = time.time()
+                while time.time() < ends and not portal.stop.is_set():
+                    items = portal.bus.since(last, float(cfg.get("stream_keepalive", 20)))
+                    out = []
+                    for seq, kind, data in items:
+                        last = seq
+                        out.append("id: %d\nevent: %s\ndata: %s\n\n" % (seq, kind, json.dumps(data, separators=(",", ":"))))
+                    if not out:
+                        out.append(": keepalive\n\n")
+                    self.wfile.write("".join(out).encode())
+                    self.wfile.flush()
+                    if time.time() - checked > 60:              # a signed-out or demoted session stops here
+                        checked = time.time()
+                        if not self.session():
+                            break
+            except (BrokenPipeError, ConnectionResetError, OSError):
+                pass
+            finally:
+                portal.bus.close(key)
 
         def send_file(self, path: Path, name: str, ctype: str = "", cache: str = "no-store") -> None:
             try:
