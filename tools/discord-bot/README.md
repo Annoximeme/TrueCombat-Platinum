@@ -196,7 +196,7 @@ the player's record and in the portal audit log under their name. Bans from Disc
 bans and server settings stay in the portal behind two-step sign-in. The player list comes from the portal, so it
 covers every server the portal watches.
 
-Linking, once: on the VPS, `sudo /opt/tcp/staff-portal-kit/deploy/install.sh bot-link` (staff portal 1.4.3+) writes
+Linking, once: on the VPS, `sudo ./deploy/install.sh bot-link` from a staff portal 1.4.3+ checkout writes
 `/etc/tcp-discord-bot/portal-token`; then run this bot's `install.sh` again, which loads it as the credential
 `portal-token`. Without it `/staff` answers that the portal is not linked. `/admin` (direct rcon) is unchanged.
 
