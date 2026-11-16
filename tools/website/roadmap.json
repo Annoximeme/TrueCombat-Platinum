@@ -309,7 +309,7 @@
   {
    "en": "Easy Anti-Cheat",
    "nl": "Easy Anti-Cheat",
-   "version": null
+   "version": "0.35"
   },
   {
    "en": "Shadows from muzzle flashes and explosions",
@@ -450,6 +450,26 @@
    "en": "Hit and suppression feedback, with friendly fire on",
    "nl": "Treffer- en onderdrukkingsfeedback, met friendly fire aan",
    "version": "0.37"
+  },
+  {
+   "en": "Pick up the weapons of fallen players",
+   "nl": "Wapens van gevallen spelers oppakken",
+   "version": "0.38"
+  },
+  {
+   "en": "Vaulting over low walls and cover",
+   "nl": "Over lage muren en dekking springen",
+   "version": "0.38"
+  },
+  {
+   "en": "More immersive firefights: breathing, impacts and a falling camera",
+   "nl": "Intensere vuurgevechten: ademhaling, inslagen en een vallende camera",
+   "version": "0.38"
+  },
+  {
+   "en": "Smarter bots: varied routes, cleaner lines of fire, fewer stuck moments",
+   "nl": "Slimmere bots: gevarieerde routes, betere schootslijnen, minder vastlopen",
+   "version": "0.38"
   }
  ]
 }

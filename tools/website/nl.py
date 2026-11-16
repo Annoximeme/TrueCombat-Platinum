@@ -82,11 +82,6 @@ PAGES["index"] = [
     ('<h2>Captured in-game</h2>', '<h2>In het spel vastgelegd</h2>'),
     ('<p class="lede">Every image is a straight capture from the DirectX 12 renderer. No paintovers.</p>',
      '<p class="lede">Elke afbeelding komt rechtstreeks uit de DirectX 12-renderer. Niets bijgewerkt.</p>'),
-    ('alt="Northport docks in daylight"', 'alt="De dokken van Northport bij daglicht"'),
-    ('<span>Distance fog, DX12</span>', '<span>Mist in de verte, DX12</span>'),
-    ('aria-label="Enlarge Northport"', 'aria-label="Northport vergroten"'),
-    ('alt="Railhouse at night, an archway over the tracks"', 'alt="Railhouse bij nacht, een boog over het spoor"'),
-    ('<span>Night, DX12</span>', '<span>Nacht, DX12</span>'),
     ('aria-label="Enlarge Railhouse"', 'aria-label="Railhouse vergroten"'),
     ('alt="Stadtrand, a narrow fogged alley"', 'alt="Stadtrand, een smalle steeg in de mist"'),
     ('<span>Fogged alley</span>', '<span>Mistige steeg</span>'),
@@ -489,8 +484,6 @@ PAGES["media"] = [
     ('M83 smoke grenade cloud in the Railhouse backyard', 'Rookwolk van een M83-granaat in de achtertuin van Railhouse'),
     ('<b>Frag blast</b><span>Railhouse backyard</span>', '<b>Granaatexplosie</b><span>Achtertuin van Railhouse</span>'),
     ('A grenade detonating behind a soldier in the Railhouse backyard', 'Een granaat ontploft achter een soldaat in de achtertuin van Railhouse'),
-    ('<b>Crouched</b><span>Smaller profile, steadier aim</span>', '<b>Gehurkt</b><span>Kleiner doelwit, rustiger richten</span>'),
-    ('A crouched soldier beside a brick wall', 'Een gehurkte soldaat naast een bakstenen muur'),
     ('<span>HD texture pack</span>', '<span>HD-texturepakket</span>'),
     ('Close-up of a SpecOps soldier in woodland camouflage with the HD texture pack', 'Close-up van een SpecOps-soldaat in bosschutkleding met het HD-texturepakket'),
     ('<b>Deployment</b><span>Pick your team, role and loadout</span>', '<b>Inzet</b><span>Kies je team, rol en uitrusting</span>'),
@@ -605,14 +598,10 @@ PAGES["studio"] = [
 PAGES['index'] = [
     ('<strong>Early access</strong>',
      '<strong>Early access</strong>'),
-    ('<span>The full TC:E arsenal, all seven game modes, the original movement, Ultra visuals, a competitive match mode and two official EU servers are live. In development for the next update: a gunplay pass on hits at range, spread and damage, a rebuilt movement core, and options and a server browser in the pause menu. <a href="#roadmap">See the roadmap</a></span>',
-     '<span>Het volledige TC:E-arsenaal, alle zeven spelmodi, de originele beweging, Ultra-graphics, een competitieve wedstrijdmodus en twee officiële EU-servers zijn live. In ontwikkeling voor de volgende update: een gunplay-ronde voor treffers op afstand, spreiding en schade, een herbouwde bewegingskern, en opties en een serverlijst in het pauzemenu. <a href="#roadmap">Bekijk de roadmap</a></span>'),
     ('<h3>The full arsenal</h3>',
      '<h3>Het volledige arsenaal</h3>'),
     ('<p>All 27 guns, the knife and every grenade, with original damage, recoil and spread. Rounds punch through doors, walls and crates, losing power with every surface.</p>',
      '<p>Alle 27 wapens, het mes en elke granaat, met de originele schade, terugslag en spreiding. Kogels gaan door deuren, muren en kratten en verliezen bij elk oppervlak kracht.</p>'),
-    ('    <div class="trio">\n      <figure><img src="img/media-deployment.webp" srcset="img/media-deployment-640.webp 640w, img/media-deployment.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="The original Deployment Menu during warmup on Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>Deployment Menu</b><span>Team, role and loadout</span></figcaption></figure>\n      <figure><img src="img/media-village-yard.webp" srcset="img/media-village-yard-640.webp 640w, img/media-village-yard.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="A soldier crossing the Village courtyard on the Ultra preset" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Ultra preset, HD textures</span></figcaption></figure>\n      <figure><img src="img/media-grenade.webp" srcset="img/media-grenade-640.webp 640w, img/media-grenade.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="A frag grenade detonating in the Railhouse backyard" width="1280" height="720" loading="lazy"><figcaption><b>Frag grenade</b><span>Railhouse backyard</span></figcaption></figure>\n    </div>',
-     '    <div class="trio">\n      <figure><img src="img/media-deployment.webp" srcset="img/media-deployment-640.webp 640w, img/media-deployment.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Het originele Deployment Menu tijdens de warm-up op Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>Deployment Menu</b><span>Team, rol en uitrusting</span></figcaption></figure>\n      <figure><img src="img/media-village-yard.webp" srcset="img/media-village-yard-640.webp 640w, img/media-village-yard.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Een soldaat steekt de binnenplaats van Village over, op de preset Ultra" width="1280" height="720" loading="lazy"><figcaption><b>Village</b><span>Preset Ultra, HD-textures</span></figcaption></figure>\n      <figure><img src="img/media-grenade.webp" srcset="img/media-grenade-640.webp 640w, img/media-grenade.webp 1280w" sizes="(max-width: 860px) 100vw, 380px" alt="Een fraggranaat ontploft in de achtertuin van Railhouse" width="1280" height="720" loading="lazy"><figcaption><b>Fraggranaat</b><span>Achtertuin van Railhouse</span></figcaption></figure>\n    </div>'),
     ('<figcaption><b>Chat, kill feed, scores</b><span>The original TC:E layout</span>',
      '<figcaption><b>Chat, killfeed, scores</b><span>De originele TC:E-indeling</span>'),
     ('<p class="note">HD textures for the world, models, HUD and menus are installed by default. On RTX cards the DLSS quality modes are available too: enter <code>r_dx12Dlss 2</code> to <code>5</code> in the console, then <code>vid_restart</code>.</p>',
@@ -621,8 +610,6 @@ PAGES['index'] = [
      '<p>Twee officiële EU-servers draaien dag en nacht: #1 Ranked, waar elke wedstrijd meetelt voor de ranglijsten, en #2 Unranked, waar bots het altijd druk houden. Elke server die gehost wordt met <b>List publicly</b> aan, verschijnt hier en in het tabblad Servers van de launcher.</p>'),
     ("<div><h3>Can I play online?</h3><p>Yes. Pick an official EU server in the launcher's Servers tab, ranked or unranked, join any other public server, or host your own match in a few clicks.</p></div>",
      '<div><h3>Kan ik online spelen?</h3><p>Ja. Kies een officiële EU-server in het tabblad Servers van de launcher, ranked of unranked, join een andere publieke server of host in een paar klikken je eigen potje.</p></div>'),
-    ('<div><h3>Is this complete TC:E?</h3><p>Very nearly. Every weapon, all seven game modes, the original movement speed, leaning, ladders and swimming are in. Ledge climbing, the first-person muzzle flash and the sniper scope are next, and the <a href="#roadmap">roadmap</a> shows what follows.</p></div>',
-     '<div><h3>Is dit de complete TC:E?</h3><p>Bijna. Elk wapen, alle zeven spelmodi, de originele bewegingssnelheid, leunen, ladders en zwemmen zitten erin. Klimmen op randen, de mondingsflits in eerste persoon en het sluipschuttersvizier komen hierna, en de <a href="#roadmap">roadmap</a> laat zien wat daarna volgt.</p></div>'),
 ] + PAGES['index']
 PAGES['maps'] = [
     ('<p>Drag to compare the same spot and frame: the original textures against the HD set.</p>',
@@ -1021,3 +1008,25 @@ PAGES["account"] = [
      "Ontkoppelt elke pc, verwijdert elke passkey en meldt je overal tegelijk af. Je rang en statistieken blijven bij het account: meld je aan met Discord en koppel de pc's die je nog hebt opnieuw."),
     ("data-acct-panic>Unlink every PC and sign out</button>", "data-acct-panic>Elke pc ontkoppelen en afmelden</button>"),
 ]
+
+# 2026-11-16 screenshot refresh
+COMMON = [
+    ('<span>Contact at the boxcar</span>', '<span>Contact bij de goederenwagon</span>'),
+    ('<span>Loading bay, after dark</span>', '<span>Laadperron, na het donker</span>'),
+    ('<span>Rooftops over Westerly road</span>', '<span>Daken boven Westerly road</span>'),
+    ('<span>Holding the factory floor</span>', '<span>De fabriekshal vasthouden</span>'),
+    ('<span>The station platform</span>', '<span>Het perron</span>'),
+    ('<b>Man down</b><span>The warehouse corner</span>', '<b>Man neer</b><span>De hoek van de loods</span>'),
+    ('A rifleman sweeps the station platform beside a freight wagon on Railhouse', 'Een schutter zuivert het perron naast een goederenwagon op Railhouse'),
+    ('A scoped bolt-action rifle at the loading bay on Delta under a night sky', 'Een repeteergeweer met kijker bij het laadperron op Delta onder een nachtelijke hemel'),
+    ('An M4 on the rooftops above Westerly road on Delta, under a storm sky', 'Een M4 op de daken boven Westerly road op Delta, onder een onweerslucht'),
+    ('A soldier holds the factory floor on Stadtrand beside rusted fuel tanks', 'Een soldaat houdt de fabriekshal op Stadtrand vast naast verroeste brandstoftanks'),
+    ('Following a teammate along the Railhouse station platform, past the freight wagons', 'Een teamgenoot volgen over het perron van Railhouse, langs de goederenwagons'),
+    ('A fallen soldier at a warehouse corner, blood on the concrete', 'Een gesneuvelde soldaat op een hoek van de loods, bloed op het beton'),
+    ('aria-label="Enlarge Delta"', 'aria-label="Delta vergroten"'),
+    ('data-media-count>25 screenshots<', 'data-media-count>25 screenshots<'),
+] + COMMON
+PAGES['index'] = [
+    ('<span>The full TC:E arsenal, all seven game modes, the original movement, Ultra visuals, a live minimap, hit and suppression feedback, optional player accounts and two official EU servers are live. In development for 0.38: picking up weapons from fallen players, vaulting over low cover, more immersive firefights and smarter bots. <a href="#roadmap">See the roadmap</a></span>', '<span>Het volledige TC:E-arsenaal, alle zeven spelmodi, de originele beweging, Ultra-graphics, een live minimap, treffer- en onderdrukkingsfeedback, optionele spelersaccounts en twee officiële EU-servers zijn live. In ontwikkeling voor 0.38: wapens oppakken van gevallen spelers, over lage dekking springen, intensere vuurgevechten en slimmere bots. <a href="#roadmap">Bekijk de roadmap</a></span>'),
+    ('<div><h3>Is this complete TC:E?</h3><p>Yes, and more. Every weapon, all seven game modes, the original movement speed, leaning, ladders, swimming, ledge climbing and the sniper scope are in, joined by additions such as the live minimap and a competitive match mode. The <a href="#roadmap">roadmap</a> shows what follows.</p></div>', '<div><h3>Is dit de complete TC:E?</h3><p>Ja, en meer. Elk wapen, alle zeven spelmodi, de originele bewegingssnelheid, leunen, ladders, zwemmen, klimmen op randen en het sluipschuttersvizier zitten erin, aangevuld met nieuwe onderdelen zoals de live minimap en een competitieve wedstrijdmodus. De <a href="#roadmap">roadmap</a> laat zien wat daarna volgt.</p></div>'),
+] + PAGES['index']
