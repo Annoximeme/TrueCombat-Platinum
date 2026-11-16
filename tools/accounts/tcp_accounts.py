@@ -43,9 +43,10 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+import tcp_friends
 import tcp_webauthn as webauthn
 
-VERSION = "1.1.1"
+VERSION = "1.2.0"
 log = logging.getLogger("tcp-accounts")
 
 LINK_TAG = b"TrueCombat account link v1\n"
@@ -363,6 +364,7 @@ class Accounts:
         self.dirty = threading.Event()        # the stats aliases or the reserved list need pushing
         self.stop = threading.Event()
         self.dirty.set()
+        self.friends = tcp_friends.Friends(self, ApiError, ed25519_verify, key_id, display_name, now)
 
     # -- small helpers
     def limited(self, key: str, count: int, window: int) -> bool:
@@ -1139,6 +1141,7 @@ class Accounts:
         self.store.x("DELETE FROM challenges WHERE created<?", (t - 600,))
         self.store.x("DELETE FROM name_history WHERE until<?", (t,))
         out["sessions"] = self.store.x("DELETE FROM sessions WHERE created<?", (t - SESSION_DAYS * 86400,)).rowcount
+        self.friends.purge(INACTIVE_DAYS)
         # names of accounts with no sign-in and no linked-PC use for a year are released; the account stays
         idle = self.store.all("SELECT id, skeleton FROM accounts WHERE last_active<?", (t - INACTIVE_DAYS * 86400,))
         released = 0
@@ -1402,7 +1405,7 @@ def make_handler(acc: Accounts):
                 fn = getattr(self, "%s_%s" % (method.lower(), sub.replace("/", "_").replace(".", "_")), None)
                 if not fn or not re.fullmatch(r"[a-z_/.]+", sub):
                     raise ApiError(404, "Not found.")
-                if method == "POST" and sub not in ("claim", "pair/start"):      # the launcher sends no Origin
+                if method == "POST" and sub not in ("claim", "pair/start", "friends"):      # the launcher sends no Origin
                     origin = self.headers.get("Origin")
                     if origin and origin.rstrip("/") not in (site, public):
                         raise ApiError(403, "Cross-site request refused.")
@@ -1523,6 +1526,9 @@ def make_handler(acc: Accounts):
                                 str(d.get("label", "")), self.client_ip()))
 
         # -- linking a PC with a phone: the launcher starts, the signed-in phone approves
+        def post_friends(self, qs):
+            self.json(acc.friends.call(self.body_json(2048), self.client_ip()))
+
         def post_pair_start(self, qs):
             d = self.body_json(2048)
             self.json(acc.pair_start(d.get("public", ""), d.get("t", ""), d.get("signature", ""), str(d.get("label", "")),
