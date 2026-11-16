@@ -150,10 +150,10 @@
     </div>
 <!--studio-workshop-->
     <ul class="workshop">
+      <li class="ws-testing"><span class="ws-state">In testing</span><b>Optional, anonymous crash and hardware data from the launcher</b></li>
       <li class="ws-testing"><span class="ws-state">In testing</span><b>Pick up the weapons of fallen players</b></li>
       <li class="ws-testing"><span class="ws-state">In testing</span><b>Vaulting over low walls and cover</b></li>
       <li class="ws-testing"><span class="ws-state">In testing</span><b>More immersive firefights: breathing, impacts and a falling camera</b></li>
-      <li class="ws-testing"><span class="ws-state">In testing</span><b>Smarter bots: varied routes, cleaner lines of fire, fewer stuck moments</b></li>
       <li class="ws-dev"><span class="ws-state">In development</span><b>Shadows from muzzle flashes and explosions</b></li>
       <li class="ws-dev"><span class="ws-state">In development</span><b>Matchmaking through a Discord pickup queue</b></li>
       <li class="ws-dev"><span class="ws-state">In development</span><b>Connection quality on the scoreboard and one-click join</b></li>
@@ -293,6 +293,15 @@
     </div>
 <!--studio-devlog-->
     <div class="post-list post-trio">
+      <article class="post-card" data-tag="Launcher">
+        <a class="post-art" href="devlog-crash-reports" tabindex="-1" aria-hidden="true"><img src="img/devlog/launcher-2-play-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Launcher</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-16">16 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="crash-reports" hidden></span></p>
+          <h3><a href="devlog-crash-reports">Fixing crashes on the PCs you actually play on</a></h3>
+          <p>The launcher can now tell us where the game crashed and what hardware it runs on, if you say yes. It asks once, it is anonymous, and you can see the exact report before it leaves your PC.</p>
+          <a class="more" href="devlog-crash-reports">Read the post</a>
+        </div>
+      </article>
       <article class="post-card" data-tag="Release">
         <a class="post-art" href="devlog-inside-0372" tabindex="-1" aria-hidden="true"><img src="img/media-soldier-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
@@ -309,15 +318,6 @@
           <h3><a href="devlog-inside-0371">Inside 0.37.1, tuned to your reports</a></h3>
           <p>A HUD you can size to your screen, a magazine and health readout in the spirit of the original, weapons back at their true fire rates, smoother map loads and optional HD textures. Here is what changed in 0.37.1, and why.</p>
           <a class="more" href="devlog-inside-0371">Read the post</a>
-        </div>
-      </article>
-      <article class="post-card" data-tag="Testing">
-        <a class="post-art" href="devlog-performance-audit" tabindex="-1" aria-hidden="true"><img src="img/devlog/performance-audit-640.webp" alt="" width="640" height="360" loading="lazy"></a>
-        <div>
-          <p class="post-meta"><span class="tag">Testing</span><time datetime="2026-11-14">14 Nov 2026</time><span>6 min read</span><span class="post-stat" data-post-stat="performance-audit" hidden></span></p>
-          <h3><a href="devlog-performance-audit">Measuring every millisecond</a></h3>
-          <p>We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix. Here is what we found, what is already fixed and what comes next.</p>
-          <a class="more" href="devlog-performance-audit">Read the post</a>
         </div>
       </article>
     </div>
@@ -345,7 +345,7 @@
 </main>
 
 <!--footer-->
-<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-inside-0372"><time datetime="2026-11-16">16 Nov 2026</time><span>Inside 0.37.2, eyes up</span></a><a href="devlog-inside-0371"><time datetime="2026-11-15">15 Nov 2026</time><span>Inside 0.37.1, tuned to your reports</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
+<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-crash-reports"><time datetime="2026-11-16">16 Nov 2026</time><span>Fixing crashes on the PCs you actually play on</span></a><a href="devlog-inside-0372"><time datetime="2026-11-16">16 Nov 2026</time><span>Inside 0.37.2, eyes up</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
 <footer>
   <div class="wrap">
     <div class="foot">

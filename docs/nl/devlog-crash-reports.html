@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crashes oplossen op de pc&#x27;s waarop jullie echt spelen · TrueCombat: Platinum</title>
+<meta name="description" content="De launcher kan ons nu vertellen waar de game crashte en op welke hardware hij draait, als jij ja zegt.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-crash-reports">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-crash-reports">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Crashes oplossen op de pc&#x27;s waarop jullie echt spelen">
+<meta property="og:description" content="De launcher kan ons nu vertellen waar de game crashte en op welke hardware hij draait, als jij ja zegt.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-crash-reports.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-crash-reports.jpg">
+<meta property="article:published_time" content="2026-11-16">
+<meta property="article:section" content="Launcher">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Crashes oplossen op de pc's waarop jullie echt spelen","description":"De launcher kan ons nu vertellen waar de game crashte en op welke hardware hij draait, als jij ja zegt. Hij vraagt het één keer, het is anoniem en je ziet het exacte rapport voordat het je pc verlaat.","datePublished":"2026-11-16","dateModified":"2026-11-16","inLanguage":"nl","articleSection":"Launcher","timeRequired":"PT2M","image":"https://truecombat.eu/img/og-devlog-crash-reports.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-crash-reports","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Crashes oplossen op de pc&#x27;s waarop jullie echt spelen">
+<meta name="twitter:description" content="De launcher kan ons nu vertellen waar de game crashte en op welke hardware hij draait, als jij ja zegt.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Crashes oplossen op de pc's waarop jullie echt spelen","item":"https://truecombat.eu/nl/devlog-crash-reports"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-crash-reports">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-crash-reports">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-crash-reports">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=987ac3854f">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Wapens</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Gids</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Ranglijsten</a></li>
+      <li><a href="competitive">Competitief</a></li>
+      <li><a href="news">Nieuws</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-16">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Zoeken</button><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="media">Media</a><a href="guide">Gids</a><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Steun ons</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq">Vragen</a><a href="press">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-crash-reports" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-crash-reports" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Steun ons</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="crash-reports" data-min="2">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/devlog/launcher-2-play.webp); --art-s: url(../img/devlog/launcher-2-play-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Launcher</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-16">16 nov 2026</time><span>2 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="crash-reports" hidden></span></p>
+      <h1>Crashes oplossen op de pc&#x27;s waarop jullie echt spelen</h1>
+      <p class="lede">De launcher kan ons nu vertellen waar de game crashte en op welke hardware hij draait, als jij ja zegt. Hij vraagt het één keer, het is anoniem en je ziet het exacte rapport voordat het je pc verlaat.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#e-n-vraag-n-keer">Eén vraag, één keer</a></li>
+          <li><a href="#wat-een-rapport-bevat">Wat een rapport bevat</a></li>
+          <li><a href="#wat-er-nooit-in-staat">Wat er nooit in staat</a></li>
+          <li><a href="#wat-we-ermee-doen">Wat we ermee doen</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Als de game op jouw pc crasht, horen wij daar meestal niets van. De launcher bewaart al een crashrapport naast de game en biedt aan om het in een probleemrapport te stoppen, maar dat komt alleen bij ons als je het inpakt en opstuurt. De meeste mensen starten de game, heel begrijpelijk, gewoon opnieuw.</p>
+<p>Dan blijft het voor ons gissen. Is een crash in de DirectX 12-renderer één speler met een oude driver, of elke tweede laptop met een bepaalde grafische chip? Playtests vangen veel op, maar ze draaien op een handvol machines.</p>
+<h2 id="e-n-vraag-n-keer">Eén vraag, één keer</h2>
+<p>De volgende update voegt een kleine kaart toe aan de Spelen-pagina van de launcher. Die vraagt of je anonieme crash- en hardwaregegevens wilt delen, met twee even zware knoppen: <strong>Delen</strong> en <strong>Nee, bedankt</strong>. Wat je ook kiest, hij vraagt het niet opnieuw. Je kunt je antwoord altijd wijzigen bij Instellingen &gt; Privacy.</p>
+<p>Er wordt niets verstuurd voordat je kiest, en helemaal niets als je nee zegt.</p>
+<h2 id="wat-een-rapport-bevat">Wat een rapport bevat</h2>
+<p>Staat delen aan, dan stuurt de launcher hoogstens één kort rapport per dag, en alleen als er iets nieuws is:</p>
+<ul>
+  <li><strong>Crashes.</strong> Welk programma crashte (game of server), de Windows-foutcode en de plek in het programma waar het gebeurde, als bestandsnaam en positie, plus tot vijf stappen die eraan voorafgingen. Precies wat we nodig hebben om de verantwoordelijke regel code te vinden, met de symboolbestanden die we van elke build bewaren.</li>
+  <li><strong>Gamestarts.</strong> Hoe vaak de game sinds het vorige rapport startte en hoeveel daarvan een Veilige start waren. Zo worden crashaantallen een crashpercentage per versie, en zien we meteen of een update het beter of slechter maakte.</li>
+  <li><strong>Hardware, één keer per maand.</strong> Windows-versie, processor, werkgeheugen, grafische kaart, videogeheugen, of DirectX 12 werkt, bureaubladresolutie en verversingssnelheid.</li>
+</ul>
+<h2 id="wat-er-nooit-in-staat">Wat er nooit in staat</h2>
+<p>Geen spelnaam, geen gamesleutel, geen speler-ID, geen installatie-ID, geen bestandspaden, geen serveradressen en geen IP-adres. Niets in een rapport koppelt het aan het volgende, dus we kunnen niet eens zien of twee rapporten van dezelfde pc komen. Crashrapporten en geheugendumps blijven op je pc.</p>
+<div class="callout"><p>Zelf kijken? Instellingen &gt; Privacy &gt; Wat wordt gedeeld toont precies het rapport dat je pc als volgende zou versturen, voordat er iets je computer verlaat.</p></div>
+<h2 id="wat-we-ermee-doen">Wat we ermee doen</h2>
+<p>De cijfers komen op hetzelfde besloten dashboard dat websitebezoeken telt: crashes gegroepeerd per plek, een crashpercentage per gameversie, en welke grafische kaarten, processors en schermformaten onze spelers gebruiken. Zo weten we waar we onze tijd in moeten steken, en welke instellingen en presets we moeten afstemmen op de hardware die jullie echt hebben.</p>
+<p>Crashgegevens bewaren we 90 dagen, hardwaretellingen 13 maanden. De <a href="privacy#launcher">privacypagina</a> heeft de volledige lijst, en zoals altijd staat de code die de rapporten ontvangt in de openbare repository.</p>
+      </div>
+      <div class="post-rate" data-rate="crash-reports" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-inside-0372"><small>Vorig artikel</small>Inside 0.37.2, ogen open</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Launcher">
+        <a class="post-art" href="devlog-installer" tabindex="-1" aria-hidden="true"><img src="../img/launcher-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Launcher</span><span class="state shipped">Uitgebracht in v0.32.0</span><time datetime="2026-11-08">8 nov 2026</time><span>2 min lezen</span><span class="post-stat" data-post-stat="installer" hidden></span></p>
+          <h2><a href="devlog-installer">Eén klein installatieprogramma, elke versie</a></h2>
+          <p>Platinum was ooit een zip van bijna 800 MB. Nu is het een installatieprogramma van 7 MB, een launcher die alleen downloadt wat veranderd is, en een knop die je terugbrengt naar elke eerdere release.</p>
+          <a class="more" href="devlog-installer">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-0372" tabindex="-1" aria-hidden="true"><img src="../img/media-soldier-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.37.2</span><time datetime="2026-11-16">16 nov 2026</time><span>4 min lezen</span><span class="post-stat" data-post-stat="inside-0372" hidden></span></p>
+          <h2><a href="devlog-inside-0372">Inside 0.37.2, ogen open</a></h2>
+          <p>Een live minimap, treffers die je voelt, friendly fire, en een spel dat van de taakbalk tot het eerste beeld als Platinum oogt. Dit is wat er in 0.37.2 veranderd is, en waarom.</p>
+          <a class="more" href="devlog-inside-0372">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=fc49adbeb2"></script>
+</body>
+</html>
