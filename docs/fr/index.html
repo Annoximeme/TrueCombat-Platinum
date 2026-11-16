@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-8VWIyNPdB18bshrb7wOH2an79ptucUCR2h+gLlnKVy8='">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-r5dfbnEsJeCaV8T2IATHvBPDduZh8auKw20cYGN6ANE='">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TrueCombat: Platinum · FPS tactique gratuit, TrueCombat: Elite reconstruit</title>
 <meta name="description" content="TrueCombat: Platinum est un FPS tactique gratuit pour Windows : TrueCombat: Elite (TC:E) reconstruit en jeu natif 64 bits DirectX 12, avec les maps, les armes et le HUD d'origine.">
@@ -39,7 +39,7 @@
 <link rel="alternate" type="application/atom+xml" title="Notes de version (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=81e2ec17b6">
+<link rel="stylesheet" href="../style.css?v=3801b506db">
 </head>
 <body>
 
@@ -289,7 +289,7 @@
     <div class="compare-copy">
       <span class="eyebrow">Graphics</span>
       <h2>Le rendu d'origine, ou amélioré</h2>
-      <p>Faites glisser sur l'image pour comparer le rendu d'origine aux nouveaux préréglages. Même endroit, même image, l'arrière-cour de Railhouse en 1080p.</p>
+      <p>Faites glisser sur l'image pour comparer le rendu d'origine aux nouveaux préréglages. Même endroit, même image, la gare de triage ouest de Railhouse en 1440p.</p>
       <div class="tabs" role="group" aria-label="Préréglage à comparer avec Low">
         <button type="button" data-preset="high" aria-pressed="false">High</button>
         <button type="button" data-preset="ultra" aria-pressed="true">Ultra</button>
@@ -303,8 +303,8 @@
     </div>
     <div class="vf">
       <div class="compare" id="compare" style="--pos:40%">
-        <img id="cmp-right" src="../img/preset-ultra-v2.webp" srcset="../img/preset-ultra-v2-640.webp 640w, ../img/preset-ultra-v2.webp 1280w, ../img/preset-ultra-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="L'arrière-cour de Railhouse avec le préréglage Ultra" width="1280" height="680">
-        <img class="top" src="../img/preset-low-v2.webp" srcset="../img/preset-low-v2-640.webp 640w, ../img/preset-low-v2.webp 1280w, ../img/preset-low-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="L'arrière-cour de Railhouse avec le préréglage Low" width="1280" height="680">
+        <img id="cmp-right" src="../img/preset-ultra-v3.webp" srcset="../img/preset-ultra-v3-640.webp 640w, ../img/preset-ultra-v3.webp 1280w, ../img/preset-ultra-v3-1920.webp 1920w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="La gare de triage ouest de Railhouse avec le préréglage Ultra" width="1280" height="720">
+        <img class="top" src="../img/preset-low-v3.webp" srcset="../img/preset-low-v3-640.webp 640w, ../img/preset-low-v3.webp 1280w, ../img/preset-low-v3-1920.webp 1920w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="La gare de triage ouest de Railhouse avec le préréglage Low" width="1280" height="720">
         <span class="tag l">Low</span>
         <span class="tag r" id="cmp-tag">Ultra</span>
         <span class="handle"></span>
@@ -802,10 +802,10 @@
     b.addEventListener('click', function () {
       document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
       var p = b.dataset.preset;
-      var base = '../img/preset-' + p + '-v2';
-      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1632.webp 1632w';
+      var base = '../img/preset-' + p + '-v3';
+      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1920.webp 1920w';
       right.src = base + '.webp';
-      right.alt = 'Arrière-cour de Railhouse, préréglage ' + b.textContent;
+      right.alt = 'Gare de triage ouest de Railhouse, préréglage ' + b.textContent;
       tag.textContent = b.textContent;
     });
   });

@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-JZLcoTw4F+d+TAASbZIzOIj+S42XtutTZ0tzB/KhlhY='">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-MwDR8IBwo5YK0ofLV0isMpZB0g2HSOG27kXuzqZMKv4='">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TrueCombat: Platinum · Darmowa strzelanka taktyczna, odbudowane TrueCombat: Elite</title>
 <meta name="description" content="TrueCombat: Platinum to darmowa strzelanka taktyczna dla Windows: TrueCombat: Elite (TC:E) odbudowane jako natywna 64-bitowa gra na DirectX 12, z oryginalnymi mapami, bronią i HUD-em.">
@@ -39,7 +39,7 @@
 <link rel="alternate" type="application/atom+xml" title="Informacje o wersjach (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=81e2ec17b6">
+<link rel="stylesheet" href="../style.css?v=3801b506db">
 </head>
 <body>
 
@@ -289,7 +289,7 @@
     <div class="compare-copy">
       <span class="eyebrow">Graphics</span>
       <h2>Oryginalny wygląd albo ulepszony</h2>
-      <p>Przeciągnij po obrazie, aby porównać oryginalny wygląd z nowymi ustawieniami. To samo miejsce, ta sama klatka, podwórze Railhouse w 1080p.</p>
+      <p>Przeciągnij po obrazie, aby porównać oryginalny wygląd z nowymi ustawieniami. To samo miejsce, ta sama klatka, zachodnia bocznica Railhouse w 1440p.</p>
       <div class="tabs" role="group" aria-label="Ustawienie do porównania z Low">
         <button type="button" data-preset="high" aria-pressed="false">High</button>
         <button type="button" data-preset="ultra" aria-pressed="true">Ultra</button>
@@ -303,8 +303,8 @@
     </div>
     <div class="vf">
       <div class="compare" id="compare" style="--pos:40%">
-        <img id="cmp-right" src="../img/preset-ultra-v2.webp" srcset="../img/preset-ultra-v2-640.webp 640w, ../img/preset-ultra-v2.webp 1280w, ../img/preset-ultra-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Podwórze Railhouse w ustawieniu Ultra" width="1280" height="680">
-        <img class="top" src="../img/preset-low-v2.webp" srcset="../img/preset-low-v2-640.webp 640w, ../img/preset-low-v2.webp 1280w, ../img/preset-low-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Podwórze Railhouse w ustawieniu Low" width="1280" height="680">
+        <img id="cmp-right" src="../img/preset-ultra-v3.webp" srcset="../img/preset-ultra-v3-640.webp 640w, ../img/preset-ultra-v3.webp 1280w, ../img/preset-ultra-v3-1920.webp 1920w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Zachodnia bocznica Railhouse w ustawieniu Ultra" width="1280" height="720">
+        <img class="top" src="../img/preset-low-v3.webp" srcset="../img/preset-low-v3-640.webp 640w, ../img/preset-low-v3.webp 1280w, ../img/preset-low-v3-1920.webp 1920w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Zachodnia bocznica Railhouse w ustawieniu Low" width="1280" height="720">
         <span class="tag l">Low</span>
         <span class="tag r" id="cmp-tag">Ultra</span>
         <span class="handle"></span>
@@ -802,10 +802,10 @@
     b.addEventListener('click', function () {
       document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
       var p = b.dataset.preset;
-      var base = '../img/preset-' + p + '-v2';
-      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1632.webp 1632w';
+      var base = '../img/preset-' + p + '-v3';
+      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1920.webp 1920w';
       right.src = base + '.webp';
-      right.alt = 'Podwórze Railhouse w ustawieniu ' + b.textContent;
+      right.alt = 'Zachodnia bocznica Railhouse w ustawieniu ' + b.textContent;
       tag.textContent = b.textContent;
     });
   });
