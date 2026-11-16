@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inside 0.37.2, eyes up · TrueCombat: Platinum</title>
+<meta name="description" content="A live minimap, hits you can feel, friendly fire, and a game that looks like Platinum from the taskbar to the first frame.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-inside-0372">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-inside-0372">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Inside 0.37.2, eyes up">
+<meta property="og:description" content="A live minimap, hits you can feel, friendly fire, and a game that looks like Platinum from the taskbar to the first frame.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-inside-0372.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-inside-0372.jpg">
+<meta property="article:published_time" content="2026-11-16">
+<meta property="article:section" content="Release">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Inside 0.37.2, eyes up","description":"A live minimap, hits you can feel, friendly fire, and a game that looks like Platinum from the taskbar to the first frame. Here is what changed in 0.37.2, and why.","datePublished":"2026-11-16","dateModified":"2026-11-16","inLanguage":"en","articleSection":"Release","timeRequired":"PT4M","image":"https://truecombat.eu/img/og-devlog-inside-0372.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-inside-0372","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Inside 0.37.2, eyes up">
+<meta name="twitter:description" content="A live minimap, hits you can feel, friendly fire, and a game that looks like Platinum from the taskbar to the first frame.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Inside 0.37.2, eyes up","item":"https://truecombat.eu/devlog-inside-0372"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-inside-0372">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-inside-0372">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-inside-0372">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=987ac3854f">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news">News</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-16">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Search</button><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Support</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-inside-0372" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-inside-0372" hreflang="nl" lang="nl">Nederlands</a></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Support</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="inside-0372" data-min="4">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(img/media-soldier-hd.webp); --art-s: url(img/media-soldier-hd-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Shipped in v0.37.2</span><time datetime="2026-11-16">16 Nov 2026</time><span>4 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="inside-0372" hidden></span></p>
+      <h1>Inside 0.37.2, eyes up</h1>
+      <p class="lede">A live minimap, hits you can feel, friendly fire, and a game that looks like Platinum from the taskbar to the first frame. Here is what changed in 0.37.2, and why.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#a-live-minimap">A live minimap</a></li>
+          <li><a href="#hits-you-can-feel">Hits you can feel</a></li>
+          <li><a href="#friendly-fire-is-on">Friendly fire is on</a></li>
+          <li><a href="#a-hud-that-stays-out-of-the-way">A HUD that stays out of the way</a></li>
+          <li><a href="#throwing-grenades-properly">Throwing grenades properly</a></li>
+          <li><a href="#names">Names</a></li>
+          <li><a href="#a-game-that-looks-like-platinum">A game that looks like Platinum</a></li>
+          <li><a href="#behind-the-scenes">Behind the scenes</a></li>
+          <li><a href="#how-we-tested-it">How we tested it</a></li>
+          <li><a href="#still-on-our-list">Still on our list</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>0.37.1 was about fixing what you told us felt wrong. 0.37.2 is about awareness: knowing where your team is, knowing when you are under fire, and knowing that every round you fire counts, including the ones that hit a teammate.</p>
+<div class="callout"><p>The launcher installs 0.37.2 by itself and your settings carry over.</p></div>
+<h2 id="a-live-minimap">A live minimap</h2>
+<p>The tactical map has always been one key away, but holding a key to see where your team is means taking your hands off the fight. 0.37.2 adds a <strong>live minimap</strong> in the top-right corner.</p>
+<p>It turns with your view, so up is always the way you are facing. It shows the layout of the map, the bomb sites, north and your own team. Enemies never appear on it: the minimap only shows what your side already knows. The objective panel and the network readout move down to make room, and go back to their usual place if you switch the minimap off under <strong>Options &gt; HUD &amp; Effects</strong>.</p>
+<p><strong>M</strong> opens the full tactical map again. Older profiles had the key bound to something else after an earlier change, and they are corrected automatically. If you had deliberately put another action on M, it stays where you put it. Servers that turn the tactical map off hide the minimap too.</p>
+<h2 id="hits-you-can-feel">Hits you can feel</h2>
+<p>Until now, the first sign that you were being shot was often your health bar. That is too late. In 0.37.2, taking a hit kicks your view, flashes the screen red and leaves a blood mark on the side the shot came from, so you know where to turn before you have read a single number.</p>
+<p>Being shot at matters too. Rounds that crack past you now desaturate the edges of your screen and shake your view. Pinning someone down is a real tactic again, and you will know when it is happening to you.</p>
+<p>Both effects work with the Platinum and Classic HUDs, in DirectX 12 and OpenGL.</p>
+<h2 id="friendly-fire-is-on">Friendly fire is on</h2>
+<p>Teamwork means trusting your teammates with your back, and that trust only means something if a careless shot has a cost. <strong>Friendly fire is now on.</strong> Bullets, knives and grenades hurt teammates. Team kills are counted as team kills and no longer add to your score.</p>
+<p>Check your target, and think twice before you throw a grenade into a room your team is clearing.</p>
+<h2 id="a-hud-that-stays-out-of-the-way">A HUD that stays out of the way</h2>
+<p>When the Platinum HUD shows its kill card, the "You were killed by" line in the middle of the screen is gone. It said the same thing twice, in the spot where you were looking. The Classic HUD keeps the original line.</p>
+<p>Coloured player names now show every colour on the Platinum HUD. Several colours from the launcher's name colour picker used to show up without their colour in chat, in the Deployment Menu and on HUD cards. They now appear the way you picked them.</p>
+<h2 id="throwing-grenades-properly">Throwing grenades properly</h2>
+<p>Grenades now play their pin-pull and throwing animations in first person, and leave from your throwing hand instead of the centre of the screen. Where a grenade lands has not changed: the throw is exactly as strong and as accurate as before. It just looks like a throw now.</p>
+<h2 id="names">Names</h2>
+<p>If a name is reserved by its owner and someone else joins with it, they play as "Player####". Until now they were never told why. The game now explains it once, in plain words. Names that imitate staff tags are also cleaned up more thoroughly.</p>
+<h2 id="a-game-that-looks-like-platinum">A game that looks like Platinum</h2>
+<p>Until now, the game window, the taskbar and Task Manager still showed the old engine's icon and name. They now show the Platinum badge and <strong>TrueCombat: Platinum</strong>.</p>
+<p>The Team Terminus and Platinum intro had a problem of its own: when you pressed Play, Join or Practice in the launcher, the game skipped straight to loading, and you only saw the intro if the game opened to the main menu. The intro now plays first, and the game starts the moment it ends. Launcher 2.5.1 makes this change.</p>
+<h2 id="behind-the-scenes">Behind the scenes</h2>
+<p>Bots are ready faster when a server rotates between game modes on the same map. Windows dedicated servers are lighter and run more smoothly. The in-game What's New card has been updated for this release.</p>
+<h2 id="how-we-tested-it">How we tested it</h2>
+<p>0.37.2 went through the full release suite: movement, combat, network feel, graphics, settings and restarts, in both DirectX 12 and OpenGL, plus the launcher, the installer and the update path. Every new feature in this update was also tested on its own, on both renderers and with both HUD styles, before it went into the release.</p>
+<h2 id="still-on-our-list">Still on our list</h2>
+<p>Two things are not finished yet. The kill feed and the scoreboard still show team colours rather than each player's own name colours. And some players still lose all sound after alt-tabbing or after a change to their audio device. Both are in progress for a future update. Until the sound fix lands, restarting the game brings the sound back.</p>
+<p>As always, if something feels wrong, press <strong>F12</strong> in game to send us a report. Thank you for playing.</p>
+      </div>
+      <div class="post-rate" data-rate="inside-0372" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-inside-0371"><small>Older post</small>Inside 0.37.1, tuned to your reports</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-0371" tabindex="-1" aria-hidden="true"><img src="img/media-soldier-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Shipped in v0.37.1</span><time datetime="2026-11-15">15 Nov 2026</time><span>6 min read</span><span class="post-stat" data-post-stat="inside-0371" hidden></span></p>
+          <h2><a href="devlog-inside-0371">Inside 0.37.1, tuned to your reports</a></h2>
+          <p>A HUD you can size to your screen, a magazine and health readout in the spirit of the original, weapons back at their true fire rates, smoother map loads and optional HD textures. Here is what changed in 0.37.1, and why.</p>
+          <a class="more" href="devlog-inside-0371">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-037" tabindex="-1" aria-hidden="true"><img src="img/devlog/a-new-look-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Shipped in v0.37.0</span><time datetime="2026-11-14">14 Nov 2026</time><span>5 min read</span><span class="post-stat" data-post-stat="inside-037" hidden></span></p>
+          <h2><a href="devlog-inside-037">Inside 0.37.0, our biggest update yet</a></h2>
+          <p>A rebuilt interface, a tactical map, photo mode, optional player accounts, bots that respect your line of fire, one-life Bomb rounds and a long list of fixes from your reports. Here is what changed, why, and how we tested it.</p>
+          <a class="more" href="devlog-inside-037">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=fc49adbeb2"></script>
+</body>
+</html>
