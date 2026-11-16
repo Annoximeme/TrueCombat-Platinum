@@ -17,6 +17,11 @@ update.txt and files.txt, builds the rest, re-hashes every asset on the draft
 and removes the staging files. Then this script checks names and sizes once
 more. It never publishes unless --publish is given (owner's go required).
 
+Before publishing it prints the installer's SHA-256 and has the "Virus scan" workflow
+check the draft with VirusTotal (tools/release/virusscan.py). If any engine flags the
+installer or a program file, --publish stops until it is repeated with --accept-detections,
+so the owner sees the report first. A scan that cannot finish never blocks a release.
+
     python -X utf8 tools/release/fast_publish.py --version 0.36.0-sandbox28 \
         --base-version 0.35.0-sandbox27 --root <project root> --feed <update.txt> [--dry-run] [--publish]
 
@@ -124,13 +129,14 @@ def plan_release(args, files, workdir):
     return {'format': 'tcp-fill/1', 'version': args.version, 'base_tag': base_tag, 'assets': plan}, sends
 
 
-def run_fill(repo, tag):
+def run_workflow(repo, workflow, tag, label):
+    """Starts a workflow_dispatch workflow for the tag and waits for it. Returns True when it passed."""
     started = time.time()
-    gh('workflow', 'run', 'release-fill.yml', '--repo', repo, '--ref', 'main', '-f', f'tag={tag}')
+    gh('workflow', 'run', workflow, '--repo', repo, '--ref', 'main', '-f', f'tag={tag}')
     run_id = None
     for _ in range(30):
         time.sleep(5)
-        out = gh('run', 'list', '--repo', repo, '--workflow', 'release-fill.yml', '--event', 'workflow_dispatch',
+        out = gh('run', 'list', '--repo', repo, '--workflow', workflow, '--event', 'workflow_dispatch',
                  '--limit', '5', '--json', 'databaseId,createdAt').stdout
         for run in json.loads(out):
             created = calendar.timegm(time.strptime(run['createdAt'], '%Y-%m-%dT%H:%M:%SZ'))
@@ -140,12 +146,42 @@ def run_fill(repo, tag):
         if run_id:
             break
     if not run_id:
-        sys.exit('the Release fill workflow did not start')
-    print(f'Release fill running: https://github.com/{repo}/actions/runs/{run_id}', flush=True)
+        print(f'the {label} workflow did not start', flush=True)
+        return False
+    print(f'{label} running: https://github.com/{repo}/actions/runs/{run_id}', flush=True)
     result = subprocess.run(['gh', 'run', 'watch', str(run_id), '--repo', repo, '--exit-status', '--interval', '20'])
     if result.returncode:
         subprocess.run(['gh', 'run', 'view', str(run_id), '--repo', repo, '--log-failed'])
+        return False
+    return True
+
+
+def run_fill(repo, tag):
+    if not run_workflow(repo, 'release-fill.yml', tag, 'Release fill'):
         sys.exit('Release fill failed; the draft is not complete (nothing was published)')
+
+
+def virus_scan(repo, tag, setup):
+    """Has GitHub scan the draft with VirusTotal. Returns the number of flagged files, or None if unknown."""
+    print(f'installer SHA-256: {sha256(setup)}', flush=True)
+    if not run_workflow(repo, 'virus-scan.yml', tag, 'Virus scan'):
+        print('WARNING: the virus scan did not finish; the website shows the checksum until the daily scan runs', flush=True)
+        return None
+    out = gh('api', f'repos/{repo}/contents/tools/website/scans.json', '-H', 'Accept: application/vnd.github.raw',
+             check=False).stdout
+    try:
+        data = json.loads(out)
+        import virusscan
+        result = virusscan.summary(data, tag)
+    except (ValueError, KeyError, ImportError):
+        result = None
+    if not result or result['setup_flagged'] is None:
+        print('WARNING: no VirusTotal result for the installer yet (is the VT_API_KEY secret set?)', flush=True)
+        return None
+    print(f"virus scan: installer {result['setup_flagged']}/{result['setup_engines']} engines, "
+          f"{result['files_scanned']}/{result['files']} files scanned, {result['files_flagged']} flagged "
+          f"{result['flagged']}  report {result['report']}", flush=True)
+    return result['files_flagged']
 
 
 def main():
@@ -160,6 +196,9 @@ def main():
     parser.add_argument('--dry-run', action='store_true', help='make the plan and patches, upload nothing')
     parser.add_argument('--full', action='store_true', help='upload every asset from this PC (old way)')
     parser.add_argument('--publish', action='store_true', help="publish after verifying (owner's go only)")
+    parser.add_argument('--no-scan', action='store_true', help='skip the VirusTotal check of the draft')
+    parser.add_argument('--accept-detections', action='store_true',
+                        help='publish even though VirusTotal engines flag a file (owner has seen the report)')
     args = parser.parse_args()
     root, tag = Path(args.root).resolve(), args.tag or f'v{args.version}'
 
@@ -217,6 +256,11 @@ def main():
     if missing or extra:
         sys.exit(f'draft incomplete, not publishing. missing/wrong: {missing} unexpected: {extra}')
     print(f'all {len(files)} assets on the draft and verified', flush=True)
+    if not args.no_scan:
+        flagged = virus_scan(args.repo, tag, next(f for f in files if f.name == 'TrueCombat-Platinum-Setup.exe'))
+        if flagged and args.publish and not args.accept_detections:
+            sys.exit('VirusTotal engines flag files in this release (see the report above). Nothing was published. '
+                     'Show the owner the report; rerun with --accept-detections once they agree to publish.')
     if not args.publish:
         return
     result = gh('release', 'edit', tag, '--repo', args.repo, '--draft=false', '--prerelease=false', '--latest', check=False)

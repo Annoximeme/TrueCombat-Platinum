@@ -1957,3 +1957,27 @@ h1 .acct-tick { width: .6em; height: .6em; vertical-align: .08em; }
 .member-stack { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .member-stack li { font: 600 .72rem/1 var(--f-mono); color: var(--t-steel); padding: 5px 7px; border: 1px solid var(--line); background: var(--panel-2); border-radius: 3px; }
 @media (min-width: 1240px) and (max-width: 1299px) { .nav .wrap { gap: 10px; } .nav-links { gap: 13px; } .nav-icon { width: 36px; } }
+
+/* virus scan badge beside the download buttons, checksum panel (tools/website/scanbadge.py) */
+.scan-chip { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: rgba(13,16,22,.55); color: var(--fg); text-decoration: none; transition: border-color var(--t-base), background-color var(--t-base); }
+.scan-chip:hover { border-color: var(--t-line-hot); background: rgba(20,25,34,.8); }
+.scan-chip .scan-ico { color: var(--ok); flex: none; }
+.scan-chip.is-flagged .scan-ico { color: var(--amber); }
+.scan-chip .stack { display: grid; gap: 3px; text-align: left; }
+.scan-chip b { font: 600 0.92rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .08em; }
+.scan-chip small { font: 500 0.72rem/1 var(--f-mono); color: var(--muted); letter-spacing: 0; }
+.scan-chip[hidden] { display: none; }
+.scan-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 32px 48px; align-items: center; }
+.scan-panel .lede { margin-bottom: 18px; }
+.scan-when { color: var(--dim); font-size: var(--step--1); }
+.scan-sha { display: grid; gap: 12px; padding: 22px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.scan-sha p { margin: 0; color: var(--muted); font-size: var(--step--1); }
+.sha-row { display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; align-items: center; }
+.sha-label { grid-column: 1 / -1; font: 600 0.78rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+.sha-row code.sha { white-space: normal; word-break: break-all; font-size: 0.8rem; line-height: 1.5; padding: 8px 10px; user-select: all; }
+.sha-copy { padding: 8px 14px; font-size: 0.85rem; }
+.rel-scan { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 6px; }
+.rel-scan .sha-row { flex: 1 1 420px; max-width: 760px; }
+.rel-scan .sha-row { grid-template-columns: auto minmax(0, 1fr) auto; }
+.rel-scan .sha-label { grid-column: auto; }
+@media (max-width: 860px) { .scan-grid { grid-template-columns: 1fr; } }

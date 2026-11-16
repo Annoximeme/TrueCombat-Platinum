@@ -276,6 +276,11 @@ var TCP_API = 'https://api.truecombat.eu';
       $all('[data-size]').forEach(function (el) { el.textContent = mb; });
       $all('[data-date]').forEach(function (el) { el.textContent = fmtDate(rels[i].published_at); });
       $all('[data-download]').forEach(function (el) { el.href = zip.browser_download_url; });
+      /* the scan badge and checksum belong to the release the page was built for: hide them
+         if a newer installer went out before the site was rebuilt (the scan follows within the hour) */
+      $all('.scan-chip[data-scan], .scan-panel[data-scan]').forEach(function (el) {
+        if (!el.closest('.rel-scan')) el.hidden = el.dataset.scan !== found.rel.tag_name;
+      });
       var setup = /\.exe$/i.test(zip.name);
       $all('[data-kind]').forEach(function (el) {
         el.textContent = setup ? (el.dataset.kind === 'long' ? L.kindSetupLong : L.kindSetup) : L.kindZip;
@@ -401,6 +406,14 @@ var TCP_API = 'https://api.truecombat.eu';
         '<button type="button" class="addr" data-addr="' + esc(s.address) + '" title="' + L.copy + '">' + esc(s.address) + '</button></article>';
     }).join('');
   }
+  /* checksum copy buttons (download page, release pages) */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-copy]'); if (!b) return;
+    var label = b.textContent;
+    (navigator.clipboard ? navigator.clipboard.writeText(b.dataset.copy) : Promise.reject()).then(function () {
+      b.textContent = L.copied; setTimeout(function () { b.textContent = label; }, 1400);
+    }, function () {});
+  });
   var boards = document.querySelector('[data-boards]');
   if (boards) boards.addEventListener('click', function (e) {
     var b = e.target.closest('.addr'); if (!b) return;

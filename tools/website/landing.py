@@ -33,6 +33,7 @@ DOWNLOAD = """<section class="page-head">
           <span class="stack"><span class="big">Download <span data-version>{{version}}</span></span><span class="small"><span data-kind="long">{{kind}}</span> · <span data-size>{{size}}</span> · <span data-date>{{date}}</span></span></span>
         </a>
         <a class="btn btn-ghost" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">[[all]]</a>
+        {{scan_chip}}
       </div>
       <ol class="steps">
         <li><span>[[s1]]</span></li>
@@ -54,6 +55,8 @@ DOWNLOAD = """<section class="page-head">
     </div>
   </div>
 </section>
+
+{{scan_panel}}
 
 <section class="band" id="included">
   <div class="wrap">
