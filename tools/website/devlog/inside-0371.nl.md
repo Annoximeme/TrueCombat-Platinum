@@ -3,7 +3,7 @@ title: Inside 0.37.1, bijgesteld op jullie meldingen
 date: 2026-11-15
 time: 11:30
 summary: Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweergave in de geest van het origineel, wapens weer op hun echte vuursnelheid, soepeler laden van kaarten en optionele HD-texturen. Dit is wat er in 0.37.1 veranderd is, en waarom.
-image: img/media-soldier-hd.webp
+image: img/hero-snow-warehouse.webp
 tag: Release
 version: 0.37.1
 ---

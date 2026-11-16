@@ -273,7 +273,7 @@ SPECULATION = ('<script type="speculationrules">{"prefetch":[{"where":{"and":[{"
                '{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},'
                '{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>\n')
 
-SHOTS = ["shot-railhouse-boxcar", "shot-delta-night", "shot-delta-rooftop", "map-northport", "map-railhouse", "map-delta", "map-stadtrand", "map-village", "map-snow", "hud-scoreboard", "media-deployment"]
+SHOTS = ["shot-railhouse-yard", "shot-village-contact", "shot-snow-sniper", "shot-delta-night", "shot-northport-gashouse", "shot-stadtrand-canal", "shot-village-rooftop", "shot-railhouse-overlook", "shot-railhouse-boxcar", "shot-snow-yard", "shot-delta-rooftop", "shot-snow-warehouse"]
 GAME_DESC = {
     "en": "A free, native 64-bit DirectX 12 rebuild of TrueCombat: Elite, the realistic tactical shooter, for Windows 10 and 11.",
     "nl": "Een gratis, native 64-bit DirectX 12-versie van TrueCombat: Elite, de realistische tactische shooter, voor Windows 10 en 11.",
@@ -725,7 +725,7 @@ def devlog_latest(lang, posts):
     T = landing.ELITE_T[lang]
     return f"""<!--devlog-latest-->
     <a class="promo-card" href="truecombat-elite.html">
-      <img src="img/player-models-640.webp" alt="" width="640" height="360" loading="lazy">
+      <img src="img/shot-village-contact-640.webp" alt="" width="640" height="360" loading="lazy">
       <div>
         <span class="eyebrow">{T['c_orig']}</span>
         <h3>{T['h1']}</h3>
@@ -1266,7 +1266,7 @@ def match_page(lang):
     up = upp(lang)
     body = f"""<div data-match>
 <section class="page-head pf-head">
-  <div class="head-art" data-m-art style="--art: url({up}img/media-map-vote.webp); --art-s: url({up}img/media-map-vote-640.webp)" aria-hidden="true"></div>
+  <div class="head-art" data-m-art style="--art: url({up}img/hero-village-rooftop.webp); --art-s: url({up}img/hero-village-rooftop-640.webp)" aria-hidden="true"></div>
   <div class="wrap">
     <a class="pf-back" href="servers.html">\u2190 {T['back']}</a>
     <span class="eyebrow">{T['eyebrow']}</span>

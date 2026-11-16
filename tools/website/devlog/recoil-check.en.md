@@ -2,7 +2,7 @@
 title: When the test is wrong
 date: 2026-11-08
 summary: Our recoil checks flagged the Desert Eagle as broken. The game was right. Here is how we found out, and why we would rather chase a false alarm than miss a real one.
-image: img/media-soldier-hd.webp
+image: img/hero-snow-warehouse.webp
 tag: Testing
 ---
 Platinum is a rebuild of TrueCombat: Elite, so "it feels about right" is never good enough. Every weapon is checked against the original game: damage, fire rate, spread, and how the view kicks and recovers when you shoot. Those checks run automatically, on DirectX 12 and on OpenGL, before every release.

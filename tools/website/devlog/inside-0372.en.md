@@ -3,7 +3,7 @@ title: Inside 0.37.2, eyes up
 date: 2026-11-16
 time: 03:30
 summary: A live minimap, hits you can feel, friendly fire, and a game that looks like Platinum from the taskbar to the first frame. Here is what changed in 0.37.2, and why.
-image: img/media-soldier-hd.webp
+image: img/hero-snow-warehouse.webp
 tag: Release
 version: 0.37.2
 ---

@@ -2,7 +2,7 @@
 title: Wat de playtests ons leerden
 date: 2026-11-09
 summary: Onze laatste communityplaytests leverden een duidelijke lijst problemen op, met de gunplay voorop. Een grote reeks fixes staat klaar voor de volgende patch. Hier staat alles wat we vonden, in welke volgorde we het oplossen en hoe het past bij de rest van het werk dat eraan komt.
-image: img/media-grenade.webp
+image: img/hero-railhouse-south.webp
 tag: Roadmap
 updated: 2026-11-12
 ---

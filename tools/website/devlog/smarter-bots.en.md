@@ -2,7 +2,7 @@
 title: Teaching bots to play like people
 date: 2026-11-08
 summary: Bots that never miss are no fun, and bots that ignore the objective are worse. This is how we test every change to Platinum's bots before it reaches a server.
-image: img/media-village-yard.webp
+image: img/hero-village-contact.webp
 tag: Bots
 version: 0.33.0
 ---
