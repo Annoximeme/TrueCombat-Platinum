@@ -9,8 +9,8 @@ build.py calls:
 import html as htmlmod
 import re
 
-MEDIA = ["media-village-hd", "media-deployment", "map-railhouse", "media-grenade", "map-northport",
-         "media-village-yard", "map-snow", "map-delta", "map-stadtrand", "media-map-vote", "media-soldier-hd"]
+MEDIA = ["hero-village-rooftop", "hero-stadtrand-canal", "map-railhouse", "hero-railhouse-south", "map-northport",
+         "hero-village-contact", "map-snow", "map-delta", "map-stadtrand", "hero-village-rooftop", "hero-snow-warehouse"]
 
 LINK = {"en": "Release page", "nl": "Releasepagina", "de": "Release-Seite", "fr": "Page de la version", "pl": "Strona wydania"}
 

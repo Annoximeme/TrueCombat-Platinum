@@ -2,7 +2,7 @@
 title: The official servers now run on Linux
 date: 2026-11-09
 summary: Both official servers have moved to a native Linux build of the 0.34.0 server. What that means for your matches, why we did it, and how we made sure we could undo it in seconds.
-image: img/shot-hosted.webp
+image: img/hero-northport-gashouse.webp
 tag: Servers
 version: 0.34.0
 ---

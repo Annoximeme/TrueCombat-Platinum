@@ -2,7 +2,7 @@
 title: Match mode, built for clan nights
 date: 2026-11-07
 summary: Clan matches are where TC:E lived. Platinum 0.32 brings a full match flow to every server, with a pause that freezes the whole world.
-image: img/media-deployment.webp
+image: img/hero-stadtrand-canal.webp
 tag: Competitive
 version: 0.32.0
 ---

@@ -2,7 +2,7 @@
 title: Bots leren spelen als mensen
 date: 2026-11-08
 summary: Bots die nooit missen zijn niet leuk, en bots die het doel negeren zijn nog erger. Zo testen we elke wijziging aan de bots van Platinum voordat die op een server komt.
-image: img/media-village-yard.webp
+image: img/hero-village-contact.webp
 tag: Bots
 version: 0.33.0
 ---

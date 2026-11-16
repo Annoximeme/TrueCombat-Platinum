@@ -2,7 +2,7 @@
 title: Wedstrijdmodus, gebouwd voor clanavonden
 date: 2026-11-07
 summary: Clanwedstrijden waren het hart van TC:E. Platinum 0.32 brengt een volledig wedstrijdverloop naar elke server, met een pauze die de hele wereld bevriest.
-image: img/media-deployment.webp
+image: img/hero-stadtrand-canal.webp
 tag: Competitief
 version: 0.32.0
 ---

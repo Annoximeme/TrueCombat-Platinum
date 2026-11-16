@@ -2,7 +2,7 @@
 title: Ten pieces of work, one update
 date: 2026-11-08
 summary: The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.
-image: img/media-village-yard.webp
+image: img/hero-village-contact.webp
 tag: Testing
 version: 0.34.0
 updated: 2026-11-09

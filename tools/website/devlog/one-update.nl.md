@@ -2,7 +2,7 @@
 title: Tien stukken werk, één update
 date: 2026-11-08
 summary: De volgende update is tegelijk door tien losse inspanningen gebouwd. Hoe die samen één build werden zonder elkaar in de weg te zitten, en hoe de laatste testpoort eruitzag.
-image: img/media-village-yard.webp
+image: img/hero-village-contact.webp
 tag: Testen
 version: 0.34.0
 updated: 2026-11-09
