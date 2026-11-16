@@ -143,11 +143,15 @@ async function boot() {
   $("#me-role").textContent = me.role;
   if (me.avatar) { $("#me-avatar").src = me.avatar; $("#me-avatar").hidden = false; }
   for (const a of document.querySelectorAll("#nav a[data-perm]")) a.hidden = !can(a.dataset.perm);
+  for (const g of document.querySelectorAll("#nav .nav-group")) g.hidden = ![...g.querySelectorAll("a")].some((a) => !a.hidden);
+  navSetup();
+  paletteSetup();
   $("#logout").onclick = async () => { await api("../auth/logout", {}).catch(() => {}); location.href = "/"; };
   $("#me-account").onclick = accountDialog;
   templates();
   $("#modal-cancel").onclick = closeModal;
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closePalette(); closeNav(); } });
+  document.addEventListener("keydown", shortcutKey);
   window.addEventListener("hashchange", route);
   every(refreshReportCount, 30000);
   every(refreshAlertCount, 30000);
@@ -290,19 +294,20 @@ function route() {
   closeModal();                 // a dialog belongs to the page it was opened on
   S.timers.forEach(clearInterval);
   S.timers = [];
-  const parts = (location.hash || "#/servers").slice(2).split("/");
-  const page = parts[0] || "servers";
+  closeNav();
+  const parts = (location.hash || "#/home").slice(2).split("/");
+  const page = parts[0] || "home";
   S.page = page + (parts[1] ? "/" + parts[1] : "");
   for (const a of document.querySelectorAll("#nav a")) a.classList.toggle("on", a.dataset.page === page || (page === "server" && a.dataset.page === "servers") || (page === "player" && a.dataset.page === "players"));
   const main = $("#main");
   main.innerHTML = '<p class="empty">Loading…</p>';
-  const pages = { servers: pageServers, server: pageServer, chat: pageChat, reports: pageReports, players: pagePlayers,
+  const pages = { home: pageHome, servers: pageServers, server: pageServer, chat: pageChat, reports: pageReports, players: pagePlayers,
     player: pagePlayer, bans: pageBans, audit: pageAudit, staff: pageStaff, health: pageHealth, alerts: pageAlerts,
     watchlist: pageWatchlist, review: pageReview, schedule: pageSchedule, filter: pageFilter, replies: pageReplies,
     weekly: pageWeekly, settings: pageSettings, insights: pageInsights };
   let arg = "";
   try { arg = decodeURIComponent(parts[1] || ""); } catch (e) { arg = ""; }      // a broken link opens the page, not a blank screen
-  (pages[page] || pageServers)(main, arg);
+  (pages[page] || pageHome)(main, arg);
   if (S.me.mfa_required && !S.me.mfa_on) {
     main.insertAdjacentHTML("afterbegin", '<div class="banner"><span>Admin tools stay locked until you turn on two-step sign-in.</span><button class="btn btn-small" id="mfa-now">Set it up</button></div>');
     $("#mfa-now").onclick = accountDialog;
@@ -803,9 +808,11 @@ function pageStaff(main) {
   async function drawKeys() {
     const r = await api("staffkeys").catch((e) => { toast(e.message, true); return null; });
     if (!r) return;
-    $("#s-keys").innerHTML = r.keys.length ? `<table><tr><th>Name</th><th>Key</th><th>Made</th><th>State</th><th></th></tr>${r.keys.map((k) => `
+    const certs = r.cert_root ? `<p class="small"><span class="tag ok">Certificates on</span> Root ${esc(r.cert_root)} signs a ${r.cert_days}-day certificate for every active key, so the badge works on any server running 0.38.0 or later.</p>`
+      : '<p class="small"><span class="tag">Certificates off</span> <span class="dim">No certificate root is set up yet. Until then the badge works on servers that read the portal key list.</span></p>';
+    $("#s-keys").innerHTML = certs + (r.keys.length ? `<table><tr><th>Name</th><th>Key</th><th>Made</th><th>State</th><th></th></tr>${r.keys.map((k) => `
       <tr><td>${esc(k.name)}</td><td class="mono">${esc(k.id)}</td><td>${when(k.created)}</td><td>${k.active ? '<span class="tag ok">Active</span>' : `<span class="tag bad">Not active</span> <span class="dim small">no sign-in for ${r.idle_days} days</span>`}</td>
-      <td><button class="btn btn-small btn-danger" data-revoke="${esc(k.id)}" data-name="${esc(k.name)}">Revoke</button></td></tr>`).join("")}</table>` : '<p class="empty">No staff keys made in the portal yet.</p>';
+      <td><button class="btn btn-small btn-danger" data-revoke="${esc(k.id)}" data-name="${esc(k.name)}">Revoke</button></td></tr>`).join("")}</table>` : '<p class="empty">No staff keys made in the portal yet.</p>');
   }
   drawKeys();
   async function draw() {
@@ -822,7 +829,19 @@ function pageStaff(main) {
 /* ------------------------------------------------------------------ health */
 function pageHealth(main) {
   main.innerHTML = `<div class="head"><div><p class="eyebrow">Infrastructure</p><h1>Health</h1></div></div>
-    <div class="cards" id="h-top"></div><div class="panel table-wrap" id="h-units"></div>`;
+    <div class="cards" id="h-top"></div><div class="panel table-wrap" id="h-units"></div>
+    ${can("backup") ? '<div class="panel" id="h-backup"></div>' : ""}`;
+  const bk = $("#h-backup");
+  const drawBackup = async () => {
+    const b = await api("backup").catch((e) => ({ error: e.message }));
+    bk.innerHTML = `<div class="head"><div><h3>Database snapshot</h3><p class="dim small">Every night at ${esc(b.hour_utc || "04:20")} UTC the portal writes a copy of its database without sign-in sessions. The nightly off-site backup encrypts it and stores it in the private backup repository.</p></div>
+      <div class="actions"><button class="btn btn-small" id="bk-now">Make a snapshot now</button></div></div>
+      ${b.at ? `<dl class="kv"><dt>Last snapshot</dt><dd>${b.ok ? '<span class="tag ok">OK</span>' : '<span class="tag bad">Failed</span>'} ${when(b.at)} <span class="dim">(${ago(b.at)})</span></dd>
+        ${b.ok ? `<dt>Size</dt><dd>${(b.size / 1048576).toFixed(2)} MB · ${b.tables} tables</dd><dt>SHA-256</dt><dd class="mono">${esc(String(b.sha256 || "").slice(0, 16))}…</dd>` : `<dt>Problem</dt><dd class="error">${esc(b.error || "")}</dd>`}</dl>`
+        : `<p class="empty">${esc(b.error || "No snapshot yet.")}</p>`}`;
+    $("#bk-now").onclick = async () => { try { const r = await api("backup", {}); toast(r.ok ? "Snapshot written." : "Snapshot failed: " + r.error, !r.ok); drawBackup(); } catch (e) { toast(e.message, true); } };
+  };
+  if (bk) drawBackup();
   $("#h-units").onclick = (e) => {
     const b = e.target.closest("button[data-restart]"); if (!b) return;
     const key = b.dataset.restart;
@@ -1306,6 +1325,217 @@ async function pageSettings(main, key) {
       ${["set", "rollback"].includes(h.kind) ? `<button class="btn btn-small" data-rb="${h.id}">Roll back to ${esc(h.old)}</button>` : ""}</li>`).join("")}</ul>` : '<p class="empty">No changes yet.</p>';
   }
   draw();
+}
+
+
+/* ------------------------------------------------------------------ 1.4: navigation, search and shortcuts */
+const NAV_KEY = "nav-closed";
+function navSetup() {
+  let closed = [];
+  try { closed = JSON.parse(localStorage.getItem(NAV_KEY) || "[]"); } catch (e) { closed = []; }
+  for (const g of document.querySelectorAll("#nav .nav-group")) {
+    g.classList.toggle("closed", closed.includes(g.dataset.group));
+    g.querySelector(".nav-head").onclick = () => {
+      g.classList.toggle("closed");
+      const now = [...document.querySelectorAll("#nav .nav-group.closed")].map((x) => x.dataset.group);
+      try { localStorage.setItem(NAV_KEY, JSON.stringify(now)); } catch (e) { /* private window */ }
+    };
+  }
+  for (const a of document.querySelectorAll("#nav a[data-key]")) a.insertAdjacentHTML("beforeend", `<kbd class="key">g ${esc(a.dataset.key)}</kbd>`);
+  $("#nav-toggle").onclick = () => ($("#side").classList.contains("open") ? closeNav() : openNav());
+  $("#scrim").onclick = closeNav;
+  $("#search-open").onclick = openPalette;
+  $("#search-top").onclick = openPalette;
+}
+function openNav() { $("#side").classList.add("open"); $("#scrim").hidden = false; $("#nav-toggle").setAttribute("aria-expanded", "true"); }
+function closeNav() { const s = $("#side"); if (!s) return; s.classList.remove("open"); $("#scrim").hidden = true; $("#nav-toggle").setAttribute("aria-expanded", "false"); }
+
+function typing(e) {
+  const t = e.target;
+  return t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName));
+}
+function shortcutKey(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); return $("#palette").hidden ? openPalette() : closePalette(); }
+  if (typing(e) || e.ctrlKey || e.metaKey || e.altKey || !$("#modal").hidden || !$("#palette").hidden) return;
+  if (e.key === "/") { e.preventDefault(); return openPalette(); }
+  if (e.key === "?") { e.preventDefault(); return shortcutHelp(); }
+  if (e.key === "g") { shortcutKey.g = Date.now(); return; }
+  if (shortcutKey.g && Date.now() - shortcutKey.g < 1200) {
+    shortcutKey.g = 0;
+    const a = document.querySelector(`#nav a[data-key="${CSS.escape(e.key)}"]`);
+    if (a && !a.hidden) { e.preventDefault(); location.hash = a.getAttribute("href"); }
+  }
+}
+function shortcutHelp() {
+  const keys = [...document.querySelectorAll("#nav a[data-key]")].filter((a) => !a.hidden)
+    .map((a) => `<dt><kbd>g</kbd> <kbd>${esc(a.dataset.key)}</kbd></dt><dd>${esc(a.firstChild.textContent.trim())}</dd>`).join("");
+  modal({ title: "Keyboard shortcuts", ok: "Close", onOk: () => {},
+    body: `<dl class="shortcuts"><dt><kbd>Ctrl</kbd> <kbd>K</kbd> or <kbd>/</kbd></dt><dd>Search players, bans, reports and pages, or run a command</dd>
+      <dt><kbd>?</kbd></dt><dd>This list</dd><dt><kbd>Esc</kbd></dt><dd>Close a dialog</dd>${keys}</dl>
+      <p class="dim small">Commands in search: <span class="mono">warn</span>, <span class="mono">mute</span>, <span class="mono">kick</span>, <span class="mono">ban</span>, <span class="mono">punish</span> or <span class="mono">move</span> followed by part of a name opens that dialog for a player who is online. <span class="mono">announce</span> messages every server.</p>` });
+}
+
+const VERBS = { warn: ["player.warn", "Warn"], mute: ["player.mute", "Mute"], kick: ["player.kick", "Kick"], ban: ["ban.temp", "Ban"],
+  punish: ["punish", "Punish"], move: ["player.move", "Move"] };
+const P = { items: [], on: 0, seq: 0, timer: 0 };
+function paletteSetup() {
+  const input = $("#palette-q");
+  input.oninput = () => { clearTimeout(P.timer); P.timer = setTimeout(paletteSearch, 140); paletteDraw(paletteLocal(input.value), true); };
+  input.onkeydown = (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); P.on = Math.max(0, Math.min(P.items.length - 1, P.on + (e.key === "ArrowDown" ? 1 : -1))); paletteMark(); }
+    else if (e.key === "Enter") { e.preventDefault(); paletteRun(P.items[P.on]); }
+    else if (e.key === "Escape") { e.preventDefault(); closePalette(); }
+  };
+  $("#palette").onclick = (e) => { if (e.target.id === "palette") closePalette(); };
+  $("#palette-list").onclick = (e) => { const it = e.target.closest(".palette-item"); if (it) { e.preventDefault(); paletteRun(P.items[+it.dataset.i]); } };
+  $("#palette-list").onmousemove = (e) => { const it = e.target.closest(".palette-item"); if (it && +it.dataset.i !== P.on) { P.on = +it.dataset.i; paletteMark(); } };
+}
+function openPalette() {
+  closeNav();
+  $("#palette").hidden = false;
+  const input = $("#palette-q");
+  input.value = "";
+  paletteDraw(paletteLocal(""), false);
+  input.focus();
+  loadServers().then(() => { if (!$("#palette").hidden) paletteDraw(paletteLocal(input.value), true); }).catch(() => {});
+}
+function closePalette() { const p = $("#palette"); if (p) p.hidden = true; }
+function pageEntries() {
+  return [...document.querySelectorAll("#nav a")].filter((a) => !a.hidden && !(a.closest(".nav-group") || {}).hidden)
+    .map((a) => ({ kind: "Page", label: a.firstChild.textContent.trim(), href: a.getAttribute("href"), sub: a.closest(".nav-group") ? a.closest(".nav-group").querySelector(".nav-head").textContent : "" }));
+}
+function paletteLocal(q) {
+  const low = q.trim().toLowerCase();
+  const out = [];
+  const verb = low.split(/\s+/)[0];
+  if (VERBS[verb] && can(VERBS[verb][0])) {
+    const who = low.slice(verb.length).trim();
+    for (const s of S.servers) for (const p of s.players || []) {
+      if (p.bot || (who && !p.name.toLowerCase().includes(who))) continue;
+      if (verb === "punish" && !p.pid) continue;
+      out.push({ kind: VERBS[verb][1], label: `${VERBS[verb][1]} ${p.name}`, sub: s.name, act: () => playerAction(s.key, p.slot, p.name, verb, p.pid) });
+    }
+    if (!out.length) out.push({ kind: "Hint", label: who ? `Nobody online matches "${who}"` : "Type part of a player's name", sub: "", act: null });
+    return out.slice(0, 12);
+  }
+  if ("announce".startsWith(verb) && verb.length >= 3 && can("server.say")) out.push({ kind: "Command", label: "Message every server", sub: "announce", act: () => sayDialog("*") });
+  if (/^(sched)/.test(verb) && can("server.say")) out.push({ kind: "Command", label: "Schedule an action", sub: "", act: () => scheduleDialog("") });
+  if (/^(short|keys|help)/.test(verb)) out.push({ kind: "Command", label: "Keyboard shortcuts", sub: "?", act: shortcutHelp });
+  for (const e of pageEntries()) if (!low || e.label.toLowerCase().includes(low) || e.sub.toLowerCase().includes(low)) out.push(e);
+  for (const s of S.servers) if (!low || s.name.toLowerCase().includes(low) || s.key.includes(low)) out.push({ kind: "Server", label: s.name, sub: s.online ? `${s.map} · ${s.humans} players` : "offline", href: "#/server/" + s.key });
+  return low ? out.slice(0, 10) : out.slice(0, 14);
+}
+async function paletteSearch() {
+  const q = $("#palette-q").value.trim();
+  const local = paletteLocal(q);
+  if (q.length < 2 || VERBS[q.toLowerCase().split(/\s+/)[0]]) return paletteDraw(local, false);
+  const seq = ++P.seq;
+  let r;
+  try { r = await api("search?q=" + encodeURIComponent(q)); } catch (e) { return paletteDraw(local, false); }
+  if (seq !== P.seq || $("#palette").hidden) return;
+  const found = [];
+  for (const o of r.online) found.push({ kind: "Online", label: o.name, sub: o.server_name, href: o.pid ? "#/player/" + o.pid : "#/server/" + o.server });
+  for (const p of r.players) if (!r.online.some((o) => o.pid === p.pid)) found.push({ kind: "Player", label: p.names[0] || p.pid, sub: (p.banned ? "banned · " : "") + (p.last_seen ? "seen " + ago(p.last_seen) : "stats only"), href: "#/player/" + p.pid });
+  for (const b of r.bans) found.push({ kind: "Ban", label: `#${b.id} ${b.name}`, sub: (b.active ? until(b.expires) : "lifted") + " · " + b.reason, href: b.pid ? "#/player/" + b.pid : "#/bans" });
+  for (const x of r.reports) found.push({ kind: x.source === "bug" ? "Bug" : x.source === "appeal" ? "Appeal" : "Report", label: `#${x.id} ${x.target_name || x.summary}`, sub: x.status + " · " + x.summary, href: "#/reports" });
+  for (const x of r.staff) found.push({ kind: "Staff", label: x.name || x.discord_id, sub: x.role || "Discord role", href: "#/staff" });
+  paletteDraw(found.concat(local), false);
+}
+function paletteDraw(items, keepOn) {
+  P.items = items;
+  if (!keepOn || P.on >= items.length) P.on = 0;
+  let last = "";
+  $("#palette-list").innerHTML = items.map((it, i) => {
+    const group = it.kind === "Page" ? "Pages" : it.kind === "Server" ? "Servers" : ["Command", "Hint"].includes(it.kind) || VERBS[it.label.split(" ")[0].toLowerCase()] ? "Actions" : "Results";
+    const head = group !== last ? `<div class="palette-sec">${group}</div>` : "";
+    last = group;
+    return `${head}<a class="palette-item" data-i="${i}" role="option"${it.href ? ` href="${esc(it.href)}"` : ""}><span class="kind">${esc(it.kind)}</span><span>${esc(it.label)}</span><span class="sub">${esc(it.sub || "")}</span></a>`;
+  }).join("") || '<p class="empty">Nothing found.</p>';
+  paletteMark();
+}
+function paletteMark() {
+  for (const el of document.querySelectorAll("#palette-list .palette-item")) el.classList.toggle("on", +el.dataset.i === P.on);
+  const on = document.querySelector("#palette-list .palette-item.on");
+  if (on) on.scrollIntoView({ block: "nearest" });
+}
+function paletteRun(it) {
+  if (!it || (!it.href && !it.act)) return;
+  closePalette();
+  if (it.act) return it.act();
+  location.hash = it.href;
+}
+
+/* ------------------------------------------------------------------ 1.4: home dashboard */
+function spark(points) {
+  if (!points || points.length < 2) return "";
+  const W = 200, H = 34, t0 = points[0][0], t1 = points[points.length - 1][0] || t0 + 1, max = Math.max(1, ...points.map((p) => p[1]));
+  const xy = points.map((p) => [((p[0] - t0) / Math.max(1, t1 - t0)) * W, H - 2 - ((H - 4) * p[1]) / max]);
+  const line = xy.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join("");
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path class="a" d="${line}L${W} ${H}L0 ${H}Z"></path><path class="l" d="${line}"></path></svg>`;
+}
+function greeting() {
+  const h = new Date().getHours();
+  return h < 6 ? "Late shift" : h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+}
+const ACTION_WORD = { kick: "kicked", warn: "warned", mute: "muted", unmute: "unmuted", ban: "banned", unban: "lifted the ban on", move: "moved",
+  "undo ban": "undid the ban on", "undo mute": "undid the mute on", "report closed": "closed a report on", "report claimed": "took a report on",
+  "appeal accepted": "accepted the appeal of", "appeal denied": "denied the appeal of", note: "added a note on", watch: "started watching" };
+
+function pageHome(main) {
+  main.innerHTML = `<div class="head"><div><p class="eyebrow">Overview</p><h1>${esc(greeting())}, ${esc(S.me.name)}</h1><p class="muted" id="h-sub"></p></div>
+    <div class="actions"><button class="btn" id="h-search"><span class="mag"></span> Search <kbd>Ctrl K</kbd></button>${can("server.say") ? '<button class="btn" id="h-say">Message every server</button>' : ""}</div></div>
+    <div class="home-tiles" id="h-tiles"></div>
+    <div class="grid grid-3"><div><div class="panel"><h3>Needs attention</h3><ul class="attention" id="h-attn"></ul></div>
+        <div class="panel"><div class="head"><h3>Servers</h3><a class="small dim" href="#/servers">All servers</a></div><div id="h-servers"></div></div></div>
+      <div><div class="panel"><div class="head"><h3>Latest alerts</h3><a class="small dim" href="#/alerts">All alerts</a></div><ul class="feed" id="h-alerts"></ul></div>
+        <div class="panel" id="h-sus-wrap" hidden><h3>Online and worth a look</h3><ul class="feed" id="h-sus"></ul></div></div>
+      <div><div class="panel"><h3>Team activity</h3><ul class="feed" id="h-act"></ul></div>
+        <div class="panel" id="h-up-wrap" hidden><h3>Coming up</h3><ul class="feed" id="h-up"></ul></div></div></div>`;
+  $("#h-search").onclick = openPalette;
+  const say = $("#h-say");
+  if (say) say.onclick = () => sayDialog("*");
+  every(async () => {
+    let d;
+    try { d = await api("dashboard"); } catch (e) { toast(e.message, true); return; }
+    const r = d.reports || { open: 0, claimed: 0, mine: 0, by_source: {} };
+    const tile = (href, label, value, note, cls = "", extra = "") => `<${href ? `a href="${href}"` : "div"} class="tile ${cls}"><span class="meta">${label}</span><span class="stat">${value}</span>${extra}<span class="note">${note}</span></${href ? "a" : "div"}>`;
+    const openAge = r.oldest_open ? Date.now() / 1000 - r.oldest_open : 0;
+    $("#h-sub").textContent = `${d.players_online} player${d.players_online === 1 ? "" : "s"} on ${d.servers_up} of ${d.servers.length} servers right now.`;
+    $("#h-tiles").innerHTML = [
+      tile("#/servers", "Players online", d.players_online, `peak today ${d.peak_today} · ${d.new_players_24h} new in 24 h`, "", spark(d.spark)),
+      tile("#/servers", "Servers up", `${d.servers_up}<small class="muted"> / ${d.servers.length}</small>`, d.servers_up < d.servers.length ? "some servers are not answering" : "all answering", d.servers_up < d.servers.length ? "hot" : ""),
+      can("reports") ? tile("#/reports", "Open reports", r.open, `${r.claimed} in progress · ${r.mine} yours${r.oldest_open ? " · oldest " + ago(r.oldest_open).replace(" ago", "") : ""}`, openAge > 3600 ? "hot" : r.open ? "warm" : "") : "",
+      tile("#/reports", "Appeals waiting", d.appeals_open, "answered by an admin who did not make the ban", d.appeals_open ? "warm" : ""),
+      tile("#/alerts", "Alerts, 24 h", d.alerts_24h, d.urgent_24h ? d.urgent_24h + " urgent" : "nothing urgent", d.urgent_24h ? "hot" : ""),
+      tile("#/bans", "Active bans", d.bans_active, d.bans_24h + " new in 24 h"),
+    ].join("");
+    const attn = [];
+    for (const s of d.servers.filter((x) => !x.online)) attn.push(["bad", `<a href="#/server/${esc(s.key)}"><b>${esc(s.name)}</b> is not answering</a>`, esc(s.error || "")]);
+    for (const u of d.services_down || []) attn.push(["bad", `<a href="#/health"><b>${esc(u.name)}</b> is ${esc(u.state)}</a>`, ""]);
+    if (openAge > 3600) attn.push(["bad", `<a href="#/reports">A report has waited ${esc(ago(r.oldest_open).replace(" ago", ""))}</a>`, `${r.open} open`]);
+    else if (r.open) attn.push(["", `<a href="#/reports">${r.open} open report${r.open > 1 ? "s" : ""}</a>`, "take one"]);
+    if (d.appeals_open) attn.push(["", `<a href="#/reports">${d.appeals_open} ban appeal${d.appeals_open > 1 ? "s" : ""} waiting</a>`, ""]);
+    for (const w of d.watch_online) attn.push(["", `<a href="#/player/${esc(w.pid)}">Watched: <b>${esc(w.name)}</b> is on ${esc(w.server)}</a>`, esc(w.reason || "")]);
+    for (const x of d.suspicion.filter((y) => y.score >= 60)) attn.push(["bad", `<a href="#/player/${esc(x.pid)}"><b>${esc(x.name)}</b> scores ${x.score}</a>`, esc(x.server)]);
+    for (const e of d.events) attn.push(["ok", `<a href="#/server/${esc(e.server)}">Event mode on ${esc(e.server)}</a>`, esc(e.note || e.by_name)]);
+    if (d.backup && d.backup.stale) attn.push(["bad", `<a href="#/health">The nightly database snapshot is ${d.backup.at ? "old" : "missing"}</a>`, esc(d.backup.error || "")]);
+    if ((d.disk_used_pct || 0) > 85) attn.push(["bad", `<a href="#/health">Disk ${d.disk_used_pct}% full</a>`, ""]);
+    if (S.me.mfa_required && !S.me.mfa_on) attn.push(["bad", '<a href="#" data-mfa>Turn on two-step sign-in to unlock admin tools</a>', ""]);
+    $("#h-attn").innerHTML = attn.map(([c, h, n]) => `<li><span class="sev ${c}"></span><span>${h}</span><span class="go dim small">${n}</span></li>`).join("")
+      || '<li><span class="sev ok"></span><span>All quiet. Nothing needs you right now.</span></li>';
+    const m = $("#h-attn [data-mfa]");
+    if (m) m.onclick = (e) => { e.preventDefault(); accountDialog(); };
+    $("#h-servers").innerHTML = d.servers.map((s) => `<a class="srv-row" href="#/server/${esc(s.key)}"><span class="n"><span class="dot ${s.online ? "on" : "off"}"></span>${esc(s.name)}</span>
+      <span class="p">${s.online ? s.humans : "–"}<small> / ${s.max_players || "?"}</small></span>
+      <span class="m">${s.online ? esc(s.map) + (s.mode ? " · " + esc(s.mode) : "") + (s.bots ? " · " + s.bots + " bots" : "") : "offline"}${s.needpass ? " · password" : ""}</span></a>`).join("");
+    $("#h-alerts").innerHTML = d.alerts.map((a) => `<li><time>${clock(a.at)}</time><span>${a.pid ? `<a href="#/player/${esc(a.pid)}">${esc(a.title)}</a>` : esc(a.title)}</span></li>`).join("") || '<li><span></span><span class="dim">No alerts in the last 24 hours.</span></li>';
+    $("#h-sus-wrap").hidden = !d.suspicion.length;
+    $("#h-sus").innerHTML = d.suspicion.map((x) => `<li><span>${susTag(x.score) || x.score}</span><span><a href="#/player/${esc(x.pid)}">${esc(x.name)}</a> <span class="dim small">· ${esc(x.server)}</span><div class="dim small">${esc(x.reasons.join(" · "))}</div></span></li>`).join("");
+    $("#h-act").innerHTML = d.activity.map((a) => `<li><time>${clock(a.at)}</time><span><b>${esc(a.staff)}</b> ${esc(ACTION_WORD[a.action] || a.action)} ${a.target_pid ? `<a href="#/player/${esc(a.target_pid)}">${esc(a.target)}</a>` : esc(a.target)}${a.server ? ` <span class="dim small">· ${esc(a.server)}</span>` : ""}</span></li>`).join("") || '<li><span></span><span class="dim">No staff actions yet.</span></li>';
+    const label = { say: "Announcement", restart: "Match restart", map: "Map change", nextmap: "Next map" };
+    $("#h-up-wrap").hidden = !d.schedule.length;
+    $("#h-up").innerHTML = d.schedule.map((j) => `<li><time>${clock(j.next_at)}</time><span>${esc(label[j.action] || j.action)} <span class="dim small">· ${esc(j.server === "*" ? "every server" : j.server)}</span><div class="dim small">${esc(j.arg || "")}</div></span></li>`).join("");
+  }, 10000, "home");
 }
 
 boot();

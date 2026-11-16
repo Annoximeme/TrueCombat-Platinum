@@ -64,6 +64,9 @@ inspect() {
   say "caddy:   $(grep -q '^staff.truecombat.eu' /etc/caddy/Caddyfile 2>/dev/null && echo 'site block present' || echo 'no staff.truecombat.eu block yet')"
   say "dns:     $(getent hosts staff.truecombat.eu || echo 'staff.truecombat.eu does not resolve yet')"
   say "service: $(systemctl is-active $UNIT 2>/dev/null || true)"
+  say "watch:   $(systemctl is-active tcp-staff-watch.timer 2>/dev/null || true)"
+  say "snapshot: $( [ -f $DATA/backups/portal-snapshot.db ] && ls -l --time-style=+%FT%TZ $DATA/backups/portal-snapshot.db | awk '{print $5" bytes, "$6}' || echo 'none yet')"
+  say "offsite: $(grep -q tcp-staff-portal /opt/tcp/backup/tcp_offsite_backup.py 2>/dev/null && echo 'snapshot included' || echo 'snapshot NOT in the off-site backup yet')"
 }
 
 install_portal() {
@@ -74,8 +77,9 @@ install_portal() {
   install -d -m 0755 /opt/tcp
   if [ -d "$APP" ]; then rm -rf "$APP.previous"; cp -a "$APP" "$APP.previous"; fi
   install -d -m 0755 "$APP" "$APP/static" "$APP/static/fonts" "$APP/static/maps"
-  install -m 0644 "$HERE/tcp_staff_portal.py" "$APP/"
+  install -m 0644 "$HERE/tcp_staff_portal.py" "$HERE/deploy/tcp_staff_watch.py" "$APP/"
   install -m 0644 "$HERE"/static/*.html "$HERE"/static/*.css "$HERE"/static/*.js "$HERE"/static/*.png "$APP/static/"
+  for f in "$HERE"/static/*.webmanifest; do [ -f "$f" ] && install -m 0644 "$f" "$APP/static/"; done
   install -m 0644 "$HERE"/static/fonts/*.woff2 "$APP/static/fonts/"
   install -m 0644 "$HERE"/static/maps/*.json "$HERE"/static/maps/*.webp "$APP/static/maps/"
   git -C "$HERE" rev-parse HEAD > "$APP/DEPLOYED_COMMIT" 2>/dev/null || date -u +%FT%TZ > "$APP/DEPLOYED_COMMIT"
@@ -132,12 +136,15 @@ install_portal() {
     install -m 0644 "$HERE/deploy/50-tcp-staff-portal.rules" /etc/polkit-1/rules.d/50-tcp-staff-portal.rules
   fi
   install -m 0644 "$HERE/deploy/tcp-staff-portal.service" /etc/systemd/system/$UNIT
+  # the watch posts to the staff channel when the portal stops answering (the portal cannot report that itself)
+  install -m 0644 "$HERE/deploy/tcp-staff-watch.service" "$HERE/deploy/tcp-staff-watch.timer" /etc/systemd/system/
   systemctl daemon-reload
   systemctl enable $UNIT >/dev/null
   systemctl restart $UNIT
   sleep 3
   if curl -fsS http://127.0.0.1:8097/healthz >/dev/null; then
     say "portal is up: $(curl -fsS http://127.0.0.1:8097/healthz)"
+    systemctl enable --now tcp-staff-watch.timer >/dev/null && say "portal watch timer: $(systemctl is-active tcp-staff-watch.timer)"
   else
     say "portal did not come up; rolling back"; journalctl -u $UNIT -n 30 --no-pager || true
     if [ -d "$APP.previous" ]; then rm -rf "$APP"; mv "$APP.previous" "$APP"; systemctl restart $UNIT || true
@@ -206,8 +213,9 @@ insights_link() {
 
 uninstall() {
   need_root
-  systemctl disable --now $UNIT 2>/dev/null || true
-  rm -f /etc/systemd/system/$UNIT /etc/polkit-1/rules.d/50-tcp-staff-portal.rules
+  systemctl disable --now $UNIT tcp-staff-watch.timer 2>/dev/null || true
+  rm -f /etc/systemd/system/$UNIT /etc/systemd/system/tcp-staff-watch.service /etc/systemd/system/tcp-staff-watch.timer
+  rm -f /etc/polkit-1/rules.d/50-tcp-staff-portal.rules
   systemctl daemon-reload
   say "stopped and removed; $DATA, $ETC and $APP are kept"
 }

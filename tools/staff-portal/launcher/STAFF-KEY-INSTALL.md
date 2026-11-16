@@ -47,3 +47,31 @@ Never log the seed, and never send it anywhere: only the public key leaves the P
 Test against the live portal with a real staff account. Expect 201 the first time and 410 when the same link
 is opened again. After that, staffkeys.txt on the VPS lists the new key id, and in 0.36.0 the badge shows
 in game. Bump the launcher version and `platinum_launcher_version.h` as usual.
+
+## Staff certificates (launcher 2.5, game 0.38.0)
+
+From game 0.38.0, every server verifies the staff badge with a certificate instead of a key list, including
+community and offline servers. The portal signs the staff member's public key with a root key whose public half is
+built into the game. The launcher keeps that certificate current.
+
+1. **On a claim.** A 201 answer may carry `"cert": "TCPSTAFFCERT1 ..."` and `"expires": <unix time>`. Write the key id
+   to `profile\staff.keyid` and the certificate line to `profile\staff.cert` (each one line ending in CRLF), each
+   through a `.tmp` file and `MoveFileExW`. If the answer carries no certificate, delete any old `staff.cert`.
+2. **At start-up**, on a background thread, and only where `staff.key` and `staff.keyid` exist: when `staff.cert` is
+   missing, belongs to another key id, or expires in under 10 days, and no attempt was made in the last 24 hours
+   (time stamp of `profile\staff.cert.check`), request
+
+       GET https://staff.truecombat.eu/api/staffcert?id=<key id>
+
+   | Answer | Launcher does |
+   |---|---|
+   | 200 `{"cert": "...", "expires": ...}` | checks the line (9 fields, `TCPSTAFFCERT1`, same key id) and writes `staff.cert` |
+   | 404 | the key is revoked, idle or unknown: deletes `staff.cert` |
+   | 429 / other / no network | keeps the current file and tries again the next day |
+
+3. The certificate is public data and useless without `staff.key`, so no prompt is needed. The game also writes
+   `staff.keyid` the first time it reads the key, so keys installed before launcher 2.5 are renewed as well.
+
+Certificate line: `TCPSTAFFCERT1 <root id> <key id> <role> <issued> <expires> <public key hex> <name hex> <signature hex>`.
+The signature is Ed25519 over the text `TCP-STAFF-CERT-1`, root id, key id, role, issued, expires, public key hex and
+name hex, joined with single LF characters.
