@@ -47,7 +47,8 @@ GAP = 16.0                    # seconds between VirusTotal requests (free tier: 
 DIRECT_MAX = 32 * 1024 * 1024  # bigger uploads need /files/upload_url
 VT_MAX = 650 * 1024 * 1024     # VirusTotal does not take bigger files
 REFRESH = datetime.timedelta(hours=72)  # re-read the newest release's results this often
-SETTLE = datetime.timedelta(hours=6)    # a fresh analysis is re-read once after this, as late engines report
+SETTLE = datetime.timedelta(hours=6)
+REFRESH_ALL = False                     # --refresh: re-read the newest release's results now    # a fresh analysis is re-read once after this, as late engines report
 
 
 def now():
@@ -171,7 +172,11 @@ class VirusTotal:
             return None
         return {"malicious": stats.get("malicious", 0), "suspicious": stats.get("suspicious", 0),
                 "engines": sum(stats.get(k, 0) for k in ("malicious", "suspicious", "undetected", "harmless")),
-                "analysed": iso(datetime.datetime.fromtimestamp(attrs["last_analysis_date"], datetime.timezone.utc))}
+                "analysed": iso(datetime.datetime.fromtimestamp(attrs["last_analysis_date"], datetime.timezone.utc)),
+                # which engines raised a flag and what they called it, for false-positive reports
+                "flagged_by": sorted("%s: %s" % (engine, r.get("result") or r.get("category"))
+                                     for engine, r in (attrs.get("last_analysis_results") or {}).items()
+                                     if r.get("category") in ("malicious", "suspicious"))}
 
     def upload(self, path):
         size = path.stat().st_size
@@ -244,6 +249,8 @@ def todo(data, order, latest):
                 if entry.get("too_large"):
                     continue
                 if "engines" not in entry or entry.get("pending"):
+                    out.append((tag, name, sha))
+                elif REFRESH_ALL and tag in latest:
                     out.append((tag, name, sha))
                 elif tag in latest and checked:
                     age = now() - parse_iso(checked)
@@ -332,6 +339,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--tag", action="append", default=[], help="also scan this release, even as a draft")
     parser.add_argument("--file", help="scan one local file and print the result (no store update)")
+    parser.add_argument("--refresh", action="store_true", help="re-read the newest release's results now")
     parser.add_argument("--budget", type=int, default=110, help="most VirusTotal requests this run (about 30 min)")
     parser.add_argument("--summary", help="write the --tag release's result as JSON to this file")
     args = parser.parse_args()
@@ -367,6 +375,8 @@ def main():
     order = [t for t in order if t in args.tag] + [t for t in order if t not in args.tag]
     latest = set(args.tag) | {next((t for t in order if not data["releases"][t]["draft"]), None)}
     if key:
+        global REFRESH_ALL
+        REFRESH_ALL = args.refresh
         scan(data, VirusTotal(key, args.budget), order, latest)
     else:
         print("no VT_API_KEY: checksums recorded, virus scan skipped", flush=True)

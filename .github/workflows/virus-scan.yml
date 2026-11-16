@@ -16,6 +16,10 @@ on:
         description: "Also scan this release, even as a draft (e.g. v0.38.0-sandbox34)"
         required: false
         default: ""
+      refresh:
+        description: "Re-read the newest release's results now"
+        type: boolean
+        default: false
   schedule:
     - cron: "41 6 * * *"
 
@@ -44,12 +48,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VT_API_KEY: ${{ secrets.VT_API_KEY }}
           TAG: ${{ inputs.tag || github.event.release.tag_name }}
+          REFRESH: ${{ inputs.refresh && '--refresh' || '' }}
         run: |
           if [ -n "$TAG" ]; then
-            python tools/release/virusscan.py --tag "$TAG" --summary scan-result.json
+            python tools/release/virusscan.py $REFRESH --tag "$TAG" --summary scan-result.json
             { echo '### Virus scan'; echo '```json'; cat scan-result.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           else
-            python tools/release/virusscan.py
+            python tools/release/virusscan.py $REFRESH
           fi
       - name: Rebuild the site
         env:
