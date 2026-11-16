@@ -45,7 +45,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.4.2"
+VERSION = "1.4.3"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -4403,6 +4403,8 @@ def make_handler(portal: Portal):
                     return self.static("appeal.html")
                 if path.startswith("/appeal/"):
                     return self.appeal(method, path, qs)
+                if path.startswith("/bot/"):
+                    return self.bot_api(method, path[len("/bot/"):], qs)
                 if path.startswith("/api/"):
                     s = self.session()
                     route = path[len("/api/"):]
@@ -5267,6 +5269,95 @@ def make_handler(portal: Portal):
                 portal.store.x("DELETE FROM sessions WHERE discord_id=?", (did,))
                 portal.store.audit(who, "2fa reset", target=did)
                 return self.json({"ok": True})
+            raise ApiError(404, "Not found.")
+
+        # -- staff commands from our Discord bot (1.4.3): loopback only, a shared token, and the Discord user's own staff
+        # rights. No two-step sign-in on Discord, so admin-level tools stay in the portal.
+        def bot_actor(self) -> dict:
+            token = secret(cfg, "bot-api-token")
+            if not token:
+                raise ApiError(404, "Not found.")
+            if self.client_address[0] not in ("127.0.0.1", "::1") or self.headers.get("X-Forwarded-For"):
+                raise ApiError(404, "Not found.")
+            if not hmac.compare_digest(self.headers.get("X-Bot-Token", ""), token):
+                raise ApiError(401, "Bad bot token.")
+            did = self.headers.get("X-Discord-Id", "")
+            if not re.fullmatch(r"\d{15,21}", did):
+                raise ApiError(400, "Missing Discord user.")
+            roles = [r for r in (self.headers.get("X-Discord-Roles") or "").split(",") if r.strip().isdigit()]
+            role = resolve_role(portal, did, roles)
+            if not role:
+                raise ApiError(403, "You are not on the staff team.")
+            name = plain(urllib.parse.unquote(self.headers.get("X-Discord-Name", "")))[:40] or "Discord staff"
+            perms = portal.effective_perms(did, role) or [p for p in PERMS if allowed(role, p)]
+            perms = [p for p in perms if RANK[PERMS[p]] < RANK["admin"]]
+            return {"discord_id": did, "name": name, "role": role, "perms": perms, "via": "discord"}
+
+        def bot_api(self, method: str, route: str, qs: dict) -> None:
+            who = self.bot_actor()
+            if portal.limited("bot:" + who["discord_id"], 60, 60):
+                raise ApiError(429, "Slow down a little.")
+            G, P = method == "GET", method == "POST"
+            if route == "me" and G:
+                return self.json({"name": who["name"], "role": who["role"], "perms": who["perms"]})
+            if route == "summary" and G:
+                self.need(who, "view")
+                d = portal.dashboard(who)
+                return self.json({k: d.get(k) for k in ("players_online", "servers_up", "servers", "reports", "cases", "on_duty",
+                                                         "appeals_open", "bans_24h", "urgent_24h")})
+            if route == "online" and G:
+                self.need(who, "view")
+                return self.json({"servers": [{"key": x["key"], "name": x["name"], "online": x["online"],
+                                               "players": [{"slot": p["slot"], "name": p["name"], "pid": p.get("pid", "")}
+                                                           for p in x.get("players", []) if not p["bot"]]}
+                                              for x in portal.servers_view(False)]})
+            if route == "reports" and G:
+                self.need(who, "reports")
+                rows = portal.store.q("SELECT * FROM reports WHERE status IN ('open','claimed') AND source IN ('player','auto','appeal') "
+                                      "ORDER BY status='claimed', id DESC LIMIT 15")
+                out = []
+                for r in rows:
+                    dd = portal._report_row(r).get("data") or {}
+                    out.append({"id": r["id"], "source": r["source"], "status": r["status"], "server": r["server"],
+                                "target": r["target_name"], "pid": r["target_pid"], "claimed_by": r["claimed_by"], "received": r["received"],
+                                "reason": str(dd.get("reason") or dd.get("text") or "")[:200]})
+                return self.json({"reports": out})
+            if route == "report" and P:
+                self.need(who, "reports")
+                d = self.body_json()
+                r = portal.store.one("SELECT * FROM reports WHERE id=?", (int(d.get("id") or 0),))
+                if not r:
+                    raise ApiError(404, "No such report.")
+                status = {"take": "claimed", "close": "closed", "reopen": "open"}.get(d.get("action"))
+                if not status:
+                    raise ApiError(400, "Unknown action.")
+                if r["source"] == "appeal" and status != "claimed":
+                    raise ApiError(409, "Appeals are answered in the portal.")
+                res = str(d.get("resolution") or "").strip()[:500]
+                if status == "closed" and not res:
+                    raise ApiError(400, "Say what was done.")
+                portal.store.x("UPDATE reports SET status=?, claimed_by=?, resolution=?, updated=? WHERE id=?",
+                               (status, who["name"] if status != "open" else None, res or r["resolution"], now(), r["id"]))
+                portal.store.audit(who, "report " + status, server=r["server"], target=r["target_name"], pid=r["target_pid"],
+                                   detail=("#%d %s (Discord)" % (r["id"], res)).strip())
+                portal.bus.emit("reports")
+                return self.json({"ok": True, "status": status})
+            if route == "lookup" and G:
+                self.need(who, "lookup")
+                rows = portal.lookup(qs.get("q", ""), False)[:5]
+                return self.json({"players": [{"pid": x["pid"], "names": x["names"][:4], "last_seen": x.get("last_seen"),
+                                               "banned": x.get("banned")} for x in rows]})
+            if route == "action" and P:
+                d = self.body_json()
+                if d.get("action") == "ban":
+                    return self.ban(who, d)
+                if d.get("action") not in ("warn", "mute", "kick"):
+                    raise ApiError(400, "Use warn, mute, kick or ban.")
+                return self.player_action(who, d)
+            if route == "duty" and P:
+                self.need(who, "duty")
+                d = self.body_json()
+                return self.json(portal.duty_set(who, bool(d.get("on")), d.get("hours") or 4))
             raise ApiError(404, "Not found.")
 
         def stream(self, who: dict) -> None:

@@ -17,6 +17,7 @@ A private web console for the people who run the official and pickup servers, se
 | Trial role and rights | Trial moderators watch, warn, look up and write cases; per-person extras or removals on top of any role (presets: event host, appeals reviewer, anti-cheat reviewer, read only). Only the owner hands out admin tools, which still need two-step sign-in |
 | Moderator quality | Per staff member: actions, reports closed, median time to take and close a report, bans overturned on appeal or lifted by others, undos, appeals answered (admins) |
 | Anti-cheat queue | Anti-cheat detections, suspicion scores of 60 and up and ban dodgers in one list, strongest first; clear, mark as acted on or open a case (admins) |
+| Discord /staff commands | Our Discord bot runs summary, reports, take, close, lookup, warn, mute, kick, ban (up to a day) and duty through the portal, as the member who typed them with their own rights; loopback only with a shared token (`install.sh bot-link`). Admin tools stay in the portal |
 | Servers | Live view of every server: map, mode, players and bots, ping, score, K/D, anti-cheat state per player |
 | Players | Warn (private), mute (text and voice, follows the player across maps and servers), move team or to spectators, kick |
 | Bans | Timed or permanent bans that hold on every server at once (identity, anti-cheat account, optional IP); automatic expiry; a sync job puts a ban back on any server that lost it |
@@ -170,7 +171,7 @@ then drop r1 in a later release.
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 52 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 53 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 
