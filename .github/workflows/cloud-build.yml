@@ -109,7 +109,10 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: tools/ci/setup-toolchain.sh ~/toolchain
       - name: Wine (runs the native probes)
-        run: sudo apt-get update -q && sudo apt-get install -yq --no-install-recommends wine64 > /dev/null && (command -v wine || sudo ln -s "$(command -v wine64)" /usr/local/bin/wine)
+        run: |
+          sudo apt-get update -q && sudo apt-get install -yq --no-install-recommends wine wine64 > /dev/null
+          command -v wine || { [ -x /usr/lib/wine/wine64 ] && sudo ln -s /usr/lib/wine/wine64 /usr/local/bin/wine; }
+          wine --version
       - name: Source
         run: tools/ci/compose-source.sh "$BASE" src "$REQUEST"
       - name: Private SDK headers
@@ -162,11 +165,13 @@ jobs:
         if: contains(env.JOBS, 'eac')
         run: |
           if ! python3 tools/ci/draft.py get ci-deps eos-sdk-include.zip eos.zip 2>/dev/null; then
-            echo "::warning::EOS SDK headers not available (draft ci-deps); EAC server not built."; exit 0
+            echo "::warning::EOS SDK headers not available (draft ci-deps); EAC server not built."
+            echo "built=no (EOS SDK headers missing from draft ci-deps)" >> "$GITHUB_OUTPUT"; exit 0
           fi
           unzip -q eos.zip -d eos
           EOS_SDK_DIR=$PWD/eos tools/linux-server/build-linux-server.sh src linux-eac > eac-build.log 2>&1 || { [ -z "$REQUEST" ] && tail -60 eac-build.log; exit 1; }
           strings linux-eac/server/platinum-server.x86_64 | grep -q -i eos_ || { echo "::error::EAC server has no EOS code"; exit 1; }
+          echo "built=yes" >> "$GITHUB_OUTPUT"
       - name: Game data cache
         if: contains(env.JOBS, 'bots')
         uses: actions/cache@v4
@@ -182,10 +187,12 @@ jobs:
         run: |
           { echo "## Linux server ($BASE${REQUEST:+ + $REQUEST})"
             echo "- Linux server: ${{ steps.linux.outcome }}"
-            echo "- EAC server: ${{ steps.eac.outcome }}"
+            echo "- EAC server: ${{ steps.eac.outcome }} ${{ steps.eac.outputs.built }}"
             echo "- Bots soak ($MINUTES min per map): ${{ steps.bots.outcome }}"
-            [ -f soak-logs/summary.md ] && { echo; cat soak-logs/summary.md; }
-            for d in linux linux-eac; do [ -d $d ] && (cd $d && sha256sum server/* tcetest/*) | sed 's/^/    /'; done
+            if [ -f soak-logs/summary.md ]; then echo; cat soak-logs/summary.md; fi
+            for d in linux linux-eac; do
+              if [ -d $d ]; then echo; echo "$d:"; (cd $d && sha256sum server/* tcetest/*) | sed 's/^/    /'; fi
+            done
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Results to the request draft
         if: always() && env.REQUEST != ''
