@@ -136,6 +136,11 @@ install_portal() {
     install -m 0644 "$HERE/deploy/50-tcp-staff-portal.rules" /etc/polkit-1/rules.d/50-tcp-staff-portal.rules
   fi
   install -m 0644 "$HERE/deploy/tcp-staff-portal.service" /etc/systemd/system/$UNIT
+  # the certificate root, once made, stays loaded: the repo's unit ships the line commented out
+  if [ -s "$ETC/staff-root" ]; then
+    sed -i 's|^#LoadCredential=staff-root:|LoadCredential=staff-root:|' /etc/systemd/system/$UNIT
+    echo "staff certificate root found: kept LoadCredential staff-root"
+  fi
   # the watch posts to the staff channel when the portal stops answering (the portal cannot report that itself)
   install -m 0644 "$HERE/deploy/tcp-staff-watch.service" "$HERE/deploy/tcp-staff-watch.timer" /etc/systemd/system/
   systemctl daemon-reload

@@ -11,6 +11,12 @@ A private web console for the people who run the official and pickup servers, se
 | Cases | One place per problem: link reports, bans, appeals and staff actions, add notes and evidence, take it, close it with an outcome; open one from a report or a player page |
 | Player timeline | Every play session (server, length, chat lines), name change, report, flag, alert, warning, mute, kick, ban, note, case and piece of evidence about a player in one list, with filters |
 | Evidence locker | Screenshots (JPEG, PNG, WebP checked by content), the server demo of a report, chat excerpts that outlive the 30-day chat history, links and statements, kept with a case or a player for a year (open cases: until closed); admins remove evidence |
+| Phone app and alerts | Install the portal on a phone or desktop (Add to Home Screen); turn on alerts per device under your name. Urgent alerts always arrive, everything else while you are on duty. Pushes carry no content: the device fetches the alert from the portal with your own sign-in |
+| On duty | Go on duty for 1 to 8 hours from the bottom left; the home page shows who is on duty |
+| Player history | Players online over 24 hours to 90 days, uptime per server, busiest hours in Belgian time, maps by average players |
+| Trial role and rights | Trial moderators watch, warn, look up and write cases; per-person extras or removals on top of any role (presets: event host, appeals reviewer, anti-cheat reviewer, read only). Only the owner hands out admin tools, which still need two-step sign-in |
+| Moderator quality | Per staff member: actions, reports closed, median time to take and close a report, bans overturned on appeal or lifted by others, undos, appeals answered (admins) |
+| Anti-cheat queue | Anti-cheat detections, suspicion scores of 60 and up and ban dodgers in one list, strongest first; clear, mark as acted on or open a case (admins) |
 | Servers | Live view of every server: map, mode, players and bots, ping, score, K/D, anti-cheat state per player |
 | Players | Warn (private), mute (text and voice, follows the player across maps and servers), move team or to spectators, kick |
 | Bans | Timed or permanent bans that hold on every server at once (identity, anti-cheat account, optional IP); automatic expiry; a sync job puts a ban back on any server that lost it |
@@ -164,12 +170,14 @@ then drop r1 in a later release.
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 47 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 52 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 
 With `"dev_login": true` in the config **and** `TCP_STAFF_DEV=1` in the environment, `/auth/dev?role=admin`
-signs in from 127.0.0.1 without Discord. Never set either on the VPS.
+signs in from 127.0.0.1 without Discord.
+
+Discord role ids for the trial role go in `discord.trial_role_ids`. Never set either on the VPS.
 
 ## Deploy (VPS)
 
