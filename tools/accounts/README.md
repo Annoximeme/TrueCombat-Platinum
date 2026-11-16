@@ -176,6 +176,16 @@ banned ("This PC is banned from TrueCombat: Platinum."); when a server is full e
 (`sv_privateClients`), a trusted key may take one. The scoreboard shows the clean-record tick from `badges.json`
 (pushed by the server bridge as a configstring).
 
+## Friends (1.2.0, launcher 3.0)
+
+Opt-in presence and friends lists, in `tcp_friends.py`, same database. `POST /api/account/friends`, signed with the PC's
+identity key like pairing (`TrueCombat friends v1`, a millisecond stamp that must grow, 5 minutes clock skew).
+Actions: sync, add (friend code `ABCD-1234` or an exact name), accept, decline, remove, invite, leave. A PC linked to an
+account is the account, so friends follow the player; linking later moves the PC's friends over. "Leave" (Turn off
+Friends in the launcher) deletes every row about the player; a year without the launcher does the same. Privacy:
+show online, show server, accept requests, all sent by the launcher and enforced here. Rate limits per IP and per
+player; bans by key also close Friends.
+
 ## Deploy (VPS)
 
 Needs Gianni's typed go. From the PC: copy `tools/accounts` to the VPS, then
@@ -186,6 +196,9 @@ sudo ./deploy/install.sh install       # user tcpaccounts, /opt/tcp/accounts, tc
 sudo ./deploy/install.sh stats-link    # token + tcp-bridge drop-in 70-accounts.conf, restarts tcp-bridge
 sudo ./deploy/install.sh caddy         # /api/account/* and /u/<name> in the truecombat.eu block (backup + validate)
 ```
+
+1.2.0 (friends for launcher 3.0) on top of 1.1.1: `install.sh install` again (now also copies `tcp_friends.py`; the
+friends tables are added on start, nothing else changes). Test: `python3 test_friends.py`.
 
 1.1.1 (audit fixes) on top of 1.1.0: `install.sh install` again, and `deploy/tcp_stats-accounts-1.1.1.patch` (cache for the
 profile routes) against the 1.1.0 stats code.
