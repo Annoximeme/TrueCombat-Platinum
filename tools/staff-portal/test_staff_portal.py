@@ -1063,6 +1063,87 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(d["server_label"], "TrueCombat Platinum | Example")    # not ours: kept as reported
         self.assertTrue(d["shot"] and d["console"] and d["hw"] and d["match"] and d["puid"])
         self.assertNotIn("^3", d["console"])
+    def test_40_dashboard_and_search(self):
+        wait_for(lambda: self.portal.servers["one"].view().get("online"))
+        self.portal.record_samples(force=True)
+        self.assertGreaterEqual(self.portal.store.one("SELECT COUNT(*) n FROM samples")["n"], 2)
+        code, d = self.call("moderator", "GET", "/api/dashboard")
+        self.assertEqual(code, 200)
+        self.assertEqual(len(d["servers"]), 2)
+        self.assertIn("reports", d)
+        self.assertNotIn("backup", d)                       # admin only
+        self.assertTrue(d["spark"])
+        self.assertGreaterEqual(d["players_online"], 1)
+        self.assertIn("backup", self.call("owner", "GET", "/api/dashboard")[1])
+        self.assertEqual(self.call(None, "GET", "/api/dashboard")[0], 401)
+        # search: online player, a ban by its appeal code and by number, a report by number
+        code, r = self.call("moderator", "GET", "/api/search?q=vip")
+        self.assertEqual(code, 200)
+        self.assertTrue(any(o["name"] == "Viper" for o in r["online"]))
+        bid = self.portal.store.x("INSERT INTO bans(pid,guid,ip,puid,name,reason,created,expires,by_name,appeal_code,active) "
+                                  "VALUES('aaaaaaaaaaaaaaaa','','','','Searchable','spam',1,0,'t','QWERTZ',0)")
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=qwertz")[1]["bans"][0]["id"], bid)
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=%23" + str(bid))[1]["bans"][0]["name"], "Searchable")
+        rid = self.portal.store.one("SELECT MIN(id) i FROM reports")["i"]
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=%d" % rid)[1]["reports"][0]["id"], rid)
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=searchable")[1]["staff"], [])   # staff list: admins only
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=")[1]["players"], [])
+
+    def test_41_addresses_only_for_admins(self):
+        wait_for(lambda: self.portal.servers["one"].view().get("players"))
+        mod = [p for s in self.call("moderator", "GET", "/api/servers")[1]["servers"] for p in s["players"] if not p["bot"]]
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=admin&id=dev-admin-ip&name=IpAdmin")
+        cookie = c.getresponse().getheader("Set-Cookie").split(";")[0]
+        c.close()
+        adm = [p for s in self.call(None, "GET", "/api/servers", cookie=cookie)[1]["servers"] for p in s["players"] if not p["bot"]]
+        self.assertTrue(mod and adm)
+        self.assertTrue(all("ip" not in p and "guid" not in p for p in mod))
+        self.assertTrue(any(p.get("ip") for p in adm))
+        self.assertTrue(self.portal.servers["one"].view()["players"][0].get("ip") is not None)   # the snapshot itself is untouched
+
+    def test_42_database_snapshot(self):
+        import sqlite3
+        self.assertEqual(self.call("moderator", "GET", "/api/backup")[0], 403)
+        code, st = self.call("owner", "POST", "/api/backup", {})
+        self.assertEqual(code, 200)
+        self.assertTrue(st["ok"], st)
+        con = sqlite3.connect(st["file"])
+        try:
+            self.assertEqual(con.execute("SELECT COUNT(*) FROM sessions").fetchone()[0], 0)     # no sign-in tokens leave
+            self.assertGreater(con.execute("SELECT COUNT(*) FROM audit").fetchone()[0], 0)
+        finally:
+            con.close()
+        self.assertGreater(self.portal.store.one("SELECT COUNT(*) n FROM sessions")["n"], 0)   # the live database keeps them
+        self.assertEqual(oct(os.stat(st["file"]).st_mode & 0o777), "0o640")
+        got = self.call("owner", "GET", "/api/backup")[1]
+        self.assertTrue(got["ok"] and not got["stale"])
+        self.assertTrue(self.call("owner", "GET", "/api/dashboard")[1]["backup"]["ok"])
+
+    def test_43_portal_watch(self):
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "deploy"))
+        import tcp_staff_watch as watch
+        state = tempfile.mkdtemp()
+        hook = Path(state) / "hook"
+        hook.write_text(self.portal.cfg["stats_api"] + "/webhook")
+        snap = Path(state) / "snap.db"
+        snap.write_text("x")
+        before = len(HOOKS)
+        dead = "http://127.0.0.1:9/healthz"
+        args = ["--state", state, "--webhook", str(hook), "--snapshot", str(snap)]
+        watch.main(["--url", dead] + args)
+        self.assertEqual(len(HOOKS), before)                                   # one miss is not an alert
+        watch.main(["--url", dead] + args)
+        self.assertTrue(wait_for(lambda: len(HOOKS) == before + 1, 3))
+        self.assertIn("down", HOOKS[-1]["embeds"][0]["title"])
+        watch.main(["--url", dead] + args)
+        self.assertEqual(len(HOOKS), before + 1)                               # no repeat while it stays down
+        watch.main(["--url", "http://127.0.0.1:%d/healthz" % self.port] + args)
+        self.assertIn("back", HOOKS[-1]["embeds"][0]["title"])
+        snap.unlink()
+        watch.main(["--url", "http://127.0.0.1:%d/healthz" % self.port] + args)
+        self.assertIn("snapshot", HOOKS[-1]["embeds"][0]["title"])
+
     def test_insights_page_reads_the_insights_service(self):
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "server-bridge"))
@@ -1094,6 +1175,70 @@ class PortalTest(unittest.TestCase):
             self.portal.cfg.pop("insights_key", None)
             srv.shutdown()
             srv.server_close()
+
+
+    def test_35_staff_certificates(self):
+        """0.38.0: the portal signs active staff keys into certificates every game server checks offline."""
+        root_seed, staff_seed = bytes([0x11]) * 32, bytes([0x22]) * 32
+        staff_pub = tsp.ed25519_public(staff_seed).hex()
+        rootfile = Path(self.tmp.name) / "staff-root"
+        for attr in ("_staff_root", "_staff_certs"):
+            if hasattr(self.portal, attr):
+                delattr(self.portal, attr)
+        self.portal.cfg.pop("staff_root_file", None)
+        st, k = self.call("moderator", "POST", "/api/staffkey", {"public": staff_pub})
+        self.assertEqual(st, 201)
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=" + k["id"])[0], 404)      # no root set up yet
+        rootfile.write_text("TCPSTAFFROOT1 p1 %s\n" % root_seed.hex())
+        self.portal.cfg["staff_root_file"] = str(rootfile)
+        del self.portal._staff_root
+        st, c = self.call(None, "GET", "/api/staffcert?id=" + k["id"])                       # public: no session
+        self.assertEqual(st, 200)
+        f = c["cert"].split()
+        self.assertEqual((f[0], f[1], f[2], f[3], f[6]), ("TCPSTAFFCERT1", "p1", k["id"], "1", staff_pub))
+        issued, expires = int(f[4]), int(f[5])
+        self.assertEqual(expires - issued, 30 * 86400)
+        self.assertEqual(bytes.fromhex(f[7]).decode(), "Moderator")
+        msg = tsp.staff_cert_message("p1", k["id"], 1, issued, expires, staff_pub, f[7])
+        root_pub = tsp.ed25519_public(root_seed)
+        self.assertTrue(tsp.ed25519_verify(root_pub, msg, bytes.fromhex(f[8])))
+        self.assertFalse(tsp.ed25519_verify(root_pub, msg + b"x", bytes.fromhex(f[8])))
+        self.assertEqual(root_pub.hex(), "d04ab232742bb4ab3a1368bd4615e4e6d0224ab71a016baf8520a332c9778737")  # = game probe root p1
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=" + k["id"])[1]["cert"], c["cert"])   # cached
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=kzzzz")[0], 404)
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=k0000000000")[0], 404)
+        self.assertEqual(self.call("moderator", "POST", "/api/staffkey/revoke", {"id": k["id"]})[0], 200)
+        self.assertEqual(self.call(None, "GET", "/api/staffcert?id=" + k["id"])[0], 404)      # revoked: no new certificate
+        self.portal.cfg.pop("staff_root_file", None)
+        del self.portal._staff_root
+
+
+class Ed25519Test(unittest.TestCase):
+    def test_rfc8032_vectors(self):
+        for sk, pk, msg, sig in (
+            ("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60",
+             "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", "",
+             "e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b"),
+            ("4ccd089b28ff96da9db6c346ec114e0f5b8a319f35aba624da8cf6ed4fb8a6fb",
+             "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c", "72",
+             "92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00")):
+            s, p, m = bytes.fromhex(sk), bytes.fromhex(pk), bytes.fromhex(msg)
+            self.assertEqual(tsp.ed25519_public(s), p)
+            self.assertEqual(tsp.ed25519_sign(s, m).hex(), sig)
+            self.assertTrue(tsp.ed25519_verify(p, m, bytes.fromhex(sig)))
+
+    def test_make_staff_root(self):
+        with tempfile.TemporaryDirectory() as d:
+            out = Path(d) / "staff-root"
+            cfgfile = Path(d) / "c.json"
+            cfgfile.write_text("{}")
+            self.assertEqual(tsp.main(["--config", str(cfgfile), "--make-staff-root", "r1", "--root-out", str(out)]), 0)
+            parts = out.read_text().split()
+            self.assertEqual((parts[0], parts[1], len(parts[2])), ("TCPSTAFFROOT1", "r1", 64))
+            if os.name == "posix":
+                self.assertEqual(out.stat().st_mode & 0o777, 0o600)
+            with self.assertRaises(FileExistsError):                                     # never overwrites a root
+                tsp.main(["--config", str(cfgfile), "--make-staff-root", "r1", "--root-out", str(out)])
 
 
 if __name__ == "__main__":

@@ -5,6 +5,8 @@ A private web console for the people who run the official and pickup servers, se
 
 | Area | What staff can do |
 | --- | --- |
+| Home | One screen on sign-in: players online with a 24-hour sparkline, open and claimed reports, alerts, suspicion, watched players online, bans, appeals, what is scheduled, services and the database snapshot (admins), and the team's latest actions |
+| Search and shortcuts | Ctrl+K (or `/`) searches players online and offline, bans by number or appeal code, reports and staff, and runs commands such as `warn Name`, `ban Name` or `announce`; `g` then a key jumps to a page, `?` lists the keys. The menu is grouped and folds away; on a phone it slides in |
 | Servers | Live view of every server: map, mode, players and bots, ping, score, K/D, anti-cheat state per player |
 | Players | Warn (private), mute (text and voice, follows the player across maps and servers), move team or to spectators, kick |
 | Bans | Timed or permanent bans that hold on every server at once (identity, anti-cheat account, optional IP); automatic expiry; a sync job puts a ban back on any server that lost it |
@@ -128,10 +130,37 @@ A key stops working when a newer one is made, when an admin revokes it (Staff pa
 loses staff access (revoked in the portal or Discord role removed, seen at their next portal visit), or
 after `staff_key_idle_days` (default 60, 0 = never) without signing in to the portal.
 
+### Staff certificates (game 0.38.0+, launcher 2.5+)
+
+So the badge works on every server, community and offline ones included, the portal signs each active key into
+a certificate with a root Ed25519 key. Every game server checks it against the root public keys built into the
+game (`game_src/native/tcp_staff_roots.h`, two slots for rotation), with no key list and no network call. The key
+list above stays as a second path.
+
+- Certificate line, public data (useless without the staff member's private key):
+  `TCPSTAFFCERT1 <root id> <key id> <role> <issued> <expires> <public key hex> <name hex> <signature hex>`, signed
+  over `TCP-STAFF-CERT-1\n<root id>\n<key id>\n<role>\n<issued>\n<expires>\n<public key hex>\n<name hex>`.
+- `GET /api/staffcert?id=<key id>` (no session; 60 per hour per address) returns `{"cert", "expires"}` for an
+  active key and 404 for an unknown, revoked or idle key, or while no root is set up. The launcher claim answer
+  (`POST /api/staffkey/claim`) carries the first certificate too. Certificates last `staff_cert_days` (30).
+- The launcher stores it as `profile\staff.cert` and renews it at most once a day while it has less than 10 days
+  left; the game writes the public key id to `profile\staff.keyid` for that. A revoked key stops working when its
+  certificate runs out; for faster removal list the key id in `tcp_staff_revoked.h` in the next release.
+
+Root key (once; never in the repo, a release or a project file):
+
+    sudo python3 /opt/tcp/staff-portal/tcp_staff_portal.py --config /etc/tcp-staff-portal/config.json \
+        --make-staff-root r1 --root-out /etc/tcp-staff-portal/staff-root     # root:root 0600, never overwritten
+
+It prints only the public key line for `tcp_staff_roots.h` (slot r1). Then uncomment
+`LoadCredential=staff-root:...` in the unit, `systemctl daemon-reload`, restart the portal, and ship a game
+release with that public key. Rotation: make r2 the same way, ship it next to r1, switch the credential to r2,
+then drop r1 in a later release.
+
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 34 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 43 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 
@@ -157,4 +186,13 @@ signs in from 127.0.0.1 without Discord. Never set either on the VPS.
 6. Owner and admins: set up two-step sign-in under your name, bottom left.
 
 Data lives in `/var/lib/tcp-staff-portal/portal.db` (SQLite). It also holds two-step sign-in secrets and the Discord
-sign-in tokens of open sessions, so a backup of it belongs in the private backup repository only. Chat is kept 30 days and sightings 90 days.
+sign-in tokens of open sessions, so a backup of it belongs in the private backup repository only. Chat is kept 30 days, sightings
+and player-count samples 90 days.
+
+Every night at 04:20 UTC the portal writes `/var/lib/tcp-staff-portal/backups/portal-snapshot.db`: a checked copy without
+sign-in sessions, one-time key links or the undo list (admins can also make one from Health). To send it off-site, add that
+path to the `SECRET` list of `/opt/tcp/backup/tcp_offsite_backup.py`, which encrypts it before it leaves the VPS.
+
+`tcp-staff-watch.timer` checks the portal from outside every two minutes as its own unit: two failed checks in a row post
+"Staff portal is down" to the staff webhook, the next good one says it is back, and a missing or old snapshot is reported
+once a day. Player IP addresses and identity keys in the live server view are sent to admins only.

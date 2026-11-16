@@ -1,0 +1,23 @@
+[Unit]
+Description=TrueCombat: Platinum staff portal watch (alerts the staff channel when the portal is down)
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=tcpstaff
+Group=tcpstaff
+ExecStart=/usr/bin/python3 /opt/tcp/staff-portal/tcp_staff_watch.py
+LoadCredential=staff-webhook:/etc/tcp-staff-portal/staff-webhook
+StateDirectory=tcp-staff-watch
+StateDirectoryMode=0750
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+CapabilityBoundingSet=
+MemoryMax=64M
