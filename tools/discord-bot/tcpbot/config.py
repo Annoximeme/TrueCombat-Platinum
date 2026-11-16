@@ -154,6 +154,9 @@ DEFAULTS: dict = {
         "weekly": {"enabled": True, "weekday": 0, "hour": 19},
         "lfs_refresh_minutes": 2,
     },
+    # /staff commands through the staff portal (loopback). The token is the systemd credential named here, written by
+    # the portal's install.sh bot-link into /etc/tcp-discord-bot/portal-token. Without it /staff says it is not linked.
+    "portal": {"url": "http://127.0.0.1:8097", "token_credential": "portal-token", "public_url": "https://staff.truecombat.eu"},
     "welcome": {"enabled": True, "dm": False},
     # A report card after every finished match on the listed stats servers (empty = every server)
     "match_reports": {"enabled": True, "min_players": 4, "servers": []},

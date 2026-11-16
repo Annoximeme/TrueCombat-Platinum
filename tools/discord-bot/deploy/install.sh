@@ -132,7 +132,7 @@ for pair in $RCON_FROM; do
   say "stored $name"
 done
 CREDS=""
-for f in "$ETC"/rcon-* "$ETC"/github-token "$ETC"/accounts-token; do
+for f in "$ETC"/rcon-* "$ETC"/github-token "$ETC"/accounts-token "$ETC"/portal-token; do
   [ -f "$f" ] && CREDS="${CREDS}LoadCredential=$(basename "$f"):$f
 "
 done
