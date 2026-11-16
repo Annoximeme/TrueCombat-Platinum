@@ -91,8 +91,55 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.37.1" data-ver="v0.37.1" open>
-        <summary><span class="ver">v0.37.1<span class="latest">Latest</span></span><span class="sum">A big follow-up to 0.37.0. A HUD you can size and tune to your liking, a cleaner ammo and health readout, tighter shotgun and sprint handling, smoother map loads, and a long list of fixes from your reports.</span><span class="meta">#61 · 0.37.1-sandbox31 · 15 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.37.2" data-ver="v0.37.2" open>
+        <summary><span class="ver">v0.37.2<span class="latest">Latest</span></span><span class="sum">Eyes up. A live minimap, hits you can feel, friendly fire, and a game that finally looks like Platinum from the taskbar to the first frame.</span><span class="meta">#62 · 0.37.2-sandbox32 · 16 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Minimap &amp; tactical map</h3><ul>
+            <li>A live <b>minimap</b> now sits in the top-right corner. It turns with your view and shows the map layout, the bomb sites, north and your own team. Enemies never appear on it.</li>
+            <li>The objective panel and network readout move down to make room, and return to their usual place when the minimap is off.</li>
+            <li>Turn it on or off under <b>Options &gt; HUD &amp; Effects</b>.</li>
+            <li><b>M</b> opens the tactical map again, including on existing profiles.</li>
+            <li>Servers that disable the tactical map also hide the minimap.</li>
+          </ul></section>
+          <section><h3>Combat feedback</h3><ul>
+            <li><b>Hit feedback:</b> taking damage now kicks your view, flashes red and leaves a blood mark on the side the shot came from.</li>
+            <li><b>Suppression:</b> rounds cracking past you desaturate the edges of the screen and shake your view.</li>
+            <li>Both effects work with the Platinum and Classic HUDs, in DirectX 12 and OpenGL.</li>
+          </ul></section>
+          <section><h3>Friendly fire</h3><ul>
+            <li><b>Friendly fire is now on.</b> Bullets, knives and grenades hurt teammates. Check your target.</li>
+            <li>Team kills are counted as team kills and no longer add to your score.</li>
+          </ul></section>
+          <section><h3>HUD</h3><ul>
+            <li>The Platinum kill card replaces the centre-screen "You were killed by" line. The Classic HUD keeps the original line.</li>
+            <li>Coloured player names now show their full colours in Platinum chat, the Deployment Menu and HUD cards.</li>
+            <li>The in-game What's New card is updated for this release.</li>
+          </ul></section>
+          <section><h3>Gameplay</h3><ul>
+            <li>Grenades now play their pin-pull and throwing animations in first person, and leave from your throwing hand instead of the centre of the screen.</li>
+            <li>Bots are ready faster when a server rotates between game modes on the same map.</li>
+          </ul></section>
+          <section><h3>Names &amp; accounts</h3><ul>
+            <li>If your name is reserved by its owner, the game now tells you why you are playing as "Player####".</li>
+            <li>Names that imitate staff tags are now cleaned more thoroughly.</li>
+          </ul></section>
+          <section><h3>Identity</h3><ul>
+            <li>The game window, taskbar and Task Manager now show the Platinum icon and the name "TrueCombat: Platinum".</li>
+            <li>The Team Terminus and Platinum intro now plays before Play, Join and Practice, not just when the game opens to the menu.</li>
+          </ul></section>
+          <section><h3>Performance</h3><ul>
+            <li>Lighter, smoother Windows dedicated servers.</li>
+          </ul></section>
+          <section><h3>Launcher 2.5.1</h3><ul>
+            <li>Play, Join and Practice now start the game through the intro.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.37.2-sandbox32">GitHub ↗</a></p>
+          <p class="rel-page"><a href="release-0-37-2">Release page →</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.37.1" data-ver="v0.37.1">
+        <summary><span class="ver">v0.37.1</span><span class="sum">A big follow-up to 0.37.0. A HUD you can size and tune to your liking, a cleaner ammo and health readout, tighter shotgun and sprint handling, smoother map loads, and a long list of fixes from your reports.</span><span class="meta">#61 · 0.37.1-sandbox31 · 15 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Hud &amp; interface</h3><ul>
             <li>New <b>Menu size</b> (50-100%) and <b>In-game UI size</b> (50-150%) sliders, adjustable in 5% steps.</li>
