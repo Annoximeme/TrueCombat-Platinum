@@ -7,6 +7,10 @@ A private web console for the people who run the official and pickup servers, se
 | --- | --- |
 | Home | One screen on sign-in: players online with a 24-hour sparkline, open and claimed reports, alerts, suspicion, watched players online, bans, appeals, what is scheduled, services and the database snapshot (admins), and the team's latest actions |
 | Search and shortcuts | Ctrl+K (or `/`) searches players online and offline, bans by number or appeal code, reports and staff, and runs commands such as `warn Name`, `ban Name` or `announce`; `g` then a key jumps to a page, `?` lists the keys. The menu is grouped and folds away; on a phone it slides in |
+| Live updates | Pages update the moment something happens (alerts, reports, chat, staff actions, cases) over one server-sent event stream; the green dot by your name shows it is on, and pages fall back to their timers without it |
+| Cases | One place per problem: link reports, bans, appeals and staff actions, add notes and evidence, take it, close it with an outcome; open one from a report or a player page |
+| Player timeline | Every play session (server, length, chat lines), name change, report, flag, alert, warning, mute, kick, ban, note, case and piece of evidence about a player in one list, with filters |
+| Evidence locker | Screenshots (JPEG, PNG, WebP checked by content), the server demo of a report, chat excerpts that outlive the 30-day chat history, links and statements, kept with a case or a player for a year (open cases: until closed); admins remove evidence |
 | Servers | Live view of every server: map, mode, players and bots, ping, score, K/D, anti-cheat state per player |
 | Players | Warn (private), mute (text and voice, follows the player across maps and servers), move team or to spectators, kick |
 | Bans | Timed or permanent bans that hold on every server at once (identity, anti-cheat account, optional IP); automatic expiry; a sync job puts a ban back on any server that lost it |
@@ -160,7 +164,7 @@ then drop r1 in a later release.
 ## Run and test
 
 ```
-python3 test_staff_portal.py      # 43 loopback tests with a fake game server and stats service
+python3 test_staff_portal.py      # 47 loopback tests with a fake game server and stats service
 TCP_STAFF_DEV=1 python3 tcp_staff_portal.py --config my-local.json
 ```
 
@@ -187,7 +191,8 @@ signs in from 127.0.0.1 without Discord. Never set either on the VPS.
 
 Data lives in `/var/lib/tcp-staff-portal/portal.db` (SQLite). It also holds two-step sign-in secrets and the Discord
 sign-in tokens of open sessions, so a backup of it belongs in the private backup repository only. Chat is kept 30 days, sightings
-and player-count samples 90 days.
+player-count samples and play sessions 90 days. Evidence files live in
+`/var/lib/tcp-staff-portal/evidence/` (2 GB quota by default, `evidence_quota_mb`).
 
 Every night at 04:20 UTC the portal writes `/var/lib/tcp-staff-portal/backups/portal-snapshot.db`: a checked copy without
 sign-in sessions, one-time key links or the undo list (admins can also make one from Health). To send it off-site, add that
