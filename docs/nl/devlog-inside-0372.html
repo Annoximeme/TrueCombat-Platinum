@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inside 0.37.2, ogen open · TrueCombat: Platinum</title>
+<meta name="description" content="Een live minimap, treffers die je voelt, friendly fire, en een spel dat van de taakbalk tot het eerste beeld als Platinum oogt.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-inside-0372">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-inside-0372">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Inside 0.37.2, ogen open">
+<meta property="og:description" content="Een live minimap, treffers die je voelt, friendly fire, en een spel dat van de taakbalk tot het eerste beeld als Platinum oogt.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-inside-0372.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-inside-0372.jpg">
+<meta property="article:published_time" content="2026-11-16">
+<meta property="article:section" content="Release">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Inside 0.37.2, ogen open","description":"Een live minimap, treffers die je voelt, friendly fire, en een spel dat van de taakbalk tot het eerste beeld als Platinum oogt. Dit is wat er in 0.37.2 veranderd is, en waarom.","datePublished":"2026-11-16","dateModified":"2026-11-16","inLanguage":"nl","articleSection":"Release","timeRequired":"PT4M","image":"https://truecombat.eu/img/og-devlog-inside-0372.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-inside-0372","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Inside 0.37.2, ogen open">
+<meta name="twitter:description" content="Een live minimap, treffers die je voelt, friendly fire, en een spel dat van de taakbalk tot het eerste beeld als Platinum oogt.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Inside 0.37.2, ogen open","item":"https://truecombat.eu/nl/devlog-inside-0372"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-inside-0372">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-inside-0372">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-inside-0372">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=987ac3854f">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Wapens</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Gids</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Ranglijsten</a></li>
+      <li><a href="competitive">Competitief</a></li>
+      <li><a href="news">Nieuws</a></li>
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-16">Devlog</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Zoeken</button><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="media">Media</a><a href="guide">Gids</a><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="support">Steun ons</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq">Vragen</a><a href="press">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-inside-0372" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-inside-0372" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Steun ons</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="inside-0372" data-min="4">
+  <header class="page-head post-head">
+    <div class="head-art" style="--art: url(../img/media-soldier-hd.webp); --art-s: url(../img/media-soldier-hd-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.37.2</span><time datetime="2026-11-16">16 nov 2026</time><span>4 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="inside-0372" hidden></span></p>
+      <h1>Inside 0.37.2, ogen open</h1>
+      <p class="lede">Een live minimap, treffers die je voelt, friendly fire, en een spel dat van de taakbalk tot het eerste beeld als Platinum oogt. Dit is wat er in 0.37.2 veranderd is, en waarom.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#een-live-minimap">Een live minimap</a></li>
+          <li><a href="#treffers-die-je-voelt">Treffers die je voelt</a></li>
+          <li><a href="#friendly-fire-staat-aan">Friendly fire staat aan</a></li>
+          <li><a href="#een-hud-die-uit-de-weg-blijft">Een HUD die uit de weg blijft</a></li>
+          <li><a href="#granaten-echt-gooien">Granaten echt gooien</a></li>
+          <li><a href="#namen">Namen</a></li>
+          <li><a href="#een-spel-dat-als-platinum-oogt">Een spel dat als Platinum oogt</a></li>
+          <li><a href="#achter-de-schermen">Achter de schermen</a></li>
+          <li><a href="#hoe-we-het-getest-hebben">Hoe we het getest hebben</a></li>
+          <li><a href="#nog-op-ons-lijstje">Nog op ons lijstje</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>0.37.1 ging over het rechtzetten van wat volgens jullie niet goed voelde. 0.37.2 gaat over overzicht: weten waar je team is, weten wanneer er op je geschoten wordt, en weten dat elke kogel die je afvuurt telt, ook die ene die een teamgenoot raakt.</p>
+<div class="callout"><p>De launcher installeert 0.37.2 vanzelf en je instellingen blijven behouden.</p></div>
+<h2 id="een-live-minimap">Een live minimap</h2>
+<p>De tactische kaart was altijd maar één toets ver weg, maar een toets ingedrukt houden om te zien waar je team is, betekent je handen uit het gevecht halen. 0.37.2 voegt een <strong>live minimap</strong> toe in de rechterbovenhoek.</p>
+<p>Hij draait mee met je blik, zodat boven altijd de richting is waarin je kijkt. Je ziet de indeling van de kaart, de bomlocaties, het noorden en je eigen team. Vijanden verschijnen er nooit op: de minimap toont alleen wat jouw kant al weet. Het doelpaneel en de netwerkweergave schuiven omlaag om plaats te maken, en gaan terug naar hun gewone plek als je de minimap uitzet onder <strong>Opties &gt; HUD &amp; effecten</strong>.</p>
+<p><strong>M</strong> opent weer de volledige tactische kaart. Oudere profielen hadden die toets na een eerdere wijziging aan iets anders gekoppeld, en worden automatisch rechtgezet. Had je bewust een andere actie op M gezet, dan blijft die waar je hem zette. Servers die de tactische kaart uitzetten, verbergen ook de minimap.</p>
+<h2 id="treffers-die-je-voelt">Treffers die je voelt</h2>
+<p>Tot nu toe was je gezondheidsbalk vaak het eerste teken dat er op je geschoten werd. Dat is te laat. In 0.37.2 schokt je beeld bij een treffer, kleurt het scherm kort rood en verschijnt er een bloedvlek aan de kant waar het schot vandaan kwam, zodat je weet waar je je naartoe moet draaien voordat je ook maar één getal gelezen hebt.</p>
+<p>Onder vuur liggen telt ook. Kogels die langs je heen fluiten, halen de kleur uit de randen van je scherm en laten je beeld trillen. Iemand vastpinnen is weer een echte tactiek, en je merkt het als het jou overkomt.</p>
+<p>Beide effecten werken met de Platinum- en de Classic-HUD, in DirectX 12 en OpenGL.</p>
+<h2 id="friendly-fire-staat-aan">Friendly fire staat aan</h2>
+<p>Samenspelen betekent je teamgenoten vertrouwen met je rug, en dat vertrouwen betekent pas iets als een slordig schot een prijs heeft. <strong>Friendly fire staat nu aan.</strong> Kogels, messen en granaten verwonden teamgenoten. Teamkills tellen als teamkills en leveren geen punten meer op.</p>
+<p>Kijk goed waar je op schiet, en denk twee keer na voor je een granaat gooit in een kamer die je team aan het uitkammen is.</p>
+<h2 id="een-hud-die-uit-de-weg-blijft">Een HUD die uit de weg blijft</h2>
+<p>Wanneer de Platinum-HUD zijn killkaart toont, is de regel "You were killed by" midden in beeld verdwenen. Die zei twee keer hetzelfde, precies op de plek waar je keek. De Classic-HUD houdt de oorspronkelijke regel.</p>
+<p>Gekleurde spelersnamen tonen nu elke kleur op de Platinum-HUD. Een aantal kleuren uit de naamkleurkiezer van de launcher verscheen voorheen zonder kleur in de chat, in het Deployment-menu en op HUD-kaarten. Ze verschijnen nu zoals je ze gekozen hebt.</p>
+<h2 id="granaten-echt-gooien">Granaten echt gooien</h2>
+<p>Granaten spelen nu hun animaties voor het trekken van de pin en het gooien in eerste persoon, en vertrekken uit je werphand in plaats van uit het midden van het scherm. Waar een granaat landt, is niet veranderd: de worp is precies even sterk en even nauwkeurig als voorheen. Hij ziet er nu alleen uit als een worp.</p>
+<h2 id="namen">Namen</h2>
+<p>Is een naam gereserveerd door de eigenaar en komt iemand anders ermee binnen, dan speelt die als "Player####". Tot nu toe werd nooit uitgelegd waarom. Het spel zegt het nu één keer, in gewone woorden. Namen die stafftags nabootsen, worden ook grondiger opgeschoond.</p>
+<h2 id="een-spel-dat-als-platinum-oogt">Een spel dat als Platinum oogt</h2>
+<p>Tot nu toe toonden het spelvenster, de taakbalk en Taakbeheer nog het icoon en de naam van de oude engine. Ze tonen nu het Platinum-embleem en <strong>TrueCombat: Platinum</strong>.</p>
+<p>De intro van Team Terminus en Platinum had een eigen probleem: als je in de launcher op Spelen, Meedoen of Oefenen drukte, sprong het spel meteen naar het laden, en zag je de intro alleen als het spel naar het hoofdmenu opende. De intro speelt nu eerst, en het spel start zodra hij afgelopen is. Launcher 2.5.1 brengt die wijziging.</p>
+<h2 id="achter-de-schermen">Achter de schermen</h2>
+<p>Bots zijn sneller klaar wanneer een server op dezelfde kaart tussen spelmodi wisselt. Windows-servers zijn lichter en draaien soepeler. De What's New-kaart in het spel is bijgewerkt voor deze versie.</p>
+<h2 id="hoe-we-het-getest-hebben">Hoe we het getest hebben</h2>
+<p>0.37.2 ging door de volledige releasetest: beweging, gevechten, netwerkgevoel, graphics, instellingen en herstarts, in DirectX 12 en OpenGL, plus de launcher, de installer en het updatepad. Elke nieuwe functie in deze update werd ook apart getest, op beide renderers en met beide HUD-stijlen, voordat hij in de release ging.</p>
+<h2 id="nog-op-ons-lijstje">Nog op ons lijstje</h2>
+<p>Twee dingen zijn nog niet af. De killfeed en het scorebord tonen nog teamkleuren in plaats van de eigen naamkleur van elke speler. En sommige spelers verliezen nog steeds al het geluid na alt-tabben of na een wijziging aan hun audioapparaat. Aan beide wordt gewerkt voor een volgende update. Tot de geluidsfix er is, brengt een herstart van het spel het geluid terug.</p>
+<p>Zoals altijd: voelt er iets niet goed, druk dan in het spel op <strong>F12</strong> om ons een melding te sturen. Bedankt om te spelen.</p>
+      </div>
+      <div class="post-rate" data-rate="inside-0372" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-inside-0371"><small>Vorig artikel</small>Inside 0.37.1, bijgesteld op jullie meldingen</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-0371" tabindex="-1" aria-hidden="true"><img src="../img/media-soldier-hd-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.37.1</span><time datetime="2026-11-15">15 nov 2026</time><span>6 min lezen</span><span class="post-stat" data-post-stat="inside-0371" hidden></span></p>
+          <h2><a href="devlog-inside-0371">Inside 0.37.1, bijgesteld op jullie meldingen</a></h2>
+          <p>Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweergave in de geest van het origineel, wapens weer op hun echte vuursnelheid, soepeler laden van kaarten en optionele HD-texturen. Dit is wat er in 0.37.1 veranderd is, en waarom.</p>
+          <a class="more" href="devlog-inside-0371">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Release">
+        <a class="post-art" href="devlog-inside-037" tabindex="-1" aria-hidden="true"><img src="../img/devlog/a-new-look-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Release</span><span class="state shipped">Uitgebracht in v0.37.0</span><time datetime="2026-11-14">14 nov 2026</time><span>5 min lezen</span><span class="post-stat" data-post-stat="inside-037" hidden></span></p>
+          <h2><a href="devlog-inside-037">Inside 0.37.0, onze grootste update tot nu toe</a></h2>
+          <p>Een volledig vernieuwde interface, een tactische kaart, fotomodus, optionele spelersaccounts, bots die je vuurlijn respecteren, Bomb-rondes met één leven en een lange lijst fixes uit jullie meldingen. Dit is wat er veranderd is, waarom, en hoe we het getest hebben.</p>
+          <a class="more" href="devlog-inside-037">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=fc49adbeb2"></script>
+</body>
+</html>

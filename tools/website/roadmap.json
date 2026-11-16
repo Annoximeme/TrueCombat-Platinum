@@ -440,6 +440,16 @@
    "en": "Optional accounts: your rank on every PC, a reserved name and a public profile",
    "nl": "Optionele accounts: je rang op elke pc, een gereserveerde naam en een openbaar profiel",
    "version": "0.37"
+  },
+  {
+   "en": "Live minimap with your team and the bomb sites",
+   "nl": "Live minimap met je team en de bomlocaties",
+   "version": "0.37"
+  },
+  {
+   "en": "Hit and suppression feedback, with friendly fire on",
+   "nl": "Treffer- en onderdrukkingsfeedback, met friendly fire aan",
+   "version": "0.37"
   }
  ]
 }
