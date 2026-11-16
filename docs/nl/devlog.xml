@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/nl/devlog</id>
   <updated>2026-11-16T12:00:00Z</updated>
   <entry>
+    <title>Crashes oplossen op de pc's waarop jullie echt spelen</title>
+    <link href="https://truecombat.eu/nl/devlog-crash-reports"/>
+    <id>https://truecombat.eu/nl/devlog-crash-reports</id>
+    <published>2026-11-16T12:00:00Z</published>
+    <updated>2026-11-16T12:00:00Z</updated>
+    <category term="Launcher"/>
+    <summary>De launcher kan ons nu vertellen waar de game crashte en op welke hardware hij draait, als jij ja zegt. Hij vraagt het één keer, het is anoniem en je ziet het exacte rapport voordat het je pc verlaat.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Inside 0.37.2, ogen open</title>
     <link href="https://truecombat.eu/nl/devlog-inside-0372"/>
     <id>https://truecombat.eu/nl/devlog-inside-0372</id>

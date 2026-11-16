@@ -1087,6 +1087,8 @@ class PortalTest(unittest.TestCase):
             self.assertEqual(code, 200)
             self.assertEqual((body["schema"], len(body["days"])), ("tcp-insights/1", 7))
             self.assertEqual(body["github"]["releases"][0]["downloads"], 42)
+            self.assertIn("launcher", body)                                           # launcher 2.6.0 crash/hardware section
+            self.assertEqual(body["launcher"]["totals"]["crashes"], 0)
             self.assertEqual(len(self.call("owner", "GET", "/api/insights?days=12345")[1]["days"]), 30)
         finally:
             self.portal.cfg.pop("insights_key", None)

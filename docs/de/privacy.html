@@ -85,7 +85,7 @@
 <section class="band">
   <div class="wrap doc">
     <nav class="doc-toc" aria-label="Auf dieser Seite">
-      <a href="#short">Kurz gesagt</a><a href="#website">Diese Website</a><a href="#game">Das Spiel</a><a href="#choices">Deine Wahl</a><a href="#changes">Änderungen</a>
+      <a href="#short">Kurz gesagt</a><a href="#website">Diese Website</a><a href="#game">Das Spiel</a><a href="#launcher">Der Launcher</a><a href="#choices">Deine Wahl</a><a href="#changes">Änderungen</a>
     </nav>
     <div class="doc-body">
       <section id="short">
@@ -95,7 +95,7 @@
           <li><b>Keine Tracking-Cookies, keine Werbetracker, keine Analysefirmen.</b> Nichts von Google, Meta oder anderen wird auf dieser Seite geladen.</li>
           <li><b>Wir zählen Besuche, keine Besucher.</b> Die Website speichert Tagessummen und nichts, das auf eine Person zurückführt.</li>
           <li><b>Sagt dein Browser nein, hören wir zu.</b> Mit Global Privacy Control oder Do Not Track wirst du überhaupt nicht gezählt.</li>
-          <li><b>Das Spiel sendet Nutzungsdaten nur, wenn du es willst.</b> Dieser Schalter ist aus, bis du ihn einschaltest.</li>
+          <li><b>Der Launcher teilt Absturz- und Hardwaredaten nur, wenn du zustimmst.</b> Er fragt einmal, mit zwei gleichwertigen Schaltflächen, und du kannst deine Antwort jederzeit ändern.</li>
         </ul>
       </section>
 
@@ -125,14 +125,28 @@
           <li><b>Online spielen.</b> Spielserver sehen deine Verbindungsadresse, wie bei jedem Onlinespiel. Unsere Moderationswerkzeuge speichern sie bis zu 90 Tage, um gegen Cheater und Missbrauch vorzugehen, und ein Bann-Eintrag behält die gesperrte Adresse.</li>
           <li><b>Ranglisten.</b> Gewertete Matches auf offiziellen und verifizierten Servern speichern deinen Spielnamen, eine aus deinem Spielschlüssel gebildete Spieler-ID und deine Matchstatistiken. Daraus entstehen die Ranglisten und dein öffentliches Profil.</li>
           <li><b>Anti-Cheat.</b> Offizielle Server nutzen Easy Anti-Cheat, das unter der <a href="https://www.epicgames.com/site/privacypolicy">Datenschutzerklärung von Epic Games</a> läuft.</li>
-          <li><b>Absturzberichte</b> bleiben auf deinem PC. Sie erreichen uns nur, wenn du sie selbst einem Fehlerbericht anhängst.</li>
+          <li><b>Absturzberichte und Speicherabbilder</b> bleiben auf deinem PC. Sie erreichen uns nur, wenn du sie selbst einem Fehlerbericht anhängst. Wenn du Launcher-Daten teilst, wird nur die Absturzstelle gesendet, wie unten beschrieben.</li>
           <li><b>Fehlerberichte</b>, die du aus dem Spiel sendest, enthalten deinen Text, einen Screenshot und technische Details wie Karte, Bildrate und Grafikkarte, damit wir das Problem nachstellen können.</li>
         </ul>
-        <p class="callout"><b>Demnächst: optionale Nutzungsdaten.</b> Ein kommendes Update fügt dem Launcher einen Schalter hinzu, der anonyme Leistungs- und Absturzdaten teilt, damit wir Probleme auf der Hardware beheben können, auf der du wirklich spielst. Er ist aus, solange du ihn nicht einschaltest, und diese Seite nennt genau, was er sendet, bevor er erscheint.</p>
+      </section>
+
+      <section id="launcher">
+        <span class="eyebrow">04</span>
+        <h2>Absturz- und Hardwaredaten aus dem Launcher</h2>
+        <p>Ab Launcher 2.6.0 fragt die Spielen-Seite einmal, ob du anonyme Absturz- und Hardwaredaten teilen möchtest. Gesendet wird erst, wenn du Teilen wählst, und gar nichts, wenn du Nein danke wählst. Derselbe Schalter liegt unter Einstellungen &gt; Datenschutz, und Ausschalten beendet das Teilen sofort.</p>
+        <p>Ist Teilen an, sendet der Launcher höchstens einen kurzen Bericht pro Tag an <code>api.truecombat.eu</code>, und nur, wenn es etwas Neues gibt:</p>
+        <ul>
+          <li><b>Abstürze.</b> Für jeden neuen Absturz: ob das Spiel oder der Server abgestürzt ist, der Windows-Fehlercode, die Stelle im Programm, an der es passiert ist (ein Dateiname und eine Position darin, etwa <code>renderer_dx12_x64.dll+0x1a2b3</code>), bis zu fünf vorangehende Schritte in derselben Form und wie viele Minuten das Spiel lief. Die Absturzberichte und Speicherabbilder selbst bleiben auf deinem PC.</li>
+          <li><b>Spielstarts.</b> Wie oft das Spiel seit dem letzten Bericht gestartet wurde, wie viele davon Sichere Starts waren, und die Version von Spiel und Launcher.</li>
+          <li><b>Hardware, höchstens einmal im Monat.</b> Deine Windows-Version, Prozessormodell und Threadanzahl, Arbeitsspeicher und Grafikspeicher in ganzen Gigabyte, das Grafikkartenmodell, ob DirectX 12 funktioniert, Desktopauflösung und Bildwiederholrate sowie die Launcher-Sprache.</li>
+        </ul>
+        <p>Ein Bericht enthält nie deinen Spielernamen, Spielschlüssel, deine Spieler-ID, eine Installations-ID, Datei- oder Ordnernamen auf deinem PC, Serveradressen oder deine Verbindungsadresse. Nichts in einem Bericht verbindet ihn mit dem nächsten, wir können also nicht erkennen, ob zwei Berichte vom selben PC stammen. Wie bei der Website schlägt unser Server das Land der Verbindung nach, behält nur den zweistelligen Ländercode und vergisst die Adresse.</p>
+        <p>Absturzstellen und tägliche Zählungen von Starts und Abstürzen pro Spielversion behalten wir bis 90 Tage, nachdem wir sie zuletzt gesehen haben, und monatliche Zählungen pro Hardwarewert (etwa wie viele Launcher eine bestimmte Grafikkarte gemeldet haben) 13 Monate. Arbeitsspeicher wird in Bereiche eingeteilt, damit eine ungewöhnliche Menge niemanden erkennbar macht. Weil kein Bericht etwas enthält, das auf dich verweist, gibt es nichts, womit wir "deine" Daten anzeigen oder löschen könnten, und das ist so gewollt.</p>
+        <p class="callout"><b>Sieh selbst nach.</b> Einstellungen &gt; Datenschutz &gt; Was geteilt wird zeigt im Launcher genau den Bericht, den dein PC als Nächstes senden würde, bevor er deinen Computer verlässt.</p>
       </section>
 
       <section id="choices">
-        <span class="eyebrow">04</span>
+        <span class="eyebrow">05</span>
         <h2>Deine Wahl</h2>
         <p>Wenn du auf dieser Website nicht gezählt werden willst, schalte in deinem Browser Global Privacy Control oder Do Not Track ein. Auch das Blockieren von <code>api.truecombat.eu/insights</code> funktioniert, und die Seite funktioniert genau wie vorher.</p>
         <p>Fragen, oder soll etwas gelöscht werden? Frag uns auf <a href="https://discord.gg/8kcHdg2Hch">Discord</a> oder eröffne ein Issue auf <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>. Der gesamte Zählcode liegt im öffentlichen Repository, du musst uns also nie einfach glauben.</p>
@@ -140,9 +154,9 @@
       </section>
 
       <section id="changes">
-        <span class="eyebrow">05</span>
+        <span class="eyebrow">06</span>
         <h2>Änderungen an dieser Seite</h2>
-        <p>Wenn sich ändert, was wir erfassen, ändert sich zuerst diese Seite, und das Devlog sagt es. Zuletzt aktualisiert am 13. November 2026.</p>
+        <p>Wenn sich ändert, was wir erfassen, ändert sich zuerst diese Seite, und das Devlog sagt es. Zuletzt aktualisiert am 16. November 2026.</p>
         <p class="yt-note">Die Länderabfrage nutzt IP to Country Lite von <a href="https://db-ip.com">DB-IP</a>, lizenziert unter CC BY 4.0.</p>
       </section>
     </div>
@@ -151,7 +165,7 @@
 </main>
 
 <!--footer-->
-<aside class="log-strip" aria-label="Aus dem Devlog"><div class="wrap"><a class="log-strip-h" href="../devlog">Aus dem Devlog</a><div class="log-strip-posts"><a href="../devlog-inside-0372"><time datetime="2026-11-16">16 Nov. 2026</time><span>Inside 0.37.2, eyes up</span></a><a href="../devlog-inside-0371"><time datetime="2026-11-15">15 Nov. 2026</time><span>Inside 0.37.1, tuned to your reports</span></a></div><a class="log-strip-all" href="../devlog">Alle Devlog-Artikel</a></div></aside>
+<aside class="log-strip" aria-label="Aus dem Devlog"><div class="wrap"><a class="log-strip-h" href="../devlog">Aus dem Devlog</a><div class="log-strip-posts"><a href="../devlog-crash-reports"><time datetime="2026-11-16">16 Nov. 2026</time><span>Fixing crashes on the PCs you actually play on</span></a><a href="../devlog-inside-0372"><time datetime="2026-11-16">16 Nov. 2026</time><span>Inside 0.37.2, eyes up</span></a></div><a class="log-strip-all" href="../devlog">Alle Devlog-Artikel</a></div></aside>
 <footer>
   <div class="wrap">
     <div class="foot">

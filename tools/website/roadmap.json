@@ -432,9 +432,9 @@
    "version": null
   },
   {
-   "en": "Optional performance and crash data from the launcher",
-   "nl": "Optionele prestatie- en crashgegevens vanuit de launcher",
-   "version": null
+   "en": "Optional, anonymous crash and hardware data from the launcher",
+   "nl": "Optionele, anonieme crash- en hardwaregegevens vanuit de launcher",
+   "version": "0.38"
   },
   {
    "en": "Optional accounts: your rank on every PC, a reserved name and a public profile",

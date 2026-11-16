@@ -1190,18 +1190,18 @@ function pageInsights(main) {
   $("#in-tabs").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; for (const x of $("#in-tabs").children) x.classList.toggle("on", x === b); draw(+b.dataset.d); };
   const n = (v) => Number(v || 0).toLocaleString("en-GB");
   const pct = (a, b) => (b ? (100 * a / b).toFixed(1) + "%" : "–");
-  function chart(days, visitors, downloads) {
+  function chart(days, visitors, downloads, la = "visitors", lb = "downloads", aria = "Visitors and downloads per day") {
     const W = 760, H = 150, max = Math.max(1, ...visitors), bw = W / days.length;
     const bars = visitors.map((v, i) => {
       const h = Math.round((H - 18) * v / max), d = Math.round((H - 18) * (downloads[i] || 0) / max);
-      return `<g><title>${esc(days[i])}: ${v} visitors, ${downloads[i] || 0} downloads</title>
+      return `<g><title>${esc(days[i])}: ${v} ${la}, ${downloads[i] || 0} ${lb}</title>
         <rect class="in-v" x="${(i * bw + 1).toFixed(1)}" y="${H - 14 - h}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${h}"></rect>
         <rect class="in-d" x="${(i * bw + 1).toFixed(1)}" y="${H - 14 - d}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${d}"></rect></g>`;
     }).join("");
-    return `<svg class="in-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Visitors and downloads per day">${bars}
+    return `<svg class="in-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${aria}">${bars}
       <text class="in-axis" x="0" y="${H - 2}">${esc(days[0])}</text><text class="in-axis" x="${W}" y="${H - 2}" text-anchor="end">${esc(days[days.length - 1])}</text>
       <text class="in-axis" x="0" y="10">${max}</text></svg>
-      <p class="dim small"><span class="in-key in-v"></span> visitors <span class="in-key in-d"></span> downloads</p>`;
+      <p class="dim small"><span class="in-key in-v"></span> ${la} <span class="in-key in-d"></span> ${lb}</p>`;
   }
   function table(rows, cols, empty) {
     if (!rows || !rows.length) return `<p class="empty">${empty}</p>`;
@@ -1235,7 +1235,43 @@ function pageInsights(main) {
       <div class="panel table-wrap"><h3>Screens and languages</h3>${table(r.devices, [name, vis], "No visits yet.")}${table(r.langs, [{ key: "name", label: "Language" }, vis], "")}</div>
       <div class="panel table-wrap"><h3>GitHub release downloads</h3><p class="dim small">Public counts read every six hours; includes launcher and updater downloads of the installer.</p>${table(gh.releases.slice(0, 12), [{ key: "tag", label: "Release" }, { label: "Downloads", num: true, fmt: (x) => n(x.downloads) }], "Not read yet.")}</div>
     </div>
+    ${launcher(r.launcher, r.days)}
     <p class="dim small">Updated ${esc(r.updated)}. Country lookup: IP to Country Lite by DB-IP (CC BY 4.0).</p>`;
+  }
+  /* launcher 2.6.0+: anonymous crash and hardware reports from players who chose to share */
+  function launcher(l, days) {
+    if (!l) return "";
+    const t = l.totals, tile = (label, value, note = "") => `<div class="card"><div class="meta">${label}</div><div class="stat">${value}</div><div class="dim small">${note}</div></div>`;
+    const rate = (c, s) => (s ? (100 * c / s).toFixed(2) + "%" : "–");
+    const hw = l.hardware || {}, cnt = { label: "Launchers", num: true, fmt: (x) => n(x.count) };
+    const share = (rows) => { const all = (rows || []).reduce((a, x) => a + x.count, 0); return { label: "Share", num: true, fmt: (x) => pct(x.count, all) }; };
+    const hwTable = (title, dim, label) => `<div class="panel table-wrap"><h3>${title}</h3>${table(hw[dim], [{ key: "name", label }, cnt, share(hw[dim])], "No hardware reports yet.")}</div>`;
+    const crashCols = [
+      { label: "Crash", fmt: (x) => `<span class="mono">${esc(x.at)}</span><div class="dim small">${esc(x.program)} · ${esc(x.code)} ${esc(x.kind)}</div>${x.frames.length ? `<details class="small"><summary>Stack</summary><div class="mono">${x.frames.map(esc).join("<br>")}</div></details>` : ""}` },
+      { label: "Count", num: true, fmt: (x) => n(x.count) },
+      { label: "Versions", fmt: (x) => Object.entries(x.games).sort((a, b) => b[1] - a[1]).map(([g, c]) => `${esc(g)} <span class="dim">(${c})</span>`).join("<br>") },
+      { label: "Graphics", fmt: (x) => Object.entries(x.gpuvendors).sort((a, b) => b[1] - a[1]).map(([g, c]) => `${esc(g)} <span class="dim">(${c})</span>`).join("<br>") || '<span class="dim">–</span>' },
+      { label: "Minutes in", num: true, fmt: (x) => esc(x.avg_minutes) },
+      { label: "Seen", fmt: (x) => `${esc(x.first_seen)}<div class="dim small">last ${esc(x.last_seen)}</div>` },
+    ];
+    return `<div class="head in-section"><div><p class="eyebrow">Launcher</p><h2>Crashes and hardware</h2><p class="muted">From players who chose "Share" in the launcher (2.6.0 and later). Anonymous: no IDs, nothing ties one report to the next. Starts and crashes are daily counts per game version; hardware is counted once per launcher per month.</p></div></div>
+    <div class="tiles">${[
+      tile("Game starts", n(t.launches), n(t.safe) + " Safe starts (OpenGL)"),
+      tile("Crashes", n(t.crashes), rate(t.crashes, t.launches) + " of starts"),
+      tile("Reports", n(t.reports), "one per launcher per day at most"),
+      tile("Launchers this month", n(l.hardware_reports), l.hardware_month ? "hardware reports in " + esc(l.hardware_month) : "none yet"),
+    ].join("")}</div>
+    <div class="panel"><h3>Per day</h3>${chart(days, l.series.launches, l.series.crashes, "game starts", "crashes", "Game starts and crashes per day")}</div>
+    <div class="panel table-wrap"><h3>Versions</h3>${table(l.versions, [{ key: "game", label: "Game version" }, { label: "Starts", num: true, fmt: (x) => n(x.launches) }, { label: "Crashes", num: true, fmt: (x) => n(x.crashes) }, { label: "Crash rate", num: true, fmt: (x) => rate(x.crashes, x.launches) }, { label: "Safe starts", num: true, fmt: (x) => pct(x.safe, x.launches) }], "No reports yet.")}</div>
+    <div class="panel table-wrap"><h3>Top crashes</h3><p class="dim small">Grouped by program, exception and code location (module+offset). Match offsets against the symbols kept with each build (RUN/symbols).</p>${table(l.crashes, crashCols, "No crashes reported. Good.")}</div>
+    <div class="grid grid-2">
+      ${hwTable("Graphics cards", "gpu", "Card")}${hwTable("Processors", "cpu", "Processor")}
+      ${hwTable("Windows", "os", "Version")}${hwTable("Memory", "ram", "RAM")}
+      ${hwTable("Video memory", "vram", "VRAM")}${hwTable("Desktop resolution", "display", "Resolution")}
+      ${hwTable("Refresh rate", "refresh", "Rate")}${hwTable("DirectX 12", "dx12", "Works")}
+      ${hwTable("Graphics vendor", "gpuvendor", "Vendor")}${hwTable("Countries", "country", "Country")}
+      ${hwTable("Launcher versions", "launcher", "Launcher")}${hwTable("Launcher language", "lang", "Language")}
+    </div>`;
   }
   draw();
 }
