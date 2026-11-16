@@ -91,8 +91,34 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.37.2" data-ver="v0.37.2" open>
-        <summary><span class="ver">v0.37.2<span class="latest">Latest</span></span><span class="sum">Eyes up. A live minimap, hits you can feel, friendly fire, and a game that finally looks like Platinum from the taskbar to the first frame.</span><span class="meta">#62 · 0.37.2-sandbox32 · 16 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.37.3" data-ver="v0.37.3" open>
+        <summary><span class="ver">v0.37.3<span class="latest">Latest</span></span><span class="sum">Loud and clear. Sound that survives Windows changing your audio device, a kill feed that shows every player in their own colours, and steadier skies on DirectX 12.</span><span class="meta">#63 · 0.37.3-sandbox33 · 16 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Audio</h3><ul>
+            <li>Fixed game audio going silent until a restart when Windows switched or reset your audio device. Sound now recovers by itself within a few seconds.</li>
+            <li>This covers headsets and USB or Bluetooth devices reconnecting, monitor audio dropping out on a display change, audio enhancers restarting and a new default output device.</li>
+            <li>Fixed a rare case where the game stayed muted or frame-capped after alt-tabbing back in.</li>
+            <li>The new console command <b>s_alReopen</b> restarts the audio device by hand if you ever need it.</li>
+          </ul></section>
+          <section><h3>Kill feed</h3><ul>
+            <li>Players now appear in the kill feed in their own name colours, with their team shown by a coloured bracket around the name.</li>
+            <li>Names without colours keep the familiar team-coloured look.</li>
+            <li>The same applies to obituary lines, the death card, the damage report and the voice and network cards, on both the Platinum and Classic HUDs.</li>
+          </ul></section>
+          <section><h3>HUD</h3><ul>
+            <li>Very dark name colours are brightened just enough to stay readable on the HUD, while keeping their hue.</li>
+            <li>The in-game What's New card is updated for this release.</li>
+          </ul></section>
+          <section><h3>DirectX 12</h3><ul>
+            <li>Steadier skies with DLSS, DLAA and TAA. Cloud layers, the horizon and the sun no longer shimmer while you stand still or turn.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.37.3-sandbox33">GitHub ↗</a></p>
+          <p class="rel-page"><a href="release-0-37-3">Release page →</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.37.2" data-ver="v0.37.2">
+        <summary><span class="ver">v0.37.2</span><span class="sum">Eyes up. A live minimap, hits you can feel, friendly fire, and a game that finally looks like Platinum from the taskbar to the first frame.</span><span class="meta">#62 · 0.37.2-sandbox32 · 16 Nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Minimap &amp; tactical map</h3><ul>
             <li>A live <b>minimap</b> now sits in the top-right corner. It turns with your view and shows the map layout, the bomb sites, north and your own team. Enemies never appear on it.</li>
