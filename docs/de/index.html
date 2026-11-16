@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-djzaZ7r1ib2BA7pkS2nAng+AsO9dGJNPc/nr9v9Eiv0='">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-0hLsOImlvKPt5vfuTkdD7DCk0EZP9yxLkr2B3y/WLdQ='">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TrueCombat: Platinum · Kostenloser Taktik-Shooter, TrueCombat: Elite neu aufgebaut</title>
 <meta name="description" content="TrueCombat: Platinum ist ein kostenloser Taktik-Shooter für Windows: TrueCombat: Elite (TC:E), neu aufgebaut als natives 64-Bit-Spiel mit DirectX 12, mit den originalen Maps, Waffen und dem HUD.">
@@ -39,7 +39,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=81e2ec17b6">
+<link rel="stylesheet" href="../style.css?v=3801b506db">
 </head>
 <body>
 
@@ -289,7 +289,7 @@
     <div class="compare-copy">
       <span class="eyebrow">Graphics</span>
       <h2>Originaler Look oder aufgewertet</h2>
-      <p>Zieh über das Bild, um den originalen Look mit den neuen Voreinstellungen zu vergleichen. Dieselbe Stelle, dasselbe Bild, Hinterhof von Railhouse in 1080p.</p>
+      <p>Zieh über das Bild, um den originalen Look mit den neuen Voreinstellungen zu vergleichen. Dieselbe Stelle, dasselbe Bild: der westliche Rangierbahnhof von Railhouse in 1440p.</p>
       <div class="tabs" role="group" aria-label="Voreinstellung für den Vergleich mit Low">
         <button type="button" data-preset="high" aria-pressed="false">High</button>
         <button type="button" data-preset="ultra" aria-pressed="true">Ultra</button>
@@ -303,8 +303,8 @@
     </div>
     <div class="vf">
       <div class="compare" id="compare" style="--pos:40%">
-        <img id="cmp-right" src="../img/preset-ultra-v2.webp" srcset="../img/preset-ultra-v2-640.webp 640w, ../img/preset-ultra-v2.webp 1280w, ../img/preset-ultra-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Hinterhof von Railhouse mit der Voreinstellung Ultra" width="1280" height="680">
-        <img class="top" src="../img/preset-low-v2.webp" srcset="../img/preset-low-v2-640.webp 640w, ../img/preset-low-v2.webp 1280w, ../img/preset-low-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Hinterhof von Railhouse mit der Voreinstellung Low" width="1280" height="680">
+        <img id="cmp-right" src="../img/preset-ultra-v3.webp" srcset="../img/preset-ultra-v3-640.webp 640w, ../img/preset-ultra-v3.webp 1280w, ../img/preset-ultra-v3-1920.webp 1920w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Westlicher Rangierbahnhof von Railhouse mit der Voreinstellung Ultra" width="1280" height="720">
+        <img class="top" src="../img/preset-low-v3.webp" srcset="../img/preset-low-v3-640.webp 640w, ../img/preset-low-v3.webp 1280w, ../img/preset-low-v3-1920.webp 1920w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Westlicher Rangierbahnhof von Railhouse mit der Voreinstellung Low" width="1280" height="720">
         <span class="tag l">Low</span>
         <span class="tag r" id="cmp-tag">Ultra</span>
         <span class="handle"></span>
@@ -802,10 +802,10 @@
     b.addEventListener('click', function () {
       document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
       var p = b.dataset.preset;
-      var base = '../img/preset-' + p + '-v2';
-      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1632.webp 1632w';
+      var base = '../img/preset-' + p + '-v3';
+      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1920.webp 1920w';
       right.src = base + '.webp';
-      right.alt = 'Hinterhof von Railhouse mit der Voreinstellung ' + b.textContent;
+      right.alt = 'Westlicher Rangierbahnhof von Railhouse mit der Voreinstellung ' + b.textContent;
       tag.textContent = b.textContent;
     });
   });

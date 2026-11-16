@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-80iw5+ZIwABaHjftja5sATGU6QTDaeRWCWu/Q178VqU='">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-IV3MpHA7gxeONe8lFfD8kqvOTPTWqiDgE9FhI8IkqQU='">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TrueCombat: Platinum · Gratis tactische shooter, TrueCombat: Elite herbouwd</title>
 <meta name="description" content="TrueCombat: Platinum is een gratis tactische shooter voor Windows: TrueCombat: Elite (TC:E) herbouwd als native 64-bit DirectX 12-game, met de originele maps, wapens en HUD.">
@@ -39,7 +39,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=81e2ec17b6">
+<link rel="stylesheet" href="../style.css?v=3801b506db">
 </head>
 <body>
 
@@ -289,7 +289,7 @@
     <div class="compare-copy">
       <span class="eyebrow">Graphics</span>
       <h2>Originele look, of verbeterd</h2>
-      <p>Sleep over de afbeelding om de originele look met de nieuwe presets te vergelijken. Zelfde plek, zelfde frame: de achtertuin van Railhouse op 1080p.</p>
+      <p>Sleep over de afbeelding om de originele look met de nieuwe presets te vergelijken. Zelfde plek, zelfde frame: het westelijke emplacement van Railhouse op 1440p.</p>
       <div class="tabs" role="group" aria-label="Preset om met Laag te vergelijken">
         <button type="button" data-preset="high" aria-pressed="false">High</button>
         <button type="button" data-preset="ultra" aria-pressed="true">Ultra</button>
@@ -303,8 +303,8 @@
     </div>
     <div class="vf">
       <div class="compare" id="compare" style="--pos:40%">
-        <img id="cmp-right" src="../img/preset-ultra-v2.webp" srcset="../img/preset-ultra-v2-640.webp 640w, ../img/preset-ultra-v2.webp 1280w, ../img/preset-ultra-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Achtertuin van Railhouse op de preset Ultra" width="1280" height="680">
-        <img class="top" src="../img/preset-low-v2.webp" srcset="../img/preset-low-v2-640.webp 640w, ../img/preset-low-v2.webp 1280w, ../img/preset-low-v2-1632.webp 1632w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Achtertuin van Railhouse op de preset Low" width="1280" height="680">
+        <img id="cmp-right" src="../img/preset-ultra-v3.webp" srcset="../img/preset-ultra-v3-640.webp 640w, ../img/preset-ultra-v3.webp 1280w, ../img/preset-ultra-v3-1920.webp 1920w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Westelijk emplacement van Railhouse op de preset Ultra" width="1280" height="720">
+        <img class="top" src="../img/preset-low-v3.webp" srcset="../img/preset-low-v3-640.webp 640w, ../img/preset-low-v3.webp 1280w, ../img/preset-low-v3-1920.webp 1920w" sizes="(max-width: 900px) 100vw, 66vw" loading="lazy" alt="Westelijk emplacement van Railhouse op de preset Low" width="1280" height="720">
         <span class="tag l">Low</span>
         <span class="tag r" id="cmp-tag">Ultra</span>
         <span class="handle"></span>
@@ -802,10 +802,10 @@
     b.addEventListener('click', function () {
       document.querySelectorAll('[data-preset]').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
       var p = b.dataset.preset;
-      var base = '../img/preset-' + p + '-v2';
-      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1632.webp 1632w';
+      var base = '../img/preset-' + p + '-v3';
+      right.srcset = base + '-640.webp 640w, ' + base + '.webp 1280w, ' + base + '-1920.webp 1920w';
       right.src = base + '.webp';
-      right.alt = 'Achtertuin van Railhouse op de preset ' + b.textContent;
+      right.alt = 'Westelijk emplacement van Railhouse op de preset ' + b.textContent;
       tag.textContent = b.textContent;
     });
   });
