@@ -2,6 +2,8 @@
 # Builds the native Linux dedicated server from a release's source snapshot.
 #   tools/linux-server/build-linux-server.sh <unpacked source dir> <out dir>
 # Output: <out>/server/platinum-server.x86_64 and <out>/tcetest/qagame.mp.x86_64.so
+# EOS_SDK_DIR=<folder with Include/eos_sdk.h> builds the Easy Anti-Cheat server
+# (official servers only; the public kit never has it).
 set -eu
 SRC=$(cd "$1" && pwd); OUT=$(mkdir -p "$2" && cd "$2" && pwd)
 E="$SRC/reference/etlegacy"; G="$SRC/game_src"
@@ -9,7 +11,8 @@ mkdir -p "$OUT/server" "$OUT/tcetest" "$OUT/build"
 cmake -S "$E" -B "$OUT/build" -G Ninja -DCMAKE_BUILD_TYPE=Release \
   -DBUILD_CLIENT=OFF -DBUILD_SERVER=ON -DBUILD_MOD=OFF -DBUILD_CLIENT_MOD=OFF -DBUILD_SERVER_MOD=OFF -DBUILD_MOD_PK3=OFF \
   -DFEATURE_CURL=OFF -DFEATURE_SSL=OFF -DFEATURE_AUTH=OFF -DFEATURE_AUTOUPDATE=OFF -DFEATURE_LUA=OFF -DFEATURE_OMNIBOT=OFF \
-  -DFEATURE_DBMS=OFF -DINSTALL_EXTRA=OFF -DCROSS_COMPILE32=OFF -DBUNDLED_LIBS=ON -DBUNDLED_CURL=OFF -DBUNDLED_SSL=OFF
+  -DFEATURE_DBMS=OFF -DINSTALL_EXTRA=OFF -DCROSS_COMPILE32=OFF -DBUNDLED_LIBS=ON -DBUNDLED_CURL=OFF -DBUNDLED_SSL=OFF \
+  ${EOS_SDK_DIR:+-DFEATURE_EAC=ON -DEOS_SDK_DIR="$EOS_SDK_DIR"}
 cmake --build "$OUT/build" --target etlded
 install -m 755 "$OUT/build/etlded.x86_64" "$OUT/server/platinum-server.x86_64"
 clang -std=gnu11 -O2 -g -Wall -Wextra -Wno-unused-parameter -Wno-implicit-const-int-float-conversion \

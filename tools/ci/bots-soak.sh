@@ -1,0 +1,63 @@
+#!/bin/bash
+# Headless bots-only soak test of a Linux server build: each map runs with a full
+# server of bots for a few minutes; fails on a crash, a fatal error, a server that
+# stops answering, or bots that never join.
+#   tools/ci/bots-soak.sh <linux build dir> <base tag for game data> "<maps>" <minutes per map>
+# Env: BOTS (default 12), EXTRA (extra +set arguments), DATA (game data folder, reused if present)
+set -euo pipefail
+BUILD=$(cd "$1" && pwd); TAG=$2; MAPS=$3; MINUTES=${4:-4}
+HERE=$(cd "$(dirname "$0")" && pwd); KIT="$HERE/../linux-server/kit"
+DATA=${DATA:-$PWD/soak-data}; LOGS=${LOGS:-$PWD/soak-logs}; BOTS=${BOTS:-12}; PORT=${PORT:-28960}
+mkdir -p "$LOGS"; SUMMARY="$LOGS/summary.md"
+echo "| Map | Result | Bots seen | Answered | Hits | Spawns | Notes |" > "$SUMMARY"; echo "|---|---|---|---|---|---|---|" >> "$SUMMARY"
+
+# Game data from the base release (verified by install.sh), then this build's binaries.
+STAGE=$(mktemp -d); cp -r "$KIT/." "$STAGE/"; cp -r "$BUILD/server" "$BUILD/tcetest" "$STAGE/"
+"$STAGE/install.sh" "$DATA" "$TAG" > "$LOGS/install.log" 2>&1 || { tail -20 "$LOGS/install.log"; exit 1; }
+rm -rf "$STAGE"
+
+status() {  # prints: <answered 0/1> <player count>
+  python3 - "$PORT" <<'PY'
+import socket, sys
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.settimeout(3)
+try:
+    s.sendto(b"\xff\xff\xff\xffgetstatus", ("127.0.0.1", int(sys.argv[1])))
+    lines = s.recv(65535).decode("latin-1").split("\n")[2:]
+    print(1, sum(1 for l in lines if l.strip()))
+except OSError:
+    print(0, 0)
+PY
+}
+
+fail=0
+for map in $MAPS; do
+  log="$LOGS/$map.log"
+  # shellcheck disable=SC2086
+  "$DATA/server/platinum-server.x86_64" +set dedicated 1 +set net_port "$PORT" +set fs_basepath "$DATA" \
+    +set fs_homepath "$DATA/home" +set fs_game tcetest +set sv_master1 "" +set sv_master2 "" +set sv_master3 "" \
+    +set sv_pure 0 +set sv_maxclients 16 +set bot_minplayers "$BOTS" +set bot_skill 3 +set sv_fps 40 \
+    +set tcp_roundtime 120 +set g_roundlimit 100 +set sv_mapRotation "" +set developer 0 ${EXTRA:-} \
+    +map "$map" > "$log" 2>&1 &
+  pid=$!
+  end=$((SECONDS + MINUTES * 60)); seen=0; answered=0; silent=0; note=""
+  sleep 20
+  while [ $SECONDS -lt $end ]; do
+    if ! kill -0 $pid 2>/dev/null; then note="server exited"; break; fi
+    read -r ok n < <(status)
+    if [ "$ok" = 1 ]; then answered=$((answered+1)); silent=0; [ "$n" -gt "$seen" ] && seen=$n
+    else silent=$((silent+1)); [ $silent -ge 4 ] && { note="stopped answering for 60 s"; break; }; fi
+    sleep 15
+  done
+  if kill -0 $pid 2>/dev/null; then kill $pid; wait $pid 2>/dev/null || true; else wait $pid 2>/dev/null || true; fi
+  # our own stop is signal 15; anything else fatal counts
+  bad=$(sed 's/\x1b\[[0-9;]*m//g' "$log" | grep -P -i -m3 "Sys_Error|Segmentation|Received signal (?!15\b)|^\s*\d*\s*ERROR:|Fatal|Assertion" | tr '|' '/' | tr '\n' ' ' || true)
+  hits=$(grep -c "TCP_NATIVE_HIT" "$log" || true); spawns=$(grep -c "TCP_NATIVE_SPAWN" "$log" || true)
+  [ "$hits" -lt 1 ] && note="$note no combat"
+  [ -n "$bad" ] && note="$note $bad"
+  [ "$seen" -lt 2 ] && note="$note bots did not join"
+  if [ -n "$note" ]; then res=FAIL; fail=1; else res=pass; fi
+  echo "| $map | $res | $seen | ${answered}x | $hits | $spawns | ${note:-} |" >> "$SUMMARY"
+  echo "== $map: $res (bots $seen) ${note:-}"
+done
+cat "$SUMMARY"
+exit $fail
