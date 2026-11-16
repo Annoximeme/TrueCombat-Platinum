@@ -3,7 +3,7 @@ title: Achter de schermen van 0.35.0, onze grootste update tot nu toe
 date: 2026-11-12
 time: 11:00
 summary: Easy Anti-Cheat zonder account, een launcher die van nul af is herbouwd, spelersstatistieken uit elk geverifieerd potje en het grootste deel van de playtestfixes. Dit is de lange versie: wat er veranderde, waarom we het zo bouwden, hoe we het testten en wat de update niet haalde.
-image: img/media-village-hd.webp
+image: img/hero-village-rooftop.webp
 tag: Release
 version: 0.35.0
 ---

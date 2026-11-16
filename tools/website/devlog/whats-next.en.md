@@ -2,7 +2,7 @@
 title: What we are working on next
 date: 2026-11-09
 summary: With 0.34.0 out, here is an open look at the work lined up behind it: better online play, Discord pickups, one-click joining, and a set of new features built on a shared match record. Plans, not promises.
-image: img/media-map-vote.webp
+image: img/hero-village-rooftop.webp
 tag: Roadmap
 ---
 0.34.0 is out, and the official servers have moved to Linux. This is a good moment to show what is next. Everything below is either built and waiting for testing, or planned and not started. We say which is which, and none of it has a date. A feature ships when it passes the full test gate, not when a calendar says so.

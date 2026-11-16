@@ -3,7 +3,7 @@ title: Inside 0.35.0, our biggest update yet
 date: 2026-11-12
 time: 11:00
 summary: Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, player stats from every verified match and the bulk of the playtest fixes. This is the long version: what changed, why we built it the way we did, how it was tested, and what did not make it.
-image: img/media-village-hd.webp
+image: img/hero-village-rooftop.webp
 tag: Release
 version: 0.35.0
 ---

@@ -10,7 +10,7 @@ Placeholders: [[key]] is copy from the language table, {{name}} is a value
 build.py fills in (version, link, asset prefix).
 """
 
-ART = {"download": "map-northport", "faq": "media-deployment", "truecombat-elite": "map-delta", "privacy": "map-stadtrand"}
+ART = {"download": "map-northport", "faq": "hero-stadtrand-canal", "truecombat-elite": "map-delta", "privacy": "map-stadtrand"}
 
 DOWNLOAD_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
@@ -305,7 +305,7 @@ ELITE = """<section class="page-head">
           <li>[[p_c]]</li>
           <li>[[p_d]]</li>
         </ul>
-        <figure class="shot-wide"><img src="{{up}}img/hud-scoreboard.webp" srcset="{{up}}img/hud-scoreboard-640.webp 640w, {{up}}img/hud-scoreboard.webp 1280w" sizes="(max-width: 900px) 92vw, 760px" alt="[[fig_alt]]" width="1280" height="720" loading="lazy"><figcaption>[[fig]]</figcaption></figure>
+        <figure class="shot-wide"><img src="{{up}}img/shot-railhouse-boxcar.webp" srcset="{{up}}img/shot-railhouse-boxcar-640.webp 640w, {{up}}img/shot-railhouse-boxcar.webp 1280w, {{up}}img/shot-railhouse-boxcar-1920.webp 1920w" sizes="(max-width: 900px) 92vw, 760px" alt="[[fig_alt]]" width="1280" height="720" loading="lazy"><figcaption>[[fig]]</figcaption></figure>
       </section>
 
       <section id="compare">
@@ -358,8 +358,8 @@ ELITE_T = {
         "p_b": "<b>The original movement.</b> Sprint, run, crouch and prone speeds come straight from the TC:E values, with leaning, ladders and swimming.",
         "p_c": "<b>The full arsenal.</b> All 27 guns, the knife and every grenade, with the original damage, recoil and spread.",
         "p_d": "<b>All seven game modes</b>, from Elimination to Bomb and Flag Capture.",
-        "fig_alt": "The TrueCombat: Platinum HUD with chat, kill feed and scoreboard in the original TC:E layout",
-        "fig": "Chat, kill feed and scoreboard in the original TC:E layout, rendered in DirectX 12.",
+        "fig_alt": "The TrueCombat: Platinum HUD during a live round on Railhouse: score, round timer, compass, objective, health and ammo",
+        "fig": "The HUD in a live round on Railhouse, rendered in DirectX 12.",
         "c_h": "Original and Platinum, side by side", "c_orig": "TrueCombat: Elite",
         "rows": [
             ("Platform", "32-bit mod for Wolfenstein: Enemy Territory", "Native 64-bit Windows game, nothing else to install"),
@@ -400,8 +400,8 @@ ELITE_T = {
         "p_b": "<b>De originele beweging.</b> De snelheden voor sprinten, rennen, hurken en liggen komen rechtstreeks uit de TC:E-waarden, met leunen, ladders en zwemmen.",
         "p_c": "<b>Het volledige arsenaal.</b> Alle 27 wapens, het mes en elke granaat, met de originele schade, terugslag en spreiding.",
         "p_d": "<b>Alle zeven spelmodi</b>, van Elimination tot Bomb en Flag Capture.",
-        "fig_alt": "De HUD van TrueCombat: Platinum met chat, killfeed en scorebord in de originele TC:E-opmaak",
-        "fig": "Chat, killfeed en scorebord in de originele TC:E-opmaak, gerenderd in DirectX 12.",
+        "fig_alt": "De HUD van TrueCombat: Platinum tijdens een ronde op Railhouse: score, rondetimer, kompas, doel, gezondheid en munitie",
+        "fig": "De HUD tijdens een ronde op Railhouse, gerenderd in DirectX 12.",
         "c_h": "Origineel en Platinum, naast elkaar", "c_orig": "TrueCombat: Elite",
         "rows": [
             ("Platform", "32-bit mod voor Wolfenstein: Enemy Territory", "Native 64-bit Windows-game, verder niets te installeren"),
@@ -645,7 +645,7 @@ def faq_body(lang, values):
       </section>
 """
     return fill(f"""<section class="page-head">
-  <div class="head-art" style="--art: url({{{{up}}}}img/media-deployment.webp); --art-s: url({{{{up}}}}img/media-deployment-640.webp)" aria-hidden="true"></div>
+  <div class="head-art" style="--art: url({{{{up}}}}img/hero-stadtrand-canal.webp); --art-s: url({{{{up}}}}img/hero-stadtrand-canal-640.webp)" aria-hidden="true"></div>
   <div class="wrap">
     <span class="eyebrow">{T['eyebrow']}</span>
     <h1>{T['h1']}</h1>

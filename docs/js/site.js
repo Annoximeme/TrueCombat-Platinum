@@ -381,7 +381,7 @@ var TCP_API = 'https://api.truecombat.eu';
   }
   /* live scoreboards for every server with someone on it (servers page) */
   var IMG = (lang === 'en' ? '' : '../') + 'img/';
-  function mapArt(m) { var n = MAPS[String(m || '').toLowerCase()]; return IMG + (n ? 'map-' + n.toLowerCase() : 'media-map-vote') + '-640.webp'; }
+  function mapArt(m) { var n = MAPS[String(m || '').toLowerCase()]; return IMG + (n ? 'map-' + n.toLowerCase() : 'hero-village-rooftop') + '-640.webp'; }
   function shortName(s) { return String(s || '').replace(/^TrueCombat:\s*Platinum\s*\|\s*/i, ''); }
   function renderBoards(list) {
     var box = document.querySelector('[data-boards]');

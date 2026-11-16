@@ -3,7 +3,7 @@ title: Achter de schermen van 0.36.0, de update die je hoort
 date: 2026-11-13
 time: 14:30
 summary: Voicechat, teampings, bots die de map lezen, een volledig vernieuwde audio en optioneel 128 updates per seconde. Dit is de lange versie: wat er veranderde, waarom we het zo bouwden, hoe we het testten en wat er nog komt.
-image: img/media-village-yard.webp
+image: img/hero-village-contact.webp
 tag: Release
 version: 0.36.0
 ---
@@ -19,7 +19,7 @@ TrueCombat was altijd al een game van callouts, en tot nu toe gebeurden die in a
 
 Het werkt als een squadradio. Hou **H** ingedrukt om via de radio met je team te praten. Tegenstanders horen dat nooit, waar ze ook staan. Hou **N** ingedrukt om hardop te spreken. Iedereen in je buurt hoort dat, ook de vijand, dus een fluistering achter een muur kan je verraden. We hielden die twee bewust gescheiden. Alleen een teamkanaal maakt van elke speler een perfecte communicator over de hele map. Alleen lokale stem maakt samenwerken onmogelijk. Samen geven ze je elke keer een keuze als je iets zegt.
 
-![Een vuurgevecht op het erf van Village](img/media-village-yard.webp "Callouts zoals deze gebeuren nu in de game zelf: teamradio op H, lokale stem op N.")
+![Een vuurgevecht op het erf van Village](img/shot-village-contact.webp "Callouts zoals deze gebeuren nu in de game zelf: teamradio op H, lokale stem op N.")
 
 De radio heeft een licht radio-effect dat je kunt uitschakelen. Onder **Options > Voice** kies je je microfoon, de versterking, push-to-talk of spraakactivatie met een instelbare drempel, en een lijst op het scherm van wie er praat. Met een microfoontest hoor je je eigen stem terug zonder iets te versturen. Je kunt afzonderlijke spelers dempen via het mute-menu, of het hele vijandelijke team.
 

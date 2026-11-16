@@ -3,7 +3,7 @@ title: Inside 0.37.1, tuned to your reports
 date: 2026-11-15
 time: 11:30
 summary: A HUD you can size to your screen, a magazine and health readout in the spirit of the original, weapons back at their true fire rates, smoother map loads and optional HD textures. Here is what changed in 0.37.1, and why.
-image: img/media-soldier-hd.webp
+image: img/hero-snow-warehouse.webp
 tag: Release
 version: 0.37.1
 ---
