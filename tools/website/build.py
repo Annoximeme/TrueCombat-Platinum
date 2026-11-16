@@ -30,6 +30,7 @@ import landing  # noqa: E402
 import detail  # noqa: E402
 import i18n  # noqa: E402
 import releases  # noqa: E402
+import scanbadge  # noqa: E402
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "design" / "icons"))
 import build_icons as icons  # noqa: E402
 
@@ -1099,6 +1100,12 @@ def release_values():
             "is_setup": 'data-kind="short">Installer<' in home}
 
 
+def current_tag():
+    """The release tag of the current download, from its link (…/releases/download/<tag>/…)."""
+    m = re.search(r"/releases/download/([^/]+)/", release_values()["link"])
+    return m.group(1) if m else ""
+
+
 def strip_tags(s):
     return htmlmod.unescape(re.sub(r"<[^>]+>", "", s))
 
@@ -1120,7 +1127,9 @@ def landing_page(lang, page):
     v = release_values()
     kind = INSTALL_KIND[lang]["setup" if v["is_setup"] else "zip"]
     date = short_months(lang, v["date"])
-    values = {"up": up, "version": v["version"], "size": v["size"], "date": date, "link": v["link"], "kind": kind}
+    scan = scanbadge.info(current_tag())
+    values = {"up": up, "version": v["version"], "size": v["size"], "date": date, "link": v["link"], "kind": kind,
+              "scan_chip": scanbadge.chip(lang, scan), "scan_panel": scanbadge.panel(lang, scan, lambda d: short_months(lang, d))}
     title, desc, og = landing.meta(page, lang)
     e = lambda t: htmlmod.escape(t, quote=True)
     extra = ""
@@ -1690,6 +1699,9 @@ def main():
         if page == "weapons":
             html = put(html, "weapons", weapons_html(lang), path)
         if page == "index":
+            scan = scanbadge.info(current_tag())
+            html = put(html, "scan-hero", scanbadge.marked("scan-hero", lang, scan, "      "), path)
+            html = put(html, "scan-dl", scanbadge.marked("scan-dl", lang, scan, "        "), path)
             html = put(html, "roadmap", roadmap_html(lang, latest), path)
             html = put(html, "devlog-latest", devlog_latest(lang, posts[lang]), path)
             html = put(html, "devlog-hero", devlog_hero(lang, posts[lang]), path)

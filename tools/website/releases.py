@@ -9,6 +9,8 @@ build.py calls:
 import html as htmlmod
 import re
 
+import scanbadge
+
 MEDIA = ["hero-village-rooftop", "hero-stadtrand-canal", "map-railhouse", "hero-railhouse-south", "map-northport",
          "hero-village-contact", "map-snow", "map-delta", "map-stadtrand", "hero-village-rooftop", "hero-snow-warehouse"]
 
@@ -92,6 +94,7 @@ def page_body(rel, rels, posts, gh_repo):
     <p class="lede">{rel['summary']}</p>
     <p class="rel-facts"><span>{count} changes</span><span>{len(rel['sections'])} areas</span><span>{e(rel['meta'])}</span></p>
     <div class="hero-cta">{''.join(actions)}</div>
+    {scanbadge.release_row(scanbadge.info(rel["ver"]))}
   </div>
 </section>
 
