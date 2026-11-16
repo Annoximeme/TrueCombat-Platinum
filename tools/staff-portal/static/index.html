@@ -6,6 +6,9 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Staff Portal · TrueCombat: Platinum</title>
 <link rel="icon" href="/static/favicon.png">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<meta name="theme-color" content="#0d1016">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
 <link rel="preload" href="/static/fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/static/style.css">
 <script src="/static/app.js" defer></script>
@@ -66,6 +69,7 @@
         <a href="#/players" data-page="players" data-key="p">Players</a>
         <a href="#/bans" data-page="bans" data-key="b">Bans</a>
         <a href="#/watchlist" data-page="watchlist" data-key="w">Watchlist</a>
+        <a href="#/anticheat" data-page="anticheat" data-perm="anticheat" data-key="q">Anti-cheat queue <span class="count" id="nav-ac" hidden></span></a>
         <a href="#/review" data-page="review" data-perm="review">Stats review</a>
       </div>
       <div class="nav-group" data-group="tools"><button type="button" class="nav-head">Server tools</button>
@@ -74,12 +78,14 @@
         <a href="#/replies" data-page="replies">Saved replies</a>
       </div>
       <div class="nav-group" data-group="insights"><button type="button" class="nav-head">Insights</button>
+        <a href="#/history" data-page="history" data-perm="history" data-key="y">Player history</a>
         <a href="#/insights" data-page="insights" data-perm="insights">Website and launcher</a>
         <a href="#/weekly" data-page="weekly" data-perm="weekly">Weekly report</a>
       </div>
       <div class="nav-group" data-group="admin"><button type="button" class="nav-head">Admin</button>
         <a href="#/audit" data-page="audit" data-perm="audit" data-key="l">Audit log</a>
         <a href="#/staff" data-page="staff" data-perm="staff.manage">Staff</a>
+        <a href="#/quality" data-page="quality" data-perm="quality">Moderator quality</a>
         <a href="#/health" data-page="health" data-perm="health" data-key="e">Health</a>
       </div>
     </nav>
@@ -87,6 +93,7 @@
       <img id="me-avatar" alt="" width="32" height="32" hidden>
       <button id="me-account" class="me-account" type="button" title="Account and two-step sign-in"><b id="me-name"></b><span id="me-role" class="role"></span></button>
       <button id="logout" class="link" type="button">Sign out</button>
+      <button id="duty" class="duty" type="button" hidden>Go on duty</button>
       <span class="live-dot" id="live-dot" title="Live updates are off: pages refresh on a timer"></span>
     </div>
   </aside>

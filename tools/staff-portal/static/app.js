@@ -156,7 +156,10 @@ async function boot() {
   every(refreshReportCount, 30000);
   every(refreshAlertCount, 30000);
   every(refreshCaseCount, 60000);
+  every(refreshAcCount, 60000);
+  every(refreshDuty, 60000);
   liveSetup();
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
   route();
 }
 
@@ -180,18 +183,22 @@ async function refreshAlertCount() {
   } catch (e) { /* ignore */ }
 }
 
+const PUSH_ROW = '<p class="staffkey-row"><button type="button" class="btn btn-small" data-push>Alerts on this device</button> <span class="dim small">Phone or desktop notifications: urgent alerts always, everything while you are on duty.</span></p>';
 const STAFF_KEY_ROW = '<p class="staffkey-row"><button type="button" class="btn btn-small" data-staffkey>Staff badge in game</button> <span class="dim small">Get the key file that shows you as staff on our servers.</span></p>';
 function accountDialog() {
-  setTimeout(() => { $("#modal-body").onclick = (e) => { if (e.target.closest("[data-staffkey]")) staffKeyDialog().catch((err) => toast(err.message, true)); }; }, 0);
+  setTimeout(() => { $("#modal-body").onclick = (e) => {
+    if (e.target.closest("[data-staffkey]")) staffKeyDialog().catch((err) => toast(err.message, true));
+    if (e.target.closest("[data-push]")) pushDialog().catch((err) => toast(err.message, true));
+  }; }, 0);
   const me = S.me;
   const status = me.mfa_on ? '<p><span class="tag ok">On</span> Two-step sign-in protects this account.</p>'
     : `<p><span class="tag ${me.mfa_required ? "bad" : ""}">Off</span> ${me.mfa_required ? "Admin tools stay locked until you turn it on." : "Optional for moderators, and recommended."}</p>`;
   if (me.mfa_on) {
     return modal({ title: "Your account", sub: me.name + " · " + me.role, ok: me.mfa_required ? "Close" : "Turn off", danger: !me.mfa_required,
-      body: status + STAFF_KEY_ROW + (me.mfa_required ? "" : '<label>Code from your app, to turn it off</label><input name="code" inputmode="numeric" maxlength="7">'),
+      body: status + PUSH_ROW + STAFF_KEY_ROW + (me.mfa_required ? "" : '<label>Code from your app, to turn it off</label><input name="code" inputmode="numeric" maxlength="7">'),
       onOk: async (f) => { if (me.mfa_required) return; await api("2fa/disable", { code: f.code }); toast("Two-step sign-in is off."); setTimeout(() => location.reload(), 800); } });
   }
-  modal({ title: "Your account", sub: me.name + " · " + me.role, ok: "Set up two-step sign-in", body: status + '<p class="muted">You need an authenticator app such as Google Authenticator, Microsoft Authenticator, 1Password or Aegis.</p>' + STAFF_KEY_ROW,
+  modal({ title: "Your account", sub: me.name + " · " + me.role, ok: "Set up two-step sign-in", body: status + '<p class="muted">You need an authenticator app such as Google Authenticator, Microsoft Authenticator, 1Password or Aegis.</p>' + PUSH_ROW + STAFF_KEY_ROW,
     onOk: async () => {
       const r = await api("2fa/setup", {});
       setTimeout(() => modal({ title: "Set up two-step sign-in", ok: "Turn on",
@@ -314,7 +321,8 @@ function route() {
   const pages = { home: pageHome, servers: pageServers, server: pageServer, chat: pageChat, reports: pageReports, players: pagePlayers,
     player: pagePlayer, bans: pageBans, audit: pageAudit, staff: pageStaff, health: pageHealth, alerts: pageAlerts,
     watchlist: pageWatchlist, review: pageReview, schedule: pageSchedule, filter: pageFilter, replies: pageReplies,
-    weekly: pageWeekly, settings: pageSettings, insights: pageInsights, cases: pageCases, case: pageCase };
+    weekly: pageWeekly, settings: pageSettings, insights: pageInsights, cases: pageCases, case: pageCase,
+    history: pageHistory, quality: pageQuality, anticheat: pageAnticheat };
   let arg = "";
   try { arg = decodeURIComponent(parts[1] || ""); } catch (e) { arg = ""; }      // a broken link opens the page, not a blank screen
   (pages[page] || pageHome)(main, arg);
@@ -809,11 +817,14 @@ function pageStaff(main) {
     sub: S.me.role === "owner" ? "" : "Only the owner can make or change admins.",
     body: `<label>Discord user id</label><input name="discord_id" value="${esc(row.discord_id || "")}" placeholder="183662139000000000" inputmode="numeric">
       <label>Name (for this list)</label><input name="name" value="${esc(row.name || "")}">
-      <label>Access</label><select name="role"><option value="moderator">Moderator</option>${S.me.role === "owner" ? '<option value="admin">Admin</option>' : ""}<option value="discord">Follow Discord roles</option><option value="revoked">No access, even with the Discord role</option></select>
+      <label>Access</label><select name="role"><option value="trial">Trial moderator</option><option value="moderator">Moderator</option>${S.me.role === "owner" ? '<option value="admin">Admin</option>' : ""}<option value="discord">Follow Discord roles</option><option value="revoked">No access, even with the Discord role</option></select>
       <label>Note</label><input name="note" value="${esc(row.note || "")}" placeholder="Trial moderator until December">`,
     onOk: async (f) => { await api("staff", f); toast("Saved."); draw(); } });
   $("#s-add").onclick = () => edit();
-  $("#s-list").onclick = (e) => { const b = e.target.closest("button[data-i]"); if (b) edit(draw.rows[+b.dataset.i]); };
+  $("#s-list").onclick = (e) => {
+    const b = e.target.closest("button[data-i]"); if (b) return edit(draw.rows[+b.dataset.i]);
+    const r = e.target.closest("button[data-rights]"); if (r) rightsDialog(r.dataset.rights, draw).catch((err) => toast(err.message, true));
+  };
   $("#s-keys").onclick = (e) => {
     const b = e.target.closest("button[data-revoke]"); if (!b) return;
     modal({ title: "Revoke staff key", sub: b.dataset.name, ok: "Revoke", danger: true, body: "<p>Their staff badge stops on our servers right away. They can make a new key while they still have portal access.</p>",
@@ -835,7 +846,7 @@ function pageStaff(main) {
     draw.rows = r.staff;
     $("#s-list").innerHTML = `<table><tr><th>Name</th><th>Discord id</th><th>Access</th><th>Last sign-in</th><th>Note</th><th></th></tr>${r.staff.map((s, i) => `
       <tr><td>${esc(s.name || "–")}</td><td class="mono">${esc(s.discord_id)}</td><td>${s.role ? `<span class="role">${esc(s.role)}</span>` : '<span class="dim">Discord role</span>'}</td>
-      <td>${s.last_login ? ago(s.last_login) : "never"}</td><td>${esc(s.note || "")}</td><td>${s.role === "owner" ? "" : `<button class="btn btn-small" data-i="${i}">Change</button>`}</td></tr>`).join("")}</table>`;
+      <td>${s.last_login ? ago(s.last_login) : "never"}</td><td>${esc(s.note || "")}</td><td>${s.role === "owner" ? "" : `<button class="btn btn-small" data-i="${i}">Change</button> <button class="btn btn-small" data-rights="${esc(s.discord_id)}">Rights</button>`}${(s.perms_add && s.perms_add !== "[]") || (s.perms_remove && s.perms_remove !== "[]") ? ' <span class="tag staff">Custom</span>' : ""}</td></tr>`).join("")}</table>`;
   }
   draw();
 }
@@ -1516,7 +1527,8 @@ function pageHome(main) {
     const r = d.reports || { open: 0, claimed: 0, mine: 0, by_source: {} };
     const tile = (href, label, value, note, cls = "", extra = "") => `<${href ? `a href="${href}"` : "div"} class="tile ${cls}"><span class="meta">${label}</span><span class="stat">${value}</span>${extra}<span class="note">${note}</span></${href ? "a" : "div"}>`;
     const openAge = r.oldest_open ? Date.now() / 1000 - r.oldest_open : 0;
-    $("#h-sub").textContent = `${d.players_online} player${d.players_online === 1 ? "" : "s"} on ${d.servers_up} of ${d.servers.length} servers right now.`;
+    $("#h-sub").textContent = `${d.players_online} player${d.players_online === 1 ? "" : "s"} on ${d.servers_up} of ${d.servers.length} servers right now.` +
+      (d.on_duty && d.on_duty.length ? ` On duty: ${d.on_duty.map((x) => x.name).join(", ")}.` : " Nobody is on duty.");
     $("#h-tiles").innerHTML = [
       tile("#/servers", "Players online", d.players_online, `peak today ${d.peak_today} · ${d.new_players_24h} new in 24 h`, "", spark(d.spark)),
       tile("#/servers", "Servers up", `${d.servers_up}<small class="muted"> / ${d.servers.length}</small>`, d.servers_up < d.servers.length ? "some servers are not answering" : "all answering", d.servers_up < d.servers.length ? "hot" : ""),
@@ -1564,7 +1576,7 @@ function liveSetup() {
   const dot = (on) => { S.live = on; const d = $("#live-dot"); if (d) { d.classList.toggle("on", on); d.title = on ? "Live: pages update the moment something happens" : "Live updates are off: pages refresh on a timer"; } };
   es.onopen = () => dot(true);
   es.onerror = () => dot(false);
-  for (const k of ["servers", "chat", "alert", "reports", "action", "cases"]) es.addEventListener(k, (e) => liveEvent(k, e));
+  for (const k of ["servers", "chat", "alert", "reports", "action", "cases", "anticheat", "duty"]) es.addEventListener(k, (e) => liveEvent(k, e));
 }
 function liveEvent(kind, e) {
   let d = {};
@@ -1572,6 +1584,8 @@ function liveEvent(kind, e) {
   if (kind === "alert") liveRun("alerts", refreshAlertCount);
   if (kind === "reports" || (kind === "alert" && ["bugreport", "appeal", "reports"].includes(d.kind)) || (kind === "action" && /^(report|appeal)/.test(d.action || ""))) liveRun("reports", refreshReportCount);
   if (kind === "cases") liveRun("cases", refreshCaseCount);
+  if (kind === "anticheat") liveRun("ac", refreshAcCount);
+  if (kind === "duty") liveRun("duty", refreshDuty);
   for (const sub of S.subs) if (sub.page === S.page && sub.kinds.includes(kind)) liveRun(sub, sub.fn);
 }
 /* at most once per 1.5 s per refresher, and the last event in a burst always gets its refresh */
@@ -1776,6 +1790,202 @@ async function evidencePanel(el, { caseId = 0, pid = "", list = null }) {
       body: '<label>Title</label><input name="title" maxlength="160" placeholder="Statement from the reporter"><label>Text</label><textarea name="text" rows="6" maxlength="4000"></textarea>',
       onOk: async (f) => { await api("evidence", Object.assign({ kind: "text", title: f.title, text: f.text }, base)); reload(); } });
   };
+}
+
+/* ------------------------------------------------------------------ 1.4.2: anti-cheat queue count, duty, push */
+async function refreshAcCount() {
+  if (!can("anticheat")) return;
+  try {
+    const r = await api("anticheat");
+    const n = (r.counts && r.counts.open) || 0;
+    $("#nav-ac").textContent = n;
+    $("#nav-ac").hidden = !n;
+  } catch (e) { /* ignore */ }
+}
+async function refreshDuty() {
+  const b = $("#duty");
+  if (!b || !can("duty")) return;
+  let r;
+  try { r = await api("duty"); } catch (e) { return; }
+  S.duty = r;
+  b.hidden = false;
+  b.classList.toggle("on", r.me.on);
+  b.textContent = r.me.on ? `On duty until ${clock(r.me.until)}` : "Go on duty";
+  b.title = r.on_duty.length ? "On duty now: " + r.on_duty.map((d) => d.name).join(", ") : "Nobody is on duty";
+  b.onclick = () => {
+    if (r.me.on) return api("duty", { on: false }).then(() => { toast("You are off duty."); refreshDuty(); }).catch((e) => toast(e.message, true));
+    modal({ title: "Go on duty", sub: "While you are on duty, every alert reaches your devices, not only urgent ones. It switches off by itself.", ok: "Go on duty",
+      body: `<label>For</label><select name="hours"><option value="1">1 hour</option><option value="2">2 hours</option><option value="4" selected>4 hours</option><option value="8">8 hours</option></select>
+        ${r.devices ? "" : '<p class="muted">No device of yours gets alerts yet. Turn them on under your name, "Alerts on this device".</p>'}`,
+      onOk: async (f) => { await api("duty", { on: true, hours: +f.hours }); toast("You are on duty."); refreshDuty(); } });
+  };
+}
+function b64ToBytes(s) {
+  const pad = "=".repeat((4 - (s.length % 4)) % 4);
+  const raw = atob((s + pad).replace(/-/g, "+").replace(/_/g, "/"));
+  return Uint8Array.from(raw, (c) => c.charCodeAt(0));
+}
+async function pushDialog() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window))
+    throw new Error("This browser cannot show notifications. On an iPhone, first add the portal to the home screen (Share, Add to Home Screen) and open it from there.");
+  const reg = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  const body = `<p>${sub ? '<span class="tag ok">On</span> This device gets staff alerts.' : '<span class="tag">Off</span> This device gets no alerts.'}</p>
+    <p class="muted">Urgent alerts (a server down, a ban dodger, a very high suspicion score) always arrive. Everything else arrives while you are on duty. Notifications show the alert title only after your device asks the portal, so nothing about players passes through Google, Apple or Mozilla.</p>`;
+  setTimeout(() => modal({ title: "Alerts on this device", ok: sub ? "Turn off" : "Turn on", danger: !!sub, body: body + (sub ? '<p><button type="button" class="btn btn-small" data-push-test>Send a test</button></p>' : ""),
+    onOk: async () => {
+      if (sub) { await api("push/unsubscribe", { endpoint: sub.endpoint }); await sub.unsubscribe(); toast("Alerts are off on this device."); return; }
+      if ((await Notification.requestPermission()) !== "granted") throw new Error("Notifications are blocked for this site. Allow them in the browser settings.");
+      const key = (await api("push/key")).key;
+      const s = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) });
+      await api("push/subscribe", { endpoint: s.endpoint });
+      toast("Alerts are on for this device.");
+      refreshDuty();
+    } }), 0);
+  setTimeout(() => {
+    const t = $("#modal-body [data-push-test]");
+    if (t) t.onclick = async () => { try { const r = await api("push/test", {}); toast(r.sent ? "Test sent." : "The test did not go out. Turn alerts off and on again."); } catch (e) { toast(e.message, true); } };
+  }, 10);
+}
+
+/* ------------------------------------------------------------------ 1.4.2: per-person rights */
+const PERM_LABEL = { "view": "See the portal", "chat.reply": "Reply in chat", "player.kick": "Kick", "player.warn": "Warn", "player.mute": "Mute", "player.move": "Move players",
+  "ban.temp": "Timed bans (up to a day)", "ban.perm": "Long and permanent bans", "ban.remove": "Lift bans", "server.say": "Announce", "server.map": "Change map",
+  "server.restart": "Restart matches", "reports": "Reports", "lookup": "Player lookup", "lookup.ip": "IP addresses", "audit": "Audit log", "staff.manage": "Manage staff",
+  "health": "Health page", "health.restart": "Restart game servers", "punish": "Punishment ladder", "watch": "Watchlist", "filters.manage": "Edit chat filter",
+  "templates.manage": "Edit saved replies", "appeals.answer": "Answer appeals", "schedule": "Schedule", "event": "Event mode", "livemap": "Live map", "cvars": "Server settings",
+  "review": "Stats review", "weekly": "Weekly report", "insights": "Website insights", "backup": "Database snapshot", "cases": "Cases", "evidence": "Evidence",
+  "evidence.delete": "Remove evidence", "history": "Player history", "quality": "Moderator quality", "anticheat": "Anti-cheat queue", "duty": "Go on duty", "2fa.reset": "Reset two-step sign-in" };
+const RANKS = ["trial", "moderator", "admin", "owner"];
+async function rightsDialog(id, done) {
+  const r = await api("staff/rights?id=" + encodeURIComponent(id));
+  const role = r.role || "moderator";
+  const base = (p) => RANKS.indexOf(role) >= RANKS.indexOf(r.perms[p]);
+  const rows = Object.keys(r.perms).filter((p) => p !== "2fa.reset" && p !== "staff.manage").map((p) => {
+    const v = r.add.includes(p) ? "add" : r.remove.includes(p) ? "remove" : "";
+    return `<span>${esc(PERM_LABEL[p] || p)} <span class="dim small">· ${base(p) ? "with the role" : esc(r.perms[p]) + " and up"}</span></span>
+      <select name="p:${esc(p)}"><option value="">${base(p) ? "Yes (role)" : "No (role)"}</option>${base(p) ? '<option value="remove">Take away</option>' : '<option value="add">Give</option>'}</select>`.replace(`value="${v}"`, `value="${v}" selected`);
+  }).join("");
+  const presets = Object.entries(r.presets).map(([k, x]) => `<button type="button" class="btn btn-small" data-preset="${esc(k)}">${esc(x.label)}</button>`).join(" ");
+  modal({ title: "Rights for " + (r.name || id), sub: `Role: ${role}${r.role ? "" : " (from Discord)"}. Extras here add to or take from the role. Admin tools still need two-step sign-in.`, ok: "Save",
+    body: `<p class="tags">${presets} <button type="button" class="btn btn-small" data-preset="">Clear</button></p><div class="rights">${rows}</div>`,
+    onOk: async (f) => {
+      const add = [], remove = [];
+      for (const [k, v] of Object.entries(f)) if (k.startsWith("p:") && v) (v === "add" ? add : remove).push(k.slice(2));
+      await api("staff/rights", { discord_id: id, add, remove });
+      toast("Rights saved."); if (done) done();
+    } });
+  $("#modal-body").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-preset]"); if (!b) return;
+    const p = r.presets[b.dataset.preset] || {};
+    for (const sel of $("#modal-body").querySelectorAll("select[name^='p:']")) {
+      const perm = sel.name.slice(2);
+      const want = (p.perms || []).includes(perm) ? "add" : (p.remove || []).includes(perm) ? "remove" : "";
+      if (!b.dataset.preset) sel.value = "";
+      else if (want && [...sel.options].some((o) => o.value === want)) sel.value = want;
+    }
+  });
+}
+
+/* ------------------------------------------------------------------ 1.4.2: player history */
+function lineChart(points, bucket) {
+  if (!points.length) return '<p class="empty">No samples yet. The portal records player counts every five minutes.</p>';
+  const W = 900, H = 220, L = 34, B = 22, top = 10;
+  const t0 = points[0].t, t1 = points[points.length - 1].t || t0 + 1;
+  const max = Math.max(4, ...points.map((p) => p.peak));
+  const x = (t) => L + ((t - t0) / Math.max(1, t1 - t0)) * (W - L - 8);
+  const y = (v) => top + (1 - v / max) * (H - top - B);
+  const avg = points.map((p, i) => `${i ? "L" : "M"}${x(p.t).toFixed(1)},${y(p.avg).toFixed(1)}`).join("");
+  const peak = `M${x(t0)},${y(0)}` + points.map((p) => `L${x(p.t).toFixed(1)},${y(p.peak).toFixed(1)}`).join("") + `L${x(t1)},${y(0)}Z`;
+  const ticks = [0, Math.round(max / 2), max].map((v) => `<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text x="2" y="${y(v) + 4}">${v}</text>`).join("");
+  const days = Math.round((t1 - t0) / 86400);
+  const labels = [0, 0.25, 0.5, 0.75, 1].map((f) => { const t = t0 + f * (t1 - t0); const d = new Date(t * 1000);
+    return `<text x="${x(t) - 18}" y="${H - 4}">${days > 2 ? d.toLocaleDateString(undefined, { day: "2-digit", month: "short" }) : d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</text>`; }).join("");
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Players online over time"><g class="grid">${ticks}</g><path class="peak" d="${peak}"/><path class="avg" d="${avg}"/>${labels}</svg>
+    <p class="dim small">Line: average players per ${bucket >= 3600 ? bucket / 3600 + " h" : bucket / 60 + " min"}. Shade: the peak in that time.</p>`;
+}
+function pageHistory(main) {
+  const st = { days: 7, server: "" };
+  main.innerHTML = `<div class="head"><div><p class="eyebrow">Insights</p><h1>Player history</h1><p class="muted" id="hi-sub"></p></div></div>
+    <div class="tabs" id="hi-days"><button class="btn btn-small" data-d="1">24 hours</button><button class="btn btn-small on" data-d="7">7 days</button><button class="btn btn-small" data-d="30">30 days</button><button class="btn btn-small" data-d="90">90 days</button></div>
+    <div class="tabs" id="hi-srv"><button class="btn btn-small on" data-s="">All servers</button></div>
+    <div class="panel"><h3>Players online</h3><div id="hi-chart"></div></div>
+    <div class="grid grid-2"><div class="panel"><h3>Busiest hours <span class="dim small">(Belgian time, average players)</span></h3><div id="hi-heat"></div></div>
+      <div><div class="panel"><h3>Servers</h3><div class="table-wrap" id="hi-servers"></div></div><div class="panel"><h3>Maps by average players</h3><div class="bars" id="hi-maps"></div></div></div></div>`;
+  loadServers().then((list) => { $("#hi-srv").innerHTML += list.map((x) => `<button class="btn btn-small" data-s="${esc(x.key)}">${esc(x.name)}</button>`).join(""); }).catch(() => {});
+  const tabs = (id, key, attr) => $(id).onclick = (e) => { const b = e.target.closest("button"); if (!b) return; for (const x of $(id).children) x.classList.toggle("on", x === b); st[key] = attr === "d" ? +b.dataset.d : b.dataset.s; draw(); };
+  tabs("#hi-days", "days", "d");
+  tabs("#hi-srv", "server", "s");
+  async function draw() {
+    let r;
+    try { r = await api(`history?days=${st.days}&server=${encodeURIComponent(st.server)}`); } catch (e) { toast(e.message, true); return; }
+    const pk = Math.max(0, ...r.points.map((p) => p.peak));
+    $("#hi-sub").textContent = `${r.samples} samples · highest ${pk} players at once in this period.`;
+    $("#hi-chart").innerHTML = lineChart(r.points, r.bucket);
+    const max = Math.max(1, ...r.heatmap.flat().filter((v) => v != null));
+    const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    $("#hi-heat").innerHTML = `<div class="heat"><span class="h"></span>${[...Array(24).keys()].map((h) => `<span class="h">${h % 3 ? "" : h}</span>`).join("")}
+      ${r.heatmap.map((row, d) => `<span class="d">${DAYS[d]}</span>${row.map((v, h) => `<span title="${DAYS[d]} ${h}:00 · ${v == null ? "no data" : v + " players"}" data-a="${v == null ? "" : (0.08 + 0.92 * v / max).toFixed(2)}"></span>`).join("")}`).join("")}</div>`;
+    for (const c of document.querySelectorAll("#hi-heat [data-a]")) if (c.dataset.a) c.style.background = `rgba(91,155,213,${c.dataset.a})`;
+    $("#hi-servers").innerHTML = `<table><tr><th>Server</th><th class="num">Uptime</th><th class="num">Average</th><th class="num">Peak</th></tr>${r.servers.map((x) => `<tr><td>${esc(x.name)}</td><td class="num">${x.uptime_pct == null ? "–" : x.uptime_pct + "%"}</td><td class="num">${x.avg}</td><td class="num">${x.peak}</td></tr>`).join("")}</table>`;
+    const mm = Math.max(1, ...r.maps.map((m) => m.avg));
+    $("#hi-maps").innerHTML = r.maps.map((m) => `<div class="bar"><span>${esc(m.map)}</span><i data-w="${Math.max(2, (100 * m.avg) / mm).toFixed(0)}"></i><span class="dim small">${m.avg} · ${m.hours} h</span></div>`).join("") || '<p class="dim">No maps recorded.</p>';
+    for (const i of document.querySelectorAll("#hi-maps i[data-w]")) i.style.width = i.dataset.w + "%";
+  }
+  every(draw, 300000, "history");
+}
+
+/* ------------------------------------------------------------------ 1.4.2: moderator quality */
+function pageQuality(main) {
+  let days = 30;
+  main.innerHTML = `<div class="head"><div><p class="eyebrow">Admin</p><h1>Moderator quality</h1><p class="muted">What each staff member did, how fast reports were picked up, and how often their bans held. A starting point for a talk, not a score.</p></div></div>
+    <div class="tabs" id="q-days"><button class="btn btn-small" data-d="7">7 days</button><button class="btn btn-small on" data-d="30">30 days</button><button class="btn btn-small" data-d="90">90 days</button></div>
+    <div class="cards" id="q-team"></div><div class="panel table-wrap" id="q-list"></div>`;
+  $("#q-days").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; for (const x of $("#q-days").children) x.classList.toggle("on", x === b); days = +b.dataset.d; draw(); };
+  const mins = (m) => m == null ? "–" : m < 60 ? Math.round(m) + " min" : (m / 60).toFixed(1) + " h";
+  async function draw() {
+    let r;
+    try { r = await api("quality?days=" + days); } catch (e) { toast(e.message, true); return; }
+    const t = r.team;
+    $("#q-team").innerHTML = [["Reports in", t.reports, ""], ["Left over a day", t.untouched, t.untouched ? "warm" : ""], ["Appeals", t.appeals, ""], ["Appeals accepted", t.accepted, ""]]
+      .map(([k, v, c]) => `<div class="card ${c}"><div class="meta">${k}</div><div class="big">${v}</div></div>`).join("");
+    $("#q-list").innerHTML = r.staff.length ? `<table><tr><th>Staff</th><th class="num">Actions</th><th class="num">Bans</th><th class="num">Kicks</th><th class="num">Mutes</th><th class="num">Warns</th>
+      <th class="num">Reports closed</th><th class="num">Time to take</th><th class="num">Time to close</th><th class="num">Bans overturned</th><th class="num">Lifted by others</th><th class="num">Undos</th><th class="num">Appeals answered</th><th class="num">Cases closed</th></tr>
+      ${r.staff.map((x) => `<tr><td>${esc(x.name)}</td><td class="num">${x.actions}</td><td class="num">${x.bans}</td><td class="num">${x.kicks}</td><td class="num">${x.mutes}</td><td class="num">${x.warns}</td>
+        <td class="num">${x.reports_closed}</td><td class="num">${mins(x.take_median_min)}</td><td class="num">${mins(x.close_median_min)}</td>
+        <td class="num">${x.bans_overturned}${x.overturn_pct != null ? ` <span class="dim small">${x.overturn_pct}%</span>` : ""}</td><td class="num">${x.bans_lifted}</td><td class="num">${x.undos}</td><td class="num">${x.appeals_answered}</td><td class="num">${x.cases_closed}</td></tr>`).join("")}</table>
+      <p class="dim small">Times are medians from a report arriving. Overturned: bans lifted on appeal.</p>` : '<p class="empty">No staff activity in this period.</p>';
+  }
+  draw();
+}
+
+/* ------------------------------------------------------------------ 1.4.2: anti-cheat review queue */
+function pageAnticheat(main) {
+  let status = "open";
+  main.innerHTML = `<div class="head"><div><p class="eyebrow">Moderation</p><h1>Anti-cheat queue</h1><p class="muted">Anti-cheat detections, very high suspicion scores and ban dodgers in one list, strongest first. Clear it, act on it or open a case.</p></div></div>
+    <div class="tabs" id="ac-tabs"><button class="btn btn-small on" data-s="open">To review</button><button class="btn btn-small" data-s="done">Done</button></div>
+    <div class="panel" id="ac-list"></div>`;
+  $("#ac-tabs").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; for (const x of $("#ac-tabs").children) x.classList.toggle("on", x === b); status = b.dataset.s; draw(); };
+  $("#ac-list").onclick = (e) => {
+    const b = e.target.closest("button[data-ac]"); if (!b) return;
+    const id = +b.dataset.ac, out = b.dataset.out;
+    if (out === "case") return api("anticheat", { id, outcome: "case" }).then(() => newCaseDialog({ pid: b.dataset.pid, name: b.dataset.name })).catch((err) => toast(err.message, true));
+    if (out === "open") return api("anticheat", { id, outcome: "open" }).then(draw).catch((err) => toast(err.message, true));
+    modal({ title: out === "cleared" ? "Clear " + b.dataset.name : "Mark as acted on", ok: out === "cleared" ? "Clear" : "Done",
+      body: `<label>Note</label><input name="note" maxlength="300" placeholder="${out === "cleared" ? "Watched the demo, clean" : "Banned permanently, case #12"}">`,
+      onOk: async (f) => { await api("anticheat", { id, outcome: out, note: f.note }); draw(); } });
+  };
+  async function draw() {
+    let r;
+    try { r = await api("anticheat?status=" + status); } catch (e) { toast(e.message, true); return; }
+    $("#ac-list").innerHTML = r.items.map((x) => `<div class="case-row"><span class="id">${x.score || "–"}</span>
+      <span><span class="t"><a href="#/player/${esc(x.pid)}">${esc(x.name || x.pid)}</a></span> <span class="tag ${x.kind === "detection" || x.kind === "dodger" ? "bad" : "warn"}">${esc(x.label)}</span>
+        ${x.online ? `<a class="tag ok" href="#/server/${esc(x.online)}">Online on ${esc(x.online)}</a>` : ""}${x.banned ? '<span class="tag bad">Banned</span>' : ""}${x.suspicion != null ? " " + susTag(x.suspicion) : ""}
+        <div class="dim small">${esc(x.detail)} · ${esc(x.server || "")} · ${ago(x.at)}</div>${x.status !== "open" ? `<div class="small">${esc(x.status)} by ${esc(x.by_name || "")}${x.note ? ": " + esc(x.note) : ""}</div>` : ""}</span>
+      <span class="s">${x.status === "open" ? `<button class="btn btn-small" data-ac="${x.id}" data-out="cleared" data-name="${esc(x.name)}">Clear</button> <button class="btn btn-small" data-ac="${x.id}" data-out="actioned" data-name="${esc(x.name)}">Acted on</button> ${can("cases") ? `<button class="btn btn-small" data-ac="${x.id}" data-out="case" data-pid="${esc(x.pid)}" data-name="${esc(x.name)}">Case</button>` : ""}` : `<button class="btn btn-small" data-ac="${x.id}" data-out="open">Reopen</button>`}</span></div>`).join("") || '<p class="empty">Nothing to review.</p>';
+  }
+  every(draw, 30000, "anticheat", ["anticheat"]);
 }
 
 boot();

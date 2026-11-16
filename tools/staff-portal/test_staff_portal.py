@@ -141,7 +141,7 @@ class FakeGame(threading.Thread):
             self.sock.sendto(b"\xff\xff\xff\xffprint\n" + self.answer(cmd).encode("latin-1"), addr)
 
 
-HOOKS, VOIDED = [], []
+HOOKS, VOIDED, PUSHES = [], [], []
 
 
 def totp_now(secret):
@@ -161,6 +161,14 @@ def fake_stats():
             body = json.loads(self.rfile.read(n) or b"{}")
             if self.path == "/webhook":
                 HOOKS.append(body)
+                out = {}
+            elif self.path.startswith("/push/"):
+                PUSHES.append((self.path, dict(self.headers)))
+                if self.path == "/push/gone":
+                    self.send_response(410)
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
                 out = {}
             elif self.path in ("/staff/void", "/staff/unvoid") and self.headers.get("X-Staff-Token") == "tok":
                 VOIDED.append((self.path, body))
@@ -1254,6 +1262,117 @@ class PortalTest(unittest.TestCase):
         self.assertEqual(self.call("owner", "POST", "/api/evidence/delete", {"id": eid, "reason": "test"})[0], 200)
         self.assertEqual(self.call("moderator", "GET", "/api/evidence/file?id=%d" % eid)[0], 404)
         self.assertFalse(list((Path(self.portal.cfg["data_dir"]) / "evidence").glob("*.png")))
+
+    def test_48_vapid_signature(self):
+        d, pub = tsp.p256_keypair()
+        self.assertEqual(tsp.p256_public(d), pub)
+        sig = tsp.es256_sign(d, b"hello")
+        self.assertEqual(len(sig), 64)
+        try:
+            from cryptography.hazmat.primitives.asymmetric import ec
+            from cryptography.hazmat.primitives import hashes
+            from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
+        except ImportError:
+            self.skipTest("cryptography not installed")
+        key = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), pub)
+        der = encode_dss_signature(int.from_bytes(sig[:32], "big"), int.from_bytes(sig[32:], "big"))
+        key.verify(der, b"hello", ec.ECDSA(hashes.SHA256()))           # raises when wrong
+        h = tsp.vapid_header(d, pub, "https://fcm.googleapis.com/fcm/send/abc", "https://staff.example")
+        tok = h.split("t=")[1].split(",")[0]
+        head, body, s64 = tok.split(".")
+        import base64
+        raw = base64.urlsafe_b64decode(s64 + "==")
+        der = encode_dss_signature(int.from_bytes(raw[:32], "big"), int.from_bytes(raw[32:], "big"))
+        key.verify(der, ("%s.%s" % (head, body)).encode(), ec.ECDSA(hashes.SHA256()))
+        self.assertEqual(json.loads(base64.urlsafe_b64decode(body + "==="))["aud"], "https://fcm.googleapis.com")
+
+    def test_49_push_and_duty(self):
+        self.assertEqual(self.call("moderator", "POST", "/api/push/subscribe", {"endpoint": "https://evil.example/x"})[0], 400)
+        self.assertEqual(self.call("moderator", "GET", "/api/push/key")[0], 200)
+        hook = self.portal.cfg["stats_api"] + "/push/mod"
+        self.assertEqual(self.call("moderator", "POST", "/api/push/subscribe", {"endpoint": hook})[0], 200)
+        self.assertEqual(self.call("owner", "POST", "/api/push/subscribe", {"endpoint": self.portal.cfg["stats_api"] + "/push/gone"})[0], 200)
+        before = len(PUSHES)
+        self.portal.alert("reports", "not urgent", "x", key="push-a-%d" % time.time())
+        time.sleep(1)
+        self.assertEqual(len(PUSHES), before)                                  # nobody on duty, not urgent: no push
+        code, d = self.call("moderator", "POST", "/api/duty", {"on": True, "hours": 2})
+        self.assertEqual((code, d["on"]), (200, True))
+        self.portal.alert("reports", "now on duty", "x", key="push-b-%d" % time.time())
+        wait_for(lambda: len(PUSHES) > before)
+        path, headers = PUSHES[-1]
+        self.assertEqual(path, "/push/mod")
+        self.assertTrue(headers.get("Authorization", "").startswith("vapid t="))
+        self.portal.alert("server_down", "urgent", "x", key="push-c-%d" % time.time(), urgent=True)
+        wait_for(lambda: not self.portal.store.one("SELECT 1 x FROM push_subs WHERE endpoint LIKE '%/push/gone'"))   # 410: dropped
+        latest = self.call("moderator", "GET", "/api/push/latest")[1]["alert"]
+        self.assertEqual(latest["title"], "urgent")
+        self.assertTrue(self.call("moderator", "GET", "/api/duty")[1]["me"]["on"])
+        self.assertTrue(self.call("moderator", "GET", "/api/dashboard")[1]["on_duty"])
+        self.assertFalse(self.call("moderator", "POST", "/api/duty", {"on": False})[1]["on"])
+        c = http.client.HTTPConnection("127.0.0.1", self.port, timeout=5)
+        c.request("GET", "/sw.js")
+        r = c.getresponse()
+        self.assertEqual((r.status, "javascript" in r.getheader("Content-Type")), (200, True))
+        c.close()
+
+    def test_50_history_quality_anticheat(self):
+        self.portal.record_samples(force=True)
+        code, h = self.call("moderator", "GET", "/api/history?days=7")
+        self.assertEqual(code, 200)
+        self.assertTrue(h["points"])
+        self.assertEqual(len(h["heatmap"]), 7)
+        self.assertEqual(self.call("moderator", "GET", "/api/history?server=nope")[0], 404)
+        self.assertEqual(self.call("moderator", "GET", "/api/quality")[0], 403)
+        code, q = self.call("owner", "GET", "/api/quality?days=30")
+        self.assertEqual(code, 200)
+        self.assertTrue(any(x["bans"] for x in q["staff"]))
+        # anti-cheat queue: a suspicion alert and a detection rise both land there, once
+        self.portal.alert("suspicion", "Suspicion 88: Viper on Official #1", "- aim", key="sus-q-%d" % time.time(), pid=PID, server="one")
+        srv = self.portal.servers["one"]
+        self.portal.ac_watch(srv, [{"pid": PID, "name": "Viper", "detections": 2}])
+        self.portal.ac_watch(srv, [{"pid": PID, "name": "Viper", "detections": 2}])
+        self.assertEqual(self.call("moderator", "GET", "/api/anticheat")[0], 403)
+        items = self.call("owner", "GET", "/api/anticheat")[1]["items"]
+        kinds = sorted(x["kind"] for x in items if x["pid"] == PID)
+        self.assertEqual(kinds.count("detection"), 1)
+        self.assertEqual(kinds.count("suspicion"), 1)
+        sid = next(x["id"] for x in items if x["kind"] == "suspicion")
+        self.assertEqual(self.call("owner", "POST", "/api/anticheat", {"id": sid, "outcome": "cleared", "note": "clean demo"})[0], 200)
+        self.assertEqual(self.call("owner", "POST", "/api/anticheat", {"id": sid, "outcome": "bogus"})[0], 400)
+        self.assertFalse(any(x["id"] == sid for x in self.call("owner", "GET", "/api/anticheat")[1]["items"]))
+
+    def test_51_trial_role_and_rights(self):
+        c = http.client.HTTPConnection("127.0.0.1", self.port)
+        c.request("GET", "/auth/dev?role=trial&id=200000000000000002&name=Trial")
+        cookie = c.getresponse().getheader("Set-Cookie").split(";")[0]
+        c.close()
+        me = self.call(None, "GET", "/api/me", cookie=cookie)[1]
+        self.assertIn("player.warn", me["perms"])
+        self.assertNotIn("player.kick", me["perms"])
+        self.assertNotIn("ban.temp", me["perms"])
+        self.assertEqual(self.call(None, "GET", "/api/servers", cookie=cookie)[0], 200)
+        did = "200000000000000002"
+        self.assertEqual(self.call("owner", "POST", "/api/staff", {"discord_id": did, "role": "trial", "name": "Trial"})[0], 200)
+        # moderator cannot hand out rights; an admin cannot hand out admin tools; the owner can
+        self.assertEqual(self.call("moderator", "POST", "/api/staff/rights", {"discord_id": did, "add": ["player.kick"]})[0], 403)
+        self.assertEqual(self.call("owner", "POST", "/api/staff/rights", {"discord_id": did, "add": ["staff.manage"]})[0], 403)
+        code, r = self.call("owner", "POST", "/api/staff/rights", {"discord_id": did, "add": ["player.kick", "event"], "remove": ["player.warn"]})
+        self.assertEqual(code, 200, r)
+        me = self.call(None, "GET", "/api/me", cookie=cookie)[1]
+        self.assertIn("player.kick", me["perms"])
+        self.assertNotIn("player.warn", me["perms"])
+        self.assertIn("event", me["perms"])
+        got = self.call("owner", "GET", "/api/staff/rights?id=" + did)[1]
+        self.assertEqual(got["add"], ["event", "player.kick"])
+        self.call("owner", "POST", "/api/staff/rights", {"discord_id": did, "add": [], "remove": []})
+        self.assertNotIn("player.kick", self.call(None, "GET", "/api/me", cookie=cookie)[1]["perms"])
+
+    def test_52_install_keeps_staff_root(self):
+        text = (Path(__file__).resolve().parent / "deploy" / "install.sh").read_text()
+        self.assertIn("s|^#LoadCredential=staff-root:|LoadCredential=staff-root:|", text)
+        unit = (Path(__file__).resolve().parent / "deploy" / "tcp-staff-portal.service").read_text()
+        self.assertIn("#LoadCredential=staff-root:/etc/tcp-staff-portal/staff-root", unit)
 
     def test_insights_page_reads_the_insights_service(self):
         import sys as _sys
