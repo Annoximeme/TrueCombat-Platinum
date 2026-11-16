@@ -1144,6 +1144,117 @@ class PortalTest(unittest.TestCase):
         watch.main(["--url", "http://127.0.0.1:%d/healthz" % self.port] + args)
         self.assertIn("snapshot", HOOKS[-1]["embeds"][0]["title"])
 
+    def test_44_live_stream(self):
+        self.assertEqual(self.call(None, "GET", "/api/stream")[0], 401)
+        c = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+        c.request("GET", "/api/stream", headers={"Cookie": self.sessions["moderator"]["cookie"]})
+        r = c.getresponse()
+        self.assertEqual(r.status, 200)
+        self.assertTrue(r.getheader("Content-Type").startswith("text/event-stream"))
+        self.assertIn(b"retry:", r.fp.readline())
+        self.portal.alert("test", "Stream check", "hello", key="stream-check-%d" % time.time())
+        got = b""
+        deadline = time.time() + 8
+        while b"event: alert" not in got and time.time() < deadline:
+            got += r.fp.readline()
+        self.assertIn(b"event: alert", got)
+        self.assertNotIn(b"hello", got)                         # events carry ids, never the content
+        c.close()
+        # five streams for one person: the fifth is refused
+        conns = []
+        for _ in range(4):
+            x = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+            x.request("GET", "/api/stream", headers={"Cookie": self.sessions["owner"]["cookie"]})
+            conns.append((x, x.getresponse()))
+        self.assertEqual([resp.status for _, resp in conns], [200] * 4)
+        self.assertEqual(self.call("owner", "GET", "/api/stream")[0], 429)
+        for x, _ in conns:
+            x.close()
+
+    def test_45_cases(self):
+        wait_for(lambda: self.portal.servers["one"].view().get("online"))
+        rid = self.portal.store.one("SELECT MIN(id) i FROM reports WHERE source IN ('player','auto')")["i"]
+        self.assertEqual(self.call("moderator", "POST", "/api/cases", {"title": "x", "pid": "nope"})[0], 400)
+        code, r = self.call("moderator", "POST", "/api/cases", {"title": "Suspected wallhack", "report": rid})
+        self.assertEqual(code, 201, r)
+        cid = r["id"]
+        code, c = self.call("moderator", "GET", "/api/case/%d" % cid)
+        self.assertEqual(code, 200)
+        self.assertEqual(c["items"][0]["kind"], "report")
+        self.assertEqual(c["assignee"], self.portal.store.one("SELECT name FROM sessions WHERE role='moderator' LIMIT 1")["name"])
+        self.assertEqual(self.call("moderator", "POST", "/api/case/link", {"id": cid, "kind": "report", "ref": rid})[0], 409)
+        self.assertEqual(self.call("moderator", "POST", "/api/case/link", {"id": cid, "kind": "ban", "ref": 999999})[0], 404)
+        self.assertEqual(self.call("moderator", "POST", "/api/case/note", {"id": cid, "text": "Watched the demo"})[0], 200)
+        self.assertEqual(self.call("moderator", "POST", "/api/case/update", {"id": cid, "status": "closed"})[0], 400)  # outcome needed
+        code, u = self.call("owner", "POST", "/api/case/update", {"id": cid, "status": "closed", "outcome": "Banned 30 days", "assignee": "me"})
+        self.assertEqual(code, 200, u)
+        self.assertEqual(u["case"]["status"], "closed")
+        c = self.call("moderator", "GET", "/api/case/%d" % cid)[1]
+        kinds = [i["kind"] for i in c["items"]]
+        self.assertIn("note", kinds)
+        self.assertIn("status", kinds)
+        note = next(i for i in c["items"] if i["kind"] == "note")
+        status = next(i for i in c["items"] if i["kind"] == "status")
+        self.assertEqual(self.call("moderator", "POST", "/api/case/unlink", {"id": cid, "item": status["id"]})[0], 409)
+        self.assertEqual(self.call("moderator", "POST", "/api/case/unlink", {"id": cid, "item": note["id"]})[0], 200)
+        self.assertTrue(any(x["id"] == cid for x in self.call("moderator", "GET", "/api/cases?status=closed")[1]["cases"]))
+        self.assertEqual(self.call("moderator", "GET", "/api/search?q=case%%20%d" % cid)[1]["cases"][0]["id"], cid)
+        self.assertIn("cases", self.call("moderator", "GET", "/api/dashboard")[1])
+        self.assertEqual(self.call("moderator", "GET", "/api/case/999999")[0], 404)
+        self.assertTrue(self.portal.store.one("SELECT id FROM audit WHERE action='case closed'"))
+
+    def test_46_player_timeline(self):
+        wait_for(lambda: self.portal.servers["one"].view().get("online"))
+        wait_for(lambda: self.portal.store.one("SELECT id FROM player_sessions WHERE pid=?", (PID,)))
+        self.portal.store.x("INSERT INTO notes(pid,text,created,by_name) VALUES(?,?,?,?)", (PID, "timeline note", int(time.time()), "t"))
+        code, t = self.call("moderator", "GET", "/api/timeline/" + PID)
+        self.assertEqual(code, 200)
+        kinds = {e["kind"] for e in t["events"]}
+        self.assertIn("session", kinds)
+        self.assertIn("note", kinds)
+        self.assertIn("name", kinds)
+        ats = [e["at"] for e in t["events"]]
+        self.assertEqual(ats, sorted(ats, reverse=True))
+        self.assertEqual(self.call("moderator", "GET", "/api/timeline/zzz")[0], 400)
+        # a player who leaves gets the session closed
+        srv = self.portal.servers["one"]
+        self.portal.track_sessions(srv, {}, {}, True)
+        self.assertIsNotNone(self.portal.store.one("SELECT left_at FROM player_sessions WHERE pid=? ORDER BY id DESC LIMIT 1", (PID,))["left_at"])
+
+    def test_47_evidence(self):
+        import base64 as b64
+        png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 64
+        code, r = self.call("moderator", "POST", "/api/evidence", {"kind": "image", "pid": PID, "title": "shot", "data": b64.b64encode(png).decode()})
+        self.assertEqual(code, 201, r)
+        eid = r["id"]
+        c = http.client.HTTPConnection("127.0.0.1", self.port, timeout=10)
+        c.request("GET", "/api/evidence/file?id=%d" % eid, headers={"Cookie": self.sessions["moderator"]["cookie"]})
+        resp = c.getresponse()
+        self.assertEqual((resp.status, resp.getheader("Content-Type")), (200, "image/png"))
+        self.assertEqual(resp.read(), png)
+        c.close()
+        # a script dressed up as a picture is refused
+        bad = b64.b64encode(b"<svg onload=alert(1)>").decode()
+        self.assertEqual(self.call("moderator", "POST", "/api/evidence", {"kind": "image", "pid": PID, "data": bad})[0], 415)
+        self.assertEqual(self.call("moderator", "POST", "/api/evidence", {"kind": "link", "pid": PID, "url": "javascript:alert(1)"})[0], 400)
+        self.assertEqual(self.call("moderator", "POST", "/api/evidence", {"kind": "text", "text": "x"})[0], 400)   # no case, no player
+        self.portal.store.x("INSERT INTO chat(server,at,slot,team,pid,name,text,kind) VALUES('one',?,0,0,?,?,?,'all')",
+                            (int(time.time()), PID, "Viper", "evidence line"))
+        code, r = self.call("moderator", "POST", "/api/evidence", {"kind": "chat", "pid": PID, "minutes": 5})
+        self.assertEqual(code, 201, r)
+        cid = self.call("moderator", "POST", "/api/cases", {"title": "Evidence case", "pid": PID})[1]["id"]
+        code, r2 = self.call("moderator", "POST", "/api/evidence", {"kind": "link", "case": cid, "url": "https://example.com/clip"})
+        self.assertEqual(code, 201, r2)
+        case = self.call("moderator", "GET", "/api/case/%d" % cid)[1]
+        self.assertEqual(len(case["evidence"]), 1)
+        self.assertTrue(any(x["kind"] == "evidence" and x["ref"] == eid for x in case["suggest"]))
+        ev = self.call("moderator", "GET", "/api/evidence?pid=" + PID)[1]["evidence"]
+        self.assertTrue(any(x["kind"] == "chat" and any(l["text"] == "evidence line" for l in x["text"]) for x in ev))
+        self.assertEqual(self.call("moderator", "POST", "/api/evidence/delete", {"id": eid})[0], 403)
+        self.assertEqual(self.call("owner", "POST", "/api/evidence/delete", {"id": eid, "reason": "test"})[0], 200)
+        self.assertEqual(self.call("moderator", "GET", "/api/evidence/file?id=%d" % eid)[0], 404)
+        self.assertFalse(list((Path(self.portal.cfg["data_dir"]) / "evidence").glob("*.png")))
+
     def test_insights_page_reads_the_insights_service(self):
         import sys as _sys
         _sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "server-bridge"))
