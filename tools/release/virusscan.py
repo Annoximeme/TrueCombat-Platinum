@@ -224,13 +224,19 @@ def record_releases(data, rels):
 
 
 def todo(data, order, latest):
-    """Hashes in the order they should be looked at: installers first, newest release first."""
-    seen, out = set(), []
-    for setup_first in (True, False):
-        for tag in order:
-            rel = data["releases"][tag]
-            for name, sha in rel["files"].items():
-                if (name == SETUP) != setup_first or sha in seen:
+    """Hashes to look at, in two groups: the newest release (and any draft asked for) first,
+    installer first, then older releases, installers before program files."""
+    seen, first, rest = set(), [], []
+    groups = [(first, [t for t in order if t in latest], None), (rest, [t for t in order if t not in latest], True),
+              (rest, [t for t in order if t not in latest], False)]
+    for out, tags, setup_only in groups:
+        for tag in tags:
+            names = sorted(data["releases"][tag]["files"], key=lambda n: n != SETUP)
+            for name in names:
+                sha = data["releases"][tag]["files"][name]
+                if setup_only is not None and (name == SETUP) != setup_only:
+                    continue
+                if sha in seen:
                     continue
                 seen.add(sha)
                 entry = data["files"][sha]
@@ -241,58 +247,71 @@ def todo(data, order, latest):
                     out.append((tag, name, sha))
                 elif tag in latest and checked:
                     age = now() - parse_iso(checked)
-                    settle = entry.get("settle") and age > SETTLE
-                    if age > REFRESH or settle:
+                    if age > REFRESH or (entry.get("settle") and age > SETTLE):
                         out.append((tag, name, sha))
-    return out
+    return first, rest
+
+
+def _read(data, vt, sha, tag, name):
+    """Reads VirusTotal's result for a hash into the store. True when there is one."""
+    entry = data["files"][sha]
+    result = vt.report(sha)
+    if not result:
+        return False
+    if "engines" in entry and flagged(result) != flagged(entry):
+        print("  %s: detections changed %d -> %d" % (name, flagged(entry), flagged(result)), flush=True)
+    fresh = now() - parse_iso(result["analysed"]) < SETTLE
+    entry.pop("pending", None)
+    entry.update(result, checked=iso(now()), settle=fresh)
+    print("  %s %s: %d/%d" % (tag, name, flagged(result), result["engines"]), flush=True)
+    return True
+
+
+def _group(data, vt, items, minutes):
+    """Looks up each file, uploads the ones VirusTotal has not seen, then waits for those.
+    Uploads stop while the budget is needed to read back the files already sent."""
+    waiting = []
+    for tag, name, sha in items:
+        entry = data["files"][sha]
+        if _read(data, vt, sha, tag, name):
+            continue
+        if entry.get("pending"):
+            waiting.append((tag, name, sha))
+            continue
+        asset = data["releases"][tag].get("assets", {}).get(name)
+        if not asset:
+            continue
+        if asset["size"] > VT_MAX:
+            print("  %s: too large for VirusTotal, checksum only" % name, flush=True)
+            entry.update({"too_large": True, "checked": iso(now())})
+            continue
+        if vt.left < 3 * (len(waiting) + 1) + 4:
+            print("  %s: left for the next run (budget kept for results)" % name, flush=True)
+            continue
+        print("  %s %s: new to VirusTotal, uploading %.1f MB" % (tag, name, asset["size"] / 1e6), flush=True)
+        with tempfile.TemporaryDirectory() as folder:
+            path = download_asset(asset, folder)
+            if sha256_file(path) != sha:
+                raise RuntimeError("%s: downloaded file does not match its GitHub digest" % name)
+            entry["pending"] = vt.upload(path)
+        waiting.append((tag, name, sha))
+    deadline = time.time() + minutes * 60
+    while waiting and time.time() < deadline:
+        time.sleep(45)
+        waiting = [w for w in waiting if not _read(data, vt, w[2], w[0], w[1])]
+    if waiting:
+        print("%d upload(s) still being analysed; the next run reads them" % len(waiting), flush=True)
 
 
 def scan(data, vt, order, latest):
-    queue, pending = todo(data, order, latest), {}
-    print("VirusTotal: %d file(s) to look at, %d requests allowed this run" % (len(queue), vt.left), flush=True)
+    first, rest = todo(data, order, latest)
+    print("VirusTotal: %d file(s) for this release, %d older, %d requests allowed this run"
+          % (len(first), len(rest), vt.left), flush=True)
     try:
-        with tempfile.TemporaryDirectory() as tmp:
-            for tag, name, sha in queue:
-                entry = data["files"][sha]
-                if entry.get("pending"):
-                    pending[sha] = entry["pending"]
-                    continue
-                result = vt.report(sha)
-                if result:
-                    if "engines" in entry and flagged(result) != flagged(entry):
-                        print("  %s: detections changed %d -> %d" % (name, flagged(entry), flagged(result)), flush=True)
-                    fresh = now() - parse_iso(result["analysed"]) < SETTLE
-                    entry.update(result, checked=iso(now()), settle=fresh)
-                    print("  %s %s: %d/%d" % (tag, name, flagged(result), result["engines"]), flush=True)
-                    continue
-                asset = data["releases"][tag]["assets"][name]
-                if asset["size"] > VT_MAX:
-                    print("  %s: too large for VirusTotal, checksum only" % name, flush=True)
-                    entry.update({"too_large": True, "checked": iso(now())})
-                    continue
-                print("  %s %s: new to VirusTotal, uploading %.1f MB" % (tag, name, asset["size"] / 1e6), flush=True)
-                path = download_asset(asset, tmp)
-                if sha256_file(path) != sha:
-                    raise RuntimeError("%s: downloaded file does not match its GitHub digest" % name)
-                entry["pending"] = pending[sha] = vt.upload(path)
-                path.unlink()
-            deadline = time.time() + 20 * 60
-            while pending and time.time() < deadline:
-                for sha, analysis in list(pending.items()):
-                    if vt.analysis_done(analysis):
-                        result = vt.report(sha)
-                        if result:
-                            entry = data["files"][sha]
-                            entry.pop("pending", None)
-                            entry.update(result, checked=iso(now()), settle=True)
-                            print("  %s: %d/%d" % (entry["name"], flagged(result), result["engines"]), flush=True)
-                            del pending[sha]
-                if pending:
-                    time.sleep(30)
+        _group(data, vt, first, 20)
+        _group(data, vt, rest, 10)
     except Budget:
         print("request budget used up; the next run carries on", flush=True)
-    if pending:
-        print("%d analysis(es) still running; the next run reads them" % len(pending), flush=True)
 
 
 def summary(data, tag):
