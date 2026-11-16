@@ -188,6 +188,18 @@ sudo cat /etc/tcp-accounts/internal-token | sudo ./deploy/install.sh --secret-st
 An account outranks a `/link` link for roles: its stats id holds every PC the player linked. If the account service
 is down, roles are left as they are. The weekly report needs `week.json` from the stats service (accounts 1.1.0 patch).
 
+## Staff portal commands (1.4.0)
+
+`/staff summary | reports | take | close | lookup | warn | mute | kick | ban | duty` run through the staff portal as the
+member who typed them, with their own portal rights: bans hold on every server with an appeal code, everything shows on
+the player's record and in the portal audit log under their name. Bans from Discord go up to a day; longer bans, lifting
+bans and server settings stay in the portal behind two-step sign-in. The player list comes from the portal, so it
+covers every server the portal watches.
+
+Linking, once: on the VPS, `sudo /opt/tcp/staff-portal-kit/deploy/install.sh bot-link` (staff portal 1.4.3+) writes
+`/etc/tcp-discord-bot/portal-token`; then run this bot's `install.sh` again, which loads it as the credential
+`portal-token`. Without it `/staff` answers that the portal is not linked. `/admin` (direct rcon) is unchanged.
+
 ## Game side (account linking)
 
 `game/link-command.patch` adds the `link` console command and the `!link` chat command to the server game

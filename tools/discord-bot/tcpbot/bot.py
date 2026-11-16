@@ -43,6 +43,7 @@ EXTENSIONS = (
     "tcpbot.cogs.chatbridge",
     "tcpbot.cogs.support",
     "tcpbot.cogs.accounts",
+    "tcpbot.cogs.staffportal",
 )
 
 
