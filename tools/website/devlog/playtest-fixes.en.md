@@ -2,7 +2,7 @@
 title: What the playtests told us
 date: 2026-11-09
 summary: Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.
-image: img/media-grenade.webp
+image: img/hero-railhouse-south.webp
 tag: Roadmap
 updated: 2026-11-12
 ---

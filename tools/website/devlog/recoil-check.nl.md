@@ -2,7 +2,7 @@
 title: Als de test het mis heeft
 date: 2026-11-08
 summary: Onze terugslagcontroles keurden de Desert Eagle af. Het spel had gelijk. Zo kwamen we erachter, en daarom jagen we liever op een vals alarm dan dat we een echt probleem missen.
-image: img/media-soldier-hd.webp
+image: img/hero-snow-warehouse.webp
 tag: Testen
 ---
 Platinum is een herbouw van TrueCombat: Elite, dus "het voelt ongeveer goed" is nooit genoeg. Elk wapen wordt vergeleken met het originele spel: schade, vuursnelheid, spreiding, en hoe het beeld omhoog schiet en terugkomt als je vuurt. Die controles draaien automatisch, op DirectX 12 en op OpenGL, voor elke release.

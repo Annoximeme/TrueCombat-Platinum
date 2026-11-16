@@ -2,7 +2,7 @@
 title: De officiële servers draaien nu op Linux
 date: 2026-11-09
 summary: Beide officiële servers zijn overgestapt op een native Linux-versie van de 0.34.0-server. Wat dat betekent voor je matches, waarom we het deden en hoe we ervoor zorgden dat we het binnen enkele seconden konden terugdraaien.
-image: img/shot-hosted.webp
+image: img/hero-northport-gashouse.webp
 tag: Servers
 version: 0.34.0
 ---

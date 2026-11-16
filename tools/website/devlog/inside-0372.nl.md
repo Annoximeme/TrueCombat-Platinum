@@ -3,7 +3,7 @@ title: Inside 0.37.2, ogen open
 date: 2026-11-16
 time: 03:30
 summary: Een live minimap, treffers die je voelt, friendly fire, en een spel dat van de taakbalk tot het eerste beeld als Platinum oogt. Dit is wat er in 0.37.2 veranderd is, en waarom.
-image: img/media-soldier-hd.webp
+image: img/hero-snow-warehouse.webp
 tag: Release
 version: 0.37.2
 ---

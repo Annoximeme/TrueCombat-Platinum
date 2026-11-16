@@ -2,7 +2,7 @@
 title: Waar we hierna aan werken
 date: 2026-11-09
 summary: Nu 0.34.0 uit is, een open blik op het werk dat erachter klaarstaat: beter online spelen, pick-ups via Discord, met één klik meedoen en een reeks nieuwe functies op basis van een gedeeld matchverslag. Plannen, geen beloftes.
-image: img/media-map-vote.webp
+image: img/hero-village-rooftop.webp
 tag: Roadmap
 ---
 0.34.0 is uit en de officiële servers zijn overgestapt op Linux. Een goed moment om te laten zien wat er komt. Alles hieronder is gebouwd en wacht op testen, of gepland en nog niet begonnen. We zeggen telkens wat wat is, en niets ervan heeft een datum. Een functie komt uit als ze door de volledige testronde komt, niet als de kalender dat zegt.

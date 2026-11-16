@@ -3,7 +3,7 @@ title: Inside 0.36.0, the update you can hear
 date: 2026-11-13
 time: 14:30
 summary: Voice chat, team pings, bots that read the map, a full audio overhaul and an optional 128 updates per second. This is the long version: what changed, why we built it the way we did, how it was tested, and what is still to come.
-image: img/media-village-yard.webp
+image: img/hero-village-contact.webp
 tag: Release
 version: 0.36.0
 ---
@@ -19,7 +19,7 @@ TrueCombat has always been a game of callouts, and until now those callouts live
 
 It works like a squad radio. Hold **H** to talk to your team over the radio. Enemies never hear it, no matter where they stand. Hold **N** to speak out loud instead. Everyone near you hears that, including the enemy, so a whisper behind a wall can give you away. We kept the two deliberately separate. A team channel alone makes every player a perfect communicator across the map. A local voice alone makes coordination impossible. Together they give you a choice every time you open your mouth.
 
-![A firefight in the Village yard](img/media-village-yard.webp "Callouts like this one now happen in the game itself: team radio on H, local voice on N.")
+![A firefight in the Village yard](img/shot-village-contact.webp "Callouts like this one now happen in the game itself: team radio on H, local voice on N.")
 
 The radio has a light radio effect that you can switch off. Under **Options > Voice** you choose your microphone, its gain, push to talk or voice activation with an adjustable threshold, and an on-screen list of who is talking. A microphone test plays your own voice back to you without sending anything. You can mute single players from the mute menu, or mute the whole enemy team.
 
