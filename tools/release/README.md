@@ -33,3 +33,25 @@ launcher version and the Versions list keep working unchanged.
 
 If anything goes wrong, nothing is published: rerun the same command (finished
 uploads are skipped), or use `--full` to upload everything from the PC the old way.
+
+## Virus scan and checksums
+
+`virusscan.py` checks every release with VirusTotal and records the SHA-256 of the
+installer and of every program file (.exe, .dll) in `tools/website/scans.json`. The
+website shows the result in a badge beside each download button, in the "Download
+safety" panel on the download page and on every release page, together with the
+installer's checksum. Detections are shown as they are, with a link to the full report.
+
+It runs by itself, with no manual steps:
+
+* `fast_publish.py` starts the **Virus scan** workflow on the draft after the upload and
+  prints the result before publishing. If any engine flags a file, `--publish` stops until
+  the owner has seen the report (rerun with `--accept-detections`). `--no-scan` skips it.
+* `.github/workflows/virus-scan.yml` runs again when the release is published and once a
+  day, to pick up late detections and finish scans the free API limit left open.
+
+Setup, once: the repository secret `VT_API_KEY` holds a free VirusTotal API key
+(Settings, Secrets and variables, Actions). The key is never stored in the repository.
+Without it the checksums are still recorded and shown. The free API allows 4 requests a
+minute and 500 a day; the script paces itself (16 s per request, at most 110 per run).
+Files VirusTotal already knows cost one lookup, so a typical release takes a few minutes.
