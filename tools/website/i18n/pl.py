@@ -460,7 +460,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  '<span>Native client &amp; server</span>': '<span>Natywny klient i serwer</span>',
  '<span>Default renderer</span>': '<span>Domyślny renderer</span>',
  '<span>Optional server rate</span>': '<span>Opcjonalna częstotliwość serwera</span>',
- 'alt="Railhouse backyard in DirectX 12 with DLAA, a soldier standing against a brick wall"': 'alt="Podwórze Railhouse w DirectX 12 z DLAA, żołnierz stojący przy ceglanej ścianie"',
+ 'alt="Railhouse backyard in DirectX 12 with DLAA, a soldier standing against a brick wall"': 'alt="Zachodnia bocznica Railhouse w DirectX 12 z DLAA, żołnierz stojący przy ceglanej ścianie"',
  '<span class="eyebrow">What\'s in it</span>': '<span class="eyebrow">Co jest w środku</span>',
  '<h2>Built from the original, piece by piece</h2>': '<h2>Zbudowane z oryginału, element po elemencie</h2>',
  '<h3>DirectX 12 renderer</h3>': '<h3>Renderer DirectX 12</h3>',
@@ -607,18 +607,18 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  '<figcaption><b>Stances</b><span>Stand · crouch · prone</span>': '<figcaption><b>Postawy</b><span>Stojąc · w kucki · leżąc</span>',
  'aria-label="Enlarge stances"': 'aria-label="Powiększ: postawy"',
  '<h2>Original look, or enhanced</h2>': '<h2>Oryginalny wygląd albo ulepszony</h2>',
- '<p>Drag across the image to compare the original look with the new presets. Same spot, same frame, Railhouse backyard at 1080p.</p>': '<p>Przeciągnij po obrazie, aby porównać oryginalny wygląd z '
+ '<p>Drag across the image to compare the original look with the new presets. Same spot, same frame, the Railhouse west railyard at 1440p.</p>': '<p>Przeciągnij po obrazie, aby porównać oryginalny wygląd z '
                                                                                                                                         'nowymi ustawieniami. To samo miejsce, ta sama klatka, '
-                                                                                                                                        'podwórze Railhouse w 1080p.</p>',
+                                                                                                                                        'zachodnia bocznica Railhouse w 1440p.</p>',
  'aria-label="Preset to compare against Low"': 'aria-label="Ustawienie do porównania z Low"',
  '<li><b>Low</b><span>The original look: stock filtering, no extra effects.</span></li>': '<li><b>Low</b><span>Oryginalny wygląd: standardowe filtrowanie, bez dodatkowych efektów.</span></li>',
  '<li><b>High</b><span>New default. Effects cost about 1.0 ms a frame on an RTX 4080 SUPER.</span></li>': '<li><b>High</b><span>Nowe ustawienie domyślne. Efekty kosztują około 1,0 ms na klatkę na '
                                                                                                           'RTX 4080 SUPER.</span></li>',
  '<li><b>Ultra</b><span>Adds surface materials, specular highlights and real-time sun shadows on DirectX 12, with NVIDIA DLAA on RTX cards.</span></li>': '<li><b>Ultra</b><span>Dodaje materiały powierzchni, odblaski i cienie słoneczne w czasie rzeczywistym w DirectX 12, a na kartach RTX także NVIDIA DLAA.</span></li>',
- 'alt="Railhouse backyard on the Ultra preset"': 'alt="Podwórze Railhouse w ustawieniu Ultra"',
- 'alt="Railhouse backyard on the Low preset"': 'alt="Podwórze Railhouse w ustawieniu Low"',
+ 'alt="Railhouse west railyard on the Ultra preset"': 'alt="Zachodnia bocznica Railhouse w ustawieniu Ultra"',
+ 'alt="Railhouse west railyard on the Low preset"': 'alt="Zachodnia bocznica Railhouse w ustawieniu Low"',
  'aria-label="Comparison divider position"': 'aria-label="Położenie suwaka porównania"',
- "right.alt = 'Railhouse backyard on the ' + b.textContent + ' preset';": "right.alt = 'Podwórze Railhouse w ustawieniu ' + b.textContent;",
+ "right.alt = 'Railhouse west railyard on the ' + b.textContent + ' preset';": "right.alt = 'Zachodnia bocznica Railhouse w ustawieniu ' + b.textContent;",
  'alt="The TrueCombat: Platinum launcher on the Play page, with Quick play, Join by address, Offline practice and the PLAY button"': 'alt="Launcher TrueCombat: Platinum na stronie Play, z Quick play, Join by address, Offline practice i przyciskiem PLAY"',
  '<h2>One launcher for everything</h2>': '<h2>Jeden launcher do wszystkiego</h2>',
  '<li><span><b>PLAY</b> drops you into the best server, joins one by address or starts offline practice against bots. <b>Safe start</b> runs the game on OpenGL if DirectX 12 gives you trouble.</span></li>': '<li><span><b>PLAY</b> wrzuca cię na najlepszy serwer, łączy po adresie albo uruchamia trening offline z botami. <b>Safe start</b> uruchamia grę na OpenGL, gdy DirectX 12 sprawia kłopoty.</span></li>',
@@ -1026,7 +1026,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  'Village barn interior with hay bales': 'Wnętrze stodoły na Village z belami siana',
  '<b>M83 smoke</b><span>Lit by the map itself</span>': '<b>Dym M83</b><span>Oświetlony przez samą mapę</span>',
  'M83 smoke grenade cloud in the Railhouse backyard': 'Chmura granatu dymnego M83 na podwórzu Railhouse',
- '<b>Frag blast</b><span>Railhouse backyard</span>': '<b>Wybuch granatu</b><span>Podwórze Railhouse</span>',
+ '<b>Frag blast</b><span>Railhouse backyard</span>': '<b>Wybuch granatu</b><span>Zachodnia bocznica Railhouse</span>',
  'A grenade detonating behind a soldier in the Railhouse backyard': 'Granat wybuchający za żołnierzem na podwórzu Railhouse',
  '<b>Crouched</b><span>Smaller profile, steadier aim</span>': '<b>W kucki</b><span>Mniejsza sylwetka, stabilniejsze celowanie</span>',
  'A crouched soldier beside a brick wall': 'Kucający żołnierz przy ceglanej ścianie',
@@ -1038,14 +1038,14 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  'The end-of-match map vote with Village and Snow on the ballot': 'Głosowanie na mapę po zakończeniu meczu, z Village i Snow do wyboru',
  '<b>Hosted match</b><span>Northport, warmup</span>': '<b>Hostowany mecz</b><span>Northport, rozgrzewka</span>',
  'A match on Northport hosted from the launcher, during warmup': 'Mecz na Northport hostowany z launchera, podczas rozgrzewki',
- '<b>NVIDIA DLAA</b><span>Railhouse backyard</span>': '<b>NVIDIA DLAA</b><span>Podwórze Railhouse</span>',
- 'Railhouse backyard rendered with NVIDIA DLAA': 'Podwórze Railhouse renderowane z NVIDIA DLAA',
+ '<b>NVIDIA DLAA</b><span>Railhouse backyard</span>': '<b>NVIDIA DLAA</b><span>Zachodnia bocznica Railhouse</span>',
+ 'Railhouse backyard rendered with NVIDIA DLAA': 'Zachodnia bocznica Railhouse renderowane z NVIDIA DLAA',
  '<b>Ultra preset</b><span>Surface materials, specular and DLAA</span>': '<b>Ustawienie Ultra</b><span>Materiały powierzchni, odblaski i DLAA</span>',
- 'Railhouse backyard on the Ultra preset': 'Podwórze Railhouse w ustawieniu Ultra',
+ 'Railhouse west railyard on the Ultra preset': 'Zachodnia bocznica Railhouse w ustawieniu Ultra',
  '<b>High preset</b><span>The default look</span>': '<b>Ustawienie High</b><span>Wygląd domyślny</span>',
- 'Railhouse backyard on the High preset': 'Podwórze Railhouse w ustawieniu High',
+ 'Railhouse west railyard on the High preset': 'Zachodnia bocznica Railhouse w ustawieniu High',
  '<b>Low preset</b><span>The original 2000s look</span>': '<b>Ustawienie Low</b><span>Oryginalny wygląd z lat 2000.</span>',
- 'Railhouse backyard on the Low preset': 'Podwórze Railhouse w ustawieniu Low',
+ 'Railhouse west railyard on the Low preset': 'Zachodnia bocznica Railhouse w ustawieniu Low',
  '<span>Play, host and update</span>': '<span>Graj, hostuj i aktualizuj</span>',
  'The TrueCombat: Platinum launcher': 'Launcher TrueCombat: Platinum',
  '<span class="eyebrow">Press and creators</span>': '<span class="eyebrow">Prasa i twórcy</span>',
@@ -2547,3 +2547,5 @@ PAIRS.update({'Pick up the weapons of fallen players': 'Podnoszenie broni poleg�
 
 # 2026-11-16 full screenshot replacement
 PAIRS.update({'<span>West railyard at dusk</span>': '<span>Zachodnia bocznica o zmierzchu</span>', 'An AK-47 on the tracks of the west railyard on Railhouse, freight wagons under a dusk sky': 'AK-47 na torach zachodniej bocznicy na Railhouse, wagony towarowe pod zmierzchowym niebem', '<span>Contact in the lane</span>': '<span>Kontakt w zaułku</span>', 'An enemy soldier with a suppressed SMG rounds a wall in a Village lane': 'Wrogi żołnierz z wytłumionym pistoletem maszynowym wychodzi zza muru w zaułku Village', '<span>Three in the scope</span>': '<span>Trzech w lunecie</span>', 'Three soldiers in a sniper scope across the west yard on Snow': 'Trzech żołnierzy w lunecie snajperskiej po drugiej stronie zachodniego dziedzińca na Snow', '<span>Gas house front</span>': '<span>Przed gazownią</span>', 'An MP5 covering the yard in front of the gas house on Northport': 'MP5 osłania plac przed gazownią na Northport', '<span>Smoke over the Eastern Canal</span>': '<span>Dym nad Eastern Canal</span>', 'Smoke drifting over the Eastern Canal courtyard on Stadtrand, a police van parked by the wall': 'Dym unosi się nad dziedzińcem przy Eastern Canal na Stadtrand, przy murze stoi policyjny bus', '<span>From the rooftops</span>': '<span>Z dachów</span>', 'Looking over the lanes and brick houses of Village from a rooftop': 'Widok z dachu na zaułki i ceglane domy Village', '<span>Over the rail yard</span>': '<span>Nad bocznicą</span>', 'Looking down over the Railhouse rail yard and its freight wagons, knife in hand': 'Widok z góry na bocznicę Railhouse i wagony towarowe, z nożem w dłoni', '<span>Frag ready at the south entry</span>': '<span>Granat gotowy przy południowym wejściu</span>', 'A frag grenade ready to throw at the south entry of Railhouse': 'Granat odłamkowy gotowy do rzutu przy południowym wejściu na Railhouse', '<span>Pistol drawn in the backyard</span>': '<span>Pistolet w dłoni na zapleczu</span>', 'A pistol raised in the Railhouse backyard beside a supply crate': 'Uniesiony pistolet na zapleczu Railhouse obok skrzyni z zaopatrzeniem', '<span>The main yard</span>': '<span>Główny dziedziniec</span>', 'A scoped rifle over the snow-covered main yard on Snow': 'Karabin z lunetą nad zaśnieżonym głównym dziedzińcem na Snow', '<span>Inside the warehouse</span>': '<span>W magazynie</span>', 'A scoped rifle in winter camouflage among the shelves and forklift of the Snow warehouse': 'Karabin z lunetą w zimowym kamuflażu między regałami i wózkiem widłowym w magazynie na Snow', '<span>Picking a loadout in warm-up</span>': '<span>Wybór wyposażenia w rozgrzewce</span>', 'The Deployment Menu open during warm-up, a police van parked across the square': 'Otwarte Deployment Menu podczas rozgrzewki, po drugiej stronie placu stoi policyjny bus', '<b>Deployment</b>': '<b>Rozmieszczenie</b>', '<span>Ultrawide 32:9</span>': '<span>Ultrawide 32:9</span>', 'data-cat="ultrawide" aria-pressed="false">Ultrawide</button>': 'data-cat="ultrawide" aria-pressed="false">Ultrawide</button>', 'aria-label="Enlarge Northport"': 'aria-label="Powiększ: Northport"', 'aria-label="Enlarge Snow"': 'aria-label="Powiększ: Snow"', 'aria-label="Enlarge Village"': 'aria-label="Powiększ: Village"', 'aria-label="Enlarge Stadtrand"': 'aria-label="Powiększ: Stadtrand"', 'aria-label="Enlarge Railhouse"': 'aria-label="Powiększ: Railhouse"', 'data-media-count>36 screenshots<': 'data-media-count>36 zrzutów ekranu<', '<h2>Nineteen in-game captures</h2>': '<h2>Dziewiętnaście zrzutów z gry</h2>'})
+
+PAIRS.update({'Village rooftops on the Ultra preset': 'Dachy Village w ustawieniu Ultra', 'Village rooftops on the High preset': 'Dachy Village w ustawieniu High', 'Village rooftops on the Low preset': 'Dachy Village w ustawieniu Low', 'data-media-count>39 screenshots<': 'data-media-count>39 zrzutów ekranu<'})

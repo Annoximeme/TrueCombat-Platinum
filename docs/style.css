@@ -384,7 +384,7 @@ kbd, code { font-family: var(--f-mono); font-size: 0.82em; background: var(--pan
 .preset-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
 .preset-list li { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px; font-size: .94rem; color: var(--muted); }
 .preset-list b { font: 700 .95rem/1.5 var(--f-display); text-transform: uppercase; letter-spacing: .1em; color: var(--fg); }
-.compare { position: relative; aspect-ratio: 1280 / 680; max-width: 100%; border-radius: 4px; overflow: hidden; user-select: none; touch-action: pan-y; background: var(--bg); }
+.compare { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 4px; overflow: hidden; user-select: none; touch-action: pan-y; background: var(--bg); }
 .compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .compare .top { clip-path: inset(0 calc(100% - var(--pos, 50%)) 0 0); }
 .compare .handle { position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.3); pointer-events: none; }
