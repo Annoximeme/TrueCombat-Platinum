@@ -85,7 +85,7 @@
 <section class="band">
   <div class="wrap doc">
     <nav class="doc-toc" aria-label="Na tej stronie">
-      <a href="#short">W skrócie</a><a href="#website">Ta strona</a><a href="#game">Gra</a><a href="#choices">Twój wybór</a><a href="#changes">Zmiany</a>
+      <a href="#short">W skrócie</a><a href="#website">Ta strona</a><a href="#game">Gra</a><a href="#launcher">Launcher</a><a href="#choices">Twój wybór</a><a href="#changes">Zmiany</a>
     </nav>
     <div class="doc-body">
       <section id="short">
@@ -95,7 +95,7 @@
           <li><b>Bez ciasteczek śledzących, bez trackerów reklamowych, bez firm analitycznych.</b> Na tej stronie nie ładuje się nic od Google, Meta ani nikogo innego.</li>
           <li><b>Liczymy odwiedziny, nie odwiedzających.</b> Strona przechowuje dzienne sumy i nic, co prowadzi do konkretnej osoby.</li>
           <li><b>Gdy przeglądarka mówi nie, słuchamy.</b> Z włączonym Global Privacy Control lub Do Not Track nie jesteś liczony w ogóle.</li>
-          <li><b>Gra wysyła dane o użyciu tylko wtedy, gdy tego chcesz.</b> Ten przełącznik jest wyłączony, dopóki go nie włączysz.</li>
+          <li><b>Launcher udostępnia dane o awariach i sprzęcie tylko wtedy, gdy się zgodzisz.</b> Pyta raz, dwoma równorzędnymi przyciskami, a odpowiedź możesz zmienić w każdej chwili.</li>
         </ul>
       </section>
 
@@ -125,14 +125,28 @@
           <li><b>Gra online.</b> Serwery gry widzą twój adres połączenia, jak w każdej grze online. Nasze narzędzia moderacji przechowują go do 90 dni, aby walczyć z oszustwami i nadużyciami, a wpis o banie zachowuje zbanowany adres.</li>
           <li><b>Rankingi.</b> Mecze rankingowe na oficjalnych i zweryfikowanych serwerach zapisują twoją nazwę w grze, identyfikator gracza utworzony z klucza gry oraz statystyki meczu. Na tej podstawie powstają rankingi i twój publiczny profil.</li>
           <li><b>Anti-cheat.</b> Oficjalne serwery korzystają z Easy Anti-Cheat, który działa zgodnie z <a href="https://www.epicgames.com/site/privacypolicy">polityką prywatności Epic Games</a>.</li>
-          <li><b>Raporty awarii</b> zostają na twoim komputerze. Trafiają do nas tylko wtedy, gdy sam dołączysz je do zgłoszenia błędu.</li>
+          <li><b>Raporty awarii i zrzuty pamięci</b> zostają na twoim komputerze. Trafiają do nas tylko wtedy, gdy sam dołączysz je do zgłoszenia błędu. Jeśli zdecydujesz się udostępniać dane z launchera, wysyłane jest tylko miejsce awarii, jak opisano poniżej.</li>
           <li><b>Zgłoszenia błędów</b> wysyłane z gry zawierają twój opis, zrzut ekranu i szczegóły techniczne, takie jak mapa, liczba klatek i karta graficzna, abyśmy mogli odtworzyć problem.</li>
         </ul>
-        <p class="callout"><b>Wkrótce: opcjonalne dane o użyciu.</b> Przyszła aktualizacja doda w launcherze przełącznik, który udostępnia anonimowe dane o wydajności i awariach, abyśmy mogli naprawiać problemy na sprzęcie, na którym naprawdę grasz. Jest wyłączony, dopóki go nie włączysz, a ta strona dokładnie opisze, co wysyła, zanim się pojawi.</p>
+      </section>
+
+      <section id="launcher">
+        <span class="eyebrow">04</span>
+        <h2>Dane o awariach i sprzęcie z launchera</h2>
+        <p>Od wersji 2.6.0 launchera strona Graj pyta raz, czy chcesz udostępniać anonimowe dane o awariach i sprzęcie. Nic nie jest wysyłane, dopóki nie wybierzesz Udostępniaj, a jeśli wybierzesz Nie, dziękuję, nie jest wysyłane nic. Ten sam przełącznik znajdziesz w Ustawienia &gt; Prywatność, a jego wyłączenie od razu kończy udostępnianie.</p>
+        <p>Gdy udostępnianie jest włączone, launcher wysyła najwyżej jeden krótki raport dziennie do <code>api.truecombat.eu</code>, i tylko wtedy, gdy jest coś nowego:</p>
+        <ul>
+          <li><b>Awarie.</b> Dla każdej nowej awarii: czy awarii uległa gra, czy serwer, kod błędu Windows, miejsce w programie, w którym do niej doszło (nazwa pliku i pozycja w nim, np. <code>renderer_dx12_x64.dll+0x1a2b3</code>), do pięciu poprzedzających kroków w tej samej postaci oraz ile minut gra była uruchomiona. Same raporty awarii i zrzuty pamięci zostają na twoim komputerze.</li>
+          <li><b>Uruchomienia gry.</b> Ile razy gra została uruchomiona od ostatniego raportu, ile z tych uruchomień było Bezpiecznym startem, oraz wersja gry i launchera.</li>
+          <li><b>Sprzęt, najwyżej raz w miesiącu.</b> Wersja Windows, model procesora i liczba wątków, pamięć RAM i pamięć wideo w pełnych gigabajtach, model karty graficznej, czy działa DirectX 12, rozdzielczość i częstotliwość odświeżania pulpitu oraz język launchera.</li>
+        </ul>
+        <p>Raport nigdy nie zawiera twojej nazwy gracza, klucza gry, ID gracza, ID instalacji, nazw plików ani folderów z twojego komputera, adresów serwerów ani twojego adresu połączenia. Nic w raporcie nie łączy go z następnym, więc nie wiemy, czy dwa raporty pochodzą z tego samego komputera. Tak jak w przypadku strony, nasz serwer sprawdza kraj połączenia, zachowuje tylko dwuliterowy kod kraju i zapomina adres.</p>
+        <p>Miejsca awarii oraz dzienne liczby uruchomień i awarii dla każdej wersji gry przechowujemy przez 90 dni od ostatniego wystąpienia, a miesięczne liczby dla poszczególnych wartości sprzętowych (np. ile launcherów zgłosiło daną kartę graficzną) przez 13 miesięcy. Pamięć jest grupowana w przedziały, aby nietypowa ilość nie pozwalała nikogo rozpoznać. Ponieważ żaden raport nie zawiera niczego, co wskazuje na ciebie, nie ma czego wyszukać, aby pokazać lub usunąć „twoje” dane, i tak właśnie ma być.</p>
+        <p class="callout"><b>Sprawdź sam.</b> Ustawienia &gt; Prywatność &gt; Co jest udostępniane w launcherze pokazuje dokładnie ten raport, który twój komputer wyśle jako następny, zanim go opuści.</p>
       </section>
 
       <section id="choices">
-        <span class="eyebrow">04</span>
+        <span class="eyebrow">05</span>
         <h2>Twój wybór</h2>
         <p>Jeśli nie chcesz być liczony na tej stronie, włącz w przeglądarce Global Privacy Control lub Do Not Track. Zablokowanie <code>api.truecombat.eu/insights</code> też działa, a strona działa dokładnie tak samo.</p>
         <p>Masz pytania albo chcesz coś usunąć? Napisz do nas na <a href="https://discord.gg/8kcHdg2Hch">Discordzie</a> lub otwórz zgłoszenie na <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHubie</a>. Cały kod liczący jest w publicznym repozytorium, więc nigdy nie musisz wierzyć nam na słowo.</p>
@@ -140,9 +154,9 @@
       </section>
 
       <section id="changes">
-        <span class="eyebrow">05</span>
+        <span class="eyebrow">06</span>
         <h2>Zmiany tej strony</h2>
-        <p>Jeśli zmieni się to, co zbieramy, najpierw zmieni się ta strona, a devlog o tym poinformuje. Ostatnia aktualizacja: 13 listopada 2026.</p>
+        <p>Jeśli zmieni się to, co zbieramy, najpierw zmieni się ta strona, a devlog o tym poinformuje. Ostatnia aktualizacja: 16 listopada 2026.</p>
         <p class="yt-note">Wyszukiwanie kraju korzysta z IP to Country Lite od <a href="https://db-ip.com">DB-IP</a>, na licencji CC BY 4.0.</p>
       </section>
     </div>
@@ -151,7 +165,7 @@
 </main>
 
 <!--footer-->
-<aside class="log-strip" aria-label="Z devloga"><div class="wrap"><a class="log-strip-h" href="../devlog">Z devloga</a><div class="log-strip-posts"><a href="../devlog-inside-0372"><time datetime="2026-11-16">16 lis 2026</time><span>Inside 0.37.2, eyes up</span></a><a href="../devlog-inside-0371"><time datetime="2026-11-15">15 lis 2026</time><span>Inside 0.37.1, tuned to your reports</span></a></div><a class="log-strip-all" href="../devlog">Wszystkie wpisy devloga</a></div></aside>
+<aside class="log-strip" aria-label="Z devloga"><div class="wrap"><a class="log-strip-h" href="../devlog">Z devloga</a><div class="log-strip-posts"><a href="../devlog-crash-reports"><time datetime="2026-11-16">16 lis 2026</time><span>Fixing crashes on the PCs you actually play on</span></a><a href="../devlog-inside-0372"><time datetime="2026-11-16">16 lis 2026</time><span>Inside 0.37.2, eyes up</span></a></div><a class="log-strip-all" href="../devlog">Wszystkie wpisy devloga</a></div></aside>
 <footer>
   <div class="wrap">
     <div class="foot">

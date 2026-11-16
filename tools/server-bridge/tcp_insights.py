@@ -11,6 +11,8 @@ visitors go on to download the game.
                         one page view
   POST /insights/event  {"e": "download", "k": "installer", "p": "/download"}
                         a click on a download button
+  POST /insights/launcher  anonymous crash and hardware report from the game launcher, only when the
+                        player chose to share it (see LAUNCHER REPORTS below)
   GET  /insights/stats.json?days=30   figures for the studio (Authorization: Bearer <key>)
   GET  /insights/health
 
@@ -22,6 +24,22 @@ lives for the current UTC day. At midnight the secret, every hash and the channe
 noted next to it are deleted, so nobody can link one day to the next. What stays is
 daily totals per page, channel, campaign, referring site, country, screen class and
 language. Browsers that send Global Privacy Control or Do Not Track are not counted.
+
+LAUNCHER REPORTS (launcher 2.6.0+, only after the player picked "Share" in the launcher):
+the launcher sends at most one report a day, made of
+  "hw"      (at most once a calendar month) Windows version, processor model and thread count,
+            memory and video memory in whole GB, graphics card model, DirectX 12 yes/no,
+            desktop resolution, refresh rate and launcher language;
+  "use"     how many times the game was started since the last report, and how many of those
+            were Safe starts (OpenGL);
+  "crashes" up to five crash signatures: which program crashed, the Windows exception code and
+            the code location as module+offset (plus up to five stack frames the same way) and
+            the minutes it had been running.
+There is no install ID, player ID, name, GUID, key, file path or IP address in it, and nothing
+links one report to another. Hardware is kept as monthly counts per value, starts and crashes
+as daily counts per game version, crash signatures for 90 days after they were last seen and
+hardware months for 13 months. The sender's address is only used, as a keyed hash made with
+the day secret, to cap how many reports one address can send per day.
 
 Country (optional): with --geoip pointing at the free DB-IP "IP to Country Lite"
 CSV (https://db-ip.com, CC BY 4.0), the service looks up the country code in
@@ -60,6 +78,14 @@ from urllib.parse import parse_qs, urlparse
 
 SCHEMA = "tcp-insights/1"
 MAX_BODY = 1024
+MAX_LAUNCHER_BODY = 6144
+LAUNCHER_PER_IP = 8     # launcher reports per address per day (one per PC per day; a LAN cafe gets a few)
+CRASH_DAYS = 90         # crash signatures and daily start/crash counts are kept this long
+HW_MONTHS = 13          # monthly hardware counts are kept this long
+HW_DIMS = ("os", "cpu", "threads", "ram", "gpu", "gpuvendor", "vram", "dx12", "display", "refresh", "lang", "country",
+           "launcher", "game")
+VERSION = re.compile(r"^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}(?:-[a-z0-9]{1,16})?$")
+MODULE_AT = re.compile(r"^([A-Za-z0-9_.+-]{1,64})\+0x([0-9a-fA-F]{1,12})$")
 RATE_WINDOW = 60
 RATE_MAX = 60           # requests per IP per minute; a person browsing never gets near it
 IP_VISITORS = 30       # new visitors per IP address per day (a household, office or campus behind one address)
@@ -220,6 +246,17 @@ class Store:
                 downloaded INTEGER NOT NULL DEFAULT 0);
             CREATE TABLE IF NOT EXISTS seen (h TEXT PRIMARY KEY);
             CREATE TABLE IF NOT EXISTS perip (h TEXT PRIMARY KEY, n INTEGER NOT NULL);
+            -- launcher reports (anonymous; see LAUNCHER REPORTS above)
+            CREATE TABLE IF NOT EXISTS lhw (month TEXT NOT NULL, dim TEXT NOT NULL, val TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY (month, dim, val));
+            CREATE TABLE IF NOT EXISTS luse (day TEXT NOT NULL, game TEXT NOT NULL, reports INTEGER NOT NULL DEFAULT 0,
+                launches INTEGER NOT NULL DEFAULT 0, safe INTEGER NOT NULL DEFAULT 0, crashes INTEGER NOT NULL DEFAULT 0,
+                PRIMARY KEY (day, game));
+            CREATE TABLE IF NOT EXISTS lcrash (sig TEXT PRIMARY KEY, program TEXT NOT NULL, code TEXT NOT NULL, kind TEXT NOT NULL,
+                at TEXT NOT NULL, frames TEXT NOT NULL, first_day TEXT NOT NULL, last_day TEXT NOT NULL, first_game TEXT NOT NULL,
+                last_game TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS lcrashday (day TEXT NOT NULL, sig TEXT NOT NULL, game TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0,
+                up INTEGER NOT NULL DEFAULT 0, gpuvendor TEXT NOT NULL DEFAULT '', PRIMARY KEY (day, sig, game, gpuvendor));
         """)
         self.db.commit()
         self.day, self.key = None, None
@@ -238,6 +275,7 @@ class Store:
             self.db.execute("DELETE FROM perip")
             row = (secrets.token_bytes(32),)
             self.db.execute("INSERT INTO secret VALUES (?,?)", (d, row[0]))
+            self.prune_launcher(d)
             self.db.commit()
         self.day, self.key = d, row[0]
 
@@ -316,6 +354,117 @@ class Store:
             self.db.commit()
             return True
 
+    # ---- launcher reports -------------------------------------------------------------------
+    def prune_launcher(self, day):
+        """Retention: daily launcher counts and crash signatures for CRASH_DAYS, hardware months for HW_MONTHS."""
+        d = dt.date.fromisoformat(day)
+        cut = (d - dt.timedelta(days=CRASH_DAYS)).isoformat()
+        self.db.execute("DELETE FROM luse WHERE day<?", (cut,))
+        self.db.execute("DELETE FROM lcrashday WHERE day<?", (cut,))
+        self.db.execute("DELETE FROM lcrash WHERE last_day<?", (cut,))
+        y, m = d.year, d.month - HW_MONTHS
+        while m <= 0:
+            y, m = y - 1, m + 12
+        self.db.execute("DELETE FROM lhw WHERE month<?", ("%04d-%02d" % (y, m),))
+
+    def _hw(self, month, dim, val):
+        val = val[:80] or "(none)"
+        have = self.db.execute("SELECT 1 FROM lhw WHERE month=? AND dim=? AND val=?", (month, dim, val)).fetchone()
+        if not have and self.db.execute("SELECT COUNT(*) FROM lhw WHERE month=? AND dim=?", (month, dim)).fetchone()[0] >= MAX_VALUES:
+            val = OTHER
+        self.db.execute("INSERT OR IGNORE INTO lhw (month, dim, val) VALUES (?,?,?)", (month, dim, val))
+        self.db.execute("UPDATE lhw SET n=n+1 WHERE month=? AND dim=? AND val=?", (month, dim, val))
+
+    def launcher(self, ip, report):
+        """One cleaned launcher report (see clean_launcher). Returns False when this address is over its daily cap."""
+        with self.lock:
+            self.roll()
+            ih = self.tag("l", ip)
+            n = (self.db.execute("SELECT n FROM perip WHERE h=?", (ih,)).fetchone() or (0,))[0]
+            if n >= LAUNCHER_PER_IP:
+                return False
+            self.db.execute("INSERT OR REPLACE INTO perip VALUES (?,?)", (ih, n + 1))
+            game = report["game"]
+            if report.get("hw"):
+                month = self.day[:7]
+                for dim, val in report["hw"].items():
+                    self._hw(month, dim, val)
+            use = report.get("use")
+            crashes = report.get("crashes") or []
+            if use or crashes:
+                self.db.execute("INSERT OR IGNORE INTO luse (day, game) VALUES (?,?)", (self.day, game))
+                self.db.execute("UPDATE luse SET reports=reports+1, launches=launches+?, safe=safe+?, crashes=crashes+? WHERE day=? AND game=?",
+                                (use["launches"] if use else 0, use["safe"] if use else 0, len(crashes), self.day, game))
+            vendor = (report.get("hw") or {}).get("gpuvendor") or report.get("gpuvendor", "")
+            for c in crashes:
+                sig = hashlib.sha256("|".join((c["program"], c["code"], c["at"], " ".join(c["frames"][:3]))).encode()).hexdigest()[:16]
+                v = c.get("game") or game
+                if self.db.execute("SELECT 1 FROM lcrash WHERE sig=?", (sig,)).fetchone():
+                    self.db.execute("UPDATE lcrash SET last_day=?, last_game=? WHERE sig=?", (self.day, v, sig))
+                else:
+                    self.db.execute("INSERT INTO lcrash VALUES (?,?,?,?,?,?,?,?,?,?)",
+                                    (sig, c["program"], c["code"], c["kind"], c["at"], " ".join(c["frames"]), self.day, self.day, v, v))
+                self.db.execute("INSERT OR IGNORE INTO lcrashday (day, sig, game, gpuvendor) VALUES (?,?,?,?)", (self.day, sig, v, vendor))
+                self.db.execute("UPDATE lcrashday SET n=n+1, up=up+? WHERE day=? AND sig=? AND game=? AND gpuvendor=?",
+                                (c["up"], self.day, sig, v, vendor))
+            self.db.commit()
+            return True
+
+    def launcher_stats(self, dates):
+        idx = {d: i for i, d in enumerate(dates)}
+        days = len(dates)
+        with self.lock:
+            use = self.db.execute("SELECT day, game, reports, launches, safe, crashes FROM luse WHERE day>=?", (dates[0],)).fetchall()
+            cd = self.db.execute("SELECT day, sig, game, n, up, gpuvendor FROM lcrashday WHERE day>=?", (dates[0],)).fetchall()
+            sigs = {r[0]: r for r in self.db.execute("SELECT sig, program, code, kind, at, frames, first_day, last_day, first_game, last_game FROM lcrash")}
+            months = [r[0] for r in self.db.execute("SELECT DISTINCT month FROM lhw ORDER BY month DESC LIMIT 2")]
+            hw = self.db.execute("SELECT month, dim, val, n FROM lhw WHERE month IN (%s)" % ",".join("?" * len(months)), months).fetchall() if months else []
+        series = {k: [0] * days for k in ("reports", "launches", "safe", "crashes")}
+        versions = {}
+        for day, game, reports, launches, safe, crashes in use:
+            i = idx.get(day)
+            if i is None:
+                continue
+            for k, v in (("reports", reports), ("launches", launches), ("safe", safe), ("crashes", crashes)):
+                series[k][i] += v
+            g = versions.setdefault(game, {"game": game, "launches": 0, "crashes": 0, "safe": 0})
+            g["launches"] += launches
+            g["crashes"] += crashes
+            g["safe"] += safe
+        for g in versions.values():
+            g["crash_rate"] = round(g["crashes"] / g["launches"], 4) if g["launches"] else None
+        top = {}
+        for day, sig, game, n, up, vendor in cd:
+            if day not in idx or sig not in sigs:
+                continue
+            t = top.get(sig)
+            if not t:
+                _, program, code, kind, at, frames, first_day, last_day, first_game, last_game = sigs[sig]
+                t = top[sig] = {"sig": sig, "program": program, "code": code, "kind": kind, "at": at, "frames": frames.split(),
+                                "first_seen": first_day, "last_seen": last_day, "first_game": first_game, "last_game": last_game,
+                                "count": 0, "minutes": 0, "games": {}, "gpuvendors": {}}
+            t["count"] += n
+            t["minutes"] += up
+            t["games"][game] = t["games"].get(game, 0) + n
+            if vendor:
+                t["gpuvendors"][vendor] = t["gpuvendors"].get(vendor, 0) + n
+        crashes = sorted(top.values(), key=lambda r: (-r["count"], r["sig"]))[:40]
+        for r in crashes:
+            r["avg_minutes"] = round(r.pop("minutes") / r["count"], 1) if r["count"] else 0
+        hardware = {}
+        for month, dim, val, n in hw:
+            if month != (months[0] if months else ""):
+                continue
+            hardware.setdefault(dim, []).append({"name": val, "count": n})
+        for dim in hardware:
+            hardware[dim].sort(key=lambda r: (-r["count"], r["name"]))
+            hardware[dim] = hardware[dim][:25]
+        reports_month = sum(r["count"] for r in hardware.get("launcher", []))
+        return {"series": series, "totals": {k: sum(v) for k, v in series.items()},
+                "versions": sorted(versions.values(), key=lambda g: g["game"], reverse=True),
+                "crashes": crashes, "hardware_month": months[0] if months else "", "hardware_reports": reports_month,
+                "hardware": hardware}
+
     def github(self, counts):
         """counts: {(tag, asset): download_count} as read from the GitHub API now."""
         with self.lock:
@@ -389,7 +538,114 @@ class Store:
             "langs": ranked(tops["lang"]), "download_kinds": ranked(tops["download"], "downloads"),
             "source_series": {s: per_source[s] for s in top_sources if s in per_source},
             "github": {"releases": sorted(releases.values(), key=lambda r: r["tag"], reverse=True), "daily": gh_daily},
+            "launcher": self.launcher_stats(dates),
         }
+
+
+def _text(v, n=64):
+    """Printable text from a launcher report, single spaces, at most n characters."""
+    v = "".join(ch if ch.isprintable() and ch not in "\\:<>\"'`" else " " for ch in str(v or ""))
+    return " ".join(v.split())[:n]
+
+
+def _int(v, low, high):
+    try:
+        v = int(v)
+    except (TypeError, ValueError):
+        return None
+    return v if low <= v <= high else None
+
+
+def windows_name(build):
+    """'10.0.22631' -> 'Windows 11 (22631)'; anything else -> 'other'."""
+    m = re.match(r"^(\d{1,2})\.(\d{1,2})\.(\d{3,6})$", str(build or ""))
+    if not m:
+        return "other"
+    major, minor, b = int(m.group(1)), int(m.group(2)), int(m.group(3))
+    if major == 10 and minor == 0:
+        return "Windows %s (%d)" % ("11" if b >= 22000 else "10", b)
+    return "Windows %d.%d (%d)" % (major, minor, b)
+
+
+def gpu_vendor(name):
+    n = name.lower()
+    for key, vendor in (("nvidia", "NVIDIA"), ("geforce", "NVIDIA"), ("radeon", "AMD"), ("amd", "AMD"), ("intel", "Intel"),
+                        ("arc ", "Intel"), ("qualcomm", "Qualcomm"), ("adreno", "Qualcomm"), ("microsoft basic", "Microsoft")):
+        if key in n:
+            return vendor
+    return "other" if n else ""
+
+
+def clean_cpu(name):
+    name = re.sub(r"\((?:R|TM|tm|r)\)", "", _text(name, 96))
+    name = re.sub(r"\s+(?:CPU|Processor)\b", "", name)
+    name = re.sub(r"\s+@\s*[\d.]+\s*GHz$", "", name)
+    name = re.sub(r"\s+\d+-Core$", "", name)
+    return " ".join(name.split())[:64] or "unknown"
+
+
+def _at(v):
+    m = MODULE_AT.match(str(v or "").strip())
+    return "%s+0x%s" % (m.group(1).lower(), m.group(2).lower()) if m else ""
+
+
+def clean_launcher(data, country):
+    """Validates a launcher report and keeps only the documented fields. Returns None when it is unusable."""
+    if not isinstance(data, dict) or data.get("v") != 1:
+        return None
+    game = str(data.get("game") or "")
+    launcher = str(data.get("launcher") or "")
+    if not VERSION.match(game):
+        game = "dev"
+    if not VERSION.match(launcher):
+        launcher = "other"
+    out = {"game": game}
+    hw = data.get("hw")
+    if isinstance(hw, dict):
+        gpu = _text(hw.get("gpu"), 64) or "unknown"
+        threads, ram, vram, hz = _int(hw.get("threads"), 1, 1024), _int(hw.get("ram"), 1, 4096), _int(hw.get("vram"), 0, 512), _int(hw.get("hz"), 20, 1000)
+        res = str(hw.get("display") or "")
+        res = res if re.match(r"^\d{3,5}x\d{3,5}$", res) else "unknown"
+        lang = str(hw.get("lang") or "")
+        out["hw"] = {
+            "os": windows_name(hw.get("os")), "cpu": clean_cpu(hw.get("cpu")),
+            "threads": str(threads) if threads else "unknown",
+            # memory in buckets so an unusual amount cannot single anyone out
+            "ram": next(("%d GB or less" % b for b in (4, 8, 12, 16, 24, 32, 48, 64, 128) if ram and ram <= b), "more than 128 GB") if ram else "unknown",
+            "gpu": gpu, "gpuvendor": gpu_vendor(gpu) or "unknown",
+            "vram": next(("%d GB or less" % b for b in (1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24, 32) if vram is not None and vram <= b), "more than 32 GB") if vram is not None else "unknown",
+            "dx12": "yes" if hw.get("dx12") in (1, True, "1") else "no",
+            "display": res, "refresh": str(hz) + " Hz" if hz else "unknown",
+            "lang": lang if lang in LANGS else "other", "country": country,
+            "launcher": launcher, "game": game,
+        }
+    use = data.get("use")
+    if isinstance(use, dict):
+        launches, safe = _int(use.get("launches"), 0, 500), _int(use.get("safe"), 0, 500)
+        if launches is not None:
+            out["use"] = {"launches": launches, "safe": min(safe or 0, launches)}
+    vendor = gpu_vendor(_text(data.get("gpu"), 64))
+    if vendor:
+        out["gpuvendor"] = vendor
+    crashes = []
+    for c in (data.get("crashes") or [])[:5] if isinstance(data.get("crashes"), list) else []:
+        if not isinstance(c, dict):
+            continue
+        at = _at(c.get("at"))
+        code = str(c.get("code") or "").lower()
+        if not at or not re.match(r"^0x[0-9a-f]{8}$", code):
+            continue
+        program = c.get("program") if c.get("program") in ("client", "server") else "other"
+        kind = re.sub(r"[^a-z ()-]", "", str(c.get("kind") or "").lower())[:40] or "unhandled exception"
+        frames = [f for f in (_at(x) for x in (c.get("frames") or [])[:5] if isinstance(c.get("frames"), list)) if f]
+        up = _int(c.get("up"), 0, 100000)
+        cg = str(c.get("game") or "")
+        crashes.append({"program": program, "code": code, "kind": kind, "at": at, "frames": frames,
+                        "up": up or 0, "game": cg if VERSION.match(cg) else ""})
+    out["crashes"] = crashes
+    if "hw" not in out and "use" not in out and not crashes:
+        return None
+    return out
 
 
 class Limiter:
@@ -501,8 +757,30 @@ def make_handler(store, key, cors, site_root, limiter, geoip):
 
         do_HEAD = do_GET
 
+        def launcher_report(self):
+            ip = self.client_ip()
+            if not limiter.ok(ip):
+                return self.send_json({"error": "slow down"}, 429)
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                n = 0
+            if n <= 0 or n > MAX_LAUNCHER_BODY:
+                return self.send_json({"error": "bad size"}, 413)
+            try:
+                data = json.loads(self.rfile.read(n).decode("utf-8"))
+            except (UnicodeDecodeError, ValueError):
+                return self.send_json({"error": "bad json"}, 400)
+            country = geoip.country(ip) if len(geoip.v4s) else "??"
+            report = clean_launcher(data, country)
+            if report is None:
+                return self.send_json({"error": "bad report"}, 400)
+            self.send_json({"ok": True, "counted": store.launcher(ip, report)})
+
         def do_POST(self):
             p = urlparse(self.path).path
+            if p == "/insights/launcher":
+                return self.launcher_report()
             if p not in ("/insights/hit", "/insights/event"):
                 return self.send_json({"error": "not found"}, 404)
             ip = self.client_ip()

@@ -85,7 +85,7 @@
 <section class="band">
   <div class="wrap doc">
     <nav class="doc-toc" aria-label="On this page">
-      <a href="#short">The short version</a><a href="#website">This website</a><a href="#game">The game</a><a href="#choices">Your choices</a><a href="#changes">Changes</a>
+      <a href="#short">The short version</a><a href="#website">This website</a><a href="#game">The game</a><a href="#launcher">The launcher</a><a href="#choices">Your choices</a><a href="#changes">Changes</a>
     </nav>
     <div class="doc-body">
       <section id="short">
@@ -95,7 +95,7 @@
           <li><b>No tracking cookies, no ad trackers, no analytics companies.</b> Nothing from Google, Meta or anyone else is loaded on this site.</li>
           <li><b>We count visits, not visitors.</b> The website keeps daily totals and nothing that points back to a person.</li>
           <li><b>Your browser says no, we listen.</b> With Global Privacy Control or Do Not Track switched on, you are not counted at all.</li>
-          <li><b>The game sends usage data only if you ask it to.</b> That switch is off until you turn it on.</li>
+          <li><b>The launcher shares crash and hardware data only if you say yes.</b> It asks once, with two equal buttons, and you can change your answer at any time.</li>
         </ul>
       </section>
 
@@ -125,14 +125,28 @@
           <li><b>Online play.</b> Game servers see your connection address, as every online game does. Our moderation tools keep it for up to 90 days to deal with cheating and abuse, and a ban record keeps the address that was banned.</li>
           <li><b>Leaderboards.</b> Ranked matches on official and verified servers record your in-game name, a player ID made from your game key, and your match statistics. That is what fills the leaderboards and your public profile.</li>
           <li><b>Anti-cheat.</b> Official servers use Easy Anti-Cheat, which runs under the <a href="https://www.epicgames.com/site/privacypolicy">Epic Games privacy policy</a>.</li>
-          <li><b>Crash reports</b> stay on your PC. They only reach us if you attach them to a bug report yourself.</li>
+          <li><b>Crash reports and memory dumps</b> stay on your PC. They only reach us if you attach them to a bug report yourself. If you choose to share launcher data, only the crash location is sent, as described below.</li>
           <li><b>Bug reports</b> you send from the game include what you write, a screenshot and technical details such as the map, frame rate and graphics card, so we can reproduce the problem.</li>
         </ul>
-        <p class="callout"><b>Coming soon: optional usage data.</b> A future update adds a switch in the launcher that shares anonymous performance and crash data to help us fix problems on the hardware you actually play on. It is off unless you switch it on, and this page will list exactly what it sends before it ships.</p>
+      </section>
+
+      <section id="launcher">
+        <span class="eyebrow">04</span>
+        <h2>Crash and hardware data from the launcher</h2>
+        <p>From launcher 2.6.0, the Play page asks once whether you want to share anonymous crash and hardware data. Nothing is sent until you choose Share, and nothing at all if you choose No thanks. The same switch is in Settings &gt; Privacy, and turning it off stops sharing straight away.</p>
+        <p>When sharing is on, the launcher sends at most one short report a day to <code>api.truecombat.eu</code>, and only when there is something new to report:</p>
+        <ul>
+          <li><b>Crashes.</b> For each new crash: whether the game or the server crashed, the Windows error code, the place in the program where it happened (a file name and a position in it, such as <code>renderer_dx12_x64.dll+0x1a2b3</code>), up to five steps leading to it in the same form, and how many minutes the game had been running. Crash reports and memory dumps themselves stay on your PC.</li>
+          <li><b>Game starts.</b> How many times the game was started since the last report, how many of those were Safe starts, and the game and launcher version.</li>
+          <li><b>Hardware, at most once a month.</b> Your Windows version, processor model and thread count, memory and video memory in whole gigabytes, graphics card model, whether DirectX 12 works, desktop resolution and refresh rate, and the launcher language.</li>
+        </ul>
+        <p>A report never contains your player name, game key, player ID, an install ID, file or folder names on your PC, server addresses or your connection address. Nothing in one report links it to the next, so we cannot tell whether two reports came from the same PC. As with the website, our server looks up the country of the connection, keeps only the two-letter code and forgets the address.</p>
+        <p>We keep crash locations and daily counts of starts and crashes per game version for 90 days after we last saw them, and monthly counts per hardware value (for example, how many launchers reported a given graphics card) for 13 months. Memory is grouped into ranges so an unusual amount cannot single anyone out. Because no report carries anything that points to you, there is nothing we could look up to show or delete "your" data, and that is by design.</p>
+        <p class="callout"><b>See it for yourself.</b> Settings &gt; Privacy &gt; What is shared in the launcher shows the exact report your PC would send next, before it leaves your computer.</p>
       </section>
 
       <section id="choices">
-        <span class="eyebrow">04</span>
+        <span class="eyebrow">05</span>
         <h2>Your choices</h2>
         <p>To stop being counted on this website, switch on Global Privacy Control or Do Not Track in your browser. Blocking <code>api.truecombat.eu/insights</code> works too, and the site keeps working exactly the same.</p>
         <p>Questions, or want something removed? Ask us on <a href="https://discord.gg/8kcHdg2Hch">Discord</a> or open an issue on <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>. All of the counting code is in the public repository, so you never have to take our word for it.</p>
@@ -140,9 +154,9 @@
       </section>
 
       <section id="changes">
-        <span class="eyebrow">05</span>
+        <span class="eyebrow">06</span>
         <h2>Changes to this page</h2>
-        <p>If what we collect changes, this page changes first, and the devlog says so. Last updated 13 November 2026.</p>
+        <p>If what we collect changes, this page changes first, and the devlog says so. Last updated 16 November 2026.</p>
         <p class="yt-note">Country lookup uses IP to Country Lite by <a href="https://db-ip.com">DB-IP</a>, licensed under CC BY 4.0.</p>
       </section>
     </div>
@@ -151,7 +165,7 @@
 </main>
 
 <!--footer-->
-<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-inside-0372"><time datetime="2026-11-16">16 Nov 2026</time><span>Inside 0.37.2, eyes up</span></a><a href="devlog-inside-0371"><time datetime="2026-11-15">15 Nov 2026</time><span>Inside 0.37.1, tuned to your reports</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
+<aside class="log-strip" aria-label="From the devlog"><div class="wrap"><a class="log-strip-h" href="devlog">From the devlog</a><div class="log-strip-posts"><a href="devlog-crash-reports"><time datetime="2026-11-16">16 Nov 2026</time><span>Fixing crashes on the PCs you actually play on</span></a><a href="devlog-inside-0372"><time datetime="2026-11-16">16 Nov 2026</time><span>Inside 0.37.2, eyes up</span></a></div><a class="log-strip-all" href="devlog">All devlog posts</a></div></aside>
 <footer>
   <div class="wrap">
     <div class="foot">
