@@ -8,6 +8,8 @@ V=${LLVM_MINGW_VERSION:-20261020}; SL=${STREAMLINE_VERSION:-2.14.16}
 SLSHA=${STREAMLINE_SHA256:-32041e51db0cab709a271b72a352281b690c2abbd669a827809401a5dd23956b}
 cd "$DIR"
 curl -fsSL --retry 3 -o lm.tar.xz "https://github.com/mstorsjo/llvm-mingw/releases/download/$V/llvm-mingw-$V-ucrt-ubuntu-22.04-x86_64.tar.xz"
+# release-sign.yml pins the archive (SignPath: every build input fixed); cloud-build may leave it unset
+if [ -n "${LLVM_MINGW_SHA256:-}" ]; then echo "$LLVM_MINGW_SHA256  lm.tar.xz" | sha256sum -c --quiet; fi
 rm -rf llvm-mingw && mkdir llvm-mingw && tar -xf lm.tar.xz -C llvm-mingw --strip-components=1 && rm lm.tar.xz
 curl -fsSL --retry 3 -o sl.zip "https://github.com/NVIDIA-RTX/Streamline/releases/download/v$SL/streamline-sdk-v$SL.zip"
 echo "$SLSHA  sl.zip" | sha256sum -c --quiet
