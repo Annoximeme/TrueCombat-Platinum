@@ -91,8 +91,75 @@
     <p data-releases-status hidden></p>
     <div class="notes" data-releases="all">
 <!--releases-->
-      <details class="release" id="v0.37.3" data-ver="v0.37.3" open>
-        <summary><span class="ver">v0.37.3<span class="latest">Nieuwste</span></span><span class="sum">Loud and clear. Sound that survives Windows changing your audio device, a kill feed that shows every player in their own colours, and steadier skies on DirectX 12.</span><span class="meta">#63 · 0.37.3-sandbox33 · 16 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+      <details class="release" id="v0.38.0" data-ver="v0.38.0" open>
+        <summary><span class="ver">v0.38.0<span class="latest">Nieuwste</span></span><span class="sum">Our biggest update yet. Content from TrueCombat: CQB arrives on an experimental front, you can now take weapons off the battlefield, there's a firing range, and a long list of changes makes every firefight hit harder.</span><span class="meta">#64 · 0.38.0-sandbox34 · 17 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
+        <div class="body">
+          <section><h3>Experimental: truecombat: cqb comes to platinum</h3><ul>
+            <li><b>Harbour.</b> A new close-quarters map, fully rebuilt for DX12 with its own minimap and tactical map.</li>
+            <li><b>Experimental Arsenal.</b> Thirteen weapons enter testing, including the M1911, USP .40, Shorty, MP9, Mini Uzi, SCAR, SG 552, REC7, G3 and the M110 marksman rifle, with dual M1911s and dual Shorties. Find them under the new Experimental tab in the Deployment Menu.</li>
+            <li><b>CQB Rules.</b> A fast-paced playlist with Bodycount (first team to 20 kills, quick respawns), perks such as Lightweight, Protected, Tank and Commando, and health that recovers after a few seconds out of the fight.</li>
+            <li><b>New movement.</b> Commando can grab ledges and climb, corner sliding keeps you moving along walls, and spawns place you away from the enemy.</li>
+            <li><b>New optics and sound.</b> ACOG, EOTech, Leupold and M68 sights, a new radio voice and indoor reverb.</li>
+          </ul></section>
+          <section><h3>New features</h3><ul>
+            <li><b>Battlefield pickups.</b> Weapons now drop when a player falls. Walk up to an enemy's weapon and press Use to swap it for your own, with whatever ammunition its owner left behind. Enabled on official Ranked and Unranked servers.</li>
+            <li><b>Firing range.</b> Choose Firing range from the Play menu to sight in every weapon on targets from 10 to 100 metres. Each hit shows where it landed, the damage and the distance, with your accuracy for the session.</li>
+            <li><b>Vaulting.</b> Press jump at a low wall, crate or window to vault over it or climb on top. The classic mantle stays as it was.</li>
+            <li><b>Know when to jump in.</b> With the launcher in the background, Windows lets you know when people are playing on a public server. One click and you're in. You can turn it off in Settings.</li>
+            <li><b>Female soldier option.</b> Choose Male or Female under Options &gt; Customise Game &gt; Player. Both use the same hitboxes, so the choice is purely visual.</li>
+          </ul></section>
+          <section><h3>Aim and performance</h3><ul>
+            <li>Aiming down sights now zooms and changes sensitivity the instant you press the key, with no round-trip delay.</li>
+            <li>New <b>Aim speed</b> option: keep the Classic feel, or match your aim sensitivity to your hip-fire feel.</li>
+            <li>New <b>Frame Rate Limit</b> option in Options &gt; System, from 60 to 500 FPS. The launcher no longer forces 125 FPS.</li>
+            <li>Movement, stamina, recoil recovery and jumping now behave the same at every frame rate.</li>
+            <li>Lower input latency on DX12, with tighter frame pacing.</li>
+          </ul></section>
+          <section><h3>Firefights</h3><ul>
+            <li>Explosions now shake the camera by distance, throw dust from the ceiling, scorch the ground and leave dirt on your screen.</li>
+            <li>Indoor haze, drifting dust, falling leaves and birds that scatter at the first shot bring every map to life.</li>
+            <li>Impacts react to what they hit: sparks on metal, splinters on wood, glass that breaks properly, and water splashes.</li>
+            <li>Blood spreads into pools, uniforms pick up blood and dirt, and players flinch when hit and fall according to where they were hit.</li>
+            <li>The death camera now drops and rolls with the body before fading out.</li>
+            <li>A replay of the final kill closes out each round.</li>
+            <li>New first-person touches: a dip when you land, the gun pulls back at walls, and spent magazines drop on reload.</li>
+            <li>Footprints in the snow, muzzle flashes that cast shadows, heat shimmer from hot barrels and gunfire that sounds different indoors and at range.</li>
+            <li>Combat voice lines: soldiers call out contacts, kills and casualties.</li>
+            <li>An optional Auto-hide HUD fades the HUD out when you're not in the fight. It is off by default.</li>
+          </ul></section>
+          <section><h3>HUD</h3><ul>
+            <li><b>Minimap.</b> Choose a round (new default) or square minimap in Options.</li>
+            <li><b>Bomb mode.</b> Everyone sees "Bomb planted at &amp;lt;location&amp;gt;" when the bomb goes down. A new bomb card shows the site, a countdown and defuse progress, and the carrier gets clear hints, including a warning when they try to plant outside a site.</li>
+            <li>Hit and suppression effects now fade smoothly at the screen edges instead of showing dark bands.</li>
+            <li>Kill messages show long weapon names in full, for example the AK-74M Spetsnaz.</li>
+            <li>Grenades now appear by their proper names: M67, M84 and M83.</li>
+            <li>The game window is now titled TrueCombat: Platinum.</li>
+          </ul></section>
+          <section><h3>Weapons and visuals</h3><ul>
+            <li>Upgraded first-person weapon models and materials, with sharper metal, wear and texture detail on DX12.</li>
+            <li>New player gear for both teams.</li>
+          </ul></section>
+          <section><h3>Bots</h3><ul>
+            <li>Bots vary their routes in Bomb and Elimination, so rounds no longer play out the same way twice.</li>
+            <li>When a player drops out mid-match, a bot holds their place until they return.</li>
+          </ul></section>
+          <section><h3>Launcher and installer</h3><ul>
+            <li>New Play page artwork captured in-game.</li>
+            <li>Optional crash and hardware reports help us fix problems faster. The launcher asks once, and you can change your choice at any time under Settings &gt; Privacy.</li>
+            <li>A much smaller installer: setup is now under 1 MB and fetches the latest verified launcher during installation.</li>
+            <li>Every download on truecombat.eu is now scanned by VirusTotal and listed with its SHA-256 checksum.</li>
+          </ul></section>
+          <section><h3>Fixes and stability</h3><ul>
+            <li>Cleaner map loading, with stray console errors removed.</li>
+            <li>We've tightened and expanded our security measures.</li>
+          </ul></section>
+          <p class="rel-link"><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases/tag/v0.38.0-sandbox34">GitHub ↗</a></p>
+          <p class="rel-page"><a href="../release-0-38-0">Releasepagina →</a></p>
+        </div>
+      </details>
+
+      <details class="release" id="v0.37.3" data-ver="v0.37.3">
+        <summary><span class="ver">v0.37.3</span><span class="sum">Loud and clear. Sound that survives Windows changing your audio device, a kill feed that shows every player in their own colours, and steadier skies on DirectX 12.</span><span class="meta">#63 · 0.37.3-sandbox33 · 16 nov 2026 <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span></summary>
         <div class="body">
           <section><h3>Audio</h3><ul>
             <li>Fixed game audio going silent until a restart when Windows switched or reset your audio device. Sound now recovers by itself within a few seconds.</li>
