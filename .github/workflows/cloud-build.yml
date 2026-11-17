@@ -5,7 +5,8 @@ name: Cloud build
 #            modules, launcher, installer, master) plus the native probes under Wine
 #   linux    Linux dedicated server (public kit build)
 #   eac      Linux dedicated server with Easy Anti-Cheat (for the official servers)
-#   bots     headless bots-only soak of the Linux build on a few maps
+#   bots     headless bots-only soak of the Linux build on a few maps, with server CPU per map
+#   scan     provenance / tool metadata scan of the source tree (images, paks, embedded image arrays)
 #
 # Sources: a published release's source snapshot, or a request sent with
 # tools/ci/request.py (the changed files of a candidate tree, kept in a hidden draft
@@ -28,7 +29,7 @@ on:
       jobs:
         description: "Jobs when there is no request"
         required: false
-        default: "windows,linux,eac,bots"
+        default: "scan,windows,linux,eac,bots"
   pull_request:
     paths:
       - "tools/ci/**"
@@ -74,7 +75,7 @@ jobs:
           import json, re
           r = json.load(open('request.json'))
           assert re.fullmatch(r'v[0-9A-Za-z._-]+', r['base'])
-          jobs = [j for j in r['jobs'] if j in ('windows', 'linux', 'eac', 'bots')]
+          jobs = [j for j in r['jobs'] if j in ('scan', 'windows', 'linux', 'eac', 'bots')]
           maps = ' '.join(m for m in r.get('maps', []) if re.fullmatch(r'[A-Za-z0-9_]+', m))
           print('base=' + r['base']); print('jobs=' + ','.join(jobs))
           print('maps=' + (maps or 'obj_village obj_snow')); print('minutes=' + str(min(int(r.get('minutes', 4)), 20)))
@@ -83,11 +84,47 @@ jobs:
           else
             base=${TAG:-$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)}
             [[ "$base" =~ ^v[0-9A-Za-z._-]+$ ]] || { echo "::error::bad tag"; exit 1; }
-            jobs=${JOBS:-windows,linux,eac,bots}
+            jobs=${JOBS:-scan,windows,linux,eac,bots}
             minutes=4; [ "$EVENT" = pull_request ] && minutes=2
             { echo "request="; echo "base=$base"; echo "jobs=$jobs"; echo "maps=obj_village obj_snow"; echo "minutes=$minutes"; } >> "$GITHUB_OUTPUT"
           fi
           cat "$GITHUB_OUTPUT"
+
+  scan:
+    # Release-speed plan (2026-11-17): metadata problems are found when a kit is sent, not during packaging.
+    needs: plan
+    if: contains(needs.plan.outputs.jobs, 'scan')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      REQUEST: ${{ needs.plan.outputs.request }}
+      BASE: ${{ needs.plan.outputs.base }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Source
+        run: tools/ci/compose-source.sh "$BASE" src "$REQUEST"
+      - name: Metadata scan
+        id: scan
+        run: |
+          if [ -n "$REQUEST" ]; then   # a candidate or kit: hits fail the job; file names stay in the private draft
+            python3 tools/ci/scan_metadata.py --quiet --json scan.json src
+          else                         # an already published release: report only (0.37.3 and older carry known hits)
+            python3 tools/ci/scan_metadata.py --json scan.json src || echo "::warning::published release $BASE has metadata hits (see log)"
+          fi
+      - name: Results to the request draft
+        if: always() && env.REQUEST != ''
+        env:
+          RESULT: ${{ job.status }}
+        run: |
+          python3 - > scan-summary.md <<'PY'
+          import json, os
+          d = json.load(open('scan.json')) if os.path.exists('scan.json') else {'files': 0, 'hits': []}
+          print(f"Metadata scan: {d['files']} files, {len(d['hits'])} hits")
+          for h in d['hits']: print(f"- {h['file']}: {', '.join(h['flags'])}")
+          PY
+          python3 tools/ci/draft.py put "$REQUEST" scan-summary.md
+          python3 tools/ci/result.py scan "$RESULT" scan-summary.md > scan-result.json
+          python3 tools/ci/draft.py put "$REQUEST" scan-result.json
 
   windows:
     needs: plan
@@ -127,6 +164,10 @@ jobs:
           export LLVM_MINGW=~/toolchain/llvm-mingw SL_SDK=~/toolchain/streamline
           [ -n "$REQUEST" ] && export QUIET=1   # candidate error output goes to the private draft only
           tools/ci/build-windows.sh src out
+      - name: Metadata scan of the built game
+        run: |
+          if [ -n "$REQUEST" ]; then python3 tools/ci/scan_metadata.py --quiet out/game
+          else python3 tools/ci/scan_metadata.py out/game || echo "::warning::published release $BASE has metadata hits"; fi
       - name: Summary
         if: always()
         run: '[ -f out/summary.md ] && { echo "## Windows build ($BASE${REQUEST:+ + $REQUEST})"; cat out/summary.md; } >> "$GITHUB_STEP_SUMMARY" || true'

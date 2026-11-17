@@ -10,7 +10,8 @@ runs on the VPS, so the live game servers are never slowed down.
 | `windows` | Full Windows x64 cross-build with the same LLVM-MinGW release and flags as the PC: `etl.exe`, `etlded.exe`, DX12 (with DLSS) and OpenGL renderers, OpenAL, UI, `qagame`/`cgame`, launcher, installer, master server; runs the native probes under Wine | ~10 min |
 | `linux` | Linux dedicated server (public kit build) | ~5 min |
 | `eac` | Linux dedicated server with Easy Anti-Cheat, as used on the official servers | ~5 min |
-| `bots` | Headless soak: the Linux build runs each map with a full server of bots; fails on a crash, a fatal error, a hang or bots that never join | 2-20 min per map |
+| `bots` | Headless soak: the Linux build runs each map with a full server of bots; fails on a crash, a fatal error, a hang or bots that never join. Records the server's CPU per map (average and worst 15 s window) | 2-20 min per map |
+| `scan` | Provenance / tool metadata scan of the whole source tree: C2PA and JUMBF manifests, metadata naming an AI tool, inside pk3 members and inside images compiled into the launcher as byte arrays. The `windows` job scans the built game the same way | ~1 min |
 
 ## Privacy
 
@@ -56,6 +57,22 @@ A source tree is a release's `f__source__native-sandbox-source.zip` unpacked, wi
 a kit's patches applied on top. `tools/ci/compose-source.sh <base tag> <out>` fetches
 and unpacks the base.
 
+## Kit gate (before a kit goes to the release integrator)
+
+Every feature kit passes this before the integrator takes it, so broken patches, metadata and
+build failures surface in the feature's own thread instead of mid-release on the PC:
+
+```sh
+tools/ci/kit-gate.sh v0.38.0-sandbox34 <kit folder> "obj_village obj_snow" 3
+```
+
+The kit folder holds `patches/*.patch` (applied in name order with `git apply`, no fuzz) and optionally
+`files/` (copied over the tree). The script composes the base release source, applies the kit, scans
+it, cross-builds Windows (with the probes when wine is installed), builds the Linux server and runs the
+bots soak. It writes `kit-gate/SUMMARY.md` with the base tag and the kit's checksum; put that summary
+next to the kit manifest. The integrator accepts only kits whose summary passed on the current base and
+matches the kit's checksum.
+
 ## What still needs the PC
 
 - In-game tests with a real GPU (DX12 and OpenGL screenshots, feel, audio devices).
@@ -69,7 +86,9 @@ and unpacks the base.
 | `build-windows.sh` | Windows cross-build + probes from a source tree |
 | `setup-toolchain.sh` | Downloads pinned LLVM-MinGW 20261020 and Streamline 2.14.16 headers |
 | `compose-source.sh` | Base release source + a request's changed files |
-| `bots-soak.sh` | Bots-only soak of a Linux server build |
+| `bots-soak.sh` | Bots-only soak of a Linux server build, with server CPU per map |
+| `kit-gate.sh` | Kit gate for feature threads: apply, scan, build, soak, summary |
+| `scan_metadata.py` | Provenance / tool metadata scanner (files, folders, pk3 members, embedded image arrays) |
 | `request.py` | Send a tree, check status, fetch results, clean up |
 | `draft.py` | Hidden draft release storage (used by the above and the workflow) |
 | `result.py` | Per-job result file for a request |
