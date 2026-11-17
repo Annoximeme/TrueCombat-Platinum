@@ -19,6 +19,7 @@ The English pages in docs/*.html are hand-edited. This script:
 Run it after changing any English page:   python tools/website/build.py
 """
 import html as htmlmod
+import datetime
 import json
 import urllib.parse
 import os
@@ -774,12 +775,48 @@ def kicker(lang, p, prefix=""):
     return " · ".join(htmlmod.escape(x) for x in parts)
 
 
+FRESH_DAYS = 14  # same window as the NEW tag on the Devlog nav link (site.js)
+
+
+def fresh(p):
+    """True while a post is new enough to take the home hero: FRESH_DAYS from its date."""
+    return (datetime.date.today() - datetime.date.fromisoformat(p["date"])).days < FRESH_DAYS
+
+
 def devlog_hero(lang, posts):
-    """Home page hero: a card with a thumbnail that leads to the newest devlog post."""
+    """Home page hero: the newest devlog post as a glass card beside the game (below the download on phones)."""
+    T = DEVREACH[lang]
     p = posts[0]
-    label = kicker(lang, p, DEVREACH[lang]["new"])
-    return (f'<!--devlog-hero-->\n    <a class="hero-log" href="devlog-{p["slug"]}.html"><img src="{small(p["image"])}" alt="" width="640" height="360">'
-            f'<span><b>{label}</b><strong>{htmlmod.escape(p["title"])}</strong><time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time></span></a>\n<!--/devlog-hero-->')
+    href = f'devlog-{p["slug"]}.html'
+    label = kicker(lang, p, T["new"] if fresh(p) else LABELS[lang]["devlog"])
+    title = htmlmod.escape(p["title"])
+    return f"""<!--devlog-hero-->
+    <aside class="hero-dev" aria-labelledby="hero-dev-h">
+      <span class="hd-k">{label}</span>
+      <a class="hd-art" href="{href}" tabindex="-1" aria-hidden="true"><img src="{small(p['image'])}" alt="" width="640" height="360"></a>
+      <h2 id="hero-dev-h"><a href="{href}">{title}</a></h2>
+      <p>{htmlmod.escape(p['summary'])}</p>
+      <div class="hd-foot"><a class="btn btn-play hd-read" href="{href}">{T['read']} {ARROW_SVG}</a><time datetime="{p['date']}">{nice_date(lang, p['date'])}</time></div>
+    </aside>
+<!--/devlog-hero-->"""
+
+
+def hero_teaser(lang, posts, html):
+    """While an update post (one with a `kicker`) is fresh, its teaser art is the first slide of the home hero.
+    The page drops it again by itself once FRESH_DAYS have passed (see the slideshow script in index.html).
+    The map slide that normally opens the show then waits its turn instead of loading with the page."""
+    p = posts[0]
+    on = bool(p.get("kicker")) and fresh(p)
+    first = re.compile(r'(<!--/hero-teaser-->\s*<img class="slide" [^>]*?)(data-)?src="([^"]+)" (data-)?srcset="([^"]+)"')
+    html = first.sub(lambda m: m.group(1) + ('data-src="%s" data-srcset="%s"' if on else 'src="%s" srcset="%s"') % (m.group(3), m.group(5)), html, count=1)
+    if not on:
+        return put(html, "hero-teaser", "<!--hero-teaser--><!--/hero-teaser-->", "index")
+    until = (datetime.date.fromisoformat(p["date"]) + datetime.timedelta(days=FRESH_DAYS)).isoformat()
+    img, big = p["image"], large(p["image"])
+    srcset = f"{small(img)} 640w, {img} 1280w" + (f", {big} 1920w" if big != img else "")
+    slide = (f'<!--hero-teaser-->\n    <img class="slide" data-name="{kicker(lang, p)}" data-until="{until}" src="{img}" srcset="{srcset}" '
+             f'sizes="100vw" alt="" fetchpriority="high">\n<!--/hero-teaser-->')
+    return put(html, "hero-teaser", slide, "index")
 
 
 def devlog_home(lang, posts):
@@ -1779,6 +1816,7 @@ def main():
             html = put(html, "roadmap", roadmap_html(lang, latest), path)
             html = put(html, "devlog-latest", devlog_latest(lang, posts[lang]), path)
             html = put(html, "devlog-hero", devlog_hero(lang, posts[lang]), path)
+            html = hero_teaser(lang, posts[lang], html)
             html = put(html, "devlog-home", devlog_home(lang, posts[lang]), path)
         if page == "devlog":
             html = put(html, "devlog", devlog_list(lang, posts[lang]), path)

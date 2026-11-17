@@ -31,6 +31,9 @@ version: 0.33.0
   `image` at full size with the kicker above the title. Give these posts clean teaser art as `image` (no logo or
   text, see `teaser.py`); a `-1920.webp` next to it is used on wide screens when it exists. Without any kicker
   post, the newest post takes the spot.
+- The newest post always sits in the home page hero as a card beside the game. When that post has a kicker,
+  its `image` also opens the hero slideshow for 14 days from `date`; after that the map slides return by
+  themselves, and the next site build drops it from the page.
 
 ## Body
 

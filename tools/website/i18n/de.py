@@ -366,7 +366,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
                                                                                                                                                                                                       'Spiel '
                                                                                                                                                                                                       'aktuell '
                                                                                                                                                                                                       'hält.',
- 'href="#patch-notes">What\'s new</a>': 'href="#patch-notes">Was ist neu</a>',
+ 'href="#patch-notes">Patch notes</a>': 'href="#patch-notes">Patchnotes</a>',
  '<span>DirectX 12 with OpenGL fallback</span>': '<span>DirectX 12 mit OpenGL als Rückfallebene</span>',
  '<span>Optional NVIDIA DLSS / DLAA</span>': '<span>Optional NVIDIA DLSS / DLAA</span>',
  '<span>Developed by RaziC* · Team Terminus</span>': '<span>Entwickelt von RaziC* · Team Terminus</span>',

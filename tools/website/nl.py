@@ -29,7 +29,7 @@ PAGES["index"] = [
     ('<h1><span class="nw">TrueCombat: Elite,</span> rebuilt for <em>modern Windows</em>.</h1>', '<h1><span class="nw">TrueCombat: Elite,</span> opnieuw gebouwd voor <em>modern Windows</em>.</h1>'),
     ('The classic tactical shooter, rebuilt as a native 64-bit game with a DirectX 12 renderer. The original maps, soldiers and HUD, and a launcher that hosts your servers and keeps the game current.',
      'De klassieke tactische shooter, opnieuw gebouwd als native 64-bit game met een DirectX 12-renderer. De originele maps, soldaten en HUD, en een launcher die je servers host en het spel up-to-date houdt.'),
-    ('href="#patch-notes">What\'s new</a>', 'href="#patch-notes">Wat is er nieuw</a>'),
+    ('href="#patch-notes">Patch notes</a>', 'href="#patch-notes">Patchnotes</a>'),
     ('<span>DirectX 12 with OpenGL fallback</span>', '<span>DirectX 12 met OpenGL als terugval</span>'),
     ('<span>Optional NVIDIA DLSS / DLAA</span>', '<span>Optioneel NVIDIA DLSS / DLAA</span>'),
     ('<span>Developed by RaziC* · Team Terminus</span>', '<span>Ontwikkeld door RaziC* · Team Terminus</span>'),
