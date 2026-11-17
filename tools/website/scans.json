@@ -215,6 +215,17 @@
    "checked": "2026-11-16T18:00:49Z",
    "settle": true
   },
+  "27fe8c54b5bd713f0bbfd08f05a98e15523d65f11ef860f44047087203baf4aa": {
+   "name": "TrueCombatPlatinum-Launcher.exe",
+   "bytes": 7286272,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-17T22:59:46Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T23:04:57Z",
+   "settle": true
+  },
   "28b03b0fe603a9bf8cf2570e518f79587459fe3987632bd4efa972a89689f312": {
    "name": "renderer_opengl1_x64.dll",
    "bytes": 1796608,
@@ -1447,7 +1458,7 @@
    "setup": "5c75d6196bcae554d0f4ef9a29487f6ada8ecf3d755d6b31327c0123bcb7ebb5",
    "files": {
     "TrueCombat-Platinum-Setup.exe": "5c75d6196bcae554d0f4ef9a29487f6ada8ecf3d755d6b31327c0123bcb7ebb5",
-    "TrueCombatPlatinum-Launcher.exe": "a6565bcef32b97e4133d569a95aea9edf51aabbf69aaa53eb4e69b5ab21a776c",
+    "TrueCombatPlatinum-Launcher.exe": "27fe8c54b5bd713f0bbfd08f05a98e15523d65f11ef860f44047087203baf4aa",
     "f__EasyAntiCheat__EasyAntiCheat_EOS_Setup.exe": "8b60d4e8962ee5b4b7130afabb029673e284367bc22a590293d14f089c9f46a0",
     "f__TrueCombatPlatinum.exe": "a6565bcef32b97e4133d569a95aea9edf51aabbf69aaa53eb4e69b5ab21a776c",
     "f__TrueCombatPlatinum_EAC.exe": "46d2552552ac95c436389a2c9f1aba6fda37ab998acf9b9ee026f3262dd70c53",
