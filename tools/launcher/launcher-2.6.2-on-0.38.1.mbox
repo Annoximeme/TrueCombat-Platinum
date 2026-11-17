@@ -1,7 +1,7 @@
 From 6049b52f22825b48e657bfee6fc1e95854b77221 Mon Sep 17 00:00:00 2001
 From: Gianni <rel037@localhost>
 Date: Tue, 17 Nov 2026 23:29:37 +0100
-Subject: [PATCH 1/4] launcher 2.6.2: restore the staged-file check and the
+Subject: [PATCH 1/5] launcher 2.6.2: restore the staged-file check and the
  one-time antivirus notice
 
 Brings back the 2.6.2 staged-file check (every staged file is checked before and after an update is applied) and the antivirus notice on the next start, which 0.38.1 held back.
@@ -165,7 +165,7 @@ index 5ce4ebb..47de761 100644
 From 7836047a80dc46f68d409bf0429af56b1740a3b3 Mon Sep 17 00:00:00 2001
 From: Gianni <rel037@localhost>
 Date: Tue, 17 Nov 2026 23:37:22 +0100
-Subject: [PATCH 2/4] launcher 2.6.2: every update failure shows its reason and
+Subject: [PATCH 2/5] launcher 2.6.2: every update failure shows its reason and
  is logged; missing files repair themselves
 
 Settings > Updates, the status rail and its tip now say what went wrong instead of "Update check failed", and a failed action the player started is explained once in a message. Every step goes to updates\launcher-update.log (host, HTTP status, WinHTTP and Windows errors, the file involved), rotated at 256 KB.
@@ -775,7 +775,7 @@ index 47de761..cf750fa 100644
 From 213720ca825b0ca2278c4c89aab91d2425354d19 Mon Sep 17 00:00:00 2001
 From: Gianni <rel037@localhost>
 Date: Tue, 17 Nov 2026 23:47:46 +0100
-Subject: [PATCH 3/4] launcher 2.6.2: an update problem reads in full on
+Subject: [PATCH 3/5] launcher 2.6.2: an update problem reads in full on
  Settings > Updates, names the blocked host, and the startup check skips the
  source archive
 
@@ -907,7 +907,7 @@ index cf750fa..0c2b18f 100644
 From 7961fff769101921b1afc2524f90802eaeb790ca Mon Sep 17 00:00:00 2001
 From: Gianni <rel037@localhost>
 Date: Tue, 17 Nov 2026 23:52:44 +0100
-Subject: [PATCH 4/4] release gate: launcher update and repair suite,
+Subject: [PATCH 4/5] release gate: launcher update and repair suite,
  reproducible launcher build, post-publish canary
 
 tests/launcher_repair/run_suite.py runs 11 broken-install cases against a loopback copy of a real release: a previous release with an old engine and leftover staging, a missing engine, a corrupted pak, an antivirus blocking or removing a file, a blocked download host, offline, a bad signature, the restart after a failed apply, and the previous launcher updating itself. A complete pass is recorded per launcher SHA-256.
@@ -1633,6 +1633,37 @@ index 0000000..afb4590
 +if not args.keep:
 +    for name in wanted: shutil.rmtree(args.work / name, ignore_errors=True)
 +sys.exit(0 if all(r['pass'] for r in results.values()) else 1)
+-- 
+2.55.0.windows.5
+
+
+From 667690fc73735792cdd85f94e8b7707881e40889 Mon Sep 17 00:00:00 2001
+From: Gianni <rel037@localhost>
+Date: Wed, 18 Nov 2026 00:30:02 +0100
+Subject: [PATCH 5/5] release gate: the launcher gate also reads a record named
+ launcher-gate-<sha>.json
+
+Kits hand the suite record over under that name; run_suite.py keeps writing <sha>.json.
+---
+ analysis_scripts/x64/launcher_gate.py | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/analysis_scripts/x64/launcher_gate.py b/analysis_scripts/x64/launcher_gate.py
+index d61a992..357aa90 100644
+--- a/analysis_scripts/x64/launcher_gate.py
++++ b/analysis_scripts/x64/launcher_gate.py
+@@ -17,8 +17,9 @@ CASES = {'friend', 'engine_missing', 'corrupt_pak', 'av_write_denied', 'av_delet
+ 
+ def status(exe):
+     digest = hashlib.sha256(Path(exe).read_bytes()).hexdigest()
+-    record = GATE/f'{digest}.json'
+-    if not record.exists(): return digest, False, f'no launcher repair suite run for this launcher ({digest[:12]})'
++    # run_suite.py writes <sha>.json; a kit hands the record over as launcher-gate-<sha>.json: both count
++    record = next((p for p in (GATE/f'{digest}.json', GATE/f'launcher-gate-{digest}.json') if p.exists()), None)
++    if record is None: return digest, False, f'no launcher repair suite run for this launcher ({digest[:12]})'
+     r = json.loads(record.read_text(encoding='utf-8'))
+     if r.get('launcher_sha256') != digest: return digest, False, 'gate record is for another launcher'
+     if r.get('suite_version', 0) < SUITE_VERSION: return digest, False, f'suite version {r.get("suite_version")} is older than {SUITE_VERSION}'
 -- 
 2.55.0.windows.5
 

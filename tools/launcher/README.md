@@ -39,7 +39,7 @@ without the engine, and PLAY kept offering INSTALL.
 
 ## Files
 
-- `launcher-2.6.2-on-0.38.1.mbox`: the four commits, for `git am` on the 0.38.1 release source (rel0381).
+- `launcher-2.6.2-on-0.38.1.mbox`: the five commits, for `git am` on the 0.38.1 release source (rel0381).
 - `src/`: the changed and new files as they are after those commits, for reading.
 
 Launcher 3.0.1 for 0.39.0 carries the same changes, merged with 3.0's pause/resume and translated.
