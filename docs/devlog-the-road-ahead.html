@@ -38,7 +38,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=a4531b4408">
+<link rel="stylesheet" href="style.css?v=fa104a7f31">
 </head>
 <body>
 <!--nav-->
@@ -79,7 +79,7 @@
     <div class="head-art" style="--art: url(img/map-delta.webp); --art-s: url(img/map-delta-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog">All devlog posts</a>
-      <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-11">11 Nov 2026</time><span>17 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="the-road-ahead" hidden></span></p>
+      <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-11">11 Nov 2026</time><span>17 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="the-road-ahead" hidden></span><span class="post-cmts" data-post-cmts="the-road-ahead" hidden></span></p>
       <h1>The road ahead, in full</h1>
       <p class="lede">The next two updates are planned, and so is the work behind them. A rebuilt movement core, a match record that powers replays and coaching, bots that have to look and listen like you do, pickup games on Discord and more. This is the long version, with how each piece works and why we are building it this way.</p>
     </div>
@@ -249,6 +249,7 @@
       </div>
       <div class="post-rate" data-rate="the-road-ahead" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
         <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <p class="rate-sum" hidden></p>
         <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
           <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
           <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
@@ -265,6 +266,7 @@
           <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
         </div>
       </div>
+      <section class="cmt" id="comments" data-cmt="the-road-ahead" data-comments="on" aria-label="Comments" hidden></section>
       <nav class="post-pager">
         <a class="prev" href="devlog-reads-and-ratings"><small>Older post</small>Counting readers without tracking anyone</a>
         <a class="next" href="devlog-every-fight-counts"><small>Newer post</small>Every fight on the record</a>
@@ -280,7 +282,7 @@
       <article class="post-card" data-tag="Roadmap">
         <a class="post-art" href="devlog-whats-next" tabindex="-1" aria-hidden="true"><img src="img/hero-village-rooftop-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>4 min read</span><span class="post-stat" data-post-stat="whats-next" hidden></span></p>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>4 min read</span><span class="post-stat" data-post-stat="whats-next" hidden></span><span class="post-cmts" data-post-cmts="whats-next" hidden></span></p>
           <h2><a href="devlog-whats-next">What we are working on next</a></h2>
           <p>With 0.34.0 out, here is an open look at the work lined up behind it: better online play, Discord pickups, one-click joining, and a set of new features built on a shared match record. Plans, not promises.</p>
           <a class="more" href="devlog-whats-next">Read the post</a>
@@ -289,7 +291,7 @@
       <article class="post-card" data-tag="Roadmap">
         <a class="post-art" href="devlog-playtest-fixes" tabindex="-1" aria-hidden="true"><img src="img/hero-railhouse-south-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>7 min read</span><span class="post-stat" data-post-stat="playtest-fixes" hidden></span></p>
+          <p class="post-meta"><span class="tag">Roadmap</span><time datetime="2026-11-09">9 Nov 2026</time><span>7 min read</span><span class="post-stat" data-post-stat="playtest-fixes" hidden></span><span class="post-cmts" data-post-cmts="playtest-fixes" hidden></span></p>
           <h2><a href="devlog-playtest-fixes">What the playtests told us</a></h2>
           <p>Our latest community playtests turned up a clear list of problems, led by gunplay. A large batch of fixes is lined up for the next patch. Here is everything we found, the order we will fix it in, and how it fits with the rest of the work coming up.</p>
           <a class="more" href="devlog-playtest-fixes">Read the post</a>
@@ -331,6 +333,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=18c4378961"></script>
+<script src="js/site.js?v=5eba91bea7"></script>
 </body>
 </html>

@@ -34,6 +34,9 @@ version: 0.33.0
 - The newest post always sits in the home page hero as a card beside the game. When that post has a kicker,
   its `image` also opens the hero slideshow for 14 days from `date`; after that the map slides return by
   themselves, and the next site build drops it from the page.
+- `comments: off` is optional and leaves the comment section off that post. Every other post gets one: signed-in
+  players comment, reply, like and report; the team moderates on the staff portal's Devlog comments page. The
+  section stays hidden while the account service is down. English and Dutch pages share one comment thread.
 
 ## Body
 
