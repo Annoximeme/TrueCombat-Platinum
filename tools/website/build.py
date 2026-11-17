@@ -129,54 +129,160 @@ def english_links(lang, html):
     return re.sub(r'href="((?:%s)(?:-[^"./]*)?\.(?:html|xml)(?:#[^"]*)?)"' % "|".join(i18n.EN_ONLY), r'href="../\1"', html)
 
 
+MENU = {
+    "en": {"play": "Play", "game": "Game", "compete": "Compete", "community": "Community", "close": "Close the menu",
+           "live": "{p} playing · {s} servers", "idle": "{s} servers online", "live_h": "Live servers", "all": "All servers", "ranked": "Ranked", "home": "TrueCombat: Platinum home",
+           "f_play": "Free · Windows 10 and 11, 64-bit", "f_game": "{m} maps · {w} weapons", "f_compete": "Ranked play on the official servers", "f_community": "{n} devlog posts so far",
+           "d": {"download": "Free Windows installer", "guide": "Controls, modes and tactics", "servers": "Live servers, join in one click", "faq": "Answers to common questions",
+                 "truecombat-elite": "Where it all began", "maps": "Every map, with plans in 3D", "weapons": "The full arsenal, compared", "graphics": "Low, High and Ultra side by side",
+                 "gallery": "In-game screenshots", "leaderboards": "Ratings, ranks and stat leaders", "competitive": "Ranked play and its rules", "account": "Your profile, stats and friends",
+                 "devlog": "How the game is being built", "news": "Patch notes for every release", "media": "Trailers, screenshots and wallpapers", "discord": "Find a match, talk to the team",
+                 "studio": "The team behind the game", "press": "Logos, key art and facts"}},
+    "nl": {"play": "Spelen", "game": "Het spel", "compete": "Competitie", "community": "Community", "close": "Menu sluiten",
+           "live": "{p} spelers · {s} servers", "idle": "{s} servers online", "live_h": "Live servers", "all": "Alle servers", "ranked": "Ranked", "home": "TrueCombat: Platinum home",
+           "f_play": "Gratis · Windows 10 en 11, 64-bit", "f_game": "{m} maps · {w} wapens", "f_compete": "Ranked spelen op de officiële servers", "f_community": "Al {n} devlogartikelen",
+           "d": {"download": "Gratis Windows-installatie", "guide": "Besturing, modi en tactiek", "servers": "Live servers, meedoen in één klik", "faq": "Antwoorden op veelgestelde vragen",
+                 "truecombat-elite": "Waar het allemaal begon", "maps": "Elke map, met plattegronden in 3D", "weapons": "Het volledige arsenaal, vergeleken", "graphics": "Low, High en Ultra naast elkaar",
+                 "gallery": "Screenshots uit het spel", "leaderboards": "Ratings, rangen en topspelers", "competitive": "Ranked spelen en de regels", "account": "Je profiel, statistieken en vrienden",
+                 "devlog": "Hoe het spel gebouwd wordt", "news": "Patchnotes van elke release", "media": "Trailers, screenshots en wallpapers", "discord": "Zoek een potje, praat met het team",
+                 "studio": "Het team achter het spel", "press": "Logo's, key art en feiten"}},
+}
+MENU_GROUPS = [("play", ["download", "guide", "servers", "faq", "truecombat-elite"]), ("game", ["maps", "weapons", "graphics", "gallery"]),
+               ("compete", ["leaderboards", "competitive", "account"]), ("community", ["devlog", "news", "media", "discord", "studio", "press"])]
+_NI = {
+    "download": '<path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/>', "guide": '<path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/>',
+    "servers": '<rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/>',
+    "faq": '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/>',
+    "truecombat-elite": '<path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/>', "maps": '<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/>',
+    "weapons": '<circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/>', "graphics": '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+    "gallery": '<rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/>',
+    "leaderboards": '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+    "competitive": '<path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/>', "account": '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    "devlog": '<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>', "news": '<path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/>',
+    "media": '<rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/>',
+    "discord": '<path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/>',
+    "studio": '<circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/>',
+    "press": '<path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/>',
+}
+
+
+def _svg(d, size=18):
+    return f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true">{d}</svg>'
+
+
+CHEV_SVG = _svg('<path d="m6 9 6 6 6-6"/>', 14)
+DL_SVG = _svg(_NI["download"], 18)
+ARROW_SM = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+MAP_NAMES = {m: m.capitalize() for m in MAPLIST}
+WEAPON_COUNT = None
+
+
+def weapon_count():
+    global WEAPON_COUNT
+    if WEAPON_COUNT is None:
+        data = json.loads((HERE / "weapons.json").read_text(encoding="utf-8"))
+        WEAPON_COUNT = len({w["name"] for g in data["groups"] for w in g["weapons"]})
+    return WEAPON_COUNT
+
+
+def nav_active(current):
+    """The page a nav item stands for: sub-pages light up their section."""
+    active = {"player": "leaderboards", "match": "servers"}.get(current, current)
+    for pre_, page in (("devlog-", "devlog"), ("map-", "maps"), ("weapon-", "weapons"), ("release-", "news")):
+        if current.startswith(pre_):
+            active = page
+    return active
+
+
 def nav(lang, current):
-    L = LABELS[lang]
+    L, M = LABELS[lang], MENU[lang]
     up = upp(lang)
     file = "" if current == "index" else current + ".html"
     others = [(l, (up + pre(l) + file) or "./") for l in langs_for(current) if l != lang]
     lang_links = "".join('<a href="%s" hreflang="%s" lang="%s">%s</a>' % (h, l, l, i18n.NAMES[l]) for l, h in others)
     home = "./"
-    main = ["devlog", "maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news"]
-    active = {"player": "leaderboards", "match": "servers", "account": ""}.get(current, current)
-    if current.startswith("devlog-"):
-        active = "devlog"
-    if current.startswith("map-"):
-        active = "maps"
-    if current.startswith("weapon-"):
-        active = "weapons"
-    if current.startswith("release-"):
-        active = "news"
-    links = "\n".join(
-        '      <li><a href="%s"%s%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "",
-                                               ' data-devlog-new="%s" data-new="%s"' % (devlog_posts(lang)[0]["date"], DEVREACH[lang]["tag"]) if p == "devlog" else "", L[p])
-        for p in main)
-    menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
-    menu += '<a href="%s">%s</a><a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"],
-                                                                       href("account"), ACCOUNT_T.get(lang, "Account"))
-    menu += '<hr><a href="%s">%s</a><a href="%s#graphics">%s</a><a href="%s">%s</a><a href="%s">%s</a><a href="%s">Discord</a><hr>%s' % (
-        home + "#gallery", L["gallery"], home, L["graphics"], href("faq"), L["faq"], href("press"), L["press"], DISCORD, lang_links)
-    menu = menu.replace('<hr>', '<hr><a href="%s">%s</a><a href="%s">%s</a>' % (href("download"), L["download"], href("truecombat-elite"), L["truecombat-elite"]), 1)
+    active = nav_active(current)
+    posts = devlog_posts(lang)
+    post, T = posts[0], DEVREACH[lang]
+    version = latest_version()
     download = home + "#download" if current == "index" else href("download")
+    label = dict(L, account=ACCOUNT_T.get(lang, "Account"), discord="Discord")
+
+    def link(k):
+        return {"gallery": home + "#gallery", "graphics": home + "#graphics", "discord": DISCORD, "download": download}.get(k) or href(k)
+
+    def item(k):
+        cur = ' aria-current="page"' if k == active else ""
+        new = ' data-devlog-new="%s" data-new="%s"' % (post["date"], T["tag"]) if k == "devlog" else ""
+        tag = f'<em>{T["tag"]}</em>' if k == "devlog" else ""
+        return (f'<a class="pi" href="{link(k)}"{cur}{new}>{_svg(_NI[k])}<span><b>{label[k]}{tag}</b>'
+                f'<small>{htmlmod.escape(M["d"][k])}</small></span></a>')
+
+    def tile(cls, h, img, em, title, more=""):
+        big = cls == "pt-big"
+        src = f'{up}img/{img}-640.webp' if not big else f'{up}img/{img}.webp'
+        return (f'<a class="pt {cls}" href="{h}"><img src="{src}" alt="" loading="lazy" decoding="async"><i class="br"></i>'
+                f'<span>{f"<em>{em}</em>" if em else ""}{f"<strong>{title}</strong>" if big else title}{more}</span></a>')
+
+    go = lambda t: f'<u>{t} {ARROW_SM}</u>'
+    art = {
+        "play": tile("pt-big", link("download"), "hero-village-rooftop", f"v{version} · {M['f_play'].split(' · ')[0]}", "TrueCombat: Platinum", go(L["download"]))
+                + tile("pt-sm", href("servers"), "hero-northport-gashouse", "", L["servers"]) + tile("pt-sm", href("guide"), "hero-railhouse-overlook", "", L["guide"]),
+        "game": '<div class="pt-maps">' + "".join(
+            f'<a class="pt" href="map-{m}.html"><img src="{up}img/map-{m}-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>{MAP_NAMES[m]}</span></a>'
+            for m in MAPLIST) + "</div>",
+        "compete": tile("pt-big", href("leaderboards"), "hero-delta-night", M["ranked"], L["leaderboards"], go(L["leaderboards"]))
+                   + tile("pt-sm", href("competitive"), "hero-stadtrand-canal", "", L["competitive"]) + tile("pt-sm", href("account"), "hero-snow-warehouse", "", label["account"]),
+        "community": (f'<a class="pt pt-big" href="devlog-{post["slug"]}.html"><img src="{up}{post["image"]}" alt="" loading="lazy" decoding="async"><i class="br"></i>'
+                      f'<span><em>{kicker(lang, post, T["new"] if fresh(post) else L["devlog"])}</em><strong>{htmlmod.escape(post["title"])}</strong>{go(T["read"])}</span></a>')
+                     + tile("pt-sm", href("news"), "hero-snow-yard", f"v{version}", L["news"]) + tile("pt-sm", DISCORD, "hero-village-contact", "Discord", L["discord"]),
+    }
+    foot = {"play": M["f_play"], "game": M["f_game"].format(m=len(MAPLIST), w=weapon_count()), "compete": M["f_compete"], "community": M["f_community"].format(n=len(posts))}
+    groups = []
+    for n, keys in MENU_GROUPS:
+        on = " on" if active in keys else ""
+        groups.append(
+            f'      <div class="tg{on}" data-g="{n}"><button type="button" aria-expanded="false" aria-controls="tp-{n}">{M[n]}{CHEV_SVG}</button>\n'
+            f'        <div class="tp" id="tp-{n}"><div class="wrap"><div class="tp-list">{"".join(item(k) for k in keys)}</div>'
+            f'<div class="tp-art tp-{n}">{art[n]}</div>'
+            f'<div class="tp-foot"><span>{htmlmod.escape(foot[n])}</span><a href="{link(keys[0])}">{label[keys[0]]} {ARROW_SM}</a></div></div></div></div>')
+    sheet_groups = "".join(
+        f'<details class="ms-g"{" open" if active in keys or (n == "game" and not any(active in k for _, k in MENU_GROUPS)) else ""}><summary>{M[n]}{CHEV_SVG}</summary>'
+        + ('<div class="ms-maps">' + "".join(f'<a href="map-{m}.html"><img src="{up}img/map-{m}-640.webp" alt="" loading="lazy" decoding="async"><span>{MAP_NAMES[m]}</span></a>' for m in MAPLIST) + "</div>" if n == "game" else "")
+        + "".join(item(k) for k in keys) + "</details>"
+        for n, keys in MENU_GROUPS)
+    chips = "".join(f'<b>{lang.upper()}</b>' if l == lang else f'<a href="{h}" hreflang="{l}" lang="{l}">{l.upper()}</a>'
+                    for l, h in [(lang, "")] + others)
+    brand = (f'<a class="tb-brand" href="{home}" aria-label="{M["home"]}"><img class="tb-wm" src="{up}img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40">'
+             f'<i class="tb-shine" aria-hidden="true"></i></a>')
+    tpl = f'data-tpl-live="{htmlmod.escape(M["live"])}" data-tpl-idle="{htmlmod.escape(M["idle"])}"'
     return f"""<!--nav-->
 <a class="skip" href="#top">{L['skip']}</a>
-<header class="nav">
+<header class="nav tb">
   <div class="wrap">
-    <a class="nav-brand" href="{home}"><img src="{up}img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
-    <ul class="nav-links">
-{links}
-    </ul>
-    <details class="menu" id="menu">
-      <summary aria-label="{L['menu']}">{MENU_SVG}</summary>
-      <nav aria-label="{L['sections']}">
-        <button type="button" class="menu-search" data-search-open>{SEARCH_SVG}{L['search']}</button>{menu}
-      </nav>
-    </details>
-    <button class="nav-search" type="button" data-search-open aria-label="{L['search']}" title="{L['search']} (Ctrl K)">{SEARCH_SVG}</button>
-    <details class="nav-langs"><summary aria-label="{L['language']}" title="{L['language']}">{lang.upper()}</summary><div>{lang_links}</div></details>
-    <a class="nav-support" href="{href('support')}"{' aria-current="page"' if current == 'support' else ''} title="{L['support']}">{HEART_SVG}<span>{L['support']}</span></a>
-    <a class="nav-icon nav-account" href="{href('account')}"{' aria-current="page"' if current == 'account' else ''} aria-label="{ACCOUNT_T.get(lang, 'Account')}" title="{ACCOUNT_T.get(lang, 'Account')}" data-nav-account>{PROFILE_SVG}</a>
-    <a class="nav-icon" href="{DISCORD}" aria-label="{L['discord']}" title="{L['discord']}">{DISCORD_SVG}</a>
-    <a class="btn" href="{download}">{L['download']}</a>
+    {brand}
+    <nav class="tg-row" aria-label="{L['sections']}">
+{chr(10).join(groups)}
+    </nav>
+    <div class="tl" data-img="{up}img/" data-maps="{' '.join(MAPLIST)}"><button class="tl-btn" type="button" aria-expanded="false" aria-controls="tl-pop" aria-label="{M['live_h']}" {tpl}><i></i><b>{L['servers']}</b>{CHEV_SVG}</button>
+      <div class="tl-pop" id="tl-pop"><b class="tl-h">{M['live_h']}</b><div class="tl-list"></div><a class="tl-all" href="{href('servers')}">{M['all']} {ARROW_SM}</a></div></div>
+    <div class="tu">
+      <button type="button" data-search-open aria-label="{L['search']}" title="{L['search']} (Ctrl K)">{SEARCH_SVG}<kbd>Ctrl K</kbd></button>
+      <details class="nav-langs"><summary aria-label="{L['language']}" title="{L['language']}">{lang.upper()}</summary><div>{lang_links}</div></details>
+      <a class="tu-heart" href="{href('support')}"{' aria-current="page"' if current == 'support' else ''} aria-label="{L['support']}" title="{L['support']}">{HEART_SVG}</a>
+      <a href="{href('account')}"{' aria-current="page"' if current == 'account' else ''} aria-label="{label['account']}" title="{label['account']}" data-nav-account>{PROFILE_SVG}</a>
+    </div>
+    <a class="btn btn-play tb-dl" href="{download}">{DL_SVG}<span>{L['download']}</span><small>v{version}</small></a>
+    <button class="tb-burger" type="button" aria-expanded="false" aria-controls="ms" aria-label="{L['menu']}"><i></i><i></i><i></i></button>
+  </div>
+  <div class="tb-scrim" hidden></div>
+  <div class="ms" id="ms" role="dialog" aria-modal="true" aria-label="{L['menu']}" hidden>
+    <div class="ms-top">{brand}<button type="button" class="ms-search" data-search-open aria-label="{L['search']}">{SEARCH_SVG}</button><button type="button" class="ms-x" aria-label="{M['close']}">{_svg('<path d="M6 6l12 12M18 6 6 18"/>', 20)}</button></div>
+    <a class="ms-live" href="{href('servers')}"><i></i><b>{L['servers']}</b><u>{M['all']} {ARROW_SM}</u></a>
+    <a class="ms-dev" href="devlog-{post['slug']}.html"><img src="{up}{small(post['image'])}" alt="" loading="lazy" decoding="async"><span><em>{T['new'] if fresh(post) else L['devlog']}</em>{htmlmod.escape(post['title'])}</span></a>
+    {sheet_groups}
+    <div class="ms-langs">{chips}<a class="ms-heart" href="{href('support')}">{HEART_SVG}{L['support']}</a></div>
+    <div class="ms-foot"><a class="btn btn-play" href="{download}">{DL_SVG}{L['download']} <small>v{version}</small></a></div>
   </div>
 </header>
 <!--/nav-->"""
@@ -1560,7 +1666,7 @@ def write(lang, page, html):
 
 def extend_tables():
     """Gives every string table its entries for the extra languages."""
-    for name in ("LABELS", "GAME_DESC", "TEAM", "WL", "LO", "DL", "DEVREACH", "SR", "WS", "MAP_MORE", "MATCH", "KIND", "INSTALL_KIND", "SHORT_MONTHS", "OGLOCALE"):
+    for name in ("LABELS", "MENU", "GAME_DESC", "TEAM", "WL", "LO", "DL", "DEVREACH", "SR", "WS", "MAP_MORE", "MATCH", "KIND", "INSTALL_KIND", "SHORT_MONTHS", "OGLOCALE"):
         i18n.extend(globals()[name], name)
     for code in XLANGS:
         ROAD[code] = tuple(i18n.tx(code, t) for t in ROAD["en"])
