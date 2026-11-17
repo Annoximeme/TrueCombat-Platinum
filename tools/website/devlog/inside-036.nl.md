@@ -6,6 +6,7 @@ summary: Voicechat, teampings, bots die de map lezen, een volledig vernieuwde au
 image: img/hero-village-contact.webp
 tag: Release
 version: 0.36.0
+kicker: Update 0.36.0
 ---
 Versie 0.36.0 is uit, één dag na 0.35.0. Dat is geen toeval. Veel van het werk in deze update was bijna klaar toen 0.35.0 verscheen, en we kozen ervoor om het nog een dag extra te testen in plaats van het in de vorige release te proppen.
 
