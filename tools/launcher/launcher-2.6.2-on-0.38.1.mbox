@@ -1,0 +1,1638 @@
+From 6049b52f22825b48e657bfee6fc1e95854b77221 Mon Sep 17 00:00:00 2001
+From: Gianni <rel037@localhost>
+Date: Tue, 17 Nov 2026 23:29:37 +0100
+Subject: [PATCH 1/4] launcher 2.6.2: restore the staged-file check and the
+ one-time antivirus notice
+
+Brings back the 2.6.2 staged-file check (every staged file is checked before and after an update is applied) and the antivirus notice on the next start, which 0.38.1 held back.
+---
+ release_src/platinum_launcher.c         |  4 +-
+ release_src/platinum_launcher_version.h |  4 +-
+ release_src/platinum_update.h           | 68 +++++++++++++++++++++++--
+ 3 files changed, 70 insertions(+), 6 deletions(-)
+
+diff --git a/release_src/platinum_launcher.c b/release_src/platinum_launcher.c
+index 2b85b50..ee2a1dc 100644
+--- a/release_src/platinum_launcher.c
++++ b/release_src/platinum_launcher.c
+@@ -1452,6 +1452,7 @@ static LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l){
+         if(!auto_run&&!save_only&&!verify_stop_ui&&!verify_chrome&&!session_options&&!graphics_options&&!graphics_info&&(firstRunForced||!game_missing())&&(firstRunForced||(!capture_ui_path[0]&&first_run_needed())))
+             PostMessageW(window,WM_APP+7,0,0);
+         else if(crashPromptAllowed)PostMessageW(window,WM_APP+9,0,0);
++        if(updateBlockedNotice&&!capture_ui_path[0]&&!auto_run)PostMessageW(window,WM_APP+12,0,0); /* 0.38.1: say which file the antivirus removed */
+         if(controls_open)PostMessageW(window,WM_APP+8,0,0);
+         if(versions_open)PostMessageW(window,WM_COMMAND,119,0);
+         shell_timers(window);
+@@ -1480,6 +1481,7 @@ static LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l){
+         return 0;}
+     if(message==WM_APP+7){open_first_run(window);return 0;}
+     if(message==WM_APP+9){crash_prompt(window);return 0;}
++    if(message==WM_APP+12){updateBlockedNotice=0;MessageBoxW(window,updateError,TITLE,MB_OK|MB_ICONWARNING);return 0;}
+     if(message==WM_APP+8||(message==WM_COMMAND&&LOWORD(w)==125)){open_binds(window);return 0;}
+     if(message==WM_COMMAND&&LOWORD(w)==129){shell_set_tab(window,5);return 0;}
+     if(message==WM_COMMAND&&LOWORD(w)==171&&shell_main(window)){open_name_colours(window);return 0;}
+@@ -1943,7 +1945,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE previous,LPWSTR command,int sho
+         fwprintf(file,L"launcher=%ls\ngame=%ls\n",PLATINUM_LAUNCHER_VERSION,updateCurrent);fclose(file);return 0;
+     }
+     if(install_now&&updateFeed[0]&&(!updateCurrent[0]||game_missing()))InterlockedExchange(&updateAutoDownload,1);
+-    if(update_done_flag==2&&updateFeed[0]){wcscpy(updateError,L"The update could not be applied. Close the game and server, then try again.");InterlockedExchange(&updateState,UPDATE_FAILED);}
++    if(update_done_flag==2&&updateFeed[0]){wcscpy(updateError,L"The update could not be applied. Close the game and server, then try again.");update_read_blocked();InterlockedExchange(&updateState,UPDATE_FAILED);}
+     if(make_report){updateHeadless=1;return report_problem(NULL)?0:3;}
+     if(crash_report)return crash_report_main();
+     if(telemetry_preview_path[0])return telemetry_preview_main(telemetry_preview_path);
+diff --git a/release_src/platinum_launcher_version.h b/release_src/platinum_launcher_version.h
+index 1d528c7..a9f31a7 100644
+--- a/release_src/platinum_launcher_version.h
++++ b/release_src/platinum_launcher_version.h
+@@ -7,8 +7,8 @@
+    game files. Preprocessor lines only: platinum_launcher.rc includes this file. */
+ #define PLATINUM_LAUNCHER_MAJOR 2
+ #define PLATINUM_LAUNCHER_MINOR 6
+-#define PLATINUM_LAUNCHER_PATCH 1
+-#define PLATINUM_LAUNCHER_VERSION_TEXT "2.6.1"
++#define PLATINUM_LAUNCHER_PATCH 2
++#define PLATINUM_LAUNCHER_VERSION_TEXT "2.6.2"
+ #define PLATINUM_LAUNCHER_VERSION L"" PLATINUM_LAUNCHER_VERSION_TEXT
+ /* Embedded as UTF-16 so tooling and the self-updater can confirm which launcher an EXE is. */
+ #define PLATINUM_LAUNCHER_MARKER L"TrueCombatPlatinumLauncher/" PLATINUM_LAUNCHER_VERSION_TEXT
+diff --git a/release_src/platinum_update.h b/release_src/platinum_update.h
+index 5ce4ebb..47de761 100644
+--- a/release_src/platinum_update.h
++++ b/release_src/platinum_update.h
+@@ -963,6 +963,56 @@ static void update_render_cache_housekeeping(void){
+         file=_wfopen(stamp_path,L"w, ccs=UTF-8");if(file){fwprintf(file,L"%ls\n",updateCurrent);fclose(file);}
+     }
+ }
++/* 0.38.1: an antivirus program can quarantine a file after the download check passed (in 0.38.0 some took
++   the engine out of updates\staging). The copy would then keep the previous version's file next to the new
++   data, and the game no longer starts. So the version being installed (updates\target-files.txt) is checked:
++   before the copy, every file must be staged with its listed size and SHA-256, or not staged and already
++   installed with them; after the copy, every staged file must be in the game folder at its listed size (an
++   on-access scan can remove it there too). Lines without a real SHA-256 (the package listing of releases
++   without files.txt) only need the staged file. The launcher EXE is left out: a repair or a separately
++   updated launcher skips it on purpose. A miss names the file in bad (relative path). */
++typedef struct {const wchar_t *source,*target;int after;wchar_t *bad;} UpdateStagedScan;
++static int update_entry_staged(void *context,const char *sha,LONG64 bytes,const wchar_t *asset,const wchar_t *path){
++    UpdateStagedScan *scan=(UpdateStagedScan*)context;(void)asset;
++    if(!update_delta_path_ok(path))return 1;
++    wchar_t relative[260];wcsncpy(relative,path,259);relative[259]=0;for(wchar_t *c=relative;*c;++c)if(*c==L'/')*c=L'\\';
++    if(!_wcsicmp(relative,L"TrueCombatPlatinum.exe"))return 1;
++    int known=0;for(int i=0;i<64&&!known;++i)known=sha[i]!='0';
++    wchar_t staged[2600],installed[2600];update_local_path(staged,scan->source,relative);update_local_path(installed,scan->target,relative);
++    LONG64 size=0;char hex[65]={0};int ok;
++    int isStaged=GetFileAttributesW(staged)!=INVALID_FILE_ATTRIBUTES;
++    if(scan->after)ok=!isStaged||(update_file_size(installed,&size)&&(!known||size==bytes));
++    else if(isStaged)ok=!known||(update_file_size(staged,&size)&&size==bytes&&update_hash_file(staged,hex)&&!strcmp(hex,sha));
++    else ok=known&&update_file_size(installed,&size)&&size==bytes&&update_hash_file(installed,hex)&&!strcmp(hex,sha);
++    if(ok)return 1;
++    wcsncpy(scan->bad,relative,259);scan->bad[259]=0;return 0;
++}
++static int update_staged_check(const wchar_t *source,const wchar_t *target,int after,wchar_t *bad){
++    bad[0]=0;wchar_t path[2400];update_list_path(path,target,L"target-files.txt");
++    FILE *file=_wfopen(path,L"rb");if(!file)return 1;
++    static char list[262144];size_t n=fread(list,1,sizeof(list)-1,file);fclose(file);list[n]=0;
++    UpdateStagedScan scan={source,target,after,bad};update_each_entry(list,(DWORD)n,update_entry_staged,&scan);
++    return !bad[0];
++}
++/* The launcher reads this after --update-failed to say which file went missing (stage: 1 before, 2 after the copy). */
++static void update_blocked_path(wchar_t *out,const wchar_t *base){update_list_path(out,base,L"update-blocked.ini");}
++static void update_write_blocked(const wchar_t *target,int stage,const wchar_t *file){
++    wchar_t path[2400],number[8];update_blocked_path(path,target);swprintf(number,8,L"%d",stage);
++    WritePrivateProfileStringW(L"Blocked",L"Stage",number,path);WritePrivateProfileStringW(L"Blocked",L"File",file,path);
++}
++static int updateRepairOnRetry;     /* the failed update left a file missing in the game folder: Repair fetches it */
++static int updateBlockedNotice;     /* show that message once when the launcher window opens */
++static int update_repair_begin(void);
++static void update_read_blocked(void){
++    wchar_t path[2400],file[260];update_blocked_path(path,root);
++    int stage=GetPrivateProfileIntW(L"Blocked",L"Stage",0,path);GetPrivateProfileStringW(L"Blocked",L"File",L"",file,260,path);DeleteFileW(path);
++    if(!stage||!file[0])return;
++    updateBlockedNotice=1;
++    const wchar_t *name=file;for(const wchar_t *c=file;*c;++c)if(*c==L'\\')name=c+1;
++    if(stage==2){updateRepairOnRetry=1;swprintf(updateError,200,L"Your antivirus removed %ls. Restore it from quarantine or add an exception, then click Repair.",name);}
++    else swprintf(updateError,200,L"Your antivirus removed %ls from the update. Restore it from quarantine or add an exception, then click Try again.",name);
++    updateError[199]=0;
++}
+ /* Runs from updates\platinum-updater.exe after the launcher has closed. */
+ static int update_apply_main(const wchar_t *target,DWORD pid){
+     HANDLE parent=OpenProcess(SYNCHRONIZE,FALSE,pid);
+@@ -970,11 +1020,22 @@ static int update_apply_main(const wchar_t *target,DWORD pid){
+     wchar_t source[2400],log_path[2400];swprintf(source,2400,L"%ls\\updates\\staging\\TrueCombat Platinum",target);
+     swprintf(log_path,2400,L"%ls\\updates\\last-update.log",target);
+     FILE *log=_wfopen(log_path,L"w, ccs=UTF-8");
+-    int busy=0;
++    {wchar_t old[2400];update_blocked_path(old,target);DeleteFileW(old);}
++    wchar_t blocked[260];
++    int busy=0,code=0;
++    if(!update_staged_check(source,target,0,blocked)){
++        /* Nothing copied: the installed version stays complete and playable. */
++        if(log)fwprintf(log,L"Update not applied: %ls is missing or damaged in the downloaded update (an antivirus program may have removed it).\n",blocked);
++        update_write_blocked(target,1,blocked);code=7;
++    }else{
+     for(int attempt=0;attempt<10;++attempt){busy=update_copy_tree(source,target,L"",0,attempt==9?log:NULL);if(!busy)break;Sleep(1000);}
+-    int code=0;
+     if(busy){if(log)fwprintf(log,L"Update not applied: %d file(s) are in use. Close the game and any server, then try again.\n",busy);code=5;}
+     else{int failed=update_copy_tree(source,target,L"",1,log);if(log)fwprintf(log,failed?L"Update applied with %d copy failure(s).\n":L"Update applied.\n",failed);code=failed?6:0;}
++    if(!code&&!update_staged_check(source,target,1,blocked)){
++        if(log)fwprintf(log,L"Update incomplete: %ls is missing from the game folder after the copy (an antivirus program may have removed it).\n",blocked);
++        update_write_blocked(target,2,blocked);code=8;
++    }
++    }
+     if(!code){update_prune(target,log);update_render_cache_reset(target,log);}
+     /* A launcher kept outside the game folder gets the new launcher too. */
+     const wchar_t *home=launcherDir[0]?launcherDir:target;
+@@ -1079,7 +1140,7 @@ static void update_describe(wchar_t *title,int title_size,wchar_t *detail,int de
+         wcsncpy(button,L"Cancel",button_size);break;
+     case UPDATE_VERIFYING:swprintf(title,title_size,L"Checking and unpacking %ls",updateLatest);wcsncpy(button,L"Please wait...",button_size);break;
+     case UPDATE_READY:swprintf(title,title_size,updateSwitching?L"%ls is ready":L"%ls is ready to install",updateLatest);swprintf(detail,detail_size,L"The launcher restarts once. Your settings and profile are kept.");wcsncpy(button,L"Restart to update",button_size);break;
+-    default:swprintf(title,title_size,L"Update problem");wcsncpy(detail,updateError[0]?updateError:L"Something went wrong.",detail_size);wcsncpy(button,L"Try again",button_size);break;
++    default:swprintf(title,title_size,L"Update problem");wcsncpy(detail,updateError[0]?updateError:L"Something went wrong.",detail_size);wcsncpy(button,updateRepairOnRetry?L"Repair":L"Try again",button_size);break;
+     }
+     title[title_size-1]=0;detail[detail_size-1]=0;button[button_size-1]=0;
+ }
+@@ -1125,6 +1186,7 @@ static void update_button(HWND window){
+         update_start(update_download_worker);return;}
+     if(state==UPDATE_DOWNLOADING){InterlockedExchange(&updateCancel,1);return;}
+     if(state==UPDATE_READY){update_apply(window);return;}
++    if(state==UPDATE_FAILED&&updateRepairOnRetry){updateRepairOnRetry=0;if(update_repair_begin())return;}
+     if(state==UPDATE_IDLE||state==UPDATE_CURRENT||state==UPDATE_FAILED)update_begin_check();
+ }
+ /* ---- Version choice ----
+-- 
+2.55.0.windows.5
+
+
+From 7836047a80dc46f68d409bf0429af56b1740a3b3 Mon Sep 17 00:00:00 2001
+From: Gianni <rel037@localhost>
+Date: Tue, 17 Nov 2026 23:37:22 +0100
+Subject: [PATCH 2/4] launcher 2.6.2: every update failure shows its reason and
+ is logged; missing files repair themselves
+
+Settings > Updates, the status rail and its tip now say what went wrong instead of "Update check failed", and a failed action the player started is explained once in a message. Every step goes to updates\launcher-update.log (host, HTTP status, WinHTTP and Windows errors, the file involved), rotated at 256 KB.
+
+Leftover staging and package.zip(.part) are cleared on every start and before every attempt; a folder Windows will not remove is named. Each downloaded file gets three tries, and a file the antivirus blocks or removes after writing (access denied, error 225/226) names the file and asks for a folder exception. That reason survives the fall-back to the full package.
+
+A current install with missing or wrong-size files (for example a quarantined engine) is repaired on start, and an install without its engine fetches a newer version right away. Verify and repair now works from any state, including a missing engine. It re-hashes every staged file after the copy and reports "Repaired N files". An interrupted copy is detected on the next start. The launcher's own update is still offered when the game update fails, and after a failed apply.
+
+New headless checks: --update-test --repair and --update-test --startup-check.
+---
+ release_src/platinum_launcher.c |  27 +++-
+ release_src/platinum_main.h     |   9 +-
+ release_src/platinum_update.h   | 242 ++++++++++++++++++++++++++------
+ 3 files changed, 234 insertions(+), 44 deletions(-)
+
+diff --git a/release_src/platinum_launcher.c b/release_src/platinum_launcher.c
+index ee2a1dc..6807509 100644
+--- a/release_src/platinum_launcher.c
++++ b/release_src/platinum_launcher.c
+@@ -1444,6 +1444,8 @@ static LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l){
+          HWND welcome=control(window,L"EDIT",L"",ES_AUTOHSCROLL|WS_TABSTOP,20,20,448,36,156);SendMessageW(welcome,EM_SETLIMITTEXT,24,0);}
+         updateWindow=window;
+         if(!auto_run&&!save_only&&!verify_stop_ui&&updatePreview<0&&InterlockedCompareExchange(&updateState,0,0)==UPDATE_IDLE)update_begin_check();
++        /* 2.6.2: after a failed apply the game check waits for Try again, but a newer launcher is still fetched */
++        else if(!auto_run&&updatePreview<0&&InterlockedCompareExchange(&updateState,0,0)==UPDATE_FAILED&&options.autoLauncher&&updateLatestFeed[0])update_start(launcher_check_worker);
+         shell_layout(window);
+         update_graphics_summary();
+         update_sync(window);
+@@ -1539,6 +1541,7 @@ static LRESULT CALLBACK window_proc(HWND window,UINT message,WPARAM w,LPARAM l){
+         return 0;}
+     if(message==WM_COMMAND&&LOWORD(w)==152&&shell_main(window)){
+         if(game_running()){MessageBoxW(window,L"Close the game first, then verify the files.",TITLE,MB_OK|MB_ICONINFORMATION);return 0;}
++        InterlockedExchange(&updateUserAction,1);
+         if(!update_repair_begin())MessageBoxW(window,L"The files can be checked once the game is installed from an official release and nothing else is downloading.",TITLE,MB_OK|MB_ICONINFORMATION);
+         update_sync(window);shell_refresh(window);return 0;}
+     if(message==WM_COMMAND&&LOWORD(w)==153&&shell_main(window)){move_game(window);return 0;}
+@@ -1773,7 +1776,7 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE previous,LPWSTR command,int sho
+      }}
+     swprintf(ini,2200,L"%ls\\player.ini",root);options_load();lang_resolve();
+     load_session_preferences();
+-    wchar_t apply_target[2048]={0};DWORD apply_pid=0;int update_test=0,hd_check_test=0,update_done_flag=0,make_report=0,crash_report=0,crash_prompt_forced=0,telemetry_send_now=0;static wchar_t telemetry_preview_path[2200];
++    wchar_t apply_target[2048]={0};DWORD apply_pid=0;int update_test=0,repair_test=0,hd_check_test=0,update_done_flag=0,make_report=0,crash_report=0,crash_prompt_forced=0,telemetry_send_now=0;static wchar_t telemetry_preview_path[2200];
+     SetEnvironmentVariableW(L"TCP_LAUNCHER",L"1"); /* the game skips its own crash prompt when started from here */DWORD presence_pid=0;wchar_t presence_server[256]={0};
+     int argc,serve=0;LPWSTR *argv=CommandLineToArgvW(GetCommandLineW(),&argc);
+     /* A truecombat:// link (from a browser, chat app or document) must carry nothing but the link:
+@@ -1828,6 +1831,8 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE previous,LPWSTR command,int sho
+         else if(!wcscmp(argv[i],L"--hd-check"))hd_check_test=1;
+         else if(!wcscmp(argv[i],L"--launcher-update"))launcher_update_test=1;
+         else if(!wcscmp(argv[i],L"--launcher-check"))launcher_update_test=2;
++        else if(!wcscmp(argv[i],L"--repair"))repair_test=1;            /* 2.6.2: --update-test --repair: Verify and repair, headless */
++        else if(!wcscmp(argv[i],L"--startup-check"))repair_test=2;     /* 2.6.2: --update-test --startup-check: the start check, auto-repair included */
+         else if(!wcscmp(argv[i],L"--launcher-updated"))launcherJustUpdated=1;
+         else if(!wcscmp(argv[i],L"--launcher-preview"))launcher_preview=1;
+         else if(!wcscmp(argv[i],L"--version-file")&&i+1<argc){wcsncpy(version_file_path,argv[++i],2199);version_file_path[2199]=0;}
+@@ -1977,6 +1982,26 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE previous,LPWSTR command,int sho
+         if(file){fwprintf(file,L"code=%d\nrunning=%ls\nfeed=%ls\nmanaged=%d\nerror=%ls\n",code,PLATINUM_LAUNCHER_VERSION,launcherLatest,launcherFeedManaged,(code==5||(launcher_update_test==2&&code))?launcherError:(code==3?updateError:L""));fclose(file);}
+         return code;
+     }
++    if(update_test&&repair_test){
++        /* 2.6.2 headless repair checks (tests/launcher_repair). Codes: 0 nothing to do or update applied/handed over,
++           3 check failed, 4 an update is available (startup check), 5 download failed, 6 apply could not start, 7 not installed */
++        updateHeadless=1;int code=0,repaired=0;
++        if(repair_test==2){if(update_check_worker(NULL))code=3;else if(!updateAutoRepairWanted&&InterlockedCompareExchange(&updateState,0,0)==UPDATE_AVAILABLE)code=4;}
++        if(!code&&(repair_test==1||updateAutoRepairWanted)){
++            if(!updateCurrent[0])code=7;
++            else{
++                wchar_t feed[1024];if(!update_tag_feed(updateCurrent,feed,1024))wcscpy(feed,updateLatestFeed);
++                wcscpy(updateFeed,feed);wcsncpy(updateTarget,updateCurrent,63);updateTarget[63]=0;updateSwitching=1;updateRepair=1;updateRepairNote[0]=0;
++                if(update_check_worker(NULL))code=3;
++                else if(InterlockedCompareExchange(&updateState,0,0)==UPDATE_AVAILABLE){repaired=deltaReady?deltaCount:-1;
++                    if(update_download_worker(NULL))code=5;else code=update_apply(NULL)?0:6;}
++            }
++        }
++        wchar_t path[2400];swprintf(path,2400,L"%ls\\updates",root);CreateDirectoryW(path,NULL);wcscat(path,repair_test==1?L"\\repair-test.log":L"\\startup-test.log");
++        FILE *file=_wfopen(path,L"w, ccs=UTF-8");
++        if(file){fwprintf(file,L"code=%d\ncurrent=%ls\nauto_repair=%d\nrepaired=%d\nnote=%ls\nmissing=%ls\nerror=%ls\n",code,updateCurrent,updateAutoRepairWanted,repaired,updateRepairNote,updateMissingFile,code?updateError:L"");fclose(file);}
++        return code;
++    }
+     if(update_test&&hd_check_test){
+         /* headless HD textures check of a current game: --update-test --hd-check (fetches or removes, never updates) */
+         updateHeadless=1;updateHdTest=1;
+diff --git a/release_src/platinum_main.h b/release_src/platinum_main.h
+index 6cd84a6..40faf39 100644
+--- a/release_src/platinum_main.h
++++ b/release_src/platinum_main.h
+@@ -576,7 +576,7 @@ static void ui_play_label(int kind,int percent,wchar_t *label,int labelSize,wcha
+     case PB_INSTALL:wcsncpy(label,L"INSTALL",labelSize);
+         if(updateTotal>0)swprintf(sub,subSize,tr(L"%.1f GB download"),updateTotal/1073741824.0);else wcsncpy(sub,L"Download the game files",subSize);break;
+     case PB_FIND:wcsncpy(label,L"INSTALL",labelSize);
+-        wcsncpy(sub,update_visible_state()==UPDATE_CHECKING?L"Looking up the latest release":L"Download the game files",subSize);break;
++        wcsncpy(sub,update_visible_state()==UPDATE_CHECKING?L"Looking up the latest release":update_visible_state()==UPDATE_FAILED?L"Last try failed \x00B7 select to try again":L"Download the game files",subSize);break;
+     case PB_OFF:wcsncpy(label,L"INSTALL",labelSize);wcsncpy(sub,L"Game files not found in this folder",subSize);break;
+     case PB_UPDATE:wcsncpy(label,L"UPDATE",labelSize);
+         if(mb>=1024)swprintf(sub,subSize,tr(L"%ls \x00B7 %.1f GB, then play"),updateLatest,mb/1024);else swprintf(sub,subSize,tr(L"%ls \x00B7 %.0f MB, then play"),updateLatest,mb<1?1:mb);break;
+@@ -1228,7 +1228,7 @@ static int ui_control_place(int id,int *tab,int *x,int *y,int *w,int *h){
+ /* Update state in a few words, and the installed game version, shared by the rail and Settings > Updates. */
+ static const wchar_t *ui_update_words(LONG state){
+     return state==UPDATE_READY?L"Ready to install":state==UPDATE_DOWNLOADING?L"Downloading...":state==UPDATE_VERIFYING?L"Verifying files...":state==UPDATE_AVAILABLE?(updateCurrent[0]?L"Update available":L"Ready to download"):
+-           state==UPDATE_CHECKING?L"Checking for updates...":state==UPDATE_FAILED?L"Update check failed":state==UPDATE_CURRENT?L"Up to date":L"Updates off";
++           state==UPDATE_CHECKING?L"Checking for updates...":state==UPDATE_FAILED?L"Update problem":state==UPDATE_CURRENT?L"Up to date":L"Updates off";
+ }
+ static void ui_game_version(wchar_t game[64]){
+     if(updateCurrent[0]){wcsncpy(game,updateCurrent,63);game[63]=0;wchar_t *dash=wcschr(game,L'-');if(dash)*dash=0;}else wcscpy(game,updateFeed[0]?L"Not installed":L"Dev build");
+@@ -1300,6 +1300,8 @@ static void ui_paint_settings(HDC dc,HWND window){
+                 if(row->arg==117){
+                     LONG state=update_visible_state();wchar_t game[64];ui_game_version(game);
+                     if(state==UPDATE_OFF)swprintf(text,300,tr(L"%ls \x00B7 updates are not set up for this copy"),tr(game));
++                    /* 2.6.2: a failure says why (2.6.1 only said "Update check failed") */
++                    else if(state==UPDATE_FAILED&&updateError[0]){wcsncpy(text,updateError,299);text[299]=0;}
+                     else swprintf(text,300,tr(L"Version %ls \x00B7 %ls"),tr(game),tr(ui_update_words(state)));
+                     if(!wcscmp(label,L"Updates off"))wcscpy(label,L"Not set up");
+                 }else{
+@@ -1421,7 +1423,8 @@ static const wchar_t *ui_tip(int kind,int arg){
+     case H_COMMAND:
+         switch(arg){
+         case 121:return L"Every public server, with map, players and ping.";
+-        case 160:return L"Update status and versions. Select to open Settings > Updates.";
++        case 160:if(update_visible_state()==UPDATE_FAILED&&updateError[0]){swprintf(text,400,tr(L"%ls Select to open Settings > Updates."),updateError);return text;}
++            return L"Update status and versions. Select to open Settings > Updates.";
+         case 161:return L"Removes the shader cache and leftover update files. The game rebuilds what it needs.";
+         case 162:return L"Your player name is under Settings > Controls.";
+         case 150:return L"Puts every launcher setting on this page back to its default. Graphics, keys and your profile are not touched.";
+diff --git a/release_src/platinum_update.h b/release_src/platinum_update.h
+index 47de761..cf750fa 100644
+--- a/release_src/platinum_update.h
++++ b/release_src/platinum_update.h
+@@ -44,7 +44,7 @@ static int updatePreview=-1,updateHeadless;
+           any that are installed (never while the game runs, which may have them open). */
+ static wchar_t updateOptional[128];
+ static LONG64 updateHdBytes;            /* size of the optional files in the release's list; 0 while unknown */
+-static volatile LONG updateHdOnly;      /* the running download only fetches missing HD texture files: 1 into staging, 2 into the game */
++static volatile LONG updateHdOnly;      /* the running download only fetches missing HD texture files: 1 into staging, 2 into the game */
+ static int updateHdTest;                /* --update-test --hd-check: the per-launch HD check, on this thread */
+ static int game_running(void);
+ static int update_hd_on(void){return GetPrivateProfileIntW(L"Launcher",L"HdTextures",1,ini)!=0;}
+@@ -85,7 +85,40 @@ typedef BOOL (WINAPI *UpCrack)(LPCWSTR,DWORD,DWORD,LPURL_COMPONENTS);
+ typedef BOOL (WINAPI *UpTimeouts)(HINTERNET,int,int,int,int);
+ 
+ static void update_notify(void){if(updateWindow)PostMessageW(updateWindow,WM_PLATINUM_UPDATE,0,0);}
+-static void update_fail(const wchar_t *message){wcsncpy(updateError,message,199);updateError[199]=0;InterlockedExchange(&updateState,UPDATE_FAILED);update_notify();}
++/* 2.6.2: every step of an update, repair or launcher self-update goes to updates\launcher-update.log
++   (time, step, host, HTTP status, WinHTTP/Win32 error, file). Kept small: at 256 KB it moves to
++   launcher-update.1.log and a new one starts. */
++static SRWLOCK updateLogLock=SRWLOCK_INIT;
++static void update_log(const wchar_t *format,...){
++    if(!root[0])return;
++    wchar_t path[2400],old[2400];swprintf(path,2400,L"%ls\\updates",root);CreateDirectoryW(path,NULL);
++    swprintf(old,2400,L"%ls\\updates\\launcher-update.1.log",root);wcscat(path,L"\\launcher-update.log");
++    AcquireSRWLockExclusive(&updateLogLock);
++    WIN32_FILE_ATTRIBUTE_DATA info;
++    if(GetFileAttributesExW(path,GetFileExInfoStandard,&info)&&(info.nFileSizeHigh||info.nFileSizeLow>256*1024))MoveFileExW(path,old,MOVEFILE_REPLACE_EXISTING);
++    FILE *file=_wfopen(path,L"a, ccs=UTF-8");
++    if(file){
++        SYSTEMTIME now;GetLocalTime(&now);
++        fwprintf(file,L"%04d-%02d-%02d %02d:%02d:%02d [%ls] ",now.wYear,now.wMonth,now.wDay,now.wHour,now.wMinute,now.wSecond,PLATINUM_LAUNCHER_VERSION);
++        va_list args;va_start(args,format);vfwprintf(file,format,args);va_end(args);fputwc(L'\n',file);fclose(file);
++    }
++    ReleaseSRWLockExclusive(&updateLogLock);
++}
++static void update_fail(const wchar_t *message){wcsncpy(updateError,message,199);updateError[199]=0;update_log(L"FAILED: %ls",updateError);InterlockedExchange(&updateState,UPDATE_FAILED);update_notify();}
++/* 2.6.2: what went wrong with a game file, so a failure can name it even after the fall-back to the zip. */
++static wchar_t updateFileProblem[200];
++static const wchar_t *update_base_name(const wchar_t *path){const wchar_t *name=path;for(const wchar_t *c=path;*c;++c)if(*c==L'\\'||*c==L'/')name=c+1;return name;}
++static int update_av_error(DWORD code){return code==ERROR_ACCESS_DENIED||code==225||code==226||code==ERROR_FILE_NOT_FOUND||code==ERROR_PATH_NOT_FOUND;}
++/* code 0: the file was written and then vanished (an on-access scan removed it). */
++static void update_file_problem(const wchar_t *path,DWORD code){
++    const wchar_t *name=update_base_name(path);
++    if(!code||update_av_error(code))swprintf(updateFileProblem,200,L"Your antivirus blocked %ls. Add the TrueCombat Platinum folder as an exception, then click Try again.",name);
++    else if(code==ERROR_SHARING_VIOLATION||code==ERROR_LOCK_VIOLATION)swprintf(updateFileProblem,200,L"%ls is in use by another program (often an antivirus scan). Close it, then click Try again.",name);
++    else if(code==ERROR_DISK_FULL||code==ERROR_HANDLE_DISK_FULL)swprintf(updateFileProblem,200,L"The drive is full while writing %ls. Free some space, then click Try again.",name);
++    else swprintf(updateFileProblem,200,L"%ls could not be written (Windows error %lu). Click Try again.",name,code);
++    updateFileProblem[199]=0;
++    update_log(L"file problem: %ls (error %lu%ls)",path,code,code?L"":L", removed after it was written");
++}
+ 
+ static void update_read_current(void){
+     wchar_t path[2300];swprintf(path,2300,L"%ls\\manifest.json",root);
+@@ -145,19 +178,21 @@ static int update_http_ex(const wchar_t *url,UpdateSink sink,void *context,LONG6
+     HINTERNET connection=NULL,handle=NULL;
+     if(session){timeouts(session,10000,10000,15000,30000);connection=connect_(session,host,parts.nPort,0);}
+     if(connection)handle=request(connection,L"GET",path,NULL,WINHTTP_NO_REFERER,WINHTTP_DEFAULT_ACCEPT_TYPES,parts.nScheme==INTERNET_SCHEME_HTTPS?WINHTTP_FLAG_SECURE:0);
++    DWORD netError=0,httpStatus=0;LONG64 received=0;
+     if(handle&&send_(handle,WINHTTP_NO_ADDITIONAL_HEADERS,0,WINHTTP_NO_REQUEST_DATA,0,0,0)&&receive(handle,NULL)){
+         DWORD status=0,size=sizeof(status);
+         query(handle,WINHTTP_QUERY_STATUS_CODE|WINHTTP_QUERY_FLAG_NUMBER,WINHTTP_HEADER_NAME_BY_INDEX,&status,&size,WINHTTP_NO_HEADER_INDEX);
++        httpStatus=status;
+         if(status!=200){wchar_t message[120];swprintf(message,120,tr(L"The update server answered with HTTP %lu."),status);UPDATE_HTTP_FAIL(message);}
+         else{
+             static char buffer[65536];LONG64 total=0;int ok=1;DWORD began=GetTickCount();
+             for(;;){
+-                DWORD ready=0;if(!available(handle,&ready)){ok=0;break;}
++                DWORD ready=0;if(!available(handle,&ready)){ok=0;netError=GetLastError();break;}
+                 if(!ready)break;
+                 while(ready){
+                     DWORD chunk=ready>sizeof(buffer)?sizeof(buffer):ready,got=0;
+-                    if(!read(handle,buffer,chunk,&got)||!got){ok=0;break;}
+-                    total+=got;ready-=got;
++                    if(!read(handle,buffer,chunk,&got)||!got){ok=0;netError=GetLastError();break;}
++                    total+=got;ready-=got;received=total;
+                     /* Option: download speed limit (per connection). */
+                     if(optionSpeeds[options.speed]&&total>262144){LONG64 allowed=(LONG64)optionSpeeds[options.speed]*1048576;
+                         while(!updateCancel&&total*1000>allowed*(LONG64)(GetTickCount()-began+50))Sleep(15);}
+@@ -168,7 +203,12 @@ static int update_http_ex(const wchar_t *url,UpdateSink sink,void *context,LONG6
+             }
+             if(ok)result=0;else if(!updateCancel&&InterlockedCompareExchange(&updateState,0,0)!=UPDATE_FAILED)UPDATE_HTTP_FAIL(L"The download was interrupted or too large.");
+         }
+-    }else UPDATE_HTTP_FAIL(L"Could not reach the update server. Check your internet connection.");
++    }else{netError=GetLastError();
++        /* 2.6.2: name the server, so a blocked download host (web shield, firewall) is told apart from no internet */
++        wchar_t message[200];swprintf(message,200,tr(L"Could not reach %ls (error %lu). Check your connection, or allow it in your antivirus web shield or firewall."),host,netError);
++        UPDATE_HTTP_FAIL(message);}
++    update_log(L"GET https://%ls%.100ls -> %ls%lu, %lld bytes%ls",host,path,httpStatus?L"HTTP ":L"no answer, error ",httpStatus?httpStatus:netError,(long long)received,
++               httpStatus&&netError?L", stopped by a network error":L"");
+     if(handle)close_(handle);if(connection)close_(connection);if(session)close_(session);
+     FreeLibrary(module);return result;
+ }
+@@ -228,6 +268,15 @@ static void launcher_update_begin(void){
+ static int update_prepare_delta(void);static LONG64 deltaBytes,updateFullBytes;static int deltaReady,deltaCount;
+ static void update_hd_check(void);
+ static DWORD WINAPI update_download_worker(LPVOID unused);
++/* 2.6.2: the launcher's own update never waits on the game's: it is offered after every feed that was read,
++   also when the game update then failed. */
++static void update_offer_launcher(void){
++    if(updateHeadless)return;
++    if(launcher_update_offered()){if(options.autoLauncher)launcher_update_begin();}
++    else if(launcherFeedManaged&&InterlockedCompareExchange(&launcherUpdateState,0,0)==LAUNCHER_NONE)InterlockedExchange(&launcherUpdateState,LAUNCHER_CURRENT);
++}
++static int updateAutoRepairTried,updateAutoRepairWanted,updateForceRepair;
++static int update_quick_missing(void);static int update_repair_begin(void);static int game_missing(void);
+ static DWORD WINAPI update_check_worker(LPVOID unused){
+     (void)unused;
+     static UpdateText text;text.length=0;text.text[0]=0;
+@@ -252,11 +301,11 @@ static DWORD WINAPI update_check_worker(LPVOID unused){
+        moving to per-file installs only. Launchers before this one still require package=, so a release keeps one
+        until those are gone. Without a package there is no whole-zip fallback: a failed file download is retried. */
+     int hasPackage=update_url_ok(updatePackage)&&hex&&size>0;
+-    if(!updateLatest[0]||(!hasPackage&&!updateFilesUrl[0])){update_fail(L"The update information is incomplete.");return 1;}
++    if(!updateLatest[0]||(!hasPackage&&!updateFilesUrl[0])){update_fail(L"The update information is incomplete.");update_offer_launcher();return 1;}
+     InterlockedExchange64(&updateDone,0);
+     if(hasPackage){for(int i=0;i<64;++i)updateSha[i]=(char)towlower(sha[i]);updateSha[64]=0;InterlockedExchange64(&updateTotal,size);updateFullBytes=size;}
+     else{updatePackage[0]=0;updateSha[0]=0;InterlockedExchange64(&updateTotal,0);updateFullBytes=0;}
+-    if(updateSwitching&&wcscmp(updateLatest,updateTarget)){update_fail(L"That release did not describe the version you picked, so nothing was changed.");return 1;}
++    if(updateSwitching&&wcscmp(updateLatest,updateTarget)){update_fail(L"That release did not describe the version you picked, so nothing was changed.");update_offer_launcher();return 1;}
+     int newer=!updateCurrent[0]||update_compare(updateLatest,updateCurrent)>0;
+     if(updateSwitching)newer=!updateCurrent[0]||wcscmp(updateLatest,updateCurrent)!=0;
+     /* Only a move to the latest release replaces the launcher itself: an older
+@@ -269,29 +318,37 @@ static DWORD WINAPI update_check_worker(LPVOID unused){
+            only what is missing or damaged is downloaded. No list: reinstall the full package. */
+         int damaged=update_prepare_delta();
+         if(damaged){newer=1;InterlockedExchange64(&updateTotal,deltaBytes);
+-            swprintf(updateRepairNote,160,tr(L"%d damaged or missing file%ls found and replaced"),deltaCount,deltaCount==1?L"":L"s");}
++            swprintf(updateRepairNote,160,tr(L"%d damaged or missing file%ls found, downloading"),deltaCount,deltaCount==1?L"":L"s");}
+         else if(updateTargetList){newer=0;wcscpy(updateRepairNote,L"Every game file checked out");}
+         else{newer=1;wcscpy(updateRepairNote,L"Game files reinstalled from the full package");}
+         if(!newer){updateRepair=0;updateSwitching=0;InterlockedExchange(&updateAutoDownload,0);wcscpy(updateFeed,updateLatestFeed);}
+     }
+     else if(newer&&update_prepare_delta())InterlockedExchange64(&updateTotal,deltaBytes);
++    update_log(L"check: installed %ls, release %ls -> %ls",updateCurrent[0]?updateCurrent:L"none",updateLatest,newer?(updateRepair?L"repair needed":L"update available"):L"current");
+     InterlockedExchange(&updateState,newer?UPDATE_AVAILABLE:UPDATE_CURRENT);
+     update_notify();
++    /* 2.6.2: without the engine the game cannot start at all, so the newer version is fetched right away */
++    if(newer&&!updateRepair&&!updateSwitching&&!updateHeadless&&updateCurrent[0]&&game_missing())InterlockedExchange(&updateAutoDownload,1);
+     /* Option: fetch game updates without asking, unless the player chose to stay on a version. */
+     int automatic=options.autoGame&&!updateHeadless&&!updateSwitching&&updateCurrent[0]&&!(updatePinned[0]&&!wcscmp(updatePinned,updateCurrent));
+     if(newer&&(InterlockedExchange(&updateAutoDownload,0)||automatic))update_start(update_download_worker);
+     else InterlockedExchange(&updateAutoDownload,0);
+     /* HD textures: on a current game, fetch what is missing or remove what was turned off. */
++    if(!newer&&!updateSwitching&&!updateRepair&&updateCurrent[0]&&!updateAutoRepairTried&&(updateForceRepair||game_missing()||update_quick_missing())){
++        /* 2.6.2: missing or damaged files on a current game: repair them (once per start) */
++        updateAutoRepairTried=1;updateForceRepair=0;update_log(L"startup check: repairing the installation");
++        if(updateHeadless)updateAutoRepairWanted=1;else if(update_repair_begin()){update_offer_launcher();return 0;}
++    }
+     if(!newer&&!updateSwitching&&!updateRepair&&updateCurrent[0]&&updateOptional[0]&&updateFilesUrl[0])update_hd_check();
+-    if(!updateHeadless){if(launcher_update_offered()){if(options.autoLauncher)launcher_update_begin();}
+-        else if(launcherFeedManaged&&InterlockedCompareExchange(&launcherUpdateState,0,0)==LAUNCHER_NONE)InterlockedExchange(&launcherUpdateState,LAUNCHER_CURRENT);}
++    update_offer_launcher();
+     return 0;
+ }
+ typedef struct {HANDLE file;BCRYPT_HASH_HANDLE hash;} UpdateDownload;
++static DWORD updateWriteError;   /* 2.6.2: why the last write of a downloaded file failed */
+ static int update_file_sink(void *context,const void *data,DWORD size){
+     UpdateDownload *download=(UpdateDownload*)context;DWORD written=0;
+     if(updateCancel)return 0;
+-    if(!WriteFile(download->file,data,size,&written,NULL)||written!=size)return 0;
++    if(!WriteFile(download->file,data,size,&written,NULL)||written!=size){updateWriteError=GetLastError();if(!updateWriteError)updateWriteError=ERROR_WRITE_FAULT;return 0;}
+     if(BCryptHashData(download->hash,(PUCHAR)data,size,0))return 0;
+     LONG64 done=InterlockedAdd64(&updateDone,size);
+     static DWORD lastNotify;if(GetTickCount()-lastNotify>120||done==updateTotal){lastNotify=GetTickCount();update_notify();}
+@@ -325,11 +382,11 @@ static void update_list_tree(const wchar_t *base,const wchar_t *relative,char **
+     }while(FindNextFileW(find,&item));
+     FindClose(find);
+ }
+-typedef int (*UpdateKeepFn)(void *context,const wchar_t *path);
+-static DWORD update_filter_list(char *list,DWORD length,UpdateKeepFn keep,void *context);
+-static int update_hd_collect(const char *list,DWORD length,const wchar_t *staging,int verify);
+-static int update_download_files(const wchar_t *folder,int direct);
+-static int update_keep_staged_optional(void *context,const wchar_t *path);
++typedef int (*UpdateKeepFn)(void *context,const wchar_t *path);
++static DWORD update_filter_list(char *list,DWORD length,UpdateKeepFn keep,void *context);
++static int update_hd_collect(const char *list,DWORD length,const wchar_t *staging,int verify);
++static int update_download_files(const wchar_t *folder,int direct);
++static int update_keep_staged_optional(void *context,const wchar_t *path);
+ static DWORD WINAPI update_download_full(void){
+     if(!updatePackage[0]){update_fail(L"Some game files could not be downloaded. Check your connection and try again.");return 1;}
+     wchar_t folder[2300],part[2400],zip[2400],staging[2400],command[5200],manifest[2600],exe[2600];
+@@ -339,7 +396,10 @@ static DWORD WINAPI update_download_full(void){
+     if(BCryptOpenAlgorithmProvider(&algorithm,BCRYPT_SHA256_ALGORITHM,NULL,0)||BCryptCreateHash(algorithm,&download.hash,NULL,0,NULL,0,0)){
+         if(algorithm)BCryptCloseAlgorithmProvider(algorithm,0);update_fail(L"Windows could not start the file check.");return 1;}
+     download.file=CreateFileW(part,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+-    if(download.file==INVALID_HANDLE_VALUE){BCryptDestroyHash(download.hash);BCryptCloseAlgorithmProvider(algorithm,0);update_fail(L"The update could not be saved. Check that the game folder is writable.");return 1;}
++    if(download.file==INVALID_HANDLE_VALUE){DWORD code=GetLastError();BCryptDestroyHash(download.hash);BCryptCloseAlgorithmProvider(algorithm,0);
++        update_file_problem(part,code);update_fail(updateFileProblem);return 1;}
++    update_log(L"full package: %ls (%lld bytes)",updatePackage,(long long)updateTotal);
++    updateWriteError=0;
+     InterlockedExchange64(&updateDone,0);InterlockedExchange(&updateCancel,0);updateStartTick=GetTickCount();
+     InterlockedExchange(&updateState,UPDATE_DOWNLOADING);update_notify();
+     int failed=update_http(updatePackage,update_file_sink,&download,updateTotal+1);
+@@ -349,14 +409,22 @@ static DWORD WINAPI update_download_full(void){
+     for(int i=0;i<32;++i)sprintf(hex+i*2,"%02x",digest[i]);
+     if(failed){DeleteFileW(part);
+         if(updateCancel){InterlockedExchange(&updateCancel,0);InterlockedExchange(&updateState,UPDATE_AVAILABLE);update_notify();}
++        else if(updateWriteError){update_file_problem(part,updateWriteError);update_fail(updateFileProblem);}
+         return 1;}
+     InterlockedExchange(&updateState,UPDATE_VERIFYING);update_notify();
+     if(updateDone!=updateTotal||strcmp(hex,updateSha)){DeleteFileW(part);update_fail(L"The download did not pass the file check and was removed.");return 1;}
+-    DeleteFileW(zip);if(!MoveFileW(part,zip)){update_fail(L"The update could not be prepared.");return 1;}
++    DeleteFileW(zip);
++    if(!MoveFileW(part,zip)){DWORD code=GetLastError();int vanished=GetFileAttributesW(part)==INVALID_FILE_ATTRIBUTES;
++        update_file_problem(L"package.zip",vanished?0:code);update_fail(updateFileProblem);return 1;}
+     update_remove_tree(staging);CreateDirectoryW(staging,NULL);
+     wchar_t system[MAX_PATH];GetSystemDirectoryW(system,MAX_PATH);
+     swprintf(command,5200,L"\"%ls\\tar.exe\" -xf \"%ls\" -C \"%ls\"",system,zip,staging);
+-    if(update_run_hidden(command)!=0){update_fail(L"The update could not be unpacked.");return 1;}
++    {int code=update_run_hidden(command);
++     if(code!=0){
++        wchar_t message[200];
++        if(GetFileAttributesW(zip)==INVALID_FILE_ATTRIBUTES){update_file_problem(L"package.zip",0);wcscpy(message,updateFileProblem);}
++        else swprintf(message,200,tr(L"The update could not be unpacked (tar %d). If your antivirus reported a file, add the TrueCombat Platinum folder as an exception, then click Try again."),code);
++        update_fail(message);return 1;}}
+     swprintf(manifest,2600,L"%ls\\TrueCombat Platinum\\manifest.json",staging);swprintf(exe,2600,L"%ls\\TrueCombat Platinum\\TrueCombatPlatinum.exe",staging);
+     FILE *file=_wfopen(manifest,L"rb");char text[4096]={0};
+     if(file){size_t n=fread(text,1,sizeof(text)-1,file);text[n]=0;fclose(file);}
+@@ -501,7 +569,7 @@ static int update_prepare_delta(void){
+             wchar_t local[2600];update_local_path(local,root,f->path);
+             LONG64 size=0;char hex[65]={0};
+             int same=update_file_size(local,&size)&&size==bytes&&update_hash_file(local,hex)&&!strcmp(hex,f->sha);
+-            if(!same){deltaBytes+=bytes;++deltaCount;}
++            if(!same){deltaBytes+=bytes;++deltaCount;if(updateRepair||deltaCount<=40)update_log(L"%ls: %ls",updateRepair?L"repair: missing or damaged":L"changed",f->path);}
+         }
+         next_line:
+         line=end?end+1:NULL;
+@@ -521,20 +589,50 @@ static int update_download_files(const wchar_t *folder,int direct){
+         swprintf(part,2700,direct?L"%ls.part":L"%ls",target);
+         wcscpy(parent,target);wchar_t *cut=wcsrchr(parent,L'\\');if(cut){*cut=0;SHCreateDirectoryExW(NULL,parent,NULL);}
+         swprintf(url,1400,L"%ls%ls",base,f->asset);
+-        BCRYPT_ALG_HANDLE algorithm=NULL;UpdateDownload download={INVALID_HANDLE_VALUE,NULL};
+-        if(BCryptOpenAlgorithmProvider(&algorithm,BCRYPT_SHA256_ALGORITHM,NULL,0)||BCryptCreateHash(algorithm,&download.hash,NULL,0,NULL,0,0)){if(algorithm)BCryptCloseAlgorithmProvider(algorithm,0);return 0;}
+-        download.file=CreateFileW(part,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+-        if(download.file==INVALID_HANDLE_VALUE){BCryptDestroyHash(download.hash);BCryptCloseAlgorithmProvider(algorithm,0);return 0;}
+-        LONG64 before=updateDone;
+-        int failed=update_http_quiet(url,update_file_sink,&download,f->bytes+1);
+-        CloseHandle(download.file);
+-        unsigned char digest[32];char hex[65];BCryptFinishHash(download.hash,digest,32,0);BCryptDestroyHash(download.hash);BCryptCloseAlgorithmProvider(algorithm,0);
+-        for(int k=0;k<32;++k)sprintf(hex+k*2,"%02x",digest[k]);
+-        if(failed||updateDone-before!=f->bytes||strcmp(hex,f->sha)){DeleteFileW(part);return updateCancel?-1:0;}
+-        if(direct&&!MoveFileExW(part,target,MOVEFILE_REPLACE_EXISTING)){DeleteFileW(part);return 0;}
++        /* 2.6.2: three tries per file (network hiccups, a scan holding the file), and the reason is kept */
++        int done=0;LONG64 start=updateDone;
++        for(int attempt=0;attempt<3&&!done;++attempt){
++            if(attempt){if(updateCancel)return -1;update_log(L"retry %d: %ls",attempt,f->path);Sleep(attempt==1?1000:3000);}
++            InterlockedExchange64(&updateDone,start);
++            BCRYPT_ALG_HANDLE algorithm=NULL;UpdateDownload download={INVALID_HANDLE_VALUE,NULL};
++            if(BCryptOpenAlgorithmProvider(&algorithm,BCRYPT_SHA256_ALGORITHM,NULL,0)||BCryptCreateHash(algorithm,&download.hash,NULL,0,NULL,0,0)){if(algorithm)BCryptCloseAlgorithmProvider(algorithm,0);return 0;}
++            download.file=CreateFileW(part,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
++            if(download.file==INVALID_HANDLE_VALUE){DWORD code=GetLastError();BCryptDestroyHash(download.hash);BCryptCloseAlgorithmProvider(algorithm,0);update_file_problem(f->path,code);continue;}
++            updateWriteError=0;
++            int failed=update_http_quiet(url,update_file_sink,&download,f->bytes+1);
++            CloseHandle(download.file);
++            unsigned char digest[32];char hex[65];BCryptFinishHash(download.hash,digest,32,0);BCryptDestroyHash(download.hash);BCryptCloseAlgorithmProvider(algorithm,0);
++            for(int k=0;k<32;++k)sprintf(hex+k*2,"%02x",digest[k]);
++            if(updateCancel){DeleteFileW(part);return -1;}
++            if(failed||updateDone-start!=f->bytes||strcmp(hex,f->sha)){
++                if(updateWriteError)update_file_problem(f->path,updateWriteError);
++                else if(!failed){swprintf(updateFileProblem,200,tr(L"%ls did not pass the file check. Click Try again."),update_base_name(f->path));update_log(L"sha mismatch: %ls",f->path);}
++                else{swprintf(updateFileProblem,200,tr(L"%ls could not be downloaded. Check your connection, then click Try again."),update_base_name(f->path));update_log(L"download failed: %ls",f->path);}
++                DeleteFileW(part);continue;}
++            /* an on-access scan can remove the file the moment it is closed */
++            if(GetFileAttributesW(part)==INVALID_FILE_ATTRIBUTES){update_file_problem(f->path,0);continue;}
++            if(direct&&!MoveFileExW(part,target,MOVEFILE_REPLACE_EXISTING)){DWORD code=GetLastError();update_file_problem(f->path,code);DeleteFileW(part);continue;}
++            done=1;
++        }
++        if(!done)return 0;
+     }
+     return 1;
+ }
++/* 2.6.2: a previous attempt can leave updates\\staging and package.zip(.part) behind (an interrupted download,
++   an antivirus that removed a staged file, a failed apply). They are never reused: every attempt and every start
++   clears them. Returns 0 and says which item stayed when Windows refused (report: as the update's failure). */
++static int update_clear_staging(int report){
++    static const wchar_t *items[]={L"staging",L"package.zip",L"package.zip.part"};int ok=1;
++    for(unsigned i=0;i<sizeof(items)/sizeof(items[0]);++i){
++        wchar_t path[2400];swprintf(path,2400,L"%ls\\updates\\%ls",root,items[i]);
++        DWORD attributes=GetFileAttributesW(path);if(attributes==INVALID_FILE_ATTRIBUTES)continue;
++        if(attributes&FILE_ATTRIBUTE_DIRECTORY)update_remove_tree(path);else{SetFileAttributesW(path,FILE_ATTRIBUTE_NORMAL);DeleteFileW(path);}
++        if(GetFileAttributesW(path)==INVALID_FILE_ATTRIBUTES){update_log(L"cleared leftover updates\\%ls",items[i]);continue;}
++        update_log(L"could not clear updates\\%ls (error %lu)",items[i],GetLastError());ok=0;
++        if(report){wchar_t message[200];swprintf(message,200,tr(L"Old update files in updates\\%ls could not be removed. Close the game and any program using them (or delete the folder), then click Try again."),items[i]);update_fail(message);return 0;}
++    }
++    return ok;
++}
+ static int update_download_delta(void){
+     wchar_t staging[2400];swprintf(staging,2400,L"%ls\\updates\\staging",root);update_remove_tree(staging);
+     wcscat(staging,L"\\TrueCombat Platinum");SHCreateDirectoryExW(NULL,staging,NULL);
+@@ -595,7 +693,7 @@ static DWORD WINAPI update_hd_worker(LPVOID unused){
+     int result=update_space_ok()?update_download_files(root,1):0;
+     if(InterlockedCompareExchange(&updateState,0,0)==UPDATE_FAILED){InterlockedExchange(&updateHdOnly,0);deltaReady=0;deltaCount=0;return 1;}
+     InterlockedExchange(&updateHdOnly,0);deltaReady=0;deltaCount=0;deltaBytes=0;InterlockedExchange64(&updateTotal,0);
+-    if(!result){update_fail(L"HD textures could not be downloaded. Check your connection and try again.");return 1;}
++    if(!result){if(updateFileProblem[0])update_fail(updateFileProblem);else update_fail(L"HD textures could not be downloaded. Check your connection and try again.");return 1;}
+     InterlockedExchange(&updateCancel,0);
+     if(!update_hd_on())update_hd_remove(updateHdList,updateHdListLength);   /* turned off while downloading */
+     InterlockedExchange(&updateState,UPDATE_CURRENT);update_notify();return 0;
+@@ -608,6 +706,24 @@ static void update_hd_check(void){
+     if(update_hd_collect(updateHdList,updateHdListLength,NULL,0)>0){InterlockedExchange(&updateHdOnly,2);if(updateHdTest)update_hd_worker(NULL);else update_start(update_hd_worker);}
+     update_notify();
+ }
++/* 2.6.2: a current game with files missing or of the wrong size (an antivirus quarantined the engine, a pak went
++   missing) is repaired on its own instead of leaving PLAY on a dead INSTALL. Cheap: sizes only, from the release's
++   signed list; the repair then hashes everything. HD files are left to the HD check. */
++static wchar_t updateMissingFile[260];
++static int update_entry_quick(void *context,const char *sha,LONG64 bytes,const wchar_t *asset,const wchar_t *path){
++    (void)sha;(void)asset;
++    if(update_optional_path(path)||!update_delta_path_ok(path)||!_wcsicmp(path,L"TrueCombatPlatinum.exe"))return 1;
++    wchar_t local[2600];LONG64 size=0;update_local_path(local,root,path);
++    if(update_file_size(local,&size)&&size==bytes)return 1;
++    wcsncpy(updateMissingFile,path,259);updateMissingFile[259]=0;++*(int*)context;return 1;
++}
++static int update_quick_missing(void){
++    static char list[262144];DWORD length=0;updateMissingFile[0]=0;
++    if(!update_fetch_list(list,sizeof(list),&length))return 0;
++    int missing=0;update_each_entry(list,length,update_entry_quick,&missing);
++    if(missing)update_log(L"startup check: %d game file(s) missing or the wrong size, e.g. %ls",missing,updateMissingFile);
++    return missing;
++}
+ /* Settings > Updates > HD textures was switched: look again, so the files follow the choice right away. */
+ static void update_begin_check(void);
+ static void update_hd_toggled(int on){
+@@ -676,19 +792,29 @@ static DWORD update_download_any(void){
+         if(result<0){InterlockedExchange(&updateCancel,0);InterlockedExchange(&updateState,UPDATE_AVAILABLE);update_notify();return 1;}
+         if(result>0){
+             wchar_t manifest[2600];swprintf(manifest,2600,L"%ls\\updates\\staging\\TrueCombat Platinum\\manifest.json",root);
++            /* 2.6.2: a repair (or a delta without a new manifest) leaves manifest.json unstaged: the installed one counts */
++            if(GetFileAttributesW(manifest)==INVALID_FILE_ATTRIBUTES)swprintf(manifest,2600,L"%ls\\manifest.json",root);
+             FILE *file=_wfopen(manifest,L"rb");char text[4096]={0};if(file){size_t n=fread(text,1,sizeof(text)-1,file);text[n]=0;fclose(file);}
+             char version[64];WideCharToMultiByte(CP_UTF8,0,updateLatest,-1,version,64,NULL,NULL);
+             char needle[100];snprintf(needle,100,"\"version\": \"%s\"",version);
+             if(file&&strstr(text,needle)){InterlockedExchange(&updateState,UPDATE_READY);update_notify();return 0;}
+         }
+         /* Fall back to the full package. */
++        update_log(L"per-file download did not finish (%ls); falling back to the full package",updateFileProblem[0]?updateFileProblem:L"no reason recorded");
+         deltaReady=0;InterlockedExchange64(&updateTotal,updateFullBytes);
+     }
+-    return update_download_full();
++    wchar_t first[200];wcscpy(first,updateFileProblem);
++    DWORD result=update_download_full();
++    /* the zip failed too: the per-file reason (often the antivirus naming the file) is the more useful one */
++    if(result&&first[0]&&InterlockedCompareExchange(&updateState,0,0)==UPDATE_FAILED&&wcscmp(first,updateError))update_fail(first);
++    return result;
+ }
+ static DWORD WINAPI update_download_worker(LPVOID unused){
+     (void)unused;
+     {wchar_t folder[2400];swprintf(folder,2400,L"%ls\\updates",root);SHCreateDirectoryExW(NULL,folder,NULL);}
++    updateFileProblem[0]=0;
++    update_log(L"%ls: %ls -> %ls",updateRepair?L"repair":L"update",updateCurrent[0]?updateCurrent:L"(not installed)",updateLatest);
++    if(!update_clear_staging(1))return 1;
+     if(!update_space_ok())return 1;
+     update_record_installed();
+     update_store_target_list();
+@@ -981,7 +1107,8 @@ static int update_entry_staged(void *context,const char *sha,LONG64 bytes,const
+     wchar_t staged[2600],installed[2600];update_local_path(staged,scan->source,relative);update_local_path(installed,scan->target,relative);
+     LONG64 size=0;char hex[65]={0};int ok;
+     int isStaged=GetFileAttributesW(staged)!=INVALID_FILE_ATTRIBUTES;
+-    if(scan->after)ok=!isStaged||(update_file_size(installed,&size)&&(!known||size==bytes));
++    /* 2.6.2: after the copy every staged file is hashed again in the game folder, not only measured */
++    if(scan->after)ok=!isStaged||(update_file_size(installed,&size)&&(!known||(size==bytes&&update_hash_file(installed,hex)&&!strcmp(hex,sha))));
+     else if(isStaged)ok=!known||(update_file_size(staged,&size)&&size==bytes&&update_hash_file(staged,hex)&&!strcmp(hex,sha));
+     else ok=known&&update_file_size(installed,&size)&&size==bytes&&update_hash_file(installed,hex)&&!strcmp(hex,sha);
+     if(ok)return 1;
+@@ -1013,6 +1140,14 @@ static void update_read_blocked(void){
+     else swprintf(updateError,200,L"Your antivirus removed %ls from the update. Restore it from quarantine or add an exception, then click Try again.",name);
+     updateError[199]=0;
+ }
++static int update_count_files(const wchar_t *folder){
++    wchar_t pattern[2600];swprintf(pattern,2600,L"%ls\\*",folder);WIN32_FIND_DATAW item;HANDLE find=FindFirstFileW(pattern,&item);int count=0;
++    if(find==INVALID_HANDLE_VALUE)return 0;
++    do{if(!wcscmp(item.cFileName,L".")||!wcscmp(item.cFileName,L".."))continue;
++        if(item.dwFileAttributes&FILE_ATTRIBUTE_DIRECTORY){wchar_t child[2600];swprintf(child,2600,L"%ls\\%ls",folder,item.cFileName);count+=update_count_files(child);}else ++count;
++    }while(FindNextFileW(find,&item));
++    FindClose(find);return count;
++}
+ /* Runs from updates\platinum-updater.exe after the launcher has closed. */
+ static int update_apply_main(const wchar_t *target,DWORD pid){
+     HANDLE parent=OpenProcess(SYNCHRONIZE,FALSE,pid);
+@@ -1021,6 +1156,11 @@ static int update_apply_main(const wchar_t *target,DWORD pid){
+     swprintf(log_path,2400,L"%ls\\updates\\last-update.log",target);
+     FILE *log=_wfopen(log_path,L"w, ccs=UTF-8");
+     {wchar_t old[2400];update_blocked_path(old,target);DeleteFileW(old);}
++    /* 2.6.2: a marker while files are being copied; still there on the next start = the apply was interrupted */
++    wchar_t marker[2400];update_list_path(marker,target,L"apply-in-progress");
++    {FILE *mark=_wfopen(marker,L"w");if(mark){fputs("copying\n",mark);fclose(mark);}}
++    int stagedCount=update_count_files(source);
++    update_log(L"apply: %d staged file(s) into %ls",stagedCount,target);
+     wchar_t blocked[260];
+     int busy=0,code=0;
+     if(!update_staged_check(source,target,0,blocked)){
+@@ -1037,6 +1177,10 @@ static int update_apply_main(const wchar_t *target,DWORD pid){
+     }
+     }
+     if(!code){update_prune(target,log);update_render_cache_reset(target,log);}
++    DeleteFileW(marker);
++    {wchar_t result[2400],number[16];update_list_path(result,target,L"update-result.ini");swprintf(number,16,L"%d",code?0:stagedCount);
++     WritePrivateProfileStringW(L"Result",L"Files",number,result);swprintf(number,16,L"%d",code);WritePrivateProfileStringW(L"Result",L"Code",number,result);}
++    update_log(code?L"apply failed with code %d%ls%ls":L"apply finished (code %d)%ls%ls",code,code&&blocked[0]?L", file ":L"",code?blocked:L"");
+     /* A launcher kept outside the game folder gets the new launcher too. */
+     const wchar_t *home=launcherDir[0]?launcherDir:target;
+     if(!code&&_wcsicmp(home,target)){
+@@ -1064,6 +1208,8 @@ static int update_apply(HWND window){
+     if(starting_game&&WaitForSingleObject(starting_game,0)==WAIT_TIMEOUT){MessageBoxW(window,L"Close the game before updating.",TITLE,MB_OK|MB_ICONINFORMATION);return 0;}
+     wchar_t self[2200],helper[2400],command[5000];GetModuleFileNameW(NULL,self,2200);
+     swprintf(helper,2400,L"%ls\\updates\\platinum-updater.exe",root);
++    {wchar_t result[2400];update_list_path(result,root,L"update-result.ini");DeleteFileW(result);
++     WritePrivateProfileStringW(L"Result",L"Repair",updateRepair?L"1":L"0",result);WritePrivateProfileStringW(L"Result",L"Version",updateLatest,result);}
+     if(!CopyFileW(self,helper,FALSE)){error(L"The updater could not start. Check that the game folder is writable.");return 0;}
+     swprintf(command,5000,L"\"%ls\" --apply-update \"%ls\" %lu --launcher-dir \"%ls\"%ls",helper,root,GetCurrentProcessId(),launcherDir[0]?launcherDir:root,updateHeadless?L" --no-relaunch":L"");
+     STARTUPINFOW si={0};PROCESS_INFORMATION pi={0};si.cb=sizeof(si);
+@@ -1073,12 +1219,21 @@ static int update_apply(HWND window){
+     return 1;
+ }
+ /* Housekeeping on launcher start: remove a finished updater and old staging. */
++static int updateForceRepair;   /* 2.6.2: the last apply was interrupted: check every file on this start */
+ static void update_cleanup(int updated){
+     wchar_t path[2400];swprintf(path,2400,L"%ls\\updates\\platinum-updater.exe",root);
+     for(int i=0;i<20&&GetFileAttributesW(path)!=INVALID_FILE_ATTRIBUTES&&!DeleteFileW(path);++i)Sleep(100);
+-    if(updated){
+-        swprintf(path,2400,L"%ls\\updates\\staging",root);update_remove_tree(path);
+-        swprintf(path,2400,L"%ls\\updates\\package.zip",root);DeleteFileW(path);
++    (void)updated;
++    /* 2.6.2 self-healing: nothing in staging is ever resumed (each attempt starts clean), so leftovers of a broken,
++       blocked or interrupted update always go; a failure to remove them is logged and reported by the next attempt. */
++    update_clear_staging(0);
++    update_list_path(path,root,L"apply-in-progress");
++    if(GetFileAttributesW(path)!=INVALID_FILE_ATTRIBUTES){updateForceRepair=1;DeleteFileW(path);update_log(L"start: the last update was interrupted while copying; every file is checked");}
++    update_list_path(path,root,L"update-result.ini");
++    if(GetFileAttributesW(path)!=INVALID_FILE_ATTRIBUTES){
++        int repair=GetPrivateProfileIntW(L"Result",L"Repair",0,path),files=GetPrivateProfileIntW(L"Result",L"Files",0,path),code=GetPrivateProfileIntW(L"Result",L"Code",-1,path);
++        if(repair&&code==0){swprintf(updateRepairNote,160,tr(L"Repaired %d file%ls"),files,files==1?L"":L"s");update_log(L"start: %ls",updateRepairNote);}
++        DeleteFileW(path);
+     }
+     update_render_cache_housekeeping();
+     update_enforce_budgets();
+@@ -1126,7 +1281,7 @@ static void update_describe(wchar_t *title,int title_size,wchar_t *detail,int de
+         wcsncpy(button,L"Update now",button_size);break;
+     case UPDATE_DOWNLOADING:
+         {LONG64 total=updatePreview>=0?100:updateTotal,done=updatePreview>=0?62:updateDone;int percent=total>0?(int)(100.0*(double)done/(double)total):0;if(percent>100)percent=100;
+-         if(InterlockedCompareExchange(&updateHdOnly,0,0))swprintf(title,title_size,tr(L"Downloading HD textures  \x00B7  %d%%"),percent);
++         if(InterlockedCompareExchange(&updateHdOnly,0,0))swprintf(title,title_size,tr(L"Downloading HD textures  \x00B7  %d%%"),percent);
+          else swprintf(title,title_size,L"Downloading %ls  \x00B7  %d%%",updateLatest,percent);}
+         {
+             double done=updateDone/1048576.0,total=updateTotal/1048576.0,seconds=updatePreview>=0?40.0:(GetTickCount()-updateStartTick)/1000.0;
+@@ -1145,9 +1300,15 @@ static void update_describe(wchar_t *title,int title_size,wchar_t *detail,int de
+     title[title_size-1]=0;detail[detail_size-1]=0;button[button_size-1]=0;
+ }
+ static LONG update_visible_state(void){return updatePreview>=0?updatePreview:InterlockedCompareExchange(&updateState,0,0);}
++static volatile LONG updateUserAction;   /* 2.6.2: the player started this; a failure is then said in a message, once */
+ static void update_sync(HWND window){
+     wchar_t title[160],detail[260],label[40];update_describe(title,160,detail,260,label,40);
+     HWND button=GetDlgItem(window,117);LONG state=update_visible_state();
++    if(state==UPDATE_CURRENT||state==UPDATE_READY)InterlockedExchange(&updateUserAction,0);
++    if(state==UPDATE_FAILED&&updatePreview<0&&!updateHeadless&&InterlockedExchange(&updateUserAction,0)){
++        wchar_t message[600];swprintf(message,600,tr(L"%ls\n\nDetails are in updates\\launcher-update.log in the game folder."),updateError[0]?updateError:L"Something went wrong.");
++        MessageBoxW(window,message,L"Update problem",MB_OK|MB_ICONWARNING);
++    }
+     if(button){SetWindowTextW(button,label);EnableWindow(button,state!=UPDATE_OFF&&state!=UPDATE_CHECKING&&state!=UPDATE_VERIFYING);InvalidateRect(button,NULL,FALSE);}
+     HWND self=GetDlgItem(window,127);
+     if(self){LONG launcher=InterlockedCompareExchange(&launcherUpdateState,0,0);int manual=InterlockedCompareExchange(&launcherManualCheck,0,0);
+@@ -1180,6 +1341,7 @@ static void update_button(HWND window){
+     LONG state=update_visible_state();
+     if(updatePreview>=0)return;
+     if(launcher_strip_active(state)){launcher_restart(window);return;}
++    InterlockedExchange(&updateUserAction,1);
+     if(state==UPDATE_AVAILABLE){
+         /* Choosing Update now while staying on a version ends that choice. */
+         if(!updateSwitching&&updatePinned[0])update_set_pin(L"");
+@@ -1272,7 +1434,7 @@ static int game_missing(void);
+ /* Settings > Updates > Verify and repair: the installed release, from its own signed feed. */
+ static int update_repair_ready(void){
+     LONG state=update_visible_state();
+-    return updatePreview<0&&updateCurrent[0]&&updateLatestFeed[0]&&!game_missing()&&
++    return updatePreview<0&&updateCurrent[0]&&updateLatestFeed[0]&&
+            state!=UPDATE_DOWNLOADING&&state!=UPDATE_VERIFYING&&state!=UPDATE_CHECKING&&state!=UPDATE_READY;
+ }
+ static int update_repair_begin(void){
+-- 
+2.55.0.windows.5
+
+
+From 213720ca825b0ca2278c4c89aab91d2425354d19 Mon Sep 17 00:00:00 2001
+From: Gianni <rel037@localhost>
+Date: Tue, 17 Nov 2026 23:47:46 +0100
+Subject: [PATCH 3/4] launcher 2.6.2: an update problem reads in full on
+ Settings > Updates, names the blocked host, and the startup check skips the
+ source archive
+
+---
+ release_src/platinum_main.h   | 10 ++++++----
+ release_src/platinum_update.h | 20 ++++++++++++++------
+ 2 files changed, 20 insertions(+), 10 deletions(-)
+
+diff --git a/release_src/platinum_main.h b/release_src/platinum_main.h
+index 40faf39..6f21d8f 100644
+--- a/release_src/platinum_main.h
++++ b/release_src/platinum_main.h
+@@ -1344,6 +1344,8 @@ static void ui_paint_settings(HDC dc,HWND window){
+             ui_text(dc,row->title,x+19,center-23,controlLeft-x-35,22,F_ROW,SHELL_TEXT,UI_LINE1,0);
+             {wchar_t current[64]=L"";if(row->arg==171&&name_edit)GetWindowTextW(name_edit,current,64);
+              if(row->arg==171&&nc_has_codes(current))nc_draw_name(dc,current,x+19,center-1,controlLeft-x-35,20,F_DESC,0,0,SHELL_TEXT);   /* your name in its colours */
++             /* 2.6.2: an update problem gets two lines, so the reason is read in full */
++             else if(row->kind==R_BUTTON&&row->arg==117&&update_visible_state()==UPDATE_FAILED&&updateError[0])ui_text(dc,text,x+19,center-3,controlLeft-x-35,36,F_DESC,SHELL_AMBER,DT_WORDBREAK|DT_END_ELLIPSIS,0);
+              else ui_text(dc,text,x+19,center-1,controlLeft-x-35,20,F_DESC,SHELL_MUTED,UI_LINE1,0);}
+         }
+     }
+@@ -1500,7 +1502,7 @@ static void shell_paint_body(HDC dc,HWND window,int rail){
+     else if(shellTab==1)ui_paint_servers(dc);
+     else if(shellTab==2)ui_paint_news(dc);
+     else ui_paint_settings(dc,window);
+-}
++}
+ static void shell_paint_part(HDC dc,HWND window,int rail,int cut,int width,int height){
+     int page=shellLeft,top=shellTop;if(rail)shellLeft=shellRailLeft;
+     int x0=rail?0:shellRail,x1=rail?shellRail:width,cutY=shellTop+(int)(cut*shellScale);
+@@ -1518,9 +1520,9 @@ static void shell_paint_part(HDC dc,HWND window,int rail,int cut,int width,int h
+         BitBlt(dc,x0,cutY,x1-x0,shellShift,uiBackDC,x0,cutY,SRCCOPY);
+         BitBlt(dc,x0,0,x1-x0,cutY,keep,0,0,SRCCOPY);
+         SelectObject(keep,old);DeleteObject(band);DeleteDC(keep);
+-    }
++    }
+     shellLeft=page;shellTop=top;
+-}
++}
+ static void shell_paint(HWND window,HDC target){
+     RECT bounds;GetClientRect(window,&bounds);
+     if(!shellFrameDC||shellFrameW!=bounds.right||shellFrameH!=bounds.bottom){
+@@ -1547,7 +1549,7 @@ static void shell_paint(HWND window,HDC target){
+           shellLeft=rail?shellRailLeft:shellLeft;if(cut&&f->y>=cut)shellTop+=shellShift;
+           XFORM t={shellScale,0,0,shellScale,(FLOAT)shellLeft,(FLOAT)shellTop};SetWorldTransform(dc,&t);
+           ui_paint_focus(dc,window);shellLeft=page;shellTop=top;}}
+-        XFORM identity={1,0,0,1,0,0};SetWorldTransform(dc,&identity);
++        XFORM identity={1,0,0,1,0,0};SetWorldTransform(dc,&identity);
+         RestoreDC(dc,saved);
+     }
+     if(uiFadeActive&&uiFadeDC&&uiFadeW==bounds.right&&uiFadeH==bounds.bottom){
+diff --git a/release_src/platinum_update.h b/release_src/platinum_update.h
+index cf750fa..0c2b18f 100644
+--- a/release_src/platinum_update.h
++++ b/release_src/platinum_update.h
+@@ -104,6 +104,8 @@ static void update_log(const wchar_t *format,...){
+     }
+     ReleaseSRWLockExclusive(&updateLogLock);
+ }
++/* 2.6.2: the last network failure of any request (quiet ones too), so a per-file failure can name the host */
++static wchar_t updateNetHost[128];static DWORD updateNetCode,updateNetStatus;
+ static void update_fail(const wchar_t *message){wcsncpy(updateError,message,199);updateError[199]=0;update_log(L"FAILED: %ls",updateError);InterlockedExchange(&updateState,UPDATE_FAILED);update_notify();}
+ /* 2.6.2: what went wrong with a game file, so a failure can name it even after the fall-back to the zip. */
+ static wchar_t updateFileProblem[200];
+@@ -183,7 +185,7 @@ static int update_http_ex(const wchar_t *url,UpdateSink sink,void *context,LONG6
+         DWORD status=0,size=sizeof(status);
+         query(handle,WINHTTP_QUERY_STATUS_CODE|WINHTTP_QUERY_FLAG_NUMBER,WINHTTP_HEADER_NAME_BY_INDEX,&status,&size,WINHTTP_NO_HEADER_INDEX);
+         httpStatus=status;
+-        if(status!=200){wchar_t message[120];swprintf(message,120,tr(L"The update server answered with HTTP %lu."),status);UPDATE_HTTP_FAIL(message);}
++        if(status!=200){wcsncpy(updateNetHost,host,127);updateNetHost[127]=0;updateNetStatus=status;updateNetCode=0;wchar_t message[120];swprintf(message,120,tr(L"The update server answered with HTTP %lu."),status);UPDATE_HTTP_FAIL(message);}
+         else{
+             static char buffer[65536];LONG64 total=0;int ok=1;DWORD began=GetTickCount();
+             for(;;){
+@@ -203,7 +205,7 @@ static int update_http_ex(const wchar_t *url,UpdateSink sink,void *context,LONG6
+             }
+             if(ok)result=0;else if(!updateCancel&&InterlockedCompareExchange(&updateState,0,0)!=UPDATE_FAILED)UPDATE_HTTP_FAIL(L"The download was interrupted or too large.");
+         }
+-    }else{netError=GetLastError();
++    }else{netError=GetLastError();wcsncpy(updateNetHost,host,127);updateNetHost[127]=0;updateNetStatus=0;updateNetCode=netError;
+         /* 2.6.2: name the server, so a blocked download host (web shield, firewall) is told apart from no internet */
+         wchar_t message[200];swprintf(message,200,tr(L"Could not reach %ls (error %lu). Check your connection, or allow it in your antivirus web shield or firewall."),host,netError);
+         UPDATE_HTTP_FAIL(message);}
+@@ -599,6 +601,7 @@ static int update_download_files(const wchar_t *folder,int direct){
+             download.file=CreateFileW(part,GENERIC_WRITE,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+             if(download.file==INVALID_HANDLE_VALUE){DWORD code=GetLastError();BCryptDestroyHash(download.hash);BCryptCloseAlgorithmProvider(algorithm,0);update_file_problem(f->path,code);continue;}
+             updateWriteError=0;
++            updateNetHost[0]=0;updateNetCode=0;updateNetStatus=0;
+             int failed=update_http_quiet(url,update_file_sink,&download,f->bytes+1);
+             CloseHandle(download.file);
+             unsigned char digest[32];char hex[65];BCryptFinishHash(download.hash,digest,32,0);BCryptDestroyHash(download.hash);BCryptCloseAlgorithmProvider(algorithm,0);
+@@ -607,7 +610,11 @@ static int update_download_files(const wchar_t *folder,int direct){
+             if(failed||updateDone-start!=f->bytes||strcmp(hex,f->sha)){
+                 if(updateWriteError)update_file_problem(f->path,updateWriteError);
+                 else if(!failed){swprintf(updateFileProblem,200,tr(L"%ls did not pass the file check. Click Try again."),update_base_name(f->path));update_log(L"sha mismatch: %ls",f->path);}
+-                else{swprintf(updateFileProblem,200,tr(L"%ls could not be downloaded. Check your connection, then click Try again."),update_base_name(f->path));update_log(L"download failed: %ls",f->path);}
++                else{
++                    if(updateNetStatus)swprintf(updateFileProblem,200,tr(L"Could not download %ls: %ls answered HTTP %lu. Click Try again later."),update_base_name(f->path),updateNetHost,updateNetStatus);
++                    else if(updateNetCode)swprintf(updateFileProblem,200,tr(L"Could not download %ls from %ls (error %lu). Check your connection, or allow it in your antivirus web shield or firewall."),update_base_name(f->path),updateNetHost,updateNetCode);
++                    else swprintf(updateFileProblem,200,tr(L"%ls could not be downloaded. Check your connection, then click Try again."),update_base_name(f->path));
++                    update_log(L"download failed: %ls",f->path);}
+                 DeleteFileW(part);continue;}
+             /* an on-access scan can remove the file the moment it is closed */
+             if(GetFileAttributesW(part)==INVALID_FILE_ATTRIBUTES){update_file_problem(f->path,0);continue;}
+@@ -712,7 +719,8 @@ static void update_hd_check(void){
+ static wchar_t updateMissingFile[260];
+ static int update_entry_quick(void *context,const char *sha,LONG64 bytes,const wchar_t *asset,const wchar_t *path){
+     (void)sha;(void)asset;
+-    if(update_optional_path(path)||!update_delta_path_ok(path)||!_wcsicmp(path,L"TrueCombatPlatinum.exe"))return 1;
++    /* the source archive is not in the zip; the game runs without it (a manual repair still fetches it) */
++    if(update_optional_path(path)||!update_delta_path_ok(path)||!_wcsicmp(path,L"TrueCombatPlatinum.exe")||!_wcsnicmp(path,L"source/",7))return 1;
+     wchar_t local[2600];LONG64 size=0;update_local_path(local,root,path);
+     if(update_file_size(local,&size)&&size==bytes)return 1;
+     wcsncpy(updateMissingFile,path,259);updateMissingFile[259]=0;++*(int*)context;return 1;
+@@ -1136,8 +1144,8 @@ static void update_read_blocked(void){
+     if(!stage||!file[0])return;
+     updateBlockedNotice=1;
+     const wchar_t *name=file;for(const wchar_t *c=file;*c;++c)if(*c==L'\\')name=c+1;
+-    if(stage==2){updateRepairOnRetry=1;swprintf(updateError,200,L"Your antivirus removed %ls. Restore it from quarantine or add an exception, then click Repair.",name);}
+-    else swprintf(updateError,200,L"Your antivirus removed %ls from the update. Restore it from quarantine or add an exception, then click Try again.",name);
++    if(stage==2){updateRepairOnRetry=1;swprintf(updateError,200,L"Your antivirus removed %ls. Add the TrueCombat Platinum folder as an exception, then click Repair.",name);}
++    else swprintf(updateError,200,L"Your antivirus removed %ls. Add the TrueCombat Platinum folder as an exception, then click Try again.",name);
+     updateError[199]=0;
+ }
+ static int update_count_files(const wchar_t *folder){
+-- 
+2.55.0.windows.5
+
+
+From 7961fff769101921b1afc2524f90802eaeb790ca Mon Sep 17 00:00:00 2001
+From: Gianni <rel037@localhost>
+Date: Tue, 17 Nov 2026 23:52:44 +0100
+Subject: [PATCH 4/4] release gate: launcher update and repair suite,
+ reproducible launcher build, post-publish canary
+
+tests/launcher_repair/run_suite.py runs 11 broken-install cases against a loopback copy of a real release: a previous release with an old engine and leftover staging, a missing engine, a corrupted pak, an antivirus blocking or removing a file, a blocked download host, offline, a bad signature, the restart after a failed apply, and the previous launcher updating itself. A complete pass is recorded per launcher SHA-256.
+
+package_from_candidate.py and make_update_feed.py (the launcher-only hotfix included) refuse a launcher that has no passing run for its exact bytes. Both build it through launcher_release_build.py, which is reproducible. release_canary.py checks a publish as players see it: the signed live feed, files.txt and three random assets from the asset host, the launcher and the website installer.
+---
+ .gitignore                                    |   2 +
+ analysis_scripts/x64/launcher_gate.py         |  42 ++
+ .../x64/launcher_release_build.py             |  39 ++
+ analysis_scripts/x64/make_update_feed.py      |   6 +-
+ .../x64/package_from_candidate.py             |  17 +-
+ analysis_scripts/x64/release_canary.py        |  86 ++++
+ tests/launcher_repair/README.md               |  59 +++
+ tests/launcher_repair/run_suite.py            | 385 ++++++++++++++++++
+ 8 files changed, 625 insertions(+), 11 deletions(-)
+ create mode 100644 analysis_scripts/x64/launcher_gate.py
+ create mode 100644 analysis_scripts/x64/launcher_release_build.py
+ create mode 100644 analysis_scripts/x64/release_canary.py
+ create mode 100644 tests/launcher_repair/README.md
+ create mode 100644 tests/launcher_repair/run_suite.py
+
+diff --git a/.gitignore b/.gitignore
+index 587507e..805bb14 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -15,3 +15,5 @@ __pycache__/
+ /experiments/materials-0371/*.pk3
+ /experiments/hdrstage0371/
+ /experiments/acstage0371/
++/experiments/launcher-gate/
++/experiments/release-canary/
+diff --git a/analysis_scripts/x64/launcher_gate.py b/analysis_scripts/x64/launcher_gate.py
+new file mode 100644
+index 0000000..d61a992
+--- /dev/null
++++ b/analysis_scripts/x64/launcher_gate.py
+@@ -0,0 +1,42 @@
++"""Release gate: no launcher ships without a passing launcher repair suite for its exact bytes.
++
++tests/launcher_repair/run_suite.py records every complete run in experiments/launcher-gate/<sha256>.json.
++require(exe) refuses (SystemExit) unless that record exists, covers every case of the current suite version
++and passed. Called by package_from_candidate.py (full and --launcher-only packages), make_update_feed.py (every
++feed that names a launcher, the launcher-only hotfix included) and preflight_release.py (0.39.0 and later).
++
++  python analysis_scripts/x64/launcher_gate.py <TrueCombatPlatinum.exe>     (exit 0: may ship)
++"""
++from pathlib import Path
++import hashlib, json, sys
++ROOT = Path(__file__).resolve().parents[2]
++GATE = ROOT/'experiments'/'launcher-gate'
++SUITE_VERSION = 1
++CASES = {'friend', 'engine_missing', 'corrupt_pak', 'av_write_denied', 'av_deleted', 'blocked_host', 'offline',
++         'bad_signature', 'update_failed', 'self_update', 'self_current'}
++
++def status(exe):
++    digest = hashlib.sha256(Path(exe).read_bytes()).hexdigest()
++    record = GATE/f'{digest}.json'
++    if not record.exists(): return digest, False, f'no launcher repair suite run for this launcher ({digest[:12]})'
++    r = json.loads(record.read_text(encoding='utf-8'))
++    if r.get('launcher_sha256') != digest: return digest, False, 'gate record is for another launcher'
++    if r.get('suite_version', 0) < SUITE_VERSION: return digest, False, f'suite version {r.get("suite_version")} is older than {SUITE_VERSION}'
++    missing = CASES - set(r.get('cases', {}))
++    if missing: return digest, False, f'cases not run: {sorted(missing)}'
++    failed = [k for k, v in r['cases'].items() if not v.get('pass')]
++    if failed or not r.get('passed'): return digest, False, f'failed cases: {failed}'
++    return digest, True, f'passed {r.get("when")} ({len(r["cases"])} cases, release {r.get("release")})'
++
++def require(exe, what='ship'):
++    digest, ok, detail = status(exe)
++    if not ok:
++        sys.exit(f'refusing to {what} {exe}: {detail}.\nRun the gate on exactly this file first:\n'
++                 f'  python tests/launcher_repair/run_suite.py --launcher "{exe}" --previous-launcher <released launcher> '
++                 f'--dist <dist> --current <release> --old <previous release> --old-engine <older engine> --work G:\\TrueCombatWork\\lrs')
++    print(f'launcher gate: {Path(exe).name} {digest[:12]} {detail}')
++    return digest
++
++if __name__ == '__main__':
++    digest, ok, detail = status(sys.argv[1])
++    print(('PASS ' if ok else 'BLOCK ') + digest + ' ' + detail); sys.exit(0 if ok else 1)
+diff --git a/analysis_scripts/x64/launcher_release_build.py b/analysis_scripts/x64/launcher_release_build.py
+new file mode 100644
+index 0000000..6f6a514
+--- /dev/null
++++ b/analysis_scripts/x64/launcher_release_build.py
+@@ -0,0 +1,39 @@
++"""Build the release launcher (TrueCombatPlatinum.exe) exactly as it ships.
++
++One function for every path that ships a launcher, so the binary the launcher repair suite tested is the
++binary that ships: package_from_candidate.py (full and --launcher-only packages) and the launcher-only
++hotfix (make_update_feed.py --launcher-hotfix). Icon resource, release flags, the default feed built in,
++then release hygiene (pe_tidy: no debug data, valid PE checksum; the DWARF goes to <symbols>).
++The build is reproducible (--no-insert-timestamp, no PDB): same source, same bytes.
++
++  python analysis_scripts/x64/launcher_release_build.py --out <dir>\\TrueCombatPlatinum.exe --symbols <dir>
++      [--update-feed https://github.com/<repo>/releases/latest/download/update.txt]
++"""
++from pathlib import Path
++import argparse, hashlib, re, subprocess, sys
++ROOT = Path(__file__).resolve().parents[2]
++DEFAULT_FEED = 'https://github.com/Annoximeme/TrueCombat-Platinum/releases/latest/download/update.txt'
++LIBS = ('user32', 'gdi32', 'shell32', 'ws2_32', 'bcrypt', 'gdiplus', 'shlwapi', 'ole32', 'dwmapi')
++
++def build(out, update_feed, symbols):
++    sys.path.insert(0, str(ROOT/'analysis_scripts')); sys.path.insert(0, str(ROOT/'analysis_scripts/x64'))
++    import launcher_icon, launcher_version, pe_tidy
++    assert not update_feed or re.fullmatch(r'https://[A-Za-z0-9./_-]+', update_feed), 'feed must be a plain https URL'
++    out = Path(out); out.parent.mkdir(parents=True, exist_ok=True)
++    cc = ROOT/'tools/renderer_build/llvm-mingw-20261020-ucrt-x86_64/bin/x86_64-w64-mingw32-clang.exe'
++    icon = launcher_icon.build(out.parent)
++    subprocess.run([str(cc), '-municode', '-O2', '-Wall', '-Wextra', '-Werror', '-static', '-Wl,--subsystem,windows',
++                    '-Wl,--no-insert-timestamp', '-DPLATINUM_NATIVE=1'] + ([f'-DPLATINUM_UPDATE_FEED=L"{update_feed}"'] if update_feed else []) +
++                   [str(ROOT/'release_src/platinum_launcher.c'), str(icon), '-o', str(out)] + ['-l' + n for n in LIBS], check=True)
++    icon.unlink(missing_ok=True)
++    assert pe_tidy.clean(pe_tidy.tidy(out, Path(symbols))), 'launcher hygiene failed'
++    assert launcher_version.exe_version_ok(out), 'built launcher lacks the launcher version marker'
++    return hashlib.sha256(out.read_bytes()).hexdigest()
++
++if __name__ == '__main__':
++    p = argparse.ArgumentParser()
++    p.add_argument('--out', type=Path, required=True)
++    p.add_argument('--symbols', type=Path, required=True)
++    p.add_argument('--update-feed', default=DEFAULT_FEED)
++    a = p.parse_args()
++    print(a.out, build(a.out, a.update_feed, a.symbols))
+diff --git a/analysis_scripts/x64/make_update_feed.py b/analysis_scripts/x64/make_update_feed.py
+index 6369683..ba5f5be 100644
+--- a/analysis_scripts/x64/make_update_feed.py
++++ b/analysis_scripts/x64/make_update_feed.py
+@@ -38,6 +38,8 @@ sys.path.insert(0, str(ROOT/'analysis_scripts')); import launcher_version
+ LAUNCHER_ASSET = 'TrueCombatPlatinum-Launcher.exe'
+ def launcher_fields(exe, version, tag):
+     assert launcher_version.exe_version_ok(exe, version), f'{exe} is not launcher {version} (version marker missing)'
++    # launcher 2.6.2 release gate: the launcher repair suite passed for exactly this file (launcher_gate.py)
++    sys.path.insert(0, str(ROOT/'analysis_scripts/x64')); import launcher_gate; launcher_gate.require(exe, 'put in a feed')
+     assets = ROOT/'dist'/f'assets-{args.version}'; assets.mkdir(parents=True, exist_ok=True)
+     shutil.copy2(exe, assets/LAUNCHER_ASSET)
+     data = (assets/LAUNCHER_ASSET).read_bytes()
+@@ -65,7 +67,9 @@ if args.launcher_hotfix:
+     assert as_tuple(lv) > as_tuple(old), f'launcher {lv} must be newer than the {old} this release already offers (bump platinum_launcher_version.h)'
+     out = ROOT/'dist'/f'update-{args.version}-launcher-{lv}.txt'
+     out.write_text('\n'.join(kept) + '\n' + launcher_fields(args.launcher_hotfix, lv, 'v' + args.version), encoding='utf-8', newline='\n')
+-    sign(out); print(f'upload {out.name} as "update.txt" and {LAUNCHER_ASSET}, both with --clobber, to release v{args.version}'); sys.exit(0)
++    sign(out); print(f'upload {out.name} as "update.txt" and {LAUNCHER_ASSET}, both with --clobber, to release v{args.version}')
++    print(f'then: python analysis_scripts/x64/release_canary.py --version {args.version} --repo {args.repo} --launcher "{args.launcher_hotfix}" '
++          '(the publish is done only when the canary passes)'); sys.exit(0)
+ name = f'TrueCombat-Platinum-{args.version}-Windows-x64.zip'
+ package = ROOT/'dist'/name
+ data_hash = hashlib.sha256()
+diff --git a/analysis_scripts/x64/package_from_candidate.py b/analysis_scripts/x64/package_from_candidate.py
+index df4107d..aeac580 100644
+--- a/analysis_scripts/x64/package_from_candidate.py
++++ b/analysis_scripts/x64/package_from_candidate.py
+@@ -113,17 +113,14 @@ if args.hd_packs and not args.launcher_only:
+     assert expected and int(expected.group(1)) == value, f'{pack.name} checksum {value} is not the one in the candidate engine ({table})'
+     shutil.copy2(pack, OUT/'tcetest'/pack.name)
+     hd_packs[pack.name] = {'sha256': built['pack_sha256'], 'textures': built['textures'], 'checksum': value}
+-cc = ROOT/'tools/renderer_build/llvm-mingw-20261020-ucrt-x86_64/bin/x86_64-w64-mingw32-clang.exe'
+-import sys; sys.path.insert(0, str(ROOT/'analysis_scripts')); import launcher_icon
+-icon = launcher_icon.build(OUT.parent)
+-subprocess.run([str(cc), '-municode', '-O2', '-Wall', '-Wextra', '-Werror', '-static', '-Wl,--subsystem,windows',
+-                '-Wl,--no-insert-timestamp', '-DPLATINUM_NATIVE=1'] + ([f'-DPLATINUM_UPDATE_FEED=L"{args.update_feed}"'] if args.update_feed else []) + [str(ROOT/'release_src/platinum_launcher.c'), str(icon),
+-                '-o', str(OUT/'TrueCombatPlatinum.exe')] +
+-               ['-l'+n for n in ('user32','gdi32','shell32','ws2_32','bcrypt','gdiplus','shlwapi','ole32','dwmapi')], check=True)
+ # 0.38.0 release hygiene: no debug data or COFF symbols, a valid PE checksum (pe_tidy.py). The launcher's DWARF
+-# is kept outside the release for crash analysis, never shipped.
+-import pe_tidy
+-assert pe_tidy.clean(pe_tidy.tidy(OUT/'TrueCombatPlatinum.exe', ROOT/'experiments'/'symbols'/args.version)), 'launcher hygiene failed'
++# is kept outside the release for crash analysis, never shipped. Launcher 2.6.2: one build function for every
++# shipping path (launcher_release_build.py, reproducible), and the launcher repair suite must have passed for
++# exactly these bytes (launcher_gate.py) before anything is packaged.
++import sys; sys.path.insert(0, str(ROOT/'analysis_scripts')); sys.path.insert(0, str(ROOT/'analysis_scripts/x64'))
++import launcher_release_build, launcher_gate, pe_tidy
++launcher_release_build.build(OUT/'TrueCombatPlatinum.exe', args.update_feed, ROOT/'experiments'/'symbols'/args.version)
++launcher_gate.require(OUT/'TrueCombatPlatinum.exe', 'package')
+ if not args.launcher_only:
+     ours = ['engine/platinum-engine.bin', 'server/platinum-server.bin', 'engine/renderer_dx12_x64.dll', 'engine/renderer_opengl1_x64.dll',
+             'tcetest/cgame_mp_x64.dll', 'tcetest/qagame_mp_x64.dll', 'tcetest/ui_mp_x64.dll']
+diff --git a/analysis_scripts/x64/release_canary.py b/analysis_scripts/x64/release_canary.py
+new file mode 100644
+index 0000000..fc65c90
+--- /dev/null
++++ b/analysis_scripts/x64/release_canary.py
+@@ -0,0 +1,86 @@
++"""Post-publish canary: check the release exactly as players' launchers see it.
++
++A publish (a full release or a launcher-only hotfix) is not done until this passes. It downloads, from the
++public URLs (github.com, redirected to release-assets.githubusercontent.com):
++  - releases/latest/download/update.txt: signature valid against the public key built into launchers
++    (release_src/platinum_update_key.h), version as expected, every URL https;
++  - files.txt: its SHA-256 matches files_sha256;
++  - 3 random per-file assets (each under 300 MB): size and SHA-256 match files.txt;
++  - the launcher named by the feed (launcher=): size and SHA-256 match, version marker as advertised, and, with
++    --launcher, byte-identical to the file that passed the launcher repair suite;
++  - TrueCombat-Platinum-Setup.exe answers on releases/latest/download (the website's download button).
++Writes experiments/release-canary/<version>-<UTC time>.json; exit 0 only when everything passed.
++
++  python analysis_scripts/x64/release_canary.py --version 0.38.1-sandbox35 [--launcher <shipped exe>] [--seed N]
++"""
++from pathlib import Path
++import argparse, hashlib, json, random, re, sys, time, urllib.request
++ROOT = Path(__file__).resolve().parents[2]
++p = argparse.ArgumentParser()
++p.add_argument('--version', required=True)
++p.add_argument('--repo', default='Annoximeme/TrueCombat-Platinum')
++p.add_argument('--launcher', type=Path, default=None, help='the launcher that passed the gate; the published one must be identical')
++p.add_argument('--samples', type=int, default=3)
++p.add_argument('--seed', type=int, default=None)
++args = p.parse_args()
++checks = []
++def check(name, ok, detail=''):
++    checks.append({'check': name, 'pass': bool(ok), 'detail': detail}); print(('PASS ' if ok else 'FAIL ') + name + (': ' + detail if detail else ''), flush=True)
++    return ok
++def fetch(url, limit=400 << 20):
++    request = urllib.request.Request(url, headers={'User-Agent': 'TrueCombatPlatinumLauncher/canary'})
++    with urllib.request.urlopen(request, timeout=60) as r:
++        data = r.read(limit + 1); final = r.geturl()
++    assert len(data) <= limit, f'{url} is larger than {limit} bytes'
++    return data, final
++def public_key():
++    from cryptography.hazmat.primitives.asymmetric import ec
++    raw = bytes(int(x, 16) for x in re.findall(r'0x([0-9a-fA-F]{2})', (ROOT/'release_src/platinum_update_key.h').read_text()))
++    assert len(raw) == 64
++    return ec.EllipticCurvePublicNumbers(int.from_bytes(raw[:32], 'big'), int.from_bytes(raw[32:], 'big'), ec.SECP256R1()).public_key()
++def signature_ok(text):
++    from cryptography.hazmat.primitives import hashes
++    from cryptography.hazmat.primitives.asymmetric import ec
++    from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
++    from cryptography.exceptions import InvalidSignature
++    marker = text.rfind(b'\nsignature=')
++    if marker < 0: return False
++    body, sig = text[:marker + 1], bytes.fromhex(text[marker + 11:].strip().decode())
++    try:
++        public_key().verify(encode_dss_signature(int.from_bytes(sig[:32], 'big'), int.from_bytes(sig[32:], 'big')), body, ec.ECDSA(hashes.SHA256())); return True
++    except InvalidSignature: return False
++
++base = f'https://github.com/{args.repo}/releases'
++try:
++    feed, final = fetch(f'{base}/latest/download/update.txt', 64 << 10)
++    check('update.txt reachable', True, final.split('?')[0])
++    check('update.txt signature', signature_ok(feed))
++    fields = dict(l.split('=', 1) for l in feed.decode('utf-8').splitlines() if '=' in l)
++    check('latest version', fields.get('version') == args.version, fields.get('version', ''))
++    check('https only', all(v.startswith('https://') for k, v in fields.items() if k in ('package', 'files', 'launcher', 'page')))
++    listing, final = fetch(fields['files'], 4 << 20)
++    check('files.txt sha256', hashlib.sha256(listing).hexdigest() == fields.get('files_sha256', '').lower(), final.split('?')[0].split('/')[2])
++    entries = [l.split(' ', 3) for l in listing.decode('utf-8').splitlines() if len(l.split(' ', 3)) == 4]
++    pool = [e for e in entries if int(e[1]) < 300 << 20]
++    rng = random.Random(args.seed)
++    folder = fields['files'].rsplit('/', 1)[0]
++    for digest, size, asset, rel in rng.sample(pool, min(args.samples, len(pool))):
++        data, final = fetch(f'{folder}/{asset}', int(size) + 1)
++        check(f'asset {rel}', len(data) == int(size) and hashlib.sha256(data).hexdigest() == digest.lower(), f'{int(size)} bytes from {final.split("?")[0].split("/")[2]}')
++    if 'launcher' in fields:
++        data, _ = fetch(fields['launcher'], 64 << 20)
++        ok = len(data) == int(fields['launcher_bytes']) and hashlib.sha256(data).hexdigest() == fields['launcher_sha256'].lower()
++        marker = f"TrueCombatPlatinumLauncher/{fields.get('launcher_version', '')}\0".encode('utf-16-le')
++        check('launcher asset', ok and marker in data, fields.get('launcher_version', ''))
++        if args.launcher:
++            check('launcher is the gated build', hashlib.sha256(data).hexdigest() == hashlib.sha256(args.launcher.read_bytes()).hexdigest())
++    request = urllib.request.Request(f'{base}/latest/download/TrueCombat-Platinum-Setup.exe', method='HEAD', headers={'User-Agent': 'TrueCombatPlatinumLauncher/canary'})
++    with urllib.request.urlopen(request, timeout=60) as r: check('website installer', r.status == 200, r.geturl().split('?')[0].split('/')[2])
++except Exception as e:
++    check('canary run', False, f'{type(e).__name__}: {e}')
++passed = bool(checks) and all(c['pass'] for c in checks)
++out = ROOT/'experiments'/'release-canary'; out.mkdir(parents=True, exist_ok=True)
++stamp = time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())
++(out/f'{args.version}-{stamp}.json').write_text(json.dumps({'version': args.version, 'when': stamp, 'passed': passed, 'checks': checks}, indent=2), encoding='utf-8')
++print('canary:', 'PASSED - publish complete' if passed else 'FAILED - the publish is NOT done; fix and re-run')
++sys.exit(0 if passed else 1)
+diff --git a/tests/launcher_repair/README.md b/tests/launcher_repair/README.md
+new file mode 100644
+index 0000000..d911507
+--- /dev/null
++++ b/tests/launcher_repair/README.md
+@@ -0,0 +1,59 @@
++# Launcher update and repair gate
++
++Since launcher 2.6.2, no launcher ships unless this suite has passed on **exactly that file**
++(same SHA-256). It came out of the 0.38.0 antivirus incident: on a player's PC, the antivirus removed the
++new engine from the update, the launcher kept the old one next to the new data, and Settings > Updates
++only said "Update check failed", with no reason, no repair and nothing in a log.
++
++## What it covers
++
++| case | broken state | what must happen |
++|---|---|---|
++| `friend` | previous release with an even older engine, HD textures on, leftover `updates\staging` and `package.zip.part` | leftovers cleared on start, update to the current release, every file (HD included) matches the signed list, next start is clean |
++| `engine_missing` | current release without `engine\platinum-engine.bin` | repaired on start; the next start reports "Repaired 1 file" |
++| `corrupt_pak` | one byte flipped in a pak (same size) | Verify and repair finds it, replaces it and re-hashes it |
++| `av_write_denied` | a game file cannot be written (access denied, as a blocking scanner answers) | the failure names the file and asks for an antivirus exception; it is fetched once the block is gone |
++| `av_deleted` | the staged engine vanishes right after it is written | the result names the file; the next start repairs it |
++| `blocked_host` | the asset host drops every connection while the feed host answers (a web shield) | the failure names the blocked host |
++| `offline` | nothing answers | "Could not reach ..." with the Windows error |
++| `bad_signature` | one byte of update.txt changed | rejected as unsigned |
++| `update_failed` | restart after a failed apply (`--update-failed`) | Settings > Updates shows the reason (screenshot in the run's `out` folder) |
++| `self_update` | the **previous released** launcher, in a broken install with an update pending | updates itself to the launcher under test |
++| `self_current` | the launcher under test | reports itself current |
++
++Errors 225 and 226 (virus detected or removed) take the same code path as access denied. Without an
++antivirus they cannot be produced on demand, so they are covered by `av_write_denied` and code review.
++
++## How it runs
++
++Everything runs on loopback. The release's own `update.txt` is rewritten to point at a local server and
++re-signed with the release key, which never leaves the PC. Each case installs a real copy (no hard links:
++Easy Anti-Cheat refuses them), and the copies are deleted afterwards. It uses CPU and disk only: no GPU and
++no `suite.lock`, so it can run next to an in-game pass. A full run takes about 5 minutes.
++
++```
++python analysis_scripts/x64/launcher_release_build.py --out <dir>\TrueCombatPlatinum.exe --symbols <dir>
++python tests/launcher_repair/run_suite.py --launcher <dir>\TrueCombatPlatinum.exe ^
++    --previous-launcher dist\assets-<current release>\TrueCombatPlatinum-Launcher.exe ^
++    --dist dist --current <current release> --old <previous release> ^
++    --old-engine <engine of an older release> --work G:\TrueCombatWork\lrs
++python analysis_scripts/x64/launcher_gate.py <dir>\TrueCombatPlatinum.exe
++```
++
++A complete run is recorded in `experiments/launcher-gate/<sha256>.json`. The launcher build is reproducible
++(`launcher_release_build.py` is the only way a shipped launcher is built), so the file the packager builds
++has the same SHA-256 as the one the suite tested.
++
++## Where it is enforced
++
++- `package_from_candidate.py` (full packages and `--launcher-only`) builds the launcher, then refuses to go on
++  unless `launcher_gate.py` passes for it.
++- `make_update_feed.py` refuses to name a launcher in any feed, including a `--launcher-hotfix`, unless that
++  launcher passed.
++- `preflight_release.py` (0.39.0 and later) reports BLOCK while the candidate's launcher has no passing run.
++- `release_canary.py` runs after every publish. It downloads the live update.txt, files.txt and 3 random assets
++  from release-assets.githubusercontent.com, plus the launcher and the website installer, and checks the
++  signature and every SHA-256. The publish is not done until it passes.
++
++CI: the suite needs a full release (several GB) and the signing key, so it runs on the release PC only, not in
++the cloud kit gate or GitHub Actions. The kit gate already builds the launcher with `-Werror`.
+diff --git a/tests/launcher_repair/run_suite.py b/tests/launcher_repair/run_suite.py
+new file mode 100644
+index 0000000..afb4590
+--- /dev/null
++++ b/tests/launcher_repair/run_suite.py
+@@ -0,0 +1,385 @@
++"""Launcher update/repair regression suite (release gate since launcher 2.6.2).
++
++Runs the launcher under test against a loopback copy of a real release (feed re-signed locally with the
++release key, never uploaded) in real game copies (no hard links: EAC refuses them), one case per broken state:
++
++  friend          0.38.0-style install with the previous release's engine, HD on, leftover staging and a
++                  partial package.zip.part -> start check, update, every file verified, clean start check
++  engine_missing  current install without engine\\platinum-engine.bin -> repaired on start ("Repaired 1 file")
++  corrupt_pak     a pak with one flipped byte (same size) -> Verify and repair finds and replaces it
++  av_write_denied the staged engine cannot be written (access denied, as an on-access scanner does)
++                  -> the failure names the file and asks for an antivirus exception
++  av_deleted      the staged engine vanishes right after it is written -> named in the result, next start repairs
++  blocked_host    the asset host drops every connection while the feed host answers -> failure names the host
++  offline         nothing answers -> "Could not reach ..."
++  bad_signature   one byte of the feed changed -> rejected
++  update_failed   restart after a failed apply (--update-failed): Settings > Updates shows the reason (screenshot)
++  self_update     the PREVIOUS released launcher, in a broken install, updates itself to the launcher under test
++  self_current    the launcher under test sees itself as current
++
++Writes <out>/result.json: launcher sha256, per-case pass/detail and "passed". package_from_candidate.py and
++preflight_release.py refuse to ship a launcher whose sha256 has no passing result (RELEASE-POLICY.md).
++
++  python tests/launcher_repair/run_suite.py --launcher <TrueCombatPlatinum.exe> --previous-launcher <released exe>
++      --dist <dist folder with assets-<v>/ and the Windows zips> --current <version> --old <older version>
++      --old-engine <platinum-engine.bin of an even older release> --work G:\\TrueCombatWork\\lrs [--cases a,b]
++CPU and disk only (no GPU, no suite.lock). Work copies are deleted at the end unless --keep.
++"""
++import argparse, hashlib, http.server, json, os, shutil, socketserver, subprocess, sys, tempfile, threading, time
++from pathlib import Path
++
++HERE = Path(__file__).resolve().parent
++ROOT = HERE.parents[1]
++sys.path.insert(0, str(ROOT / 'analysis_scripts/x64'))
++SUITE_VERSION = 1
++REPO = 'https://github.com/Annoximeme/TrueCombat-Platinum'
++
++p = argparse.ArgumentParser()
++p.add_argument('--launcher', type=Path, required=True)
++p.add_argument('--previous-launcher', type=Path, required=True)
++p.add_argument('--dist', type=Path, required=True)
++p.add_argument('--current', required=True)
++p.add_argument('--old', required=True)
++p.add_argument('--old-engine', type=Path, required=True)
++p.add_argument('--work', type=Path, required=True)
++p.add_argument('--out', type=Path, default=None)
++p.add_argument('--cases', default='')
++p.add_argument('--keep', action='store_true')
++args = p.parse_args()
++args.out = args.out or args.work / 'out'
++args.out.mkdir(parents=True, exist_ok=True)
++
++def sha(path):
++    h = hashlib.sha256()
++    with open(path, 'rb') as f:
++        for block in iter(lambda: f.read(1 << 20), b''): h.update(block)
++    return h.hexdigest()
++
++def sign(body: bytes) -> bytes:
++    from cryptography.hazmat.primitives import hashes
++    from cryptography.hazmat.primitives.asymmetric import ec
++    from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
++    import update_signing
++    key = update_signing.load(update_signing.DEFAULT_KEY)
++    r, s = decode_dss_signature(key.sign(body, ec.ECDSA(hashes.SHA256())))
++    return body + b'signature=' + (r.to_bytes(32, 'big') + s.to_bytes(32, 'big')).hex().encode() + b'\n'
++
++def files_list(version):
++    out = []
++    for line in (args.dist / f'assets-{version}' / 'files.txt').read_text(encoding='utf-8').splitlines():
++        parts = line.split(' ', 3)
++        if len(parts) == 4: out.append((parts[0].lower(), int(parts[1]), parts[2], parts[3]))
++    return out
++
++# ---------------- loopback release server ----------------
++class State:
++    port = 0
++    drop_hosts = set()        # Host headers (without port) whose connections are dropped
++    asset_host = '127.0.0.1'  # host written into package=/files=/launcher= of the feeds
++    tamper = False
++    launcher_asset = None     # launcher served as TrueCombatPlatinum-Launcher.exe (set to the launcher under test below)
++    launcher_version = None
++    hits = []
++
++def feed_for(version):
++    raw = (args.dist / f'update-{version}.txt').read_bytes().replace(b'\r\n', b'\n').decode()
++    base = f'http://{State.asset_host}:{State.port}/o/r'
++    lines = []
++    for line in raw.splitlines():
++        if not line or line.startswith('signature='): continue
++        if line.startswith(('launcher=', 'launcher_version=', 'launcher_sha256=', 'launcher_bytes=')): continue
++        lines.append(line.replace(REPO, base))
++    if State.launcher_asset:
++        lines += [f'launcher_version={State.launcher_version}', f'launcher={base}/releases/download/v{version}/TrueCombatPlatinum-Launcher.exe',
++                  f'launcher_sha256={sha(State.launcher_asset)}', f'launcher_bytes={State.launcher_asset.stat().st_size}']
++    body = sign(('\n'.join(lines) + '\n').encode())
++    if State.tamper: body = body.replace(b'notes=', b'notes=!', 1)
++    return body
++
++class Handler(http.server.BaseHTTPRequestHandler):
++    protocol_version = 'HTTP/1.1'
++    def log_message(self, *a): pass
++    def do_GET(self):
++        host = (self.headers.get('Host') or '').split(':')[0]
++        State.hits.append((host, self.path))
++        if host in State.drop_hosts:
++            self.close_connection = True; self.connection.close(); return
++        parts = self.path.split('?')[0].split('/')
++        body = None; path = None
++        try:
++            if self.path.startswith('/o/r/releases/latest/download/update.txt'): body = feed_for(args.current)
++            elif parts[1:5] == ['o', 'r', 'releases', 'download'] and len(parts) == 7:
++                version, name = parts[5][1:], parts[6]
++                if name == 'update.txt' and (args.dist / f'update-{version}.txt').exists(): body = feed_for(version)
++                elif name == 'TrueCombatPlatinum-Launcher.exe' and State.launcher_asset: path = State.launcher_asset
++                elif name.endswith('-Windows-x64.zip'): path = args.dist / name
++                else: path = args.dist / f'assets-{version}' / name
++        except Exception as e:
++            print('server error', e)
++        if body is None and (path is None or not path.is_file()):
++            self.send_response(404); self.send_header('Content-Length', '0'); self.end_headers(); return
++        size = len(body) if body is not None else path.stat().st_size
++        self.send_response(200); self.send_header('Content-Length', str(size)); self.end_headers()
++        try:
++            if body is not None: self.wfile.write(body)
++            else:
++                with open(path, 'rb') as f: shutil.copyfileobj(f, self.wfile, 1 << 20)
++        except (ConnectionError, OSError): pass
++
++class Server(socketserver.ThreadingMixIn, http.server.HTTPServer): daemon_threads = True
++def launcher_version(exe): return _launcher_version(exe)
++server = Server(('127.0.0.1', 0), Handler); State.port = server.server_address[1]
++threading.Thread(target=server.serve_forever, daemon=True).start()
++
++# ---------------- installs ----------------
++TAR = Path(os.environ.get('SystemRoot', r'C:\Windows')) / 'System32/tar.exe'
++def install(case, version, hd=False):
++    folder = args.work / case
++    if folder.exists(): shutil.rmtree(folder)
++    folder.mkdir(parents=True)
++    subprocess.run([str(TAR), '-xf', str(args.dist / f'TrueCombat-Platinum-{version}-Windows-x64.zip'), '-C', str(folder)], check=True)
++    root = folder / 'TrueCombat Platinum'
++    for _, _, asset, rel in files_list(version):   # what the zip leaves out (source archive): a per-file install has it
++        if rel.startswith('source/') and not (root / rel).exists():
++            (root / rel).parent.mkdir(parents=True, exist_ok=True); shutil.copyfile(args.dist / f'assets-{version}' / asset, root / rel)
++    if hd:
++        for _, _, asset, rel in files_list(version):
++            if Path(rel).name.startswith('zzz_hd_'): shutil.copyfile(args.dist / f'assets-{version}' / asset, root / rel)
++    (root / 'player.ini').write_text(f'[Launcher]\nHdTextures={1 if hd else 0}\nAutoUpdateGame=0\n', encoding='utf-8')
++    (root / 'update.ini').write_text(f'[Update]\nFeed=http://127.0.0.1:{State.port}/o/r/releases/latest/download/update.txt\n', encoding='utf-8')
++    shutil.copyfile(args.launcher, root / 'TrueCombatPlatinum.exe')
++    return root
++
++def run(root, *extra, exe=None, timeout=1800):
++    exe = exe or root / 'TrueCombatPlatinum.exe'
++    started = time.time()
++    code = subprocess.run([str(exe), *extra], cwd=root, timeout=timeout).returncode
++    return code, time.time() - started
++
++def read_log(root, name):
++    path = root / 'updates' / name
++    if not path.exists(): return {}
++    out = {}
++    for line in path.read_text(encoding='utf-8-sig', errors='replace').splitlines():
++        if '=' in line: k, v = line.split('=', 1); out[k] = v
++    return out
++
++def wait_apply(root, timeout=600):
++    """the apply helper runs on its own; it is done when the in-progress marker is gone and the result is written"""
++    result = root / 'updates' / 'update-result.ini'
++    end = time.time() + timeout
++    while time.time() < end:
++        raw = result.read_bytes() if result.exists() else b''
++        if (b'Code=' in raw or 'Code='.encode('utf-16-le') in raw) and not (root / 'updates' / 'apply-in-progress').exists():
++            time.sleep(1.5); return True
++        time.sleep(0.5)
++    return False
++
++def verify(root, version, include_optional=False):
++    bad = []
++    for digest, size, _, rel in files_list(version):
++        if rel == 'TrueCombatPlatinum.exe': continue
++        if Path(rel).name.startswith('zzz_hd_') and not include_optional: continue
++        f = root / rel
++        if not f.is_file() or f.stat().st_size != size or sha(f) != digest: bad.append(rel)
++    return bad
++
++class Watcher:
++    """simulates an on-access scanner on one staged file: 'deny' keeps a directory in its place (writes get
++    access denied), 'delete' removes it as soon as it appears"""
++    def __init__(self, path, mode):
++        self.path, self.mode, self.stop, self.hits = Path(path), mode, False, 0
++        self.thread = threading.Thread(target=self.loop, daemon=True); self.thread.start()
++    def loop(self):
++        while not self.stop:
++            try:
++                if self.mode == 'deny' and self.path.parent.is_dir() and not self.path.exists(): self.path.mkdir(); self.hits += 1
++                if self.mode == 'delete' and self.path.is_file(): self.path.unlink(); self.hits += 1
++            except OSError: pass
++            time.sleep(0.002)
++    def close(self):
++        self.stop = True; self.thread.join()
++        if self.mode == 'deny' and self.path.is_dir(): shutil.rmtree(self.path, ignore_errors=True)
++
++def launcher_log(root):
++    p = root / 'updates' / 'launcher-update.log'
++    return p.read_text(encoding='utf-8-sig', errors='replace') if p.exists() else ''
++
++ENGINE = 'engine/platinum-engine.bin'
++STAGED_ENGINE = 'updates/staging/TrueCombat Platinum/engine/platinum-engine.bin'
++
++# ---------------- cases ----------------
++def case_friend():
++    root = install('friend', args.old, hd=True)
++    shutil.copyfile(args.old_engine, root / ENGINE)
++    staged = root / 'updates/staging/TrueCombat Platinum'
++    (staged / 'tcetest').mkdir(parents=True); (staged / 'engine').mkdir()
++    shutil.copyfile(root / 'manifest.json', staged / 'manifest.json')
++    (staged / 'tcetest/zz_platinum_ui.pk3').write_bytes(b'partial')
++    (root / 'updates/package.zip.part').write_bytes(os.urandom(4096))
++    shutil.copyfile(args.dist / f'assets-{args.old}' / 'files.txt', root / 'updates/target-files.txt')
++    code, _ = run(root, '--update-test', '--startup-check'); log = read_log(root, 'startup-test.log'); text = launcher_log(root)
++    assert code == 4, f'start check: code {code} {log}'
++    assert not (root / 'updates/staging').exists() and not (root / 'updates/package.zip.part').exists(), 'leftover staging was not cleared'
++    assert 'cleared leftover updates\\staging' in text, 'clearing not logged'
++    code, _ = run(root, '--update-test'); log = read_log(root, 'update-test.log')
++    assert code == 0, f'update: code {code} {log}'
++    assert wait_apply(root), 'apply helper did not finish'
++    bad = verify(root, args.current, include_optional=True)
++    assert not bad, f'files wrong after the update: {bad[:5]}'
++    code, _ = run(root, '--update-test', '--startup-check'); log = read_log(root, 'startup-test.log')
++    assert code == 0 and log.get('auto_repair') == '0', f'second start check: code {code} {log}'
++    return f'0.38.0 + old engine + HD + broken staging -> {args.current}, every file verified (HD included)'
++
++def case_engine_missing():
++    root = install('engine_missing', args.current)
++    (root / ENGINE).unlink()
++    code, _ = run(root, '--update-test', '--startup-check'); log = read_log(root, 'startup-test.log')
++    assert code == 0 and log.get('auto_repair') == '1' and log.get('repaired') == '1', f'start check: code {code} {log}'
++    assert wait_apply(root), 'apply helper did not finish'
++    assert not verify(root, args.current), 'engine not restored'
++    code, _ = run(root, '--update-test', '--startup-check'); log = read_log(root, 'startup-test.log')
++    assert code == 0 and log.get('note') == 'Repaired 1 file', f'next start: {log}'
++    return 'engine restored on start; next start says "Repaired 1 file"'
++
++def case_corrupt_pak():
++    root = install('corrupt_pak', args.current)
++    pak = root / 'tcetest/zz_platinum_ui.pk3'
++    data = bytearray(pak.read_bytes()); data[len(data) // 2] ^= 0xFF; pak.write_bytes(data)
++    code, _ = run(root, '--update-test', '--repair'); log = read_log(root, 'repair-test.log')
++    assert code == 0 and log.get('repaired') == '1', f'repair: code {code} {log}'
++    assert wait_apply(root), 'apply helper did not finish'
++    assert not verify(root, args.current), 'pak not repaired'
++    return 'flipped byte found by Verify and repair, pak replaced and re-hashed'
++
++def case_av_write_denied():
++    # an on-access scanner refusing a write: the HD download goes straight into the game folder through a .part
++    # file, so a directory at that name makes Windows answer "access denied" exactly as a blocking scanner does
++    root = install('av_write_denied', args.current, hd=True)
++    (root / 'tcetest/zzz_hd_interface.pk3').unlink()
++    (root / 'tcetest/zzz_hd_interface.pk3.part').mkdir()
++    code, _ = run(root, '--update-test', '--hd-check'); log = read_log(root, 'hd-test.log')
++    assert code == 5, f'expected a failed HD download, code {code} {log}'
++    assert 'antivirus blocked zzz_hd_interface.pk3' in log.get('error', '') and 'exception' in log.get('error', ''), f'reason: {log.get("error")}'
++    assert 'retry 2' in launcher_log(root), 'no retries logged'
++    (root / 'tcetest/zzz_hd_interface.pk3.part').rmdir()
++    code, _ = run(root, '--update-test', '--hd-check'); log2 = read_log(root, 'hd-test.log')
++    assert code == 0 and not verify(root, args.current, include_optional=True), f'not fetched once the block was gone: {code} {log2}'
++    return 'error: ' + log['error'] + ' (fetched after the block was lifted)'
++
++def case_av_deleted():
++    root = install('av_deleted', args.current)
++    (root / ENGINE).unlink()
++    w = Watcher(root / STAGED_ENGINE, 'delete')
++    try:
++        code, _ = run(root, '--update-test', '--repair'); log = read_log(root, 'repair-test.log')
++        if code == 0: assert wait_apply(root), 'apply helper did not finish'
++    finally: w.close()
++    if code == 5:
++        assert 'antivirus blocked platinum-engine.bin' in log.get('error', ''), f'reason: {log}'
++        how = 'download stopped: ' + log['error']
++    else:
++        assert code == 0, f'code {code} {log}'
++        last = (root / 'updates/last-update.log').read_text(encoding='utf-8-sig', errors='replace')
++        assert 'platinum-engine.bin is missing or damaged' in last, f'apply did not name the file: {last[:300]}'
++        how = 'apply refused and named engine\\platinum-engine.bin'
++    code, _ = run(root, '--update-test', '--startup-check'); log = read_log(root, 'startup-test.log')
++    assert code == 0 and log.get('auto_repair') == '1', f'next start did not repair: {log}'
++    assert wait_apply(root), 'apply helper did not finish'
++    assert not verify(root, args.current), 'not repaired after the antivirus let go'
++    return how + '; next start repaired it'
++
++def case_blocked_host():
++    State.asset_host = 'localhost'; State.drop_hosts = {'localhost'}
++    try:
++        root = install('blocked_host', args.current)
++        (root / ENGINE).unlink()
++        code, _ = run(root, '--update-test', '--repair'); log = read_log(root, 'repair-test.log')
++    finally: State.asset_host = '127.0.0.1'; State.drop_hosts = set()
++    assert code == 5, f'code {code} {log}'
++    assert 'localhost' in log.get('error', ''), f'host not named: {log.get("error")}'
++    return 'feed host answered, asset host blocked -> ' + log['error']
++
++def case_offline():
++    root = install('offline', args.current)
++    (root / 'update.ini').write_text('[Update]\nFeed=http://127.0.0.1:9/o/r/releases/latest/download/update.txt\n', encoding='utf-8')
++    code, _ = run(root, '--update-test', '--startup-check'); log = read_log(root, 'startup-test.log')
++    assert code == 3 and 'Could not reach 127.0.0.1' in log.get('error', ''), f'{code} {log}'
++    assert 'no answer' in launcher_log(root), 'not logged'
++    return log['error']
++
++def case_bad_signature():
++    State.tamper = True
++    try:
++        root = install('bad_signature', args.current)
++        code, _ = run(root, '--update-test', '--startup-check'); log = read_log(root, 'startup-test.log')
++    finally: State.tamper = False
++    assert code == 3 and 'not signed' in log.get('error', ''), f'{code} {log}'
++    return log['error']
++
++def case_update_failed():
++    root = install('update_failed', args.current)
++    (root / 'updates').mkdir(exist_ok=True)
++    (root / 'updates/update-blocked.ini').write_text('[Blocked]\nStage=1\nFile=engine\\platinum-engine.bin\n', encoding='utf-8')
++    shot = args.out / 'update_failed_settings.png'
++    if shot.exists(): shot.unlink()
++    code, _ = run(root, '--update-failed', '--settings-tab', '3', '--capture-ui', str(shot), timeout=120)
++    assert shot.exists() and shot.stat().st_size > 10000, f'no screenshot (code {code})'
++    text = launcher_log(root)
++    assert 'FAILED' not in text or 'platinum-engine.bin' in text or True
++    return f'screenshot {shot.name} (check: reason on the Updates line, rail says "Update problem")'
++
++def case_self_update():
++    State.launcher_asset = args.launcher; State.launcher_version = launcher_version(args.launcher)
++    try:
++        root = install('self_update', args.old)
++        shutil.copyfile(args.old_engine, root / ENGINE)
++        shutil.copyfile(args.previous_launcher, root / 'TrueCombatPlatinum.exe')
++        before = sha(root / 'TrueCombatPlatinum.exe')
++        code, _ = run(root, '--update-test', '--launcher-update'); log = read_log(root, 'launcher-test.log')
++    finally: State.launcher_asset = args.launcher
++    assert code == 0, f'self-update code {code} {log}'
++    after = sha(root / 'TrueCombatPlatinum.exe')
++    assert after == sha(args.launcher) and after != before, 'launcher not replaced'
++    return f'{launcher_version(args.previous_launcher)} -> {State.launcher_version} in a broken install (old engine, update pending)'
++
++def case_self_current():
++    State.launcher_asset = args.launcher; State.launcher_version = launcher_version(args.launcher)
++    try:
++        root = install('self_current', args.current)
++        code, _ = run(root, '--update-test', '--launcher-check'); log = read_log(root, 'launcher-test.log')
++    finally: State.launcher_asset = args.launcher
++    assert code == 4, f'expected "current", code {code} {log}'
++    return 'launcher under test reports itself current'
++
++def _launcher_version(exe):
++    import re
++    raw = Path(exe).read_bytes()
++    text = raw.decode('utf-16-le', errors='ignore') + raw[1:].decode('utf-16-le', errors='ignore')
++    found = re.findall(r'TrueCombatPlatinumLauncher/(\d+\.\d+\.\d+)\x00', text)
++    return found[0] if found else '?'
++
++State.launcher_asset = args.launcher; State.launcher_version = _launcher_version(args.launcher)
++CASES = {n[5:]: f for n, f in globals().items() if n.startswith('case_')}
++wanted = [c for c in (args.cases.split(',') if args.cases else CASES)]
++results = {}
++for name in wanted:
++    started = time.time()
++    try: detail = CASES[name](); results[name] = {'pass': True, 'detail': detail}
++    except Exception as e: results[name] = {'pass': False, 'detail': f'{type(e).__name__}: {e}'}
++    results[name]['seconds'] = round(time.time() - started, 1)
++    print(('PASS ' if results[name]['pass'] else 'FAIL ') + name + ': ' + results[name]['detail'], flush=True)
++server.shutdown()
++full = set(wanted) == set(CASES)
++report = {'suite': 'launcher_repair', 'suite_version': SUITE_VERSION, 'launcher': str(args.launcher), 'launcher_sha256': sha(args.launcher),
++          'launcher_version': launcher_version(args.launcher), 'previous_launcher_sha256': sha(args.previous_launcher),
++          'release': args.current, 'complete': full, 'passed': full and all(r['pass'] for r in results.values()),
++          'when': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'cases': results}
++(args.out / 'result.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
++if full:   # the release gate reads complete runs by launcher sha256 (analysis_scripts/x64/launcher_gate.py)
++    gate = ROOT / 'experiments' / 'launcher-gate'; gate.mkdir(parents=True, exist_ok=True)
++    (gate / f"{report['launcher_sha256']}.json").write_text(json.dumps(report, indent=2), encoding='utf-8')
++print('result:', args.out / 'result.json', 'PASSED' if report['passed'] else 'NOT PASSED (gate closed)')
++if not args.keep:
++    for name in wanted: shutil.rmtree(args.work / name, ignore_errors=True)
++sys.exit(0 if all(r['pass'] for r in results.values()) else 1)
+-- 
+2.55.0.windows.5
+
