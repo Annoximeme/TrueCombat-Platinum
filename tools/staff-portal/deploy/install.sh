@@ -7,6 +7,7 @@
 #   sudo ./deploy/install.sh stats-link          lets the portal use the stats service's review queue (token + drop-in, restarts tcp-bridge)
 #   sudo ./deploy/install.sh insights-link       lets the portal read the website insights service (copies its studio key)
 #   sudo ./deploy/install.sh bot-link            lets our Discord bot run /staff commands (shared token for the bot)
+#   sudo ./deploy/install.sh accounts-link       1.5.0: the Devlog comments page (copies the accounts service's comments token)
 #   sudo ./deploy/install.sh uninstall           stops and removes the service (keeps data and config)
 #
 # Before install: put the Discord OAuth client secret in /etc/tcp-staff-portal/client-secret (one line),
@@ -53,6 +54,7 @@ inspect() {
   say "stats:   $( filled $ETC/stats-token && echo 'review queue linked' || echo 'review queue not linked (install.sh stats-link)')"
   say "insights: $( filled $ETC/insights-key && echo 'linked' || echo 'not linked (install.sh insights-link)')"
   say "discord bot: $( filled $ETC/bot-api-token && echo 'linked' || echo 'not linked (install.sh bot-link)')"
+  say "comments: $( filled $ETC/accounts-token && echo 'linked' || echo 'not linked (install.sh accounts-link, after accounts 1.3.0)')"
   say "botdb:   $( [ -f $BOTDB/bot.db ] && echo "$BOTDB/bot.db (linked Discord accounts)" || echo 'no Discord bot database')"
   for entry in $SERVERS; do
     key=${entry%%:*}; home=${entry#*:}
@@ -93,7 +95,7 @@ install_portal() {
   chown root:root "$ETC/client-secret"; chmod 0600 "$ETC/client-secret"
   if grep -q 'DISCORD_' "$ETC/config.json"; then say "fill owners, client_id and guild_id in $ETC/config.json first"; exit 1; fi
   # optional credentials: an empty file switches the feature off
-  for f in staff-webhook stats-token insights-key bot-api-token; do
+  for f in staff-webhook stats-token insights-key bot-api-token accounts-token; do
     [ -f "$ETC/$f" ] || : > "$ETC/$f"
     chown root:root "$ETC/$f"; chmod 0600 "$ETC/$f"
   done
@@ -237,6 +239,18 @@ bot_link() {
     || { say "the portal answered $code to the bot token check"; exit 1; }
 }
 
+accounts_link() {
+  need_root
+  filled /etc/tcp-accounts/comments-token || { say "no /etc/tcp-accounts/comments-token: install accounts 1.3.0 first (tools/accounts/deploy/install.sh install)"; exit 1; }
+  install -d -m 0750 -o root -g tcpstaff "$ETC"
+  install -m 0600 -o root -g root /etc/tcp-accounts/comments-token "$ETC/accounts-token"
+  H=$(mktemp); chmod 0600 "$H"; printf 'X-Accounts-Token: %s\n' "$(cat "$ETC/accounts-token")" > "$H"
+  code=$(curl -s -o /dev/null -w '%{http_code}' -H @"$H" http://127.0.0.1:8095/internal/comments/stats); rm -f "$H"
+  [ "$code" = "200" ] || { say "the accounts service answered $code to the comments token (200 expected): is accounts 1.3.0 running?"; exit 1; }
+  systemctl restart $UNIT
+  say "accounts linked: Devlog comments page on (rollback: empty $ETC/accounts-token and restart)"
+}
+
 uninstall() {
   need_root
   systemctl disable --now $UNIT tcp-staff-watch.timer 2>/dev/null || true
@@ -253,6 +267,7 @@ case "$MODE" in
   stats-link) stats_link ;;
   insights-link) insights_link ;;
   bot-link) bot_link ;;
+  accounts-link) accounts_link ;;
   uninstall) uninstall ;;
-  *) say "usage: $0 inspect|install|caddy|stats-link|insights-link|bot-link|uninstall"; exit 2 ;;
+  *) say "usage: $0 inspect|install|caddy|stats-link|insights-link|bot-link|accounts-link|uninstall"; exit 2 ;;
 esac

@@ -16,6 +16,8 @@ RestartSec=5
 LoadCredential=client-secret:/etc/tcp-accounts/client-secret
 LoadCredential=stats-token:/etc/tcp-accounts/stats-token
 LoadCredential=internal-token:/etc/tcp-accounts/internal-token
+# the staff portal's token for /internal/comments/* only (devlog comments, 1.3.0; install creates it)
+LoadCredential=comments-token:/etc/tcp-accounts/comments-token
 ReadWritePaths=-/var/lib/tcpgame/home/tcetest/accounts -/var/lib/tcpgame/home-unranked/tcetest/accounts
 ReadWritePaths=-/var/lib/tcpgame/home-pickup1/tcetest/accounts -/var/lib/tcpgame/home-pickup2/tcetest/accounts
 StateDirectory=tcp-accounts
