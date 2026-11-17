@@ -85,7 +85,7 @@
 <section class="band">
   <div class="wrap doc">
     <nav class="doc-toc" aria-label="Op deze pagina">
-      <a href="#short">Kort samengevat</a><a href="#website">Deze website</a><a href="#game">De game</a><a href="#launcher">De launcher</a><a href="#choices">Jouw keuzes</a><a href="#changes">Wijzigingen</a>
+      <a href="#short">Kort samengevat</a><a href="#website">Deze website</a><a href="#game">De game</a><a href="#launcher">De launcher</a><a href="#accounts">Accounts</a><a href="#community">Moderatie en steun</a><a href="#partners">Wie nog</a><a href="#choices">Jouw rechten</a><a href="#changes">Wijzigingen</a>
     </nav>
     <div class="doc-body">
       <section id="short">
@@ -96,6 +96,7 @@
           <li><b>We tellen bezoeken, geen bezoekers.</b> De website bewaart dagtotalen en niets dat naar een persoon terugleidt.</li>
           <li><b>Zegt je browser nee, dan luisteren we.</b> Met Global Privacy Control of Do Not Track aan word je helemaal niet geteld.</li>
           <li><b>De launcher deelt crash- en hardwaregegevens alleen als je ja zegt.</b> Hij vraagt het één keer, met twee gelijke knoppen, en je kunt je antwoord altijd wijzigen.</li>
+          <li><b>Een echt mens antwoordt.</b> Mail naar <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a> voor een kopie van je gegevens, een correctie of een verwijdering. We antwoorden binnen een maand.</li>
         </ul>
       </section>
 
@@ -114,8 +115,8 @@
           <li>Volledige adressen van de pagina's die je naar ons stuurden</li>
           <li>Iets dat een bezoek, beoordeling of download aan een persoon koppelt</li>
         </ul>
-        <p>Je sterrenbeoordelingen bij devlogberichten worden in je eigen browser onthouden, zodat de sterren gevuld blijven als je terugkomt. Die notitie verlaat je computer nooit en wordt niet gebruikt om te tellen.</p>
-        <p>Sommige pagina's halen live gegevens op bij <code>api.truecombat.eu</code> (servers, ranglijsten) en patchnotes via de GitHub API. De trailer komt pas van YouTube nadat je op afspelen klikt. Zoals bij elke website zien deze servers je verbindingsadres terwijl ze antwoorden.</p>
+        <p>Je browser bewaart een paar kleine notities voor de site zelf, nooit om te tellen: je sterrenbeoordelingen bij devlogberichten, welke devlogberichten je al zag, een kortlevende kopie van de patchnotes en, terwijl je een pc aan je account koppelt, de eenmalige koppelcode. Wis je je browsergegevens, dan verdwijnen ze.</p>
+        <p>Live gegevens zoals servers en ranglijsten komen van <code>api.truecombat.eu</code>, en de patchnotes worden naar deze site gekopieerd, zodat je browser GitHub er nooit om vraagt. De site wordt geleverd via Cloudflare, dat hem snel houdt en tegen aanvallen beschermt. De trailer komt pas van YouTube nadat je op afspelen klikt, en downloads komen van GitHub. Zoals elke webserver zien die je verbindingsadres terwijl ze antwoorden.</p>
       </section>
 
       <section id="game">
@@ -123,10 +124,11 @@
         <h2>De game en de launcher</h2>
         <ul>
           <li><b>Online spelen.</b> Gameservers zien je verbindingsadres, zoals bij elke online game. Onze moderatietools bewaren het tot 90 dagen om valsspelen en misbruik aan te pakken, en een ban bewaart het adres dat geband werd.</li>
-          <li><b>Ranglijsten.</b> Ranked potjes op officiële en geverifieerde servers leggen je spelnaam vast, een speler-ID afgeleid van je gamesleutel en je wedstrijdstatistieken. Daarmee worden de ranglijsten en je openbare profiel gevuld.</li>
+          <li><b>Ranglijsten.</b> Ranked potjes op officiële en geverifieerde servers leggen je spelnaam vast, een speler-ID afgeleid van je gamesleutel en je wedstrijdstatistieken. Daarmee worden de ranglijsten en je openbare profiel gevuld, en die gegevens blijven bewaard zolang de ranglijsten bestaan, want elke rang is erop gebouwd. Met een account kun je je profiel altijd verbergen. Zonder account mail je ons en halen we je naam van de openbare pagina's.</li>
           <li><b>Anti-cheat.</b> Officiële servers gebruiken Easy Anti-Cheat, dat valt onder het <a href="https://www.epicgames.com/site/privacypolicy">privacybeleid van Epic Games</a>.</li>
           <li><b>Crashrapporten en geheugendumps</b> blijven op je pc. Ze komen alleen bij ons als je ze zelf bij een bugmelding voegt. Kies je ervoor om launchergegevens te delen, dan wordt alleen de plek van de crash verstuurd, zoals hieronder beschreven.</li>
-          <li><b>Bugmeldingen</b> die je vanuit de game verstuurt bevatten wat je schrijft, een screenshot en technische details zoals de map, framerate en grafische kaart, zodat we het probleem kunnen nabootsen.</li>
+          <li><b>Bugmeldingen</b> die je vanuit de game verstuurt bevatten wat je schrijft, een screenshot en technische details zoals de map, framerate en grafische kaart, zodat we het probleem kunnen nabootsen. Een melding en haar screenshot worden 90 dagen na het afsluiten gewist.</li>
+          <li><b>Chat en spraak.</b> Tekst- en spraakchat gaan via de gameserver naar de andere spelers. Onze servers nemen geen spraak op. Tekstchat op officiële servers wordt 30 dagen bewaard, zodat meldingen van misbruik nagekeken kunnen worden.</li>
         </ul>
       </section>
 
@@ -145,18 +147,54 @@
         <p class="callout"><b>Bekijk het zelf.</b> Instellingen &gt; Privacy &gt; Wat wordt gedeeld in de launcher toont precies het rapport dat je pc als volgende zou versturen, nog voor het je computer verlaat.</p>
       </section>
 
-      <section id="choices">
+      <section id="accounts">
         <span class="eyebrow">05</span>
-        <h2>Jouw keuzes</h2>
+        <h2>Spelersaccounts</h2>
+        <p>Accounts zijn optioneel. Niemand heeft er een nodig om te spelen. Maak je er een, dan meld je je aan met Discord, en vragen we Discord alleen je gebruikers-ID en naam. Het aanmeldtoken van Discord gooien we meteen daarna weg.</p>
+        <ul>
+          <li><b>Wat we bewaren.</b> Je Discord-gebruikers-ID en -naam, de spelnaam die je kiest, de pc's die je koppelde (een code afgeleid van de gamesleutel van elke pc, plus het label dat je eraan gaf), passkeys die je toevoegt (alleen publieke sleutels), je profielinstellingen, en je vorige naam tot 30 dagen na een naamswijziging.</li>
+          <li><b>Aangemeld blijven.</b> Een aanmeldcookie op truecombat.eu houdt je tot 30 dagen aangemeld. Het account heeft die nodig om te werken, en hij dient voor niets anders. Elke aanmelding wordt 30 dagen gelogd met haar verbindingsadres, zodat we een gestolen account kunnen opmerken.</li>
+          <li><b>Je profiel.</b> Je profiel is openbaar tenzij je het verbergt, en je Discord-naam verschijnt alleen als je dat aanzet. Accounts zijn voor spelers van 13 jaar en ouder.</li>
+        </ul>
+        <p>We bewaren dit omdat je om een account vroeg (AVG artikel 6, lid 1, b), en we bewaren het tot je het verwijdert. Speel je een jaar niet en meld je je niet aan, dan komt je gereserveerde naam weer vrij. Je accountpagina heeft een knop die alles downloadt wat we over je account bewaren, en een knop die het definitief wist: het account, gekoppelde pc's, namen, sessies en het aanmeldlogboek. Wedstrijdstatistieken blijven op de ranglijsten staan, los van je account. Werd het account geband, dan bewaart de ban een eenrichtingscode van je Discord-ID, zodat hij niet te omzeilen is met een nieuw account.</p>
+      </section>
+
+      <section id="community">
+        <span class="eyebrow">06</span>
+        <h2>Moderatie, Discord en steun</h2>
+        <ul>
+          <li><b>Meldingen en bezwaren.</b> Wordt een speler gemeld of geband, dan bewaren moderators wat ze nodig hebben om te beslissen: de melding, de spelnaam en ID's, en bewijs zoals screenshots of wedstrijdopnames. Bewijs wordt na een jaar gewist, tenzij de zaak nog openstaat. Een ban, en elk bezwaar ertegen met de contactgegevens die je zelf opgeeft, blijft bij het banrecord bewaard.</li>
+          <li><b>Discord.</b> Onze Discord-server en bot zien wat Discord met elke server deelt waar je lid van wordt. Koppel je je account, dan kan de bot je spelnaam en statistieken opzoeken om wedstrijduitslagen te posten en rollen toe te kennen. Al de rest op Discord valt onder het <a href="https://discord.com/privacy">privacybeleid van Discord</a>.</li>
+          <li><b>Steun via Ko-fi.</b> Donaties lopen via Ko-fi. We bewaren het bedrag en de naam die je opgeeft, en tonen die naam alleen als je je steun openbaar maakte. Je e-mailadres, betaalgegevens of bericht bewaren we nooit.</li>
+        </ul>
+      </section>
+
+      <section id="partners">
+        <span class="eyebrow">07</span>
+        <h2>Wie nog met gegevens werkt</h2>
+        <p>We verkopen nooit gegevens en delen ze nooit voor reclame. Deze bedrijven verwerken gegevens in onze opdracht, of draaien een dienst die je met ons gebruikt:</p>
+        <ul>
+          <li><b>Hostinger</b>, onze serverhost: gameservers, website, statistieken en accounts.</li>
+          <li><b>Cloudflare</b> levert en beschermt de website.</li>
+          <li><b>Zoho</b> verzorgt onze e-mail, in zijn Europese datacenters.</li>
+          <li><b>GitHub</b> levert de downloads en de broncode, en bewaart onze privé nachtelijke serverback-ups. Accountgegevens in die back-ups zijn versleuteld.</li>
+          <li><b>Discord</b> voor het aanmelden en onze community. <b>Epic Games</b> voor Easy Anti-Cheat op officiële servers. <b>Ko-fi</b> voor donaties. <b>YouTube</b> voor de trailer, pas nadat je op afspelen klikt.</li>
+        </ul>
+        <p>Sommige van deze bedrijven zitten buiten de EU. Doorgifte steunt op een adequaatheidsbesluit van de EU, zoals het EU-VS-gegevensprivacykader of het besluit voor het Verenigd Koninkrijk, of op de modelcontractbepalingen van de Europese Commissie.</p>
+      </section>
+
+      <section id="choices">
+        <span class="eyebrow">08</span>
+        <h2>Jouw keuzes en rechten</h2>
         <p>Wil je niet geteld worden op deze website, zet dan Global Privacy Control of Do Not Track aan in je browser. Ook <code>api.truecombat.eu/insights</code> blokkeren werkt, en de site blijft precies hetzelfde werken.</p>
-        <p>Vragen, of wil je iets laten verwijderen? Vraag het ons op <a href="https://discord.gg/8kcHdg2Hch">Discord</a> of open een issue op <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>. Alle telcode staat in de openbare repository, dus je hoeft ons nooit op ons woord te geloven.</p>
-        <p>We tellen websitebezoeken omdat we een gerechtvaardigd belang hebben bij weten hoe de site gebruikt wordt (AVG artikel 6, lid 1, f), met de waarborgen hierboven. Gebruiksgegevens uit de game verzamelen we alleen met jouw toestemming, die je op elk moment in de launcher kunt intrekken. TrueCombat: Platinum wordt gemaakt door Team Terminus, onder leiding van RaziC*. Vind je dat we verkeerd met je gegevens omgaan, dan kun je klacht indienen bij een toezichthouder; in België, waar we gevestigd zijn, is dat de <a href="https://www.gegevensbeschermingsautoriteit.be">Gegevensbeschermingsautoriteit</a>.</p>
+        <p><b>Jouw rechten.</b> Je kunt een kopie van je gegevens vragen, ze laten verbeteren of wissen, beperken hoe we ze gebruiken, of ze in een overdraagbare vorm krijgen. Je kunt ook bezwaar maken tegen alles wat we op basis van gerechtvaardigd belang doen. Met een account download of wis je alles zelf op de accountpagina. Voor al de rest mail je naar <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a>. We antwoorden binnen een maand, en kunnen vragen om aan te tonen dat de gegevens van jou zijn, bijvoorbeeld door te schrijven vanaf het account in kwestie. Alle telcode staat in de <a href="https://github.com/Annoximeme/TrueCombat-Platinum">openbare repository</a>, dus je hoeft ons nooit op ons woord te geloven.</p>
+        <p><b>Wie verantwoordelijk is.</b> TrueCombat: Platinum wordt gemaakt door Team Terminus. De verwerkingsverantwoordelijke is Gianni Goossens (RaziC*), gevestigd in België en bereikbaar via <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a>. Websitetellingen, het beschermen van de gameservers, moderatie, ranglijsten en back-ups steunen op ons gerechtvaardigd belang bij een eerlijke, veilige game die werkt (AVG artikel 6, lid 1, f), met de waarborgen op deze pagina. Accounts steunen op jouw vraag om er een (artikel 6, lid 1, b). Launchergegevens en bugmeldingen worden alleen met jouw toestemming verstuurd (artikel 6, lid 1, a), die je op elk moment kunt intrekken. Vind je dat we verkeerd met je gegevens omgaan, dan kun je klacht indienen bij een toezichthouder; in België is dat de <a href="https://www.gegevensbeschermingsautoriteit.be">Gegevensbeschermingsautoriteit</a>.</p>
       </section>
 
       <section id="changes">
-        <span class="eyebrow">06</span>
+        <span class="eyebrow">09</span>
         <h2>Wijzigingen aan deze pagina</h2>
-        <p>Als er verandert wat we verzamelen, verandert eerst deze pagina, en de devlog meldt het. Laatst bijgewerkt op 16 november 2026.</p>
+        <p>Als er verandert wat we verzamelen, verandert eerst deze pagina, en de devlog meldt het. Laatst bijgewerkt op 17 november 2026.</p>
         <p class="yt-note">Het opzoeken van landen gebruikt IP to Country Lite van <a href="https://db-ip.com">DB-IP</a>, onder licentie CC BY 4.0.</p>
       </section>
     </div>
@@ -196,6 +234,6 @@
 </footer>
 <!--/footer-->
 
-<script src="../js/site.js?v=b0bf155caf"></script>
+<script src="../js/site.js?v=18c4378961"></script>
 </body>
 </html>
