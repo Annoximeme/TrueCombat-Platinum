@@ -34,7 +34,14 @@
   },
   "0a1675f9bd20c488ae32cce8366739cf97301c588aef790a7df66911317f0bfa": {
    "name": "platinum-server.bin",
-   "bytes": 1801728
+   "bytes": 1801728,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T17:46:23Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:50:04Z",
+   "settle": true
   },
   "116ff41ada1bb891f233ec9b30bff27b5c880fc6cba2fee1637c3ed585329d0a": {
    "name": "qagame_mp_x64.dll",
@@ -91,7 +98,14 @@
   },
   "1515b8b6bd0368c8c506b9d8001ab31b1deedf9f37ecb34ea8ba6e8060305cbb": {
    "name": "platinum-server.bin",
-   "bytes": 1801728
+   "bytes": 1801728,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T17:48:31Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:51:08Z",
+   "settle": true
   },
   "15cf96577d7c8c3870dd0c9622347698807ede4ccc32730632f9e3a2947a1100": {
    "name": "platinum-engine.bin",
@@ -192,7 +206,14 @@
   },
   "28c716d166d4f246db05caeba202d62baf6c59e48b7e078346f16f928e723bb8": {
    "name": "platinum-server.bin",
-   "bytes": 1801728
+   "bytes": 1801728,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T17:47:32Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:50:36Z",
+   "settle": true
   },
   "299a2384c412a7b60b58115f6d021cbab9b2fe446df744b945ab9d59da3f4474": {
    "name": "renderer_dx12_x64.dll",
@@ -206,11 +227,25 @@
   },
   "2bf16cb2e29a4b9c356b1dbc4002c7093e9941d3c5a06ce5116f6ffe77b44770": {
    "name": "platinum-engine.bin",
-   "bytes": 3982848
+   "bytes": 3982848,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-17T17:44:48Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:49:16Z",
+   "settle": true
   },
   "2d3163b6ee0a1539d83dbce80b39a9741fddb20bbc4252cda1f360fbfd881402": {
    "name": "platinum-engine.bin",
-   "bytes": 3978240
+   "bytes": 3978240,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T17:45:51Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:49:48Z",
+   "settle": true
   },
   "30ddf5f69799ef9080c58cdff186f94a2c0b8a61711d38df24b98646507ecbc0": {
    "name": "renderer_dx12_x64.dll",
@@ -234,7 +269,14 @@
   },
   "3466154369df54350c61977256cae435796752487764f0ec54afac343a536dc5": {
    "name": "platinum-server.bin",
-   "bytes": 1801728
+   "bytes": 1801728,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-17T17:45:19Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:49:32Z",
+   "settle": true
   },
   "3520505d640d4487b5113f294858fcc1b3356000d542a4cad3317bba968b408b": {
    "name": "platinum-engine.bin",
@@ -569,7 +611,14 @@
   },
   "634afeffe6cf982aa0ca012a3f49f05e13a09b3f765fe1d567f3a60bf63531eb": {
    "name": "platinum-engine.bin",
-   "bytes": 3958784
+   "bytes": 3958784,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T17:47:59Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:50:52Z",
+   "settle": true
   },
   "635f169f7f110f3a504793c4c849995288a0a4eaf105b9b70af438f9cc72a3a9": {
    "name": "TrueCombat-Platinum-Setup.exe",
@@ -1280,7 +1329,14 @@
   },
   "fe5956b9e679fead9e80849d413317d87cfba03d13f4ce5db82bfff8958e9df9": {
    "name": "platinum-engine.bin",
-   "bytes": 3965952
+   "bytes": 3965952,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T17:46:55Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:50:20Z",
+   "settle": true
   },
   "ff360ce88f2d29badb3b7a553f1a644d79d4add52a4a67c88d1168aeac7c97b2": {
    "name": "renderer_dx12_x64.dll",
