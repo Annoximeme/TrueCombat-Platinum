@@ -143,6 +143,10 @@ for rel,x in sorted(pages.items()):
 sm=open(os.path.join(ROOT,'sitemap.xml'),encoding='utf-8').read()
 for u in re.findall(r'<loc>([^<]+)</loc>',sm)+re.findall(r'<image:loc>([^<]+)</image:loc>',sm)+re.findall(r'hreflang="[^"]+" href="([^"]+)"',sm):
     if resolve('index.html',u)!='OK': issues['sitemap-target-missing'].append(u)
+# images: no EXIF, XMP or C2PA "Content Credentials" metadata (tools/strip_image_metadata.py removes it)
+sys.path.insert(0,os.path.join(os.path.dirname(os.path.abspath(__file__)),'..'))
+import strip_image_metadata
+for f in strip_image_metadata.run([ROOT],check=True): issues['image-metadata'].append(os.path.relpath(f,ROOT))
 NOTES=('long-title','desc-length')
 en=[p for p in pages if '/' not in p]
 for L in LANGS:
