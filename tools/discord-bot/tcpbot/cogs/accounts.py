@@ -1,4 +1,4 @@
-"""Player accounts in Discord: the weekly report, the looking-for-a-squad board and staff sanctions.
+"""Player accounts in Discord: the weekly report, idle-account warnings, the looking-for-a-squad board and staff sanctions.
 
 All of it reads the account service on the VPS (tcp_accounts.py). Without its token the cog stays
 quiet: no loops run and the staff commands say the service is not connected.
@@ -87,6 +87,20 @@ def lfs_embed(cfg, players: list[dict]) -> discord.Embed:
     return e
 
 
+def idle_embed(cfg, name: str, delete_after: int) -> discord.Embed:
+    """The one warning before an idle account is deleted."""
+    e = discord.Embed(
+        title="Your TrueCombat: Platinum account will be deleted",
+        description=("Your account **%s** has not been used for almost two years. To protect your data, we delete "
+                     "accounts that stay idle, and yours is due on <t:%d:D>.\n\n"
+                     "To keep it, sign in once at %s or play a match on a linked PC. "
+                     "Nothing else is needed. If you are happy to let it go, you need not do anything."
+                     % (safe(name), int(delete_after), cfg.site + "/account")),
+        colour=0xE0A030)
+    e.set_footer(text="You will not get another message about this.")
+    return e
+
+
 class Accounts(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -103,12 +117,48 @@ class Accounts(commands.Cog):
     async def cog_load(self):
         if self.ready():
             self.weekly_loop.start()
+            self.idle_loop.start()
             if self.cfg.channel("lfs"):
                 self.lfs_loop.start()
 
     async def cog_unload(self):
         self.weekly_loop.cancel()
+        self.idle_loop.cancel()
         self.lfs_loop.cancel()
+
+    # ------------------------------------------------------------ idle accounts
+    @tasks.loop(hours=6)
+    async def idle_loop(self):
+        try:
+            await self.warn_idle()
+        except AccountsUnavailable:
+            pass
+        except Exception:  # noqa: BLE001
+            log.exception("idle warnings failed")
+
+    @idle_loop.before_loop
+    async def _ready_idle(self):
+        await self.bot.wait_until_ready()
+
+    async def warn_idle(self) -> int:
+        """DMs each account the service says is due a deletion warning, then reports it as warned.
+        A closed DM or a deleted Discord user still counts as warned: there is no other way to reach them."""
+        people = await self.api.idle()
+        sent = 0
+        for p in people:
+            user = self.bot.get_user(int(p["discordId"]))
+            try:
+                if user is None:
+                    user = await self.bot.fetch_user(int(p["discordId"]))
+                await user.send(embed=idle_embed(self.cfg, p.get("name", ""), int(p.get("deleteAfter") or 0)))
+                sent += 1
+            except discord.HTTPException:
+                pass
+            await self.api.idle_warned(p["discordId"])
+            await asyncio.sleep(1)
+        if people:
+            log.info("idle accounts: %d warned (%d by DM)", len(people), sent)
+        return sent
 
     # ------------------------------------------------------------ weekly report
     @tasks.loop(minutes=10)
