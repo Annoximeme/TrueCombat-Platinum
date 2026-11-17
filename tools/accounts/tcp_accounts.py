@@ -64,6 +64,8 @@ NAME_CHANGE_DAYS = 30
 NAME_HOLD_DAYS = 30
 INACTIVE_DAYS = 365
 SIGNIN_LOG_DAYS = 30
+IDLE_DELETE_DAYS = 730            # an account with no sign-in and no game for two years is deleted...
+IDLE_WARN_DAYS = 30               # ...after a Discord warning this many days before; never without one
 MAX_KEYS = 8                      # linked PCs per account
 DISCORD_API = "https://discord.com/api/v10"
 
@@ -311,7 +313,7 @@ class Store:
             self.db.executescript(DDL)
             cols = {r[1] for r in self.db.execute("PRAGMA table_info(accounts)")}
             for col, decl in (("lfs_until", "INTEGER"), ("lfs_note", "TEXT"), ("weekly", "INTEGER NOT NULL DEFAULT 0"),
-                              ("matches", "INTEGER NOT NULL DEFAULT 0")):
+                              ("matches", "INTEGER NOT NULL DEFAULT 0"), ("idle_warned", "INTEGER")):
                 if col not in cols:
                     self.db.execute("ALTER TABLE accounts ADD COLUMN %s %s" % (col, decl))
             if not self.one("SELECT v FROM meta WHERE k='ip_salt'"):
@@ -998,6 +1000,20 @@ class Accounts:
         return [{"discordId": a["discord_id"], "name": a["name"], "statsId": account_pid(a["id"])}
                 for a in self.store.all("SELECT * FROM accounts WHERE weekly=1") if not self.ban_of(account=a["id"])]
 
+    def idle_list(self) -> list:
+        """Accounts due a warning: idle for IDLE_DELETE_DAYS - IDLE_WARN_DAYS and not warned since they were last active."""
+        cut = now() - (IDLE_DELETE_DAYS - IDLE_WARN_DAYS) * 86400
+        return [{"discordId": a["discord_id"], "name": a["name"], "lastActive": a["last_active"],
+                 "deleteAfter": now() + IDLE_WARN_DAYS * 86400}
+                for a in self.store.all("SELECT * FROM accounts WHERE last_active<? AND (idle_warned IS NULL OR "
+                                        "idle_warned<last_active)", (cut,))]
+
+    def idle_warned(self, discord_id: str) -> dict:
+        """The bot tried to warn this player (a closed DM still counts: there is no other way to reach them)."""
+        n = self.store.x("UPDATE accounts SET idle_warned=? WHERE discord_id=? AND last_active<?",
+                         (now(), str(discord_id), now() - (IDLE_DELETE_DAYS - IDLE_WARN_DAYS) * 86400)).rowcount
+        return {"ok": bool(n)}
+
     def unlink(self, acct: dict, kid: str) -> None:
         """The key stops counting for this account from now on; matches played with it before stay yours."""
         n = self.store.x("UPDATE keys SET retired=? WHERE kid=? AND account=? AND retired IS NULL",
@@ -1148,6 +1164,13 @@ class Accounts:
         for a in idle:
             released += self.store.x("DELETE FROM names WHERE account=?", (a["id"],)).rowcount
         out["released"] = released
+        # two years idle: deleted, but only after the warning went out (see idle_list) at least IDLE_WARN_DAYS ago
+        self.store.x("UPDATE accounts SET idle_warned=NULL WHERE idle_warned IS NOT NULL AND last_active>idle_warned")
+        gone = self.store.all("SELECT * FROM accounts WHERE last_active<? AND idle_warned IS NOT NULL AND idle_warned<?",
+                              (t - IDLE_DELETE_DAYS * 86400, t - IDLE_WARN_DAYS * 86400))
+        for a in gone:
+            self.delete(a)
+        out["deleted_idle"] = len(gone)
         if out["holds"] or released:
             self.dirty.set()
         return out
@@ -1641,6 +1664,10 @@ def make_handler(acc: Accounts):
                 return self.json({"accounts": acc.roles()})
             if method == "GET" and path == "/internal/weekly":
                 return self.json({"accounts": acc.weekly_list()})
+            if method == "GET" and path == "/internal/idle":
+                return self.json({"accounts": acc.idle_list()})
+            if method == "POST" and path == "/internal/idle/warned":
+                return self.json(acc.idle_warned(str(self.body_json().get("discord", ""))))
             if method == "GET" and path == "/internal/bans":
                 return self.json({"bans": acc.bans_list()})
             if method == "POST" and path == "/internal/ban":

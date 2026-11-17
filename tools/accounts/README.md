@@ -75,6 +75,7 @@ All public routes sit under `/api/account/` on **truecombat.eu** itself (a Caddy
 | `GET team.json` | anyone | Team Terminus members with a public account: name, role, stats id (config `team`: Discord id -> role) |
 | `GET bans.txt`, `GET trusted.txt` | game servers | see *Bans and trusted slots* |
 | `GET /internal/roles`, `/internal/weekly`, `/internal/bans`; `POST /internal/ban`, `/internal/unban` | Discord bot, staff portal (loopback, `X-Accounts-Token`) | role sync, weekly report list, staff sanctions |
+| `GET /internal/idle`; `POST /internal/idle/warned` `{discord}` | Discord bot (loopback, `X-Accounts-Token`) | idle-account warnings: see *Idle accounts* below |
 
 ## Progress follows you (stats service)
 
@@ -222,3 +223,12 @@ If the site's Content-Security-Policy header limits `connect-src`, it must inclu
 2. Nav: an *Account* entry; devlog post; roadmap item moves to shipped.
 3. Official servers on 0.37.0 (key challenge + reserved names), launcher 2.2.0 live.
 4. Discord bot reads Discord links from `/internal/lookup` (no in-game `/link` code needed for account holders).
+
+## Idle accounts
+
+An account with no sign-in and no match for two years (`IDLE_DELETE_DAYS` = 730) is deleted, the same way as the
+Delete button. It is never deleted without a warning: from 700 idle days `GET /internal/idle` lists it, the Discord
+bot sends a DM and reports back with `POST /internal/idle/warned` (a closed DM still counts, there is no other way to
+reach the player). The hourly tidy deletes it once it has been warned at least 30 days (`IDLE_WARN_DAYS`) and is
+still idle. Signing in or playing again clears the warning. Without the bot running, nothing is ever deleted.
+A year of inactivity still releases the reserved name, as before.
