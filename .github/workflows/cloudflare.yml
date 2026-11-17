@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: "check = report only, apply = change Cloudflare, purge = empty the cache now"
+        description: "check = report only, apply = change Cloudflare, purge = empty the cache now, verify = live checks"
         type: choice
-        options: [check, apply, purge]
+        options: [check, apply, purge, verify]
         default: check
       delete_extras:
         description: "apply only: also delete records that are not in records.json"
@@ -39,6 +39,7 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
+          if [ "${{ inputs.mode }}" = "verify" ]; then bash tools/website/cloudflare/live_check.sh | tee -a "$GITHUB_STEP_SUMMARY"; exit ${PIPESTATUS[0]}; fi
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "No CLOUDFLARE_API_TOKEN secret yet; nothing to do."; exit 0; fi
           extra=""
           if [ "${{ inputs.delete_extras }}" = "true" ]; then extra="--delete-extras"; fi
