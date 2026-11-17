@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/devlog"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog</id>
-  <updated>2026-11-16T12:00:00Z</updated>
+  <updated>2026-11-17T12:00:00Z</updated>
+  <entry>
+    <title>Close quarters, together</title>
+    <link href="https://truecombat.eu/devlog-close-quarters"/>
+    <id>https://truecombat.eu/devlog-close-quarters</id>
+    <published>2026-11-17T12:00:00Z</published>
+    <updated>2026-11-17T12:00:00Z</updated>
+    <category term="Gameplay"/>
+    <summary>CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental playlist you can try long before anything touches Ranked.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Fixing crashes on the PCs you actually play on</title>
     <link href="https://truecombat.eu/devlog-crash-reports"/>
