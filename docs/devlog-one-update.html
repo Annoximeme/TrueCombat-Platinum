@@ -38,7 +38,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=a4531b4408">
+<link rel="stylesheet" href="style.css?v=fa104a7f31">
 </head>
 <body>
 <!--nav-->
@@ -79,7 +79,7 @@
     <div class="head-art" style="--art: url(img/hero-village-contact.webp); --art-s: url(img/hero-village-contact-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog">All devlog posts</a>
-      <p class="post-meta"><span class="tag">Testing</span><span class="state shipped">Shipped in v0.34.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>4 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="one-update" hidden></span></p>
+      <p class="post-meta"><span class="tag">Testing</span><span class="state shipped">Shipped in v0.34.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>4 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="one-update" hidden></span><span class="post-cmts" data-post-cmts="one-update" hidden></span></p>
       <h1>Ten pieces of work, one update</h1>
       <p class="lede">The next update was built by ten separate efforts at the same time. How they came together into one build without stepping on each other, and what the final test gate looked like.</p>
     </div>
@@ -115,6 +115,7 @@
       </div>
       <div class="post-rate" data-rate="one-update" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
         <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <p class="rate-sum" hidden></p>
         <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
           <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
           <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
@@ -131,6 +132,7 @@
           <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
         </div>
       </div>
+      <section class="cmt" id="comments" data-cmt="one-update" data-comments="on" aria-label="Comments" hidden></section>
       <nav class="post-pager">
         <a class="prev" href="devlog-official-servers"><small>Older post</small>What keeps the official servers running</a>
         <a class="next" href="devlog-recoil-check"><small>Newer post</small>When the test is wrong</a>
@@ -146,7 +148,7 @@
       <article class="post-card" data-tag="Testing">
         <a class="post-art" href="devlog-performance-audit" tabindex="-1" aria-hidden="true"><img src="img/devlog/performance-audit-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Testing</span><time datetime="2026-11-14">14 Nov 2026</time><span>6 min read</span><span class="post-stat" data-post-stat="performance-audit" hidden></span></p>
+          <p class="post-meta"><span class="tag">Testing</span><time datetime="2026-11-14">14 Nov 2026</time><span>6 min read</span><span class="post-stat" data-post-stat="performance-audit" hidden></span><span class="post-cmts" data-post-cmts="performance-audit" hidden></span></p>
           <h2><a href="devlog-performance-audit">Measuring every millisecond</a></h2>
           <p>We measured the whole game, from frame times and loading screens to the servers and the download, before deciding what to fix. Here is what we found, what is already fixed and what comes next.</p>
           <a class="more" href="devlog-performance-audit">Read the post</a>
@@ -155,7 +157,7 @@
       <article class="post-card" data-tag="Testing">
         <a class="post-art" href="devlog-recoil-check" tabindex="-1" aria-hidden="true"><img src="img/hero-snow-warehouse-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Testing</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="recoil-check" hidden></span></p>
+          <p class="post-meta"><span class="tag">Testing</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="recoil-check" hidden></span><span class="post-cmts" data-post-cmts="recoil-check" hidden></span></p>
           <h2><a href="devlog-recoil-check">When the test is wrong</a></h2>
           <p>Our recoil checks flagged the Desert Eagle as broken. The game was right. Here is how we found out, and why we would rather chase a false alarm than miss a real one.</p>
           <a class="more" href="devlog-recoil-check">Read the post</a>
@@ -197,6 +199,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=18c4378961"></script>
+<script src="js/site.js?v=5eba91bea7"></script>
 </body>
 </html>
