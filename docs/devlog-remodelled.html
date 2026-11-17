@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remodelled, on the road to 0.40 · TrueCombat: Platinum</title>
+<meta name="description" content="We are rebuilding TrueCombat: Platinum from the inside out, one model at a time. A first look at the new weapon models, the redesigned interface and the…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-remodelled">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-remodelled">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Remodelled, on the road to 0.40">
+<meta property="og:description" content="We are rebuilding TrueCombat: Platinum from the inside out, one model at a time. A first look at the new weapon models, the redesigned interface and the…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-remodelled.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-remodelled.jpg">
+<meta property="article:published_time" content="2026-11-17">
+<meta property="article:section" content="Graphics">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Remodelled, on the road to 0.40","description":"We are rebuilding TrueCombat: Platinum from the inside out, one model at a time. A first look at the new weapon models, the redesigned interface and the lighting work heading for 0.40, with every before and after we have so far.","datePublished":"2026-11-17","dateModified":"2026-11-17","inLanguage":"en","articleSection":"Graphics","timeRequired":"PT10M","image":"https://truecombat.eu/img/og-devlog-remodelled.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-remodelled","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Remodelled, on the road to 0.40">
+<meta name="twitter:description" content="We are rebuilding TrueCombat: Platinum from the inside out, one model at a time. A first look at the new weapon models, the redesigned interface and the…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Remodelled, on the road to 0.40","item":"https://truecombat.eu/devlog-remodelled"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-remodelled">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-remodelled">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-remodelled">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=df45f02620">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav tb">
+  <div class="wrap">
+    <a class="tb-brand" href="./" aria-label="TrueCombat: Platinum home"><img class="tb-wm" src="img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40"><i class="tb-shine" aria-hidden="true"></i></a>
+    <nav class="tg-row" aria-label="Sections">
+      <div class="tg" data-g="play"><button type="button" aria-expanded="false" aria-controls="tp-play">Play<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-play"><div class="wrap"><div class="tp-list"><a class="pi" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span><b>Download</b><small>Free Windows installer</small></span></a><a class="pi" href="guide"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/></svg><span><b>Guide</b><small>Controls, modes and tactics</small></span></a><a class="pi" href="servers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span><b>Servers</b><small>Live servers, join in one click</small></span></a><a class="pi" href="faq"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span><b>FAQ</b><small>Answers to common questions</small></span></a><a class="pi" href="truecombat-elite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span><b>TrueCombat: Elite</b><small>Where it all began</small></span></a></div><div class="tp-art tp-play"><a class="pt pt-big" href="download"><img src="img/hero-village-rooftop.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>v0.38.0 · Free</em><strong>TrueCombat: Platinum</strong><u>Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="servers"><img src="img/hero-northport-gashouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Servers</span></a><a class="pt pt-sm" href="guide"><img src="img/hero-railhouse-overlook-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Guide</span></a></div><div class="tp-foot"><span>Free · Windows 10 and 11, 64-bit</span><a href="download">Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg" data-g="game"><button type="button" aria-expanded="false" aria-controls="tp-game">Game<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-game"><div class="wrap"><div class="tp-list"><a class="pi" href="maps"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span><b>Maps</b><small>Every map, with plans in 3D</small></span></a><a class="pi" href="weapons"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg><span><b>Weapons</b><small>The full arsenal, compared</small></span></a><a class="pi" href="./#graphics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span><b>Graphics</b><small>Low, High and Ultra side by side</small></span></a><a class="pi" href="./#gallery"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg><span><b>Gallery</b><small>In-game screenshots</small></span></a></div><div class="tp-art tp-game"><div class="pt-maps"><a class="pt" href="map-delta"><img src="img/map-delta-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Delta</span></a><a class="pt" href="map-northport"><img src="img/map-northport-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Northport</span></a><a class="pt" href="map-railhouse"><img src="img/map-railhouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Railhouse</span></a><a class="pt" href="map-snow"><img src="img/map-snow-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Snow</span></a><a class="pt" href="map-stadtrand"><img src="img/map-stadtrand-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Stadtrand</span></a><a class="pt" href="map-village"><img src="img/map-village-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Village</span></a></div></div><div class="tp-foot"><span>6 maps · 32 weapons</span><a href="maps">Maps <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg" data-g="compete"><button type="button" aria-expanded="false" aria-controls="tp-compete">Compete<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-compete"><div class="wrap"><div class="tp-list"><a class="pi" href="leaderboards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Leaderboards</b><small>Ratings, ranks and stat leaders</small></span></a><a class="pi" href="competitive"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span><b>Competitive</b><small>Ranked play and its rules</small></span></a><a class="pi" href="account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span><b>Account</b><small>Your profile, stats and friends</small></span></a></div><div class="tp-art tp-compete"><a class="pt pt-big" href="leaderboards"><img src="img/hero-delta-night.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Ranked</em><strong>Leaderboards</strong><u>Leaderboards <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="competitive"><img src="img/hero-stadtrand-canal-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Competitive</span></a><a class="pt pt-sm" href="account"><img src="img/hero-snow-warehouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Account</span></a></div><div class="tp-foot"><span>Ranked play on the official servers</span><a href="leaderboards">Leaderboards <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg on" data-g="community"><button type="button" aria-expanded="false" aria-controls="tp-community">Community<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-community"><div class="wrap"><div class="tp-list"><a class="pi" href="devlog" aria-current="page" data-devlog-new="2026-11-17" data-new="New"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg><span><b>Devlog<em>New</em></b><small>How the game is being built</small></span></a><a class="pi" href="news"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/></svg><span><b>News</b><small>Patch notes for every release</small></span></a><a class="pi" href="media"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Media</b><small>Trailers, screenshots and wallpapers</small></span></a><a class="pi" href="https://discord.gg/8kcHdg2Hch"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/></svg><span><b>Discord</b><small>Find a match, talk to the team</small></span></a><a class="pi" href="studio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/></svg><span><b>Studio</b><small>The team behind the game</small></span></a><a class="pi" href="press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/></svg><span><b>Press kit</b><small>Logos, key art and facts</small></span></a></div><div class="tp-art tp-community"><a class="pt pt-big" href="devlog-remodelled"><img src="img/devlog/models-teaser-clean.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>New devlog · Road to 0.40</em><strong>Remodelled, on the road to 0.40</strong><u>Read the devlog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="news"><img src="img/hero-snow-yard-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>v0.38.0</em>News</span></a><a class="pt pt-sm" href="https://discord.gg/8kcHdg2Hch"><img src="img/hero-village-contact-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Discord</em>Join the Discord</span></a></div><div class="tp-foot"><span>28 devlog posts so far</span><a href="devlog">Devlog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+    </nav>
+    <div class="tl" data-img="img/" data-maps="delta northport railhouse snow stadtrand village"><button class="tl-btn" type="button" aria-expanded="false" aria-controls="tl-pop" aria-label="Live servers" data-tpl-live="{p} playing · {s} servers" data-tpl-idle="{s} servers online"><i></i><b>Servers</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="tl-pop" id="tl-pop"><b class="tl-h">Live servers</b><div class="tl-list"></div><a class="tl-all" href="servers">All servers <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div>
+    <div class="tu">
+      <button type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg><kbd>Ctrl K</kbd></button>
+      <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-remodelled" hreflang="nl" lang="nl">Nederlands</a></div></details>
+      <a class="tu-heart" href="support" aria-label="Support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></a>
+      <a href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    </div>
+    <a class="btn btn-play tb-dl" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span>Download</span><small>v0.38.0</small></a>
+    <button class="tb-burger" type="button" aria-expanded="false" aria-controls="ms" aria-label="Menu"><i></i><i></i><i></i></button>
+  </div>
+  <div class="tb-scrim" hidden></div>
+  <div class="ms" id="ms" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+    <div class="ms-top"><a class="tb-brand" href="./" aria-label="TrueCombat: Platinum home"><img class="tb-wm" src="img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40"><i class="tb-shine" aria-hidden="true"></i></a><button type="button" class="ms-search" data-search-open aria-label="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button><button type="button" class="ms-x" aria-label="Close the menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <a class="ms-live" href="servers"><i></i><b>Servers</b><u>All servers <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></a>
+    <a class="ms-dev" href="devlog-remodelled"><img src="img/devlog/models-teaser-clean-640.webp" alt="" loading="lazy" decoding="async"><span><em>New devlog</em>Remodelled, on the road to 0.40</span></a>
+    <details class="ms-g"><summary>Play<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span><b>Download</b><small>Free Windows installer</small></span></a><a class="pi" href="guide"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/></svg><span><b>Guide</b><small>Controls, modes and tactics</small></span></a><a class="pi" href="servers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span><b>Servers</b><small>Live servers, join in one click</small></span></a><a class="pi" href="faq"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span><b>FAQ</b><small>Answers to common questions</small></span></a><a class="pi" href="truecombat-elite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span><b>TrueCombat: Elite</b><small>Where it all began</small></span></a></details><details class="ms-g"><summary>Game<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="ms-maps"><a href="map-delta"><img src="img/map-delta-640.webp" alt="" loading="lazy" decoding="async"><span>Delta</span></a><a href="map-northport"><img src="img/map-northport-640.webp" alt="" loading="lazy" decoding="async"><span>Northport</span></a><a href="map-railhouse"><img src="img/map-railhouse-640.webp" alt="" loading="lazy" decoding="async"><span>Railhouse</span></a><a href="map-snow"><img src="img/map-snow-640.webp" alt="" loading="lazy" decoding="async"><span>Snow</span></a><a href="map-stadtrand"><img src="img/map-stadtrand-640.webp" alt="" loading="lazy" decoding="async"><span>Stadtrand</span></a><a href="map-village"><img src="img/map-village-640.webp" alt="" loading="lazy" decoding="async"><span>Village</span></a></div><a class="pi" href="maps"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span><b>Maps</b><small>Every map, with plans in 3D</small></span></a><a class="pi" href="weapons"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg><span><b>Weapons</b><small>The full arsenal, compared</small></span></a><a class="pi" href="./#graphics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span><b>Graphics</b><small>Low, High and Ultra side by side</small></span></a><a class="pi" href="./#gallery"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg><span><b>Gallery</b><small>In-game screenshots</small></span></a></details><details class="ms-g"><summary>Compete<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="leaderboards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Leaderboards</b><small>Ratings, ranks and stat leaders</small></span></a><a class="pi" href="competitive"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span><b>Competitive</b><small>Ranked play and its rules</small></span></a><a class="pi" href="account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span><b>Account</b><small>Your profile, stats and friends</small></span></a></details><details class="ms-g" open><summary>Community<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="devlog" aria-current="page" data-devlog-new="2026-11-17" data-new="New"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg><span><b>Devlog<em>New</em></b><small>How the game is being built</small></span></a><a class="pi" href="news"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/></svg><span><b>News</b><small>Patch notes for every release</small></span></a><a class="pi" href="media"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Media</b><small>Trailers, screenshots and wallpapers</small></span></a><a class="pi" href="https://discord.gg/8kcHdg2Hch"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/></svg><span><b>Discord</b><small>Find a match, talk to the team</small></span></a><a class="pi" href="studio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/></svg><span><b>Studio</b><small>The team behind the game</small></span></a><a class="pi" href="press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/></svg><span><b>Press kit</b><small>Logos, key art and facts</small></span></a></details>
+    <div class="ms-langs"><b>EN</b><a href="nl/devlog-remodelled" hreflang="nl" lang="nl">NL</a><a class="ms-heart" href="support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>Support</a></div>
+    <div class="ms-foot"><a class="btn btn-play" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg>Download <small>v0.38.0</small></a></div>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="remodelled" data-min="10">
+  <header class="page-head post-head cine-post">
+    <div class="head-art" style="--art: url(img/devlog/models-teaser-clean-1920.webp); --art-s: url(img/devlog/models-teaser-clean-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <span class="cine-kicker">Road to 0.40</span>
+      <p class="post-meta"><span class="tag">Graphics</span><time datetime="2026-11-17">17 Nov 2026</time><span>10 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="remodelled" hidden></span><span class="post-cmts" data-post-cmts="remodelled" hidden></span></p>
+      <h1>Remodelled, on the road to 0.40</h1>
+      <p class="lede">We are rebuilding TrueCombat: Platinum from the inside out, one model at a time. A first look at the new weapon models, the redesigned interface and the lighting work heading for 0.40, with every before and after we have so far.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#new-models-built-from-the-ground-up">New models, built from the ground up</a></li>
+          <li><a href="#every-gun-in-the-studio">Every gun, in the studio</a></li>
+          <li><a href="#a-new-interface-command">A new interface: Command</a></li>
+          <li><a href="#new-light">New light</a></li>
+          <li><a href="#how-it-gets-tested">How it gets tested</a></li>
+          <li><a href="#what-to-expect">What to expect</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<figure class="wide">
+  <img src="img/devlog/models-teaser.webp" alt="The Road to 0.40: Remodelled" width="1280" height="720" loading="lazy">
+  <figcaption>The new P19 sidearm, one of the first models rebuilt from scratch.</figcaption>
+</figure>
+<p>Most of what you see in Platinum today still comes from 2006. The maps, the weapons and the player models were made for the hardware of their time, and for a long time our job was to keep them working on modern Windows. With the new renderer, HD textures and the Ultra preset in place, the limit is no longer the engine. It is the models themselves.</p>
+<p>So we have started remodelling the game. Slowly, carefully, and one piece at a time.</p>
+<p>This is the long version of where that work stands. It covers three things heading towards update 0.40: new 3D models, a redesigned interface, and a set of lighting and rendering upgrades. It has more pictures than anything we have posted before, and most of them are early.</p>
+<div class="callout"><p>Everything in this post is <strong>work in progress</strong>. The model renders come from our studio scene, not from the game. The interface and lighting images are <strong>concept art</strong>: they show the direction, not final in-game output. 0.40 is currently planned for early February 2027, and that date is provisional.</p></div>
+<h2 id="new-models-built-from-the-ground-up">New models, built from the ground up</h2>
+<p>TC:E's weapons were good for their day, but many of the first-person guns are still built from somewhere between 500 and 1,600 triangles. Our HD textures made them sharper. They could not make them rounder. A trigger guard drawn with eight edges stays an octagon however good the texture is.</p>
+<p>We went through every model the game loads, more than 600 files, and sorted them by how much a new version would improve what you actually look at. Fourteen first-person guns are still on their original meshes. Hands, grenades, the knife, the bomb and the objective items are next to them on the list.</p>
+<p>Then we built three samples to prove the method: a sidearm, a fragmentation grenade and a combat knife. Each one is a new, original model, not a cleaned-up version of the old one. Below, each sample sits next to the model it would replace, under the same lights and the same camera.</p>
+<h3>Sidearm</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/models-pistol-new.webp" alt="New model: The current sidearm (698 triangles) against the new P19. Drag to compare." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/models-pistol-today.webp" alt="In the game today: The current sidearm (698 triangles) against the new P19. Drag to compare." width="1280" height="720" loading="lazy">
+    <span class="tag l">In the game today</span>
+    <span class="tag r">New model</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="The current sidearm (698 triangles) against the new P19. Drag to compare.: comparison divider position">
+  </div>
+  <figcaption>The current sidearm (698 triangles) against the new P19. Drag to compare.</figcaption>
+</figure>
+<p>The current pistol uses 698 triangles. The new P19 is built at full detail and brought into the game at around 9,000 triangles with a 2048 pixel material set: colour, surface normals, roughness and metal. That is what lets the slide serrations, the grip texture and the worn edges catch the light the way metal and polymer really do.</p>
+<p>The markings are our own. Every new weapon carries fictional names and serial numbers.</p>
+<h3>Fragmentation grenade</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/models-grenade-new.webp" alt="New model: The current grenade (612 triangles) against the new M67-pattern model." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/models-grenade-today.webp" alt="In the game today: The current grenade (612 triangles) against the new M67-pattern model." width="1280" height="720" loading="lazy">
+    <span class="tag l">In the game today</span>
+    <span class="tag r">New model</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="The current grenade (612 triangles) against the new M67-pattern model.: comparison divider position">
+  </div>
+  <figcaption>The current grenade (612 triangles) against the new M67-pattern model.</figcaption>
+</figure>
+<p>The grenade goes from 612 triangles to around 3,000, with a 1024 pixel material set. The spoon, pin and ring are separate parts now, which matters for the pin-pull animation, and the stencilled lettering is part of the texture instead of being painted on blurry.</p>
+<h3>Combat knife</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/models-knife-new.webp" alt="New model: The current knife (172 triangles) against the new clip-point knife." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/models-knife-today.webp" alt="In the game today: The current knife (172 triangles) against the new clip-point knife." width="1280" height="720" loading="lazy">
+    <span class="tag l">In the game today</span>
+    <span class="tag r">New model</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="The current knife (172 triangles) against the new clip-point knife.: comparison divider position">
+  </div>
+  <figcaption>The current knife (172 triangles) against the new clip-point knife.</figcaption>
+</figure>
+<p>The knife is the biggest jump of the three: 172 triangles today, around 2,500 for the new one. A stacked leather grip, a proper guard, and a blade that finally has an edge.</p>
+<h3>What happens next</h3>
+<p>These are renders of the source models. Before any of them reach the game, each one is baked down to its in-game budget, exported to the game's model format and checked in the engine on the Ultra preset next to the current version. Only a model that looks better in the game, not just in a studio, replaces the old one.</p>
+<p>The order of work follows the list: small items and the older guns first, then their third-person versions and attachments. First-person hands and the player characters come later, because organic shapes need their own test before we commit to them. Characters will keep the same skeleton and silhouette, so nothing about hit registration or how a player reads at a distance changes.</p>
+<h2 id="every-gun-in-the-studio">Every gun, in the studio</h2>
+<p>While the new models are being built, the interface needs pictures of the guns we have today. We rendered all 41 weapons and throwables from the game's own models, placed exactly where the game holds them, and lit in one studio setup. They will appear on the loadout screen, the end-of-round MVP card and a new weapon turntable.</p>
+<figure class="wide">
+  <img src="img/devlog/render-arsenal.webp" alt="All 41 weapon renders" width="1280" height="720" loading="lazy">
+  <figcaption>All 41 weapons and throwables, rendered from the game's own models.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/render-ak47.webp" alt="AK-47 studio render" width="1280" height="720" loading="lazy">
+  <figcaption>AK-47</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/render-scar.webp" alt="SCAR studio render" width="1280" height="720" loading="lazy">
+  <figcaption>SCAR</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/render-m4sopmod.webp" alt="M4 SOPMOD studio render" width="1280" height="720" loading="lazy">
+  <figcaption>M4 SOPMOD</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/render-mp5.webp" alt="MP5 studio render" width="1280" height="720" loading="lazy">
+  <figcaption>MP5</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/render-deagle.webp" alt="Desert Eagle studio render" width="1280" height="720" loading="lazy">
+  <figcaption>Desert Eagle</figcaption>
+</figure>
+<p>As each new model lands, its render is made again from the new version.</p>
+<h2 id="a-new-interface-command">A new interface: Command</h2>
+<p>The interface is being redesigned from the main menu to the last line of the scoreboard. We call the direction Command: the same chrome wordmark and red accents as the website, dark glass panels with corner brackets, clear grouping, and information you can read at a glance in the middle of a round.</p>
+<p>All of the images below are concept art, made at 4K over real game captures. Fonts, spacing and colours come from one shared design system, so the game, the launcher, the installer and the website finally speak the same visual language.</p>
+<figure class="wide">
+  <img src="img/devlog/ui-main-menu.webp" alt="Main menu concept" width="1280" height="720" loading="lazy">
+  <figcaption>Main menu: quick join, live player counts and the latest news on the first screen.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-esc.webp" alt="In-game menu concept" width="1280" height="720" loading="lazy">
+  <figcaption>The in-game menu opens as a side sheet, with the live score and your game version.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-hud.webp" alt="HUD concept" width="1280" height="720" loading="lazy">
+  <figcaption>HUD: cleaner, lighter, and readable on every map.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-scoreboard.webp" alt="Scoreboard concept" width="1280" height="720" loading="lazy">
+  <figcaption>Scoreboard</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-deploy.webp" alt="Deployment screen concept" width="1280" height="720" loading="lazy">
+  <figcaption>Deployment: pick your team, kit and weapons in one place.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-options.webp" alt="Options concept" width="1280" height="720" loading="lazy">
+  <figcaption>Options, grouped the way you look for them, with a live preview.</figcaption>
+</figure>
+<h3>The match, from loading screen to map vote</h3>
+<figure class="wide">
+  <img src="img/devlog/ui-loading.webp" alt="Loading screen concept" width="1280" height="720" loading="lazy">
+  <figcaption>Loading screen with the map briefing.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-round.webp" alt="Round banner concept" width="1280" height="720" loading="lazy">
+  <figcaption>Round start banner.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-bomb.webp" alt="Bomb alert concept" width="1280" height="720" loading="lazy">
+  <figcaption>Bomb alert, team list and direction markers in a live round.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-mvp.webp" alt="MVP card concept" width="1280" height="720" loading="lazy">
+  <figcaption>End-of-round MVP card.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-vote.webp" alt="Map vote concept" width="1280" height="720" loading="lazy">
+  <figcaption>Map vote at the end of a match.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-player-card.webp" alt="Player card concept" width="1280" height="720" loading="lazy">
+  <figcaption>Your player card on the main menu.</figcaption>
+</figure>
+<h3>Detail work</h3>
+<p>The smaller things matter as much as the screens. Every weapon gets a clean HD icon. The menus move with short, soft transitions instead of snapping in. Every control has proper hover, pressed and focus states, and the whole interface can be driven from the keyboard. A new server browser shows what is happening on each server before you join. Colour-blind presets and a text size setting are part of the plan too.</p>
+<figure class="wide">
+  <img src="img/devlog/ui-icons.webp" alt="HD weapon icons concept" width="1280" height="720" loading="lazy">
+  <figcaption>One clean icon set for every gun.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-turntable.webp" alt="Weapon turntable concept" width="1280" height="720" loading="lazy">
+  <figcaption>Weapon turntable on the loadout screen.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-servers.webp" alt="Server browser concept" width="1280" height="720" loading="lazy">
+  <figcaption>The new server browser.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-states.webp" alt="Interface states concept" width="1280" height="720" loading="lazy">
+  <figcaption>Cursor, hover and focus states.</figcaption>
+</figure>
+<h3>Sharper scopes</h3>
+<p>The scope reticles were drawn at very low resolution, as small as 64 by 64 pixels, and you could see it every time you aimed. We redrew all of them at four times the resolution. Each reticle keeps exactly the same aim point, so nothing about how a scope shoots changes. It just looks like glass instead of pixels.</p>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/reticle-eotech-new.webp" alt="Redrawn: The holographic sight reticle, today and redrawn at four times the resolution." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/reticle-eotech-old.webp" alt="Today: The holographic sight reticle, today and redrawn at four times the resolution." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Redrawn</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="The holographic sight reticle, today and redrawn at four times the resolution.: comparison divider position">
+  </div>
+  <figcaption>The holographic sight reticle, today and redrawn at four times the resolution.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-reticles.webp" alt="HD reticles concept" width="1280" height="720" loading="lazy">
+  <figcaption>The new reticles in the scopes that use them.</figcaption>
+</figure>
+<h3>Installer and studio splash</h3>
+<p>The installer gets the same treatment, so the first thing a new player sees already looks like the game they are about to play.</p>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/installer-new.webp" alt="New: The installer welcome page, today and in the new style." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/installer-old.webp" alt="Today: The installer welcome page, today and in the new style." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">New</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="The installer welcome page, today and in the new style.: comparison divider position">
+  </div>
+  <figcaption>The installer welcome page, today and in the new style.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ui-splash.webp" alt="Studio splash concept" width="1280" height="720" loading="lazy">
+  <figcaption>Studio splash and title sequence.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/store-key-art.webp" alt="Key art" width="1280" height="720" loading="lazy">
+  <figcaption>New key art for store pages and press.</figcaption>
+</figure>
+<h2 id="new-light">New light</h2>
+<p>The third part of the work is the renderer. TC:E's maps were lit once, years ago, and much of that light is baked into the textures. The upgrades below make the light behave: explosions that light the walls, lamps that cast shadows, haze that has depth.</p>
+<p>Every image in this section is a painted impression over a real Ultra capture from today's build. The final result will look different in places, and we will show real in-game captures as each piece is finished.</p>
+<div class="callout"><p>None of these upgrades changes what you can see in Ranked. Fog, haze and lighting keep the same visibility, so nobody gains an edge from a graphics setting.</p></div>
+<h3>Dynamic lights</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m3-dynamic-lights-concept.webp" alt="Concept: An explosion lights the wall, the floor and the player beside it." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m3-dynamic-lights-now.webp" alt="Today: An explosion lights the wall, the floor and the player beside it." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="An explosion lights the wall, the floor and the player beside it.: comparison divider position">
+  </div>
+  <figcaption>An explosion lights the wall, the floor and the player beside it.</figcaption>
+</figure>
+<p>Today only a handful of lights can touch a surface at once. The new system lights the world and the players from every nearby source, with physically based materials, so muzzle flashes, explosions and flares light their surroundings properly.</p>
+<h3>Sky and atmosphere</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m4-sky-concept.webp" alt="Concept: A physical sky with distance haze, at the same visibility." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m4-sky-now.webp" alt="Today: A physical sky with distance haze, at the same visibility." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="A physical sky with distance haze, at the same visibility.: comparison divider position">
+  </div>
+  <figcaption>A physical sky with distance haze, at the same visibility.</figcaption>
+</figure>
+<h3>Bullet holes with depth</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m5-decals-concept.webp" alt="Concept: Impacts with chipped edges, cracks and dust that follow the surface." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m5-decals-now.webp" alt="Today: Impacts with chipped edges, cracks and dust that follow the surface." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Impacts with chipped edges, cracks and dust that follow the surface.: comparison divider position">
+  </div>
+  <figcaption>Impacts with chipped edges, cracks and dust that follow the surface.</figcaption>
+</figure>
+<h3>Particles</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m6-particles-concept.webp" alt="Concept: Explosions with ten times the particles: sparks, debris and dust." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m6-particles-now.webp" alt="Today: Explosions with ten times the particles: sparks, debris and dust." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Explosions with ten times the particles: sparks, debris and dust.: comparison divider position">
+  </div>
+  <figcaption>Explosions with ten times the particles: sparks, debris and dust.</figcaption>
+</figure>
+<h3>HD world textures</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m1-hd-textures-concept.webp" alt="Concept: Village brick, up close, with full material detail." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m1-hd-textures-now.webp" alt="Today: Village brick, up close, with full material detail." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Village brick, up close, with full material detail.: comparison divider position">
+  </div>
+  <figcaption>Village brick, up close, with full material detail.</figcaption>
+</figure>
+<p>New high-resolution textures with full material maps for the world. They will be an optional download of about 1 GB, offered on the Ultra preset, so nobody who plays on a smaller connection or an older PC has to take them.</p>
+<h3>Re-baked lighting</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m2-lightmaps-concept.webp" alt="Concept: Railhouse with re-baked lighting: bounce light, soft shadows and contact shadows." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m2-lightmaps-now.webp" alt="Today: Railhouse with re-baked lighting: bounce light, soft shadows and contact shadows." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Railhouse with re-baked lighting: bounce light, soft shadows and contact shadows.: comparison divider position">
+  </div>
+  <figcaption>Railhouse with re-baked lighting: bounce light, soft shadows and contact shadows.</figcaption>
+</figure>
+<p>The core maps get their lighting calculated again, with light that bounces off surfaces and shadows that soften with distance. If a map cannot be matched closely to how it plays today, it keeps its current lighting.</p>
+<h3>Bounce light</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m7-bounce-concept.webp" alt="Concept: Light that bounces off walls and floors in real time, on Ultra." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m7-bounce-now.webp" alt="Today: Light that bounces off walls and floors in real time, on Ultra." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Light that bounces off walls and floors in real time, on Ultra.: comparison divider position">
+  </div>
+  <figcaption>Light that bounces off walls and floors in real time, on Ultra.</figcaption>
+</figure>
+<h3>Lit fog</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m8-lit-fog-concept.webp" alt="Concept: Lamps that light the air around them, and respect the shadows of what stands in their way." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m8-lit-fog-now.webp" alt="Today: Lamps that light the air around them, and respect the shadows of what stands in their way." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Lamps that light the air around them, and respect the shadows of what stands in their way.: comparison divider position">
+  </div>
+  <figcaption>Lamps that light the air around them, and respect the shadows of what stands in their way.</figcaption>
+</figure>
+<h3>Lamp shadows</h3>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/engine-m9-lamp-shadows-concept.webp" alt="Concept: Indoor and street lamps that cast real shadows, on High and Ultra." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/engine-m9-lamp-shadows-now.webp" alt="Today: Indoor and street lamps that cast real shadows, on High and Ultra." width="1280" height="720" loading="lazy">
+    <span class="tag l">Today</span>
+    <span class="tag r">Concept</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Indoor and street lamps that cast real shadows, on High and Ultra.: comparison divider position">
+  </div>
+  <figcaption>Indoor and street lamps that cast real shadows, on High and Ultra.</figcaption>
+</figure>
+<p>The DirectX 12 renderer gets all of these. The OpenGL renderer gets the HD textures, the re-baked lighting, the new bullet holes and the new particles.</p>
+<h2 id="how-it-gets-tested">How it gets tested</h2>
+<p>Nothing here ships because it looks good in a picture. Every new model is checked in the game next to the one it replaces. Every interface screen is captured at 1080p, 1440p, 4K and ultrawide and compared with its concept. Every lighting feature has a performance budget it must stay within, and the full regression run covers both renderers, the server and the launcher before a release is packaged.</p>
+<p>If something misses the bar, it waits for the next update. We would rather ship a smaller 0.40 that works than a bigger one that does not.</p>
+<h2 id="what-to-expect">What to expect</h2>
+<p>0.40 is planned as the biggest update Platinum has had: the new interface, the lighting work, and the first wave of new models. It is currently planned for early February 2027. That date is provisional, and we will confirm it here once the final test run is behind us.</p>
+<p>The remodelling does not stop at 0.40. It is a long project, and we will keep posting before and after shots as each new model reaches the game. Tell us what you think in the comments below, or on <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. Which model should we rebuild next?</p>
+      </div>
+      <div class="post-rate" data-rate="remodelled" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <p class="rate-sum" hidden></p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <section class="cmt" id="comments" data-cmt="remodelled" data-comments="on" aria-label="Comments" hidden></section>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-close-quarters"><small>Older post</small>Close quarters, together</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-a-new-look" tabindex="-1" aria-hidden="true"><img src="img/devlog/a-new-look-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state shipped">Shipped in v0.37.0</span><time datetime="2026-11-13">13 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="a-new-look" hidden></span><span class="post-cmts" data-post-cmts="a-new-look" hidden></span></p>
+          <h2><a href="devlog-a-new-look">A new look, from the loading screen to the kill feed</a></h2>
+          <p>Loading screens that teach the map, a tactical map, a match-end podium, photo mode, HDR output, clearer error screens and a launcher you can drive with a controller. Here is what is coming and how it was built.</p>
+          <a class="more" href="devlog-a-new-look">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Graphics">
+        <a class="post-art" href="devlog-ultra-visuals" tabindex="-1" aria-hidden="true"><img src="img/devlog/ultra-railhouse-ultra-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Graphics</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>3 min read</span><span class="post-stat" data-post-stat="ultra-visuals" hidden></span><span class="post-cmts" data-post-cmts="ultra-visuals" hidden></span></p>
+          <h2><a href="devlog-ultra-visuals">New light for old maps</a></h2>
+          <p>The Ultra preset brings modern lighting, real surface materials and sun shadows to every map on DirectX 12. Here is how we built it without changing how TC:E plays.</p>
+          <a class="more" href="devlog-ultra-visuals">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=cbc4440933"></script>
+</body>
+</html>
