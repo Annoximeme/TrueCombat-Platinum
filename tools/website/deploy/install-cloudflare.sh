@@ -118,6 +118,6 @@ check() { # resolve-spec, url: any 2xx/3xx answer counts (no 5xx, no connection 
 check truecombat.eu:443:127.0.0.1 https://truecombat.eu/
 check truecombat.eu:443:127.0.0.1 https://truecombat.eu/style.css
 check www.truecombat.eu:443:127.0.0.1 https://www.truecombat.eu/
-check api.truecombat.eu:443:127.0.0.1 https://api.truecombat.eu/
+check api.truecombat.eu:443:127.0.0.1 https://api.truecombat.eu/funding.json
 check staff.truecombat.eu:443:127.0.0.1 https://staff.truecombat.eu/
 [ "$fail" = 0 ] && echo "All checks passed." || { echo "Some checks failed: look before anything else (undo: sh $0 --undo)"; exit 1; }
