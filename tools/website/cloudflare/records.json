@@ -16,6 +16,7 @@
     {"type": "MX",    "name": "@",      "content": "mx3.zoho.eu", "priority": 50, "why": "Zoho Mail"},
     {"type": "TXT",   "name": "@",      "content": "v=spf1 include:zohomail.eu ~all", "why": "SPF for Zoho Mail"},
     {"type": "TXT",   "name": "_dmarc", "content": "v=DMARC1; p=quarantine; rua=mailto:gianni@truecombat.eu", "why": "DMARC"},
+    {"type": "TXT",   "name": "zmail._domainkey", "content": "v=DKIM1; k=rsa; p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCF2K0L8cswBtGA1stSyDBRjUopHK/w9OHyG3jwrRA4jfYNqyzPUKsvKjoglD9A6BsG8bhg8vGQh4riWPfr9ZArjhnEuTsx+/rpxzdBtScrtJR3nnjLN6ur6vodVS+l/+WAbx9vvL4LEWfKQ7MCFNd8X6PcG0ji5UbEPg60LNm/OQIDAQAB", "why": "DKIM for Zoho Mail"},
     {"type": "CAA",   "name": "@",      "flags": 0, "tag": "issue", "value": "letsencrypt.org", "why": "Caddy certificates (Cloudflare adds its own CAs automatically)"},
     {"type": "CAA",   "name": "@",      "flags": 0, "tag": "issue", "value": "sectigo.com", "why": "Caddy fallback CA (ZeroSSL)"}
   ],
