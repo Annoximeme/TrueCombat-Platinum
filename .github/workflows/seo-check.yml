@@ -1,0 +1,19 @@
+name: Search visibility check
+
+# Fetches the live site the way a search engine crawler does and reports anything that keeps
+# pages out of Google or Bing (tools/website/seo_probe.py). Runs weekly and on demand.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1"
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check the live site
+        run: python tools/website/seo_probe.py --all
