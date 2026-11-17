@@ -178,21 +178,114 @@ var TCP_API = 'https://api.truecombat.eu';
   function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
   var CHEV = ' <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
 
-  /* mobile menu closes after a pick */
-  var menu = document.getElementById('menu');
-  if (menu) menu.addEventListener('click', function (e) { if (e.target.tagName === 'A') menu.open = false; });
-  /* ...and on Escape or a click outside it, handing focus back to the menu button */
-  if (menu) {
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && menu.open) { menu.open = false; var sm = menu.querySelector('summary'); if (sm) sm.focus(); } });
-    document.addEventListener('click', function (e) { if (menu.open && !menu.contains(e.target)) menu.open = false; });
-  }
+  /* ---------- top bar: section panels, live servers, phone menu (markup from tools/website/build.py nav()) ---------- */
+  (function () {
+    var bar = document.querySelector('.nav.tb');
+    if (!bar) return;
+    var root = document.documentElement, groups = $all('.tg', bar), scrim = bar.querySelector('.tb-scrim');
+    var live = bar.querySelector('.tl'), liveBtn = live && live.querySelector('.tl-btn');
+    var burger = bar.querySelector('.tb-burger'), sheet = document.getElementById('ms');
+    var langs = bar.querySelector('.nav-langs');
+    var fine = window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches;
+    var timer = 0, openedAt = 0;
+    function btn(g) { return g.querySelector('button'); }
+    function setGroup(g) {
+      groups.forEach(function (x) { var on = x === g; x.classList.toggle('open', on); btn(x).setAttribute('aria-expanded', on ? 'true' : 'false'); });
+      if (g) { setLive(false); if (langs) langs.open = false; openedAt = Date.now(); }
+      bar.classList.toggle('has-open', !!g); if (scrim) scrim.hidden = !g;
+    }
+    function current() { return groups.filter(function (x) { return x.classList.contains('open'); })[0] || null; }
+    function setLive(on) {
+      if (!live) return;
+      live.classList.toggle('open', on); liveBtn.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (on) setGroup(null);
+    }
+    groups.forEach(function (g) {
+      btn(g).addEventListener('click', function () {
+        /* a panel that just opened on hover stays open when the same pointer then clicks its button */
+        if (g.classList.contains('open') && Date.now() - openedAt < 450) return;
+        setGroup(g.classList.contains('open') ? null : g);
+      });
+      if (fine) {
+        g.addEventListener('mouseenter', function () { clearTimeout(timer); timer = setTimeout(function () { setGroup(g); }, current() ? 0 : 120); });
+        g.addEventListener('mouseleave', function () { clearTimeout(timer); timer = setTimeout(function () { if (current() === g) setGroup(null); }, 240); });
+      }
+      g.addEventListener('focusout', function (e) { if (current() === g && e.relatedTarget && !g.contains(e.relatedTarget)) setGroup(null); });
+      /* arrow keys move through the open panel's links */
+      g.addEventListener('keydown', function (e) {
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        var links = $all('.tp a', g), i = links.indexOf(document.activeElement);
+        if (!g.classList.contains('open')) { if (e.key === 'ArrowDown') { e.preventDefault(); setGroup(g); links[0].focus(); } return; }
+        e.preventDefault();
+        var n = e.key === 'ArrowDown' ? i + 1 : i - 1;
+        if (n < 0) { btn(g).focus(); return; }
+        if (links[n]) links[n].focus();
+      });
+    });
+    if (liveBtn) liveBtn.addEventListener('click', function () { setLive(!live.classList.contains('open')); });
+    if (scrim) scrim.addEventListener('click', function () { setGroup(null); });
+    document.addEventListener('click', function (e) {
+      if (current() && !current().contains(e.target)) setGroup(null);
+      if (live && live.classList.contains('open') && !live.contains(e.target)) setLive(false);
+      if (langs && langs.open && !langs.contains(e.target)) langs.open = false;
+    });
+    if (langs) langs.addEventListener('toggle', function () { if (langs.open) { setGroup(null); setLive(false); } });
 
-  /* language menu closes on a click elsewhere or Escape */
-  var langs = document.querySelector('.nav-langs');
-  if (langs) {
-    document.addEventListener('click', function (e) { if (langs.open && !langs.contains(e.target)) langs.open = false; });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') langs.open = false; });
-  }
+    /* phone menu: a full-screen sheet */
+    function setSheet(on, quiet) {
+      if (!sheet) return;
+      sheet.hidden = !on; root.classList.toggle('ms-open', on); burger.setAttribute('aria-expanded', on ? 'true' : 'false');
+      if (on) { var x = sheet.querySelector('.ms-x'); if (x) x.focus(); } else if (!quiet) burger.focus();
+    }
+    if (burger) burger.addEventListener('click', function () { setSheet(sheet.hidden); });
+    if (sheet) {
+      sheet.querySelector('.ms-x').addEventListener('click', function () { setSheet(false); });
+      sheet.addEventListener('click', function (e) { if (e.target.closest('a')) setSheet(false, true); });
+      /* Tab stays inside the open sheet */
+      sheet.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        var f = $all('a[href], button, summary', sheet).filter(function (x) { return x.offsetParent !== null; });
+        if (!f.length) return;
+        if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+        else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+      });
+      window.addEventListener('resize', function () { if (!sheet.hidden && innerWidth > 1179) setSheet(false, true); });
+    }
+    window.tcpNavClose = function () { setGroup(null); setLive(false); if (sheet && !sheet.hidden) setSheet(false, true); };
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var g = current();
+      if (g) { setGroup(null); btn(g).focus(); }
+      else if (live && live.classList.contains('open')) { setLive(false); liveBtn.focus(); }
+      else if (sheet && !sheet.hidden) setSheet(false);
+      else if (langs && langs.open) { langs.open = false; langs.querySelector('summary').focus(); }
+    });
+
+    /* the bar slims down once the page scrolls */
+    var ticking = false;
+    function onScroll() { bar.classList.toggle('scrolled', (window.scrollY || 0) > 8); ticking = false; }
+    window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+    onScroll();
+
+    /* live servers: the pill counts players, its panel lists the busiest servers (official ones first) */
+    if (live) api('/servers.json').then(function (d) {
+      var list = (d.servers || []).slice();
+      if (!list.length) return;
+      var p = list.reduce(function (n, x) { return n + (x.players || 0); }, 0);
+      var text = (p ? liveBtn.dataset.tplLive : liveBtn.dataset.tplIdle).replace('{p}', p).replace('{s}', list.length);
+      liveBtn.querySelector('b').textContent = text; liveBtn.setAttribute('aria-label', text); live.classList.add('on');
+      var ms = sheet && sheet.querySelector('.ms-live'); if (ms) { ms.querySelector('b').textContent = text; ms.classList.add('on'); }
+      var maps = (live.dataset.maps || '').split(' '), img = live.dataset.img || 'img/';
+      list.sort(function (a, b) { return (b.verified ? 1 : 0) - (a.verified ? 1 : 0) || (b.players || 0) - (a.players || 0); });
+      live.querySelector('.tl-list').innerHTML = list.slice(0, 3).map(function (s) {
+        var m = String(s.map || '').toLowerCase(), slug = maps.filter(function (x) { return m.indexOf(x) >= 0; })[0];
+        var thumb = slug ? '<img src="' + img + 'map-' + slug + '-640.webp" alt="" width="64" height="40" loading="lazy">' : '<i class="tl-ph"></i>';
+        return '<a class="tl-s" href="' + esc(live.querySelector('.tl-all').getAttribute('href')) + '">' + thumb + '<span><strong>' + esc(s.name) + '</strong><small>' +
+          esc([slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : s.map, s.mode].filter(Boolean).join(' · ')) + '</small></span><em>' + (s.players || 0) + '/' + (s.maxPlayers || '?') + '</em></a>';
+      }).join('');
+    }, function () {});
+  })();
 
   /* ---------- GitHub releases (copied to truecombat.eu by tools/website/release_sync.py) ---------- */
   var RELEASES = '/releases.json';
@@ -1327,7 +1420,13 @@ var TCP_API = 'https://api.truecombat.eu';
       seen = localStorage.getItem('tcp-devlog-seen') || '';
     } catch (e) {}
     var age = (Date.now() - new Date(newest + 'T00:00:00Z').getTime()) / 86400000;
-    if (age < 14 && seen < newest) a.classList.add('fresh');
+    if (age < 14 && seen < newest) {
+      a.classList.add('fresh');
+      /* the menu group holding the link, and the phone menu button, get a dot too */
+      var g = a.closest('.tg'), b = document.querySelector('.tb-burger');
+      if (g) g.classList.add('has-new');
+      if (b) b.classList.add('has-new');
+    }
   });
 
   /* ---------- match report (match?id=<match id>) ---------- */
@@ -1999,7 +2098,7 @@ var TCP_API = 'https://api.truecombat.eu';
     function open() {
       if (!dlg) build();
       if (dlg.open) return;
-      var menu = document.getElementById('menu'); if (menu) menu.open = false;
+      if (window.tcpNavClose) window.tcpNavClose();
       input.value = ''; dlg.showModal(); input.focus();
       if (rows) { draw(); return; }
       fetch(new URL('search-' + lang + '.json', jsBase), { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
