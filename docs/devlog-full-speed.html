@@ -38,7 +38,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="img/favicon.png">
-<link rel="stylesheet" href="style.css?v=a4531b4408">
+<link rel="stylesheet" href="style.css?v=fa104a7f31">
 </head>
 <body>
 <!--nav-->
@@ -79,7 +79,7 @@
     <div class="head-art" style="--art: url(img/map-railhouse.webp); --art-s: url(img/map-railhouse-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog">All devlog posts</a>
-      <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.32.0</span><time datetime="2026-11-07">7 Nov 2026</time><span>2 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="full-speed" hidden></span></p>
+      <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.32.0</span><time datetime="2026-11-07">7 Nov 2026</time><span>2 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="full-speed" hidden></span><span class="post-cmts" data-post-cmts="full-speed" hidden></span></p>
       <h1>Back to full speed</h1>
       <p class="lede">For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.</p>
     </div>
@@ -119,6 +119,7 @@
       </div>
       <div class="post-rate" data-rate="full-speed" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
         <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <p class="rate-sum" hidden></p>
         <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
           <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
           <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
@@ -135,6 +136,7 @@
           <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
         </div>
       </div>
+      <section class="cmt" id="comments" data-cmt="full-speed" data-comments="on" aria-label="Comments" hidden></section>
       <nav class="post-pager">
         <span></span>
         <a class="next" href="devlog-match-mode"><small>Newer post</small>Match mode, built for clan nights</a>
@@ -150,7 +152,7 @@
       <article class="post-card" data-tag="Gameplay">
         <a class="post-art" href="devlog-close-quarters" tabindex="-1" aria-hidden="true"><img src="img/devlog/cqb-teaser-clean-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.38.0</span><time datetime="2026-11-17">17 Nov 2026</time><span>9 min read</span><span class="post-stat" data-post-stat="close-quarters" hidden></span></p>
+          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.38.0</span><time datetime="2026-11-17">17 Nov 2026</time><span>9 min read</span><span class="post-stat" data-post-stat="close-quarters" hidden></span><span class="post-cmts" data-post-cmts="close-quarters" hidden></span></p>
           <h2><a href="devlog-close-quarters">Close quarters, together</a></h2>
           <p>CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental playlist you can try long before anything touches Ranked.</p>
           <a class="more" href="devlog-close-quarters">Read the post</a>
@@ -159,7 +161,7 @@
       <article class="post-card" data-tag="Gameplay">
         <a class="post-art" href="devlog-every-shot" tabindex="-1" aria-hidden="true"><img src="img/devlog/impacts-warehouse-640.webp" alt="" width="640" height="360" loading="lazy"></a>
         <div>
-          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="every-shot" hidden></span></p>
+          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="every-shot" hidden></span><span class="post-cmts" data-post-cmts="every-shot" hidden></span></p>
           <h2><a href="devlog-every-shot">Every shot leaves a mark</a></h2>
           <p>Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.</p>
           <a class="more" href="devlog-every-shot">Read the post</a>
@@ -201,6 +203,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=18c4378961"></script>
+<script src="js/site.js?v=5eba91bea7"></script>
 </body>
 </html>
