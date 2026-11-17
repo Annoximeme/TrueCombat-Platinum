@@ -134,7 +134,7 @@ def nav(lang, current):
     others = [(l, (up + pre(l) + file) or "./") for l in langs_for(current) if l != lang]
     lang_links = "".join('<a href="%s" hreflang="%s" lang="%s">%s</a>' % (h, l, l, i18n.NAMES[l]) for l, h in others)
     home = "./"
-    main = ["maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news", "devlog"]
+    main = ["devlog", "maps", "weapons", "media", "guide", "servers", "leaderboards", "competitive", "news"]
     active = {"player": "leaderboards", "match": "servers", "account": ""}.get(current, current)
     if current.startswith("devlog-"):
         active = "devlog"
@@ -146,7 +146,7 @@ def nav(lang, current):
         active = "news"
     links = "\n".join(
         '      <li><a href="%s"%s%s>%s</a></li>' % (href(p), ' aria-current="page"' if p == active else "",
-                                               ' data-devlog-new="%s"' % devlog_posts(lang)[0]["date"] if p == "devlog" else "", L[p])
+                                               ' data-devlog-new="%s" data-new="%s"' % (devlog_posts(lang)[0]["date"], DEVREACH[lang]["tag"]) if p == "devlog" else "", L[p])
         for p in main)
     menu = "".join('<a href="%s">%s</a>' % (href(p), L[p]) for p in main)
     menu += '<a href="%s">%s</a><a href="%s">%s</a><a href="%s">%s</a>' % (href("studio"), L["studio"], href("support"), L["support"],
@@ -681,7 +681,7 @@ def post_meta(lang, p, by=False):
             f'<span class="post-stat" data-post-stat="{p["slug"]}" hidden></span></p>')
 
 
-def post_cards(lang, posts, feature=False, h="h2"):
+def post_cards(lang, posts, feature=False, h="h2", lead=None):
     T = DL[lang]
     cards = []
     for i, p in enumerate(posts):
@@ -691,7 +691,8 @@ def post_cards(lang, posts, feature=False, h="h2"):
         small = p["image"].replace(".webp", "-640.webp")
         # the featured card is full width on phones and about 60% wide on desktop: let the browser pick the size
         srcset = (' srcset="%s 640w, %s 1280w" sizes="(max-width: 860px) 100vw, 60vw"' % (small, p["image"])) if big and (DOCS / small).exists() else ""
-        cards.append(f"""      <article class="post-card{' featured' if big else ''}" data-tag="{htmlmod.escape(p['tag'])}">
+        cls = " featured" if big else " is-lead" if p["slug"] == lead else ""
+        cards.append(f"""      <article class="post-card{cls}" data-tag="{htmlmod.escape(p['tag'])}">
         <a class="post-art" href="devlog-{p['slug']}.html" tabindex="-1" aria-hidden="true"><img src="{art}"{srcset} alt="" {size} loading="{'eager' if big else 'lazy'}"></a>
         <div>
           {post_meta(lang, p)}
@@ -704,7 +705,8 @@ def post_cards(lang, posts, feature=False, h="h2"):
 
 
 def devlog_list(lang, posts):
-    return "<!--devlog-->\n" + post_cards(lang, posts, feature=True) + "\n<!--/devlog-->"
+    """Every post as a grid card. The feature post already opens the page, so its card only shows while a topic filter is on."""
+    return "<!--devlog-->\n" + post_cards(lang, posts, lead=feature_post(posts)["slug"]) + "\n<!--/devlog-->"
 
 
 def devlog_tags(lang, posts):
@@ -740,43 +742,88 @@ def devlog_latest(lang, posts):
 DEVREACH = {
     "en": {"new": "New devlog", "eyebrow": "In development", "h2": "Follow the build", "all": "All devlog posts",
            "lede": "TrueCombat: Platinum is built in the open. Every significant piece of work gets an article: what changed, why, and what comes next.",
-           "strip": "From the devlog"},
+           "strip": "From the devlog", "read": "Read the devlog", "also": "Also from the workshop", "latest": "Latest", "tag": "New"},
     "nl": {"new": "Nieuwe devlog", "eyebrow": "In ontwikkeling", "h2": "Volg de bouw", "all": "Alle devlogartikelen",
            "lede": "TrueCombat: Platinum wordt in het openbaar gebouwd. Elk belangrijk stuk werk krijgt een artikel: wat er veranderde, waarom, en wat er volgt.",
-           "strip": "Uit de devlog"},
+           "strip": "Uit de devlog", "read": "Lees de devlog", "also": "Meer uit de werkplaats", "latest": "Nieuwste", "tag": "Nieuw"},
 }
 
 
+ARROW_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+
+
+def small(image):
+    return image.replace(".webp", "-640.webp")
+
+
+def large(image):
+    """The widest version of a post image: -1920 when there is one, for full-width headers."""
+    wide = image.replace(".webp", "-1920.webp")
+    return wide if (DOCS / wide).exists() else image
+
+
+def feature_post(posts):
+    """The post that gets the big cinematic spot: the newest one with a `kicker` (update posts with
+    teaser art), or simply the newest post when none has one."""
+    return next((p for p in posts if p.get("kicker")), posts[0])
+
+
+def kicker(lang, p, prefix=""):
+    parts = [x for x in (prefix, p.get("kicker", "")) if x]
+    return " · ".join(htmlmod.escape(x) for x in parts)
+
+
 def devlog_hero(lang, posts):
-    """Home page hero: one line that leads to the newest devlog post."""
+    """Home page hero: a card with a thumbnail that leads to the newest devlog post."""
     p = posts[0]
-    return (f'<!--devlog-hero-->\n    <a class="hero-log" href="devlog-{p["slug"]}.html"><b>{DEVREACH[lang]["new"]}</b>'
-            f'<span>{htmlmod.escape(p["title"])}</span><time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time></a>\n<!--/devlog-hero-->')
+    label = kicker(lang, p, DEVREACH[lang]["new"])
+    return (f'<!--devlog-hero-->\n    <a class="hero-log" href="devlog-{p["slug"]}.html"><img src="{small(p["image"])}" alt="" width="640" height="360">'
+            f'<span><b>{label}</b><strong>{htmlmod.escape(p["title"])}</strong><time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time></span></a>\n<!--/devlog-hero-->')
 
 
 def devlog_home(lang, posts):
-    """Home page: the three newest devlog posts, high on the page."""
+    """Home page: the feature post as a full-width band with its teaser art, the two newest other posts beside it."""
     T = DEVREACH[lang]
-    cards = "\n".join(
-        f"""      <a class="log-card{' lead' if i == 0 else ''}" href="devlog-{p['slug']}.html">
-        <img src="{p['image'].replace('.webp', '-640.webp')}" alt="" width="640" height="360" loading="lazy">
-        <div><span class="eyebrow">{htmlmod.escape(p['tag'])} · <time datetime="{p['date']}">{nice_date(lang, p['date'])}</time></span>
-        <h3>{htmlmod.escape(p['title'])}</h3>
-        <p>{htmlmod.escape(p['summary'])}</p></div>
-      </a>""" for i, p in enumerate(posts[:3]))
+    f = feature_post(posts)
+    others = [p for p in posts if p["slug"] != f["slug"]][:2]
+    minis = "\n".join(
+        f"""        <a class="fb-mini" href="devlog-{p['slug']}.html"><img src="{small(p['image'])}" alt="" width="640" height="360" loading="lazy">"""
+        f"""<span><small>{htmlmod.escape(p['tag'])} · <time datetime="{p['date']}">{nice_date(lang, p['date'])}</time></small>{htmlmod.escape(p['title'])}</span></a>"""
+        for p in others)
     return f"""<!--devlog-home-->
-<section class="band band-alt" id="devlog">
-  <div class="wrap">
-    <div class="section-head head-row">
-      <div><span class="eyebrow">{T['eyebrow']}</span><h2>{T['h2']}</h2><p class="lede">{T['lede']}</p></div>
-      <div class="hero-cta"><a class="btn btn-ghost" href="devlog.html">{T['all']} ({len(posts)})</a></div>
+<section class="feature-band" id="devlog" aria-labelledby="devlog-h">
+  <picture class="fb-art"><source media="(max-width: 760px)" srcset="{small(f['image'])}"><img src="{large(f['image'])}" alt="" width="1280" height="720" loading="lazy"></picture>
+  <div class="wrap fb-grid">
+    <div class="fb-copy">
+      <span class="cine-kicker">{kicker(lang, f, LABELS[lang]['devlog'])}</span>
+      <h2 id="devlog-h"><a href="devlog-{f['slug']}.html">{htmlmod.escape(f['title'])}</a></h2>
+      <p>{htmlmod.escape(f['summary'])}</p>
+      <div class="hero-cta"><a class="btn btn-play cine-read" href="devlog-{f['slug']}.html">{T['read']} {ARROW_SVG}</a><a class="btn btn-ghost" href="devlog.html">{T['all']} ({len(posts)})</a></div>
     </div>
-    <div class="log-cards">
-{cards}
+    <div class="fb-side"><span class="eyebrow">{T['also']}</span>
+{minis}
     </div>
   </div>
 </section>
 <!--/devlog-home-->"""
+
+
+def devlog_lead(lang, posts):
+    """Devlog page: the feature post opens the page as a full-width header."""
+    T = DEVREACH[lang]
+    f = feature_post(posts)
+    return f"""<!--devlog-lead-->
+<section class="page-head cine-head" aria-labelledby="lead-h">
+  <div class="cine-art" style="--art: url({large(f['image'])}); --art-s: url({small(f['image'])})" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="cine-kicker">{kicker(lang, f, T['latest'])}</span>
+    {post_meta(lang, f)}
+    <h2 id="lead-h" class="cine-title"><a href="devlog-{f['slug']}.html">{htmlmod.escape(f['title'])}</a></h2>
+    <p class="lede">{htmlmod.escape(f['summary'])}</p>
+    <div class="hero-cta"><a class="btn btn-play cine-read" href="devlog-{f['slug']}.html">{T['read']} {ARROW_SVG}</a></div>
+  </div>
+</section>
+<!--/devlog-lead-->"""
 
 
 def devlog_strip(lang):
@@ -884,16 +931,20 @@ def devlog_page(lang, post, posts, template):
   </div>
 </section>
 """
+    # update posts (front matter `kicker:`) open on their teaser art at full size, like the key art
+    cine = " cine-post" if post.get("kicker") else ""
+    art = large(post["image"]) if cine else post["image"]
+    kick = f'\n      <span class="cine-kicker">{kicker(lang, post)}</span>' if cine else ""
     RATE_STARS = "\n          ".join(f'<button type="button" role="radio" aria-checked="false" data-stars="{n}" aria-label="{T["star"] if n == 1 else T["stars"].format(n=n)}"></button>' for n in range(1, 6))
     body = f"""<!--nav-->
 <!--/nav-->
 
 <main id="top">
 <article class="post" data-post="{post['slug']}" data-min="{post['minutes']}">
-  <header class="page-head post-head">
-    <div class="head-art" style="--art: url({post['image']}); --art-s: url({post['image'].replace('.webp', '-640.webp')})" aria-hidden="true"></div>
+  <header class="page-head post-head{cine}">
+    <div class="head-art" style="--art: url({art}); --art-s: url({post['image'].replace('.webp', '-640.webp')})" aria-hidden="true"></div>
     <div class="wrap">
-      <a class="back" href="devlog.html">{T['back']}</a>
+      <a class="back" href="devlog.html">{T['back']}</a>{kick}
       {post_meta(lang, post, by=True)}
       <h1>{title}</h1>
       <p class="lede">{htmlmod.escape(post['summary'])}</p>
@@ -1726,6 +1777,7 @@ def main():
         if page == "devlog":
             html = put(html, "devlog", devlog_list(lang, posts[lang]), path)
             html = put(html, "devlog-tags", devlog_tags(lang, posts[lang]), path)
+            html = put(html, "devlog-lead", devlog_lead(lang, posts[lang]), path)
         if page == "maps":
             # the explanation of the plan is the same for every map, so the maps page says it once
             for i, name in enumerate(MAPLIST):

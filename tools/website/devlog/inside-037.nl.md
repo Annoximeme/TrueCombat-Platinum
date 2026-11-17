@@ -6,6 +6,7 @@ summary: Een volledig vernieuwde interface, een tactische kaart, fotomodus, opti
 image: img/devlog/a-new-look.webp
 tag: Release
 version: 0.37.0
+kicker: Update 0.37.0
 ---
 Versie 0.37.0 is uit, een dag na de 0.36.1-hotfix. Het is de grootste update die TrueCombat: Platinum tot nu toe gehad heeft. Zes afzonderlijke stukken werk, elk apart gebouwd en getest, komen samen in één release: een nieuwe interface, een reeks visuele en gebruiksvriendelijke functies, optionele spelersaccounts, een vernieuwde studio-intro, slimmere bots en een flinke lading fixes uit jullie playtestmeldingen.
 
