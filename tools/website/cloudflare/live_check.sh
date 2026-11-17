@@ -32,6 +32,15 @@ for u in https://api.$D/funding.json https://staff.$D/; do
   echo "  $u -> $code from $ip"
   [ "$ip" = "2.24.59.195" ] || [ "$ip" = "2a02:4780:83:c9f9::1" ] && case "$code" in 2*|3*) ok "$u direct";; *) bad "$u answered $code";; esac || bad "$u not direct ($ip)"
 done
+echo "== Edge cache for pages (second request should be a HIT)"
+curl -s -o /dev/null --max-time 20 https://$D/faq >/dev/null
+echo "  $(curl -sS -o /dev/null -D - --max-time 20 https://$D/faq | grep -i '^cf-cache-status:' | tr -d '\r')"
+echo "  /api/account/ is never cached: $(curl -sS -o /dev/null -D - --max-time 20 https://$D/api/account/me | grep -i '^cf-cache-status:' | tr -d '\r')"
+echo "== Origin lock (straight to the VPS for the website: 308 = locked, 200 = open)"
+echo "  $(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' --max-time 20 --resolve $D:443:2.24.59.195 https://$D/)"
+echo "== DNSSEC"
+echo "  DS at the registry: $(dig +short DS $D @1.1.1.1 | tr '\n' ' ')"
+echo "  validated (ad flag): $(dig +dnssec $D A @1.1.1.1 | grep -c ' ad')"
 echo "== Master server (UDP 27950, getservers)"
 python3 - <<'PY' || true
 import socket

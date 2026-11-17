@@ -37,11 +37,24 @@ Email Obfuscation, Rocket Loader and Server-side Excludes **off** (they rewrite 
 per-page CSP); Browser Integrity Check and Bot Fight Mode **off** (they challenge non-browser clients
 such as the launcher).
 
+## Caching, DNSSEC and rules (also in records.json)
+
+- **Page cache**: a cache rule caches every page of truecombat.eu at Cloudflare for 4 hours (errors never),
+  except `/api/`, `/u/` and `/.well-known/`. The purge job empties the cache after every site change, so
+  pages are fast everywhere and still current within about a minute.
+- **Rate limit** (the free plan's one rule): more than 30 requests in 10 seconds from one address to
+  `/api/account/` is blocked for 10 seconds.
+- **Smart Tiered Cache** on; **DNSSEC** on (the DS record lives at Hostinger).
+- Token also needs Zone Cache Rules Edit, Zone WAF Edit (rate limit) and DNS Settings for DNSSEC.
+
 ## VPS side
 
 - `tools/website/deploy/install-cloudflare.sh`: Caddy trusts Cloudflare's ranges and passes the real visitor
   address on as X-Forwarded-For, so rate limits, insights and accounts see real visitors and not Cloudflare.
   Run `--ranges` now and then to refresh the list.
+- `install-cloudflare.sh --lock-origin`: the website only serves Cloudflare (and the box itself); a direct
+  visitor gets a redirect instead of content, so Cloudflare's shielding can't be bypassed. api, staff and the
+  game servers are untouched. `--unlock-origin` undoes it.
 - `tools/website/deploy/install-site-sync-fast.sh`: the VPS checks GitHub for site changes every 30 seconds.
 
 ## Rolling back
