@@ -1,0 +1,3 @@
+# exact bytes: the patches and sources carry CRLF and mixed line endings that git am must see unchanged
+*.mbox -text
+src/** -text

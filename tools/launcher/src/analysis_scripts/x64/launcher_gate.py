@@ -17,8 +17,9 @@ CASES = {'friend', 'engine_missing', 'corrupt_pak', 'av_write_denied', 'av_delet
 
 def status(exe):
     digest = hashlib.sha256(Path(exe).read_bytes()).hexdigest()
-    record = GATE/f'{digest}.json'
-    if not record.exists(): return digest, False, f'no launcher repair suite run for this launcher ({digest[:12]})'
+    # run_suite.py writes <sha>.json; a kit hands the record over as launcher-gate-<sha>.json: both count
+    record = next((p for p in (GATE/f'{digest}.json', GATE/f'launcher-gate-{digest}.json') if p.exists()), None)
+    if record is None: return digest, False, f'no launcher repair suite run for this launcher ({digest[:12]})'
     r = json.loads(record.read_text(encoding='utf-8'))
     if r.get('launcher_sha256') != digest: return digest, False, 'gate record is for another launcher'
     if r.get('suite_version', 0) < SUITE_VERSION: return digest, False, f'suite version {r.get("suite_version")} is older than {SUITE_VERSION}'
