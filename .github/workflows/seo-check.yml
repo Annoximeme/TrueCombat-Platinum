@@ -4,6 +4,11 @@ name: Search visibility check
 # pages out of Google or Bing (tools/website/seo_probe.py). Runs weekly and on demand.
 on:
   workflow_dispatch:
+    inputs:
+      mail_only:
+        description: "Only check the mail DNS records (MX, SPF, DKIM, DMARC, CAA)"
+        type: boolean
+        default: false
   schedule:
     - cron: "17 6 * * 1"
 
@@ -16,4 +21,4 @@ jobs:
         with:
           python-version: "3.12"
       - name: Check the live site
-        run: python tools/website/seo_probe.py --all
+        run: python tools/website/seo_probe.py ${{ inputs.mail_only && '--mail' || '--all' }}
