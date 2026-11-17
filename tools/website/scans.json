@@ -416,8 +416,8 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:33:52Z",
-   "checked": "2026-11-16T18:26:43Z",
-   "settle": true,
+   "checked": "2026-11-17T16:30:53Z",
+   "settle": false,
    "flagged_by": [
     "Cynet: Malicious (score: 100)"
    ]
@@ -461,8 +461,8 @@
    "suspicious": 0,
    "engines": 70,
    "analysed": "2026-11-16T17:34:24Z",
-   "checked": "2026-11-16T18:26:59Z",
-   "settle": true,
+   "checked": "2026-11-17T16:31:09Z",
+   "settle": false,
    "flagged_by": []
   },
   "79ef984fc23faf248d92ded8cce80e0796939f5de6058044b4d3dfd6bd9bf1a6": {
@@ -508,7 +508,16 @@
   },
   "86a1ab87145ff384d58df2d1d93e0efa70f3efb18b92de1859da670b6b2fce8d": {
    "name": "ui_mp_x64.dll",
-   "bytes": 406528
+   "bytes": 406528,
+   "malicious": 1,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-17T16:31:58Z",
+   "flagged_by": [
+    "Cynet: Malicious (score: 100)"
+   ],
+   "checked": "2026-11-17T16:34:13Z",
+   "settle": true
   },
   "8a65c7596ef2e6938731f5a1058e7e40145b6d97967cc649231a076b9a608d78": {
    "name": "msvcp140_codecvt_ids.dll",
@@ -580,8 +589,8 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:27:29Z",
-   "checked": "2026-11-16T18:21:07Z",
-   "settle": true,
+   "checked": "2026-11-17T16:30:05Z",
+   "settle": false,
    "flagged_by": [
     "Cynet: Malicious (score: 100)",
     "Skyhigh: BehavesLike.Win64.Dropper.dc"
@@ -658,8 +667,8 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:34:56Z",
-   "checked": "2026-11-16T18:27:17Z",
-   "settle": true,
+   "checked": "2026-11-17T16:31:25Z",
+   "settle": false,
    "flagged_by": []
   },
   "b222fc30e9b0a939dbe72b3ae42aa6ed3aa633f28e8c988aae6c831775c296b5": {
@@ -679,8 +688,8 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:21:54Z",
-   "checked": "2026-11-16T18:19:47Z",
-   "settle": true,
+   "checked": "2026-11-17T16:29:33Z",
+   "settle": false,
    "flagged_by": [
     "APEX: Malicious",
     "Bkav: W32.Malware.8C7CC47E",
@@ -767,8 +776,8 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:32:49Z",
-   "checked": "2026-11-16T18:26:11Z",
-   "settle": true,
+   "checked": "2026-11-17T16:30:21Z",
+   "settle": false,
    "flagged_by": []
   },
   "cd8419aea97ac3c46f44b165765066ed2a47ce6412b3cf0ae9befd2dae5f5f7e": {
@@ -863,8 +872,8 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:33:20Z",
-   "checked": "2026-11-16T18:26:27Z",
-   "settle": true,
+   "checked": "2026-11-17T16:30:37Z",
+   "settle": false,
    "flagged_by": []
   },
   "eb6802fdbce7e35d9d252e8ec7ebf508dbd2056b26cea56d356df3216b48c343": {
@@ -874,8 +883,8 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:26:09Z",
-   "checked": "2026-11-16T18:20:03Z",
-   "settle": true,
+   "checked": "2026-11-17T16:29:49Z",
+   "settle": false,
    "flagged_by": [
     "Trapmine: malicious.moderate.ml.score"
    ]
