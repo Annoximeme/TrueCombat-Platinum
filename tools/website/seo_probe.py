@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Checks how a search engine crawler sees truecombat.eu: DNS, redirects, robots.txt, the sitemap,
+"""Checks how a search engine crawler sees truecombat.eu: DNS, mail DNS (Zoho), redirects, robots.txt, the sitemap,
 status codes, robots headers and meta tags, and whether each page's canonical is its own address.
 Runs from GitHub Actions (workflow "Search visibility check"); prints a report and fails on errors.
 
   python tools/website/seo_probe.py            sample of sitemap pages
   python tools/website/seo_probe.py --all      every page in the sitemap
+  python tools/website/seo_probe.py --mail     only the mail DNS records (MX, SPF, DKIM, DMARC, CAA)
 """
 import http.client
 import re
@@ -52,6 +53,41 @@ def dig(name, rtype):
     return out
 
 
+ZOHO_MX = {"mx.zoho.eu.", "mx2.zoho.eu.", "mx3.zoho.eu."}
+DKIM_SELECTORS = ("zmail", "zoho")
+
+
+def check_mail():
+    """Mail DNS for Zoho Mail (EU). Missing records are warnings, so the weekly search check stays green."""
+    print("== Mail DNS")
+    mx = dig(HOST, "MX")
+    print("  %-28s MX    %s" % (HOST, " ".join(mx) or "-"))
+    hosts = {h.lower() for h in mx[1::2]}
+    if not ZOHO_MX <= hosts:
+        say("WARN", "MX should be mx.zoho.eu (10), mx2.zoho.eu (20), mx3.zoho.eu (50); found %s" % (" ".join(mx) or "none"))
+    txt = " ".join(dig(HOST, "TXT"))
+    spf = re.findall(r'"(v=spf1[^"]*)"', txt)
+    print("  %-28s SPF   %s" % (HOST, " | ".join(spf) or "-"))
+    if len(spf) != 1 or "include:zohomail.eu" not in spf[0]:
+        say("WARN", "need exactly one SPF record containing include:zohomail.eu; found %d" % len(spf))
+    found = False
+    for sel in DKIM_SELECTORS:
+        name = "%s._domainkey.%s" % (sel, HOST)
+        d = " ".join(dig(name, "TXT"))
+        print("  %-28s DKIM  %s" % (name, (d[:70] + "...") if len(d) > 70 else d or "-"))
+        found = found or "p=" in d
+    if not found:
+        say("WARN", "no DKIM key at %s._domainkey" % "/".join(DKIM_SELECTORS))
+    dm = " ".join(dig("_dmarc." + HOST, "TXT"))
+    print("  %-28s DMARC %s" % ("_dmarc." + HOST, dm or "-"))
+    if "v=DMARC1" not in dm:
+        say("WARN", "no DMARC record at _dmarc.%s" % HOST)
+    caa = " ".join(dig(HOST, "CAA"))
+    print("  %-28s CAA   %s" % (HOST, caa or "-"))
+    if "letsencrypt.org" not in caa:
+        say("WARN", "CAA should allow letsencrypt.org (the VPS certificate issuer)")
+
+
 def say(tag, msg):
     print("%-5s %s" % (tag, msg))
     (ERR if tag == "ERROR" else WARN if tag == "WARN" else []).append(msg)
@@ -81,6 +117,12 @@ def check_page(url, s, h, b):
 
 
 def main():
+    if "--mail" in sys.argv:
+        check_mail()
+        print("\n%d warnings" % len(WARN))
+        for w in WARN:
+            print("  WARN  " + w)
+        sys.exit(0)
     print("== DNS")
     for name in (HOST, "www." + HOST):
         for t in ("A", "AAAA", "CNAME"):
@@ -96,6 +138,8 @@ def main():
             print("  IPv6 443 reachable")
         except Exception as e:
             say("ERROR", "AAAA %s not reachable on 443 (%s)" % (aaaa[0], e))
+
+    check_mail()
 
     print("== Redirects")
     for start, want in (("http://truecombat.eu/", "https://truecombat.eu/"), ("http://www.truecombat.eu/", "https://truecombat.eu/"),
