@@ -189,6 +189,13 @@ class AccountsAPI:
     async def weekly(self) -> list[dict]:
         return (await self._call("GET", "/internal/weekly")).get("accounts", [])
 
+    async def idle(self) -> list[dict]:
+        """Accounts idle for almost two years that are due their deletion warning."""
+        return (await self._call("GET", "/internal/idle")).get("accounts", [])
+
+    async def idle_warned(self, discord_id) -> dict:
+        return await self._call("POST", "/internal/idle/warned", {"discord": str(discord_id)})
+
     async def lfs(self) -> list[dict]:
         return (await self._call("GET", "/api/account/lfs.json")).get("players", [])
 

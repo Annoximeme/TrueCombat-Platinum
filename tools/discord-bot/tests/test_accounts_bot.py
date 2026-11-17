@@ -109,6 +109,13 @@ class FakeAccounts:
     async def roles(self):
         return self._roles
 
+    async def idle(self):
+        return [p for p in getattr(self, "_idle", []) if p["discordId"] not in getattr(self, "warned", [])]
+
+    async def idle_warned(self, discord_id):
+        self.__dict__.setdefault("warned", []).append(str(discord_id))
+        return {"ok": True}
+
 
 class FakeStats:
     def __init__(self, weeks):
@@ -271,3 +278,22 @@ def test_weekly_embed_reads_well_without_extras():
     e = accounts.weekly_embed(cfg, "^1Red^7Name", PID, w)
     assert "^" not in e.title and "1** match," in e.description
     assert [f.name for f in e.fields][:3] == ["Kills", "K/D", "Rating"]
+
+
+# ---------------------------------------------------------------- idle-account warnings
+def test_idle_warning_dms_once_and_reports_closed_dms_too(monkeypatch):
+    cfg = make_cfg()
+    bot = FakeBot(cfg, {})
+    users = {1: FakeUser(1), 3: FakeUser(3, closed=True)}
+    bot.get_user = users.get
+    bot.accounts = FakeAccounts()
+    bot.accounts._idle = [{"discordId": "1", "name": "Sleeper", "lastActive": 1, "deleteAfter": 2000000000},
+                          {"discordId": "3", "name": "Closed", "lastActive": 1, "deleteAfter": 2000000000}]
+    cog = accounts.Accounts.__new__(accounts.Accounts)
+    cog.bot, cog.cfg = bot, cfg
+    monkeypatch.setattr(accounts.asyncio, "sleep", _no_sleep)
+    assert run(cog.warn_idle()) == 1
+    assert bot.accounts.warned == ["1", "3"]                       # a closed DM still counts as warned
+    e = users[1].got[0]["embed"]
+    assert "Sleeper" in e.description and "<t:2000000000:D>" in e.description and "/account" in e.description
+    assert run(cog.warn_idle()) == 0 and len(users[1].got) == 1    # never twice
