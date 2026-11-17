@@ -1556,21 +1556,38 @@ def page_images(path):
     return seen[:24]
 
 
+def page_fingerprint(html):
+    """What a reader or a search engine sees as the page itself: title, description and the main
+    content. Shared chrome (nav, footer, cache-busting stamps, script hashes) is left out, so a
+    style or menu change does not re-date every page in the sitemap."""
+    import hashlib
+    title = re.search(r"<title>(.*?)</title>", html, re.S)
+    desc = re.search(r'<meta name="description" content="([^"]*)"', html)
+    main = html[html.index("<main"):html.index("</main>")] if "<main" in html and "</main>" in html else html
+    main = re.sub(r"\?v=[0-9a-f]+", "", main)
+    main = re.sub(r' data-devlog-new="[^"]*"', "", main)
+    text = "\n".join([title.group(1) if title else "", desc.group(1) if desc else "", main])
+    return hashlib.sha1(text.encode("utf-8")).hexdigest()
+
+
 def lastmod(path):
-    """The date a page last changed: today when it differs from the last commit, else that commit's date."""
+    """The date a page's own content last changed. A page whose title, description and main content
+    match the last commit keeps the date it already has in the sitemap; a changed or new page gets today."""
     import datetime
     import subprocess
     today = datetime.date.today().isoformat()
     try:
-        rel = str(path.relative_to(ROOT))
-        tracked = subprocess.run(["git", "ls-files", "--error-unmatch", rel], cwd=ROOT, capture_output=True).returncode == 0
-        if not tracked or subprocess.run(["git", "diff", "--quiet", "HEAD", "--", rel], cwd=ROOT).returncode:
+        rel = str(path.relative_to(ROOT)).replace("\\", "/")
+        page = str(path.relative_to(DOCS)).replace("\\", "/")
+        page = page[:-len("index.html")] if page.endswith("index.html") else page[:-len(".html")] if page.endswith(".html") else page
+        old = OLD_LASTMOD.get(SITE + page)
+        committed = subprocess.run(["git", "show", "HEAD:" + rel], cwd=ROOT, capture_output=True)
+        if committed.returncode:
+            return today  # a new page
+        if page_fingerprint(committed.stdout.decode("utf-8", "replace")) != page_fingerprint(path.read_text(encoding="utf-8")):
             return today
-        # a shallow clone only knows its newest commit, which would stamp every page with the same date
-        if subprocess.run(["git", "rev-parse", "--is-shallow-repository"], cwd=ROOT, capture_output=True, text=True).stdout.strip() == "true":
-            old = OLD_LASTMOD.get(clean(SITE + str(path.relative_to(DOCS)).replace("\\", "/").replace("index.html", "")))
-            if old:
-                return old
+        if old:
+            return old
         out = subprocess.run(["git", "log", "-1", "--format=%cs", "--", rel], cwd=ROOT, capture_output=True, text=True).stdout.strip()
         return out or today
     except (OSError, ValueError):

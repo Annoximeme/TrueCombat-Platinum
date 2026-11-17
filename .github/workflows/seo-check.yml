@@ -6,8 +6,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "17 6 * * 1"
-  push:
-    branches: [website-seo-probe]
 
 jobs:
   probe:
