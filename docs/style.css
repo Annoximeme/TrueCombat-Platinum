@@ -1710,7 +1710,7 @@ body { background-image: radial-gradient(1100px 520px at 78% -8%, rgba(214,59,59
 @media (prefers-reduced-motion: reduce) { .hero .btn-play::before, .logo-sheen::before { animation: none; } }
 /* nothing over the hero blurs what is behind it: a backdrop blur over moving images is recalculated on every frame */
 .nav { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(13, 16, 22, .93); }
-.hero .btn-ghost, .hero-log { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(13, 16, 22, .78); }
+.hero .btn-ghost { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(13, 16, 22, .78); }
 
 /* ------------------------------------------------------------------ detailed stats: stat leaders and the full profile */
 .sb-tools { flex-wrap: wrap; align-items: center; }
@@ -1961,7 +1961,7 @@ h1 .acct-tick { width: .6em; height: .6em; vertical-align: .08em; }
 
 /* ------------------------------------------------------------------ devlog, cinematic: update posts lead with their teaser art */
 /* nav: Devlog comes first; a NEW tag while the newest post is recent and unread (site.js sets .fresh) */
-@media (min-width: 1360px) and (max-width: 1799px) { .nav-links { gap: 14px; } .nav .wrap { gap: 16px; } }
+@media (min-width: 1360px) { .nav-links { gap: 14px; } .nav .wrap { gap: 16px; max-width: 1440px; } }
 .nav a[data-devlog-new].fresh { position: relative; }
 @media (max-width: 1359px) { .nav a[data-devlog-new].fresh::before { content: ""; position: absolute; top: 2px; right: -9px; width: 6px; height: 6px; border-radius: 50%; background: var(--red-hi); box-shadow: 0 0 0 3px rgba(239, 80, 80, .18); } }
 @media (min-width: 1360px) { .nav a[data-devlog-new].fresh::after { content: attr(data-new); margin-left: 6px; padding: 3px 5px; border-radius: 3px; background: var(--red); color: #fff; font: 700 .6rem/1 var(--f-display); letter-spacing: .1em; vertical-align: 2px; } }
@@ -1971,14 +1971,6 @@ h1 .acct-tick { width: .6em; height: .6em; vertical-align: .08em; }
 .hero-notes::after { content: "\2192"; color: var(--red-hi); transition: transform .2s; }
 .hero-notes:hover { color: #fff; }
 .hero-notes:hover::after { transform: translateX(3px); }
-.hero-log { display: inline-flex; align-items: center; gap: 14px; max-width: 100%; padding: 8px 18px 8px 8px; border: 1px solid rgba(232,234,239,.18); border-radius: 10px; color: var(--fg); text-decoration: none; transition: border-color .2s; align-self: flex-start; }
-.hero-log:hover { border-color: var(--red-hi); }
-.hero-log img { width: 132px; height: 74px; object-fit: cover; border-radius: 6px; flex: none; }
-.hero-log > span { display: grid; gap: 6px; min-width: 0; }
-.hero-log b { font: 700 .7rem/1 var(--f-display); letter-spacing: .16em; text-transform: uppercase; color: var(--red-hi); }
-.hero-log strong { font: 700 1.2rem/1.05 var(--f-display); text-transform: uppercase; letter-spacing: .02em; }
-.hero-log time { color: var(--muted); font-size: .8rem; }
-@media (max-width: 600px) { .hero-log { width: 100%; } .hero-log img { width: 104px; height: 58px; } .hero-log strong { font-size: 1.05rem; } .hero-log time { display: none; } }
 /* shared */
 .cine-kicker { display: inline-flex; align-items: center; gap: 14px; font: 600 clamp(.8rem, 1.2vw, .98rem)/1 var(--f-display); letter-spacing: .3em; text-transform: uppercase; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.8); }
 .cine-kicker::before { content: ""; width: 44px; height: 3px; background: var(--red-hi); border-radius: 2px; flex: none; }
@@ -2035,3 +2027,31 @@ h1 .acct-tick { width: .6em; height: .6em; vertical-align: .08em; }
   .cine-art::after, .cine-post .head-art::after { background: linear-gradient(180deg, rgba(13,16,22,.15) 0, rgba(13,16,22,.1) 140px, var(--bg) 340px); }
   .cine-head .wrap, .cine-post .wrap { padding-top: 250px; }
 }
+
+/* ------------------------------------------------------------------ home hero: the newest devlog as a glass card beside the game */
+.hero-dev { display: grid; gap: 14px; padding: 18px; border: 1px solid rgba(232, 234, 239, .2); border-radius: 12px; background: rgba(13, 16, 22, .8); box-shadow: 0 30px 70px -24px rgba(0, 0, 0, .8); animation: rise .8s cubic-bezier(.2, .8, .2, 1) .5s both; transition: border-color .2s; }
+.hero-dev:hover { border-color: rgba(239, 80, 80, .55); }
+.hero-dev .hd-k { display: inline-flex; align-items: center; gap: 10px; font: 700 .74rem/1.2 var(--f-display); letter-spacing: .2em; text-transform: uppercase; color: var(--red-hi); }
+.hero-dev .hd-k::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--red-hi); box-shadow: 0 0 0 4px rgba(239, 80, 80, .25); flex: none; }
+.hero-dev .hd-art { display: block; overflow: hidden; border-radius: 8px; }
+.hero-dev .hd-art img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; transition: transform .6s cubic-bezier(.2, .8, .2, 1); }
+.hero-dev:hover .hd-art img { transform: scale(1.03); }
+.hero-dev h2 { margin: 0; font-size: var(--step-3); line-height: .98; text-transform: uppercase; overflow-wrap: anywhere; }
+.hero-dev h2 a { color: inherit; text-decoration: none; }
+.hero-dev h2 a:hover { color: #fff; }
+.hero-dev p { margin: 0; color: #c9ced8; font-size: .94rem; display: -webkit-box; -webkit-line-clamp: 4; line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.hero-dev .hd-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.hero-dev .hd-read { display: inline-flex; align-items: center; gap: 10px; }
+.hero-dev time { color: var(--muted); font-size: .82rem; }
+.hero-meta .hero-notes { padding: 0; font-size: inherit; letter-spacing: .12em; }
+.hero-meta .hero-notes::before { display: none; }
+/* two columns from 1001px: the game on the left, the devlog on the right */
+@media (min-width: 1001px) {
+  .hero .wrap:has(> .hero-dev) { grid-template-columns: minmax(0, 1fr) clamp(340px, 30vw, 420px); column-gap: clamp(32px, 4vw, 64px); max-width: 1320px; }
+  @media (min-width: 1360px) { .hero .wrap:has(> .hero-dev) { max-width: 1440px; } }
+  .hero .wrap:has(> .hero-dev) > * { grid-column: 1; }
+  .hero .wrap > .hero-dev { grid-column: 2; grid-row: 1 / span 6; align-self: center; }
+}
+@media (max-width: 1000px) { .hero-dev { max-width: 560px; } .hero-dev p { -webkit-line-clamp: 3; line-clamp: 3; } }
+@media (max-width: 600px) { .hero-dev { padding: 14px; gap: 12px; } .hero-dev h2 { font-size: var(--step-2); } .hero-dev p { -webkit-line-clamp: 2; line-clamp: 2; } }
+@media (prefers-reduced-motion: reduce) { .hero-dev, .hero-dev .hd-art img { animation: none; transition: none; } .hero-dev:hover .hd-art img { transform: none; } }
