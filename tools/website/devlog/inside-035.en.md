@@ -6,6 +6,7 @@ summary: Easy Anti-Cheat with no sign-up, a launcher rebuilt from scratch, playe
 image: img/hero-village-rooftop.webp
 tag: Release
 version: 0.35.0
+kicker: Update 0.35.0
 ---
 Version 0.35.0 went live on the morning of 12 November, at 07:39 Belgian time. It is the largest update TrueCombat: Platinum has had so far, and it was shaped more by you than any update before it. Most of what is in it started as a line in [What the playtests told us](devlog-playtest-fixes.html), a message on Discord or a clip from a match.
 

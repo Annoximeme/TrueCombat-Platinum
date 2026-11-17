@@ -6,6 +6,7 @@ summary: Een live minimap, treffers die je voelt, friendly fire, en een spel dat
 image: img/hero-snow-warehouse.webp
 tag: Release
 version: 0.37.2
+kicker: Update 0.37.2
 ---
 0.37.1 ging over het rechtzetten van wat volgens jullie niet goed voelde. 0.37.2 gaat over overzicht: weten waar je team is, weten wanneer er op je geschoten wordt, en weten dat elke kogel die je afvuurt telt, ook die ene die een teamgenoot raakt.
 
