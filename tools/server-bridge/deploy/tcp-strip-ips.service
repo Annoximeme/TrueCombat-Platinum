@@ -1,0 +1,9 @@
+[Unit]
+Description=TrueCombat: strip connection hashes from match reports older than 90 days
+After=tcp-bridge.service
+
+[Service]
+Type=oneshot
+# root: the report folders belong to the game server accounts, the database to tcpsvc; ownership is kept
+ExecStart=/usr/bin/python3 /opt/tcp/server-bridge/tcp_strip_ips.py --db /var/lib/tcp-stats/stats.db --dir /var/lib/tcpgame/home-unranked/tcetest/stats
+Nice=10
