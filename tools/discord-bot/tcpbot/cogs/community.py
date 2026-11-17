@@ -44,9 +44,9 @@ EVENT_LENGTH = 2 * 3600
 
 # ================================================================ opt-in buttons
 class OptInButton(discord.ui.DynamicItem[discord.ui.Button], template=r"tcp:role:(?P<key>alerts|playtester|events|patchnotes|devlog)"):
-    def __init__(self, key: str):
-        super().__init__(discord.ui.Button(label=OPT_IN[key][0], style=discord.ButtonStyle.secondary,
-                                           custom_id="tcp:role:%s" % key))
+    def __init__(self, key: str, label: str | None = None, emoji: str | None = None):
+        super().__init__(discord.ui.Button(label=label or OPT_IN[key][0], style=discord.ButtonStyle.secondary,
+                                           emoji=emoji, custom_id="tcp:role:%s" % key))
         self.key = key
 
     @classmethod

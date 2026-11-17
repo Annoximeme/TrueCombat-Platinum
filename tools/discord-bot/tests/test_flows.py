@@ -158,7 +158,7 @@ def release(rid, tag):
 
 
 def test_release_draft_then_publish_with_notes():
-    cfg = make_cfg()
+    cfg = make_cfg(releases={"style": "classic"})
     staff, ann = FakeChannel(30), FakeChannel(20)
     bot = FakeBot(cfg, {30: staff, 20: ann})
     rels = [release(1, "v0.32.0")]
@@ -181,6 +181,34 @@ def test_release_draft_then_publish_with_notes():
     assert cog.draft(2)["state"] == "published"
     run(cog.check_releases())                       # never twice
     assert len(staff.sent) == 1
+
+
+def test_release_briefing_draft_then_publish():
+    cfg = make_cfg(cards={"enabled": True})
+    staff, ann = FakeChannel(30), FakeChannel(20)
+    bot = FakeBot(cfg, {30: staff, 20: ann})
+    rels = [release(1, "v0.32.0")]
+    bot.releases = types.SimpleNamespace(published=lambda: _async(rels))
+    cog = news.News.__new__(news.News)
+    cog.bot, cog.cfg = bot, cfg
+    run(cog.check_releases())
+    rel = release(2, "v0.38.0-sandbox34")
+    rel["body"] = (HERE / "fixtures" / "release-0.38.0.md").read_text(encoding="utf-8")
+    rels.insert(0, rel)
+    run(cog.check_releases())
+    # staff see the exact card first, then the notice with Publish / Add patch notes / Skip
+    assert len(staff.sent) == 2 and ann.sent == []
+    preview, notice = staff.sent
+    assert isinstance(preview.kwargs["view"], discord.ui.LayoutView)
+    assert preview.kwargs["file"].filename == "patch-notes-0-38-0.jpg"
+    assert preview.kwargs["content"] is None
+    assert "0.38.0" in notice.kwargs["content"] and "above" in notice.kwargs["content"]
+    ok, where = run(cog.publish(2))
+    assert ok and where == ann.mention
+    post = ann.sent[0].kwargs
+    assert post["content"] is None and "embed" not in post
+    assert isinstance(post["view"], discord.ui.LayoutView) and post["file"].filename == "patch-notes-0-38-0.jpg"
+    assert cog.draft(2)["state"] == "published"
 
 
 def test_release_auto_mode():
@@ -281,13 +309,18 @@ def test_release_auto_mode_waits_for_website_page(tmp_path):
     (tmp_path / "release-0-37-0.html").write_text("<html></html>", encoding="utf-8")
     run(cog.check_releases())
     assert len(ann.sent) == 1
-    e = ann.sent[0].kwargs["embed"]
-    assert e.url == cfg.site + "/release-0-37-0"
-    urls = [c.url for c in ann.sent[0].kwargs["view"].children]
-    assert cfg.site + "/release-0-37-0" in urls and not any("github.com" in u for u in urls)
+    def buttons(comps):
+        for c in comps:
+            if c.get("type") == 2:
+                yield c
+            yield from buttons(c.get("components") or [])
+    urls = [b.get("url") for b in buttons(ann.sent[0].kwargs["view"].to_components()) if b.get("url")]
+    assert urls[0] == cfg.site + "/release-0-37-0"          # Full patch notes
+    assert not any("github.com" in u for u in urls)
     # a page that never shows up does not block the announcement forever
     late = release(5, "v0.38.0")
     late["published_at"] = (datetime.now(timezone.utc) - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     rels.insert(0, late)
     run(cog.check_releases())
-    assert len(ann.sent) == 2 and ann.sent[1].kwargs["embed"].url == cfg.site + "/news.html#v0.38.0"
+    assert len(ann.sent) == 2
+    assert next(buttons(ann.sent[1].kwargs["view"].to_components()))["url"] == cfg.site + "/news.html#v0.38.0"
