@@ -8,7 +8,7 @@ results back into the same draft. Nothing is published and nothing runs on the P
 or the VPS.
 
   request.py send --root <source root> --base v0.37.3-sandbox33 --name integ038 \
-                  [--jobs windows,linux,eac,bots] [--maps "obj_village obj_snow"] [--minutes 4]
+                  [--jobs scan,windows,linux,eac,bots] [--maps "obj_village obj_snow"] [--minutes 4]
   request.py status --name integ038
   request.py fetch  --name integ038 --out <folder>     downloads results, logs and binaries
   request.py clean  --name integ038                    deletes the draft when you are done
@@ -180,7 +180,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     s = p.add_subparsers(dest='cmd', required=True)
     x = s.add_parser('send'); x.add_argument('--root', required=True); x.add_argument('--base', required=True)
-    x.add_argument('--name', required=True); x.add_argument('--jobs', default='windows,linux,bots')
+    x.add_argument('--name', required=True); x.add_argument('--jobs', default='scan,windows,linux,bots')
     x.add_argument('--maps', default='obj_village obj_railhouse obj_snow obj_northport'); x.add_argument('--minutes', type=int, default=4)
     x.add_argument('--dry-run', action='store_true')
     x.add_argument('--eos-include', default=r'C:/TrueCombatWork/eac/sdk/SDK/Include')
