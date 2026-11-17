@@ -1,0 +1,27 @@
+name: DNS inventory
+on:
+  push:
+    branches: [cf-dns-inventory]
+permissions:
+  contents: read
+jobs:
+  dig:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Records at the authoritative nameservers
+        run: |
+          sudo apt-get install -y -qq dnsutils >/dev/null 2>&1 || true
+          D=truecombat.eu
+          NS=$(dig +short NS $D | head -1)
+          echo "NS: $(dig +short NS $D | tr '\n' ' ')"
+          echo "DS (DNSSEC at registry): $(dig +short DS $D @1.1.1.1 | tr '\n' ' ')"
+          echo "SOA: $(dig +short SOA $D @$NS)"
+          for n in @ www api master staff mail webmail devlog insights accounts account play eu1 eu2 status ftp cpanel autodiscover autoconfig _dmarc zmail._domainkey default._domainkey _domainkey hostingermail-a._domainkey hostingermail-b._domainkey hostingermail-c._domainkey _github-pages-challenge-Annoximeme _acme-challenge discord _discord docs cdn static download downloads update updates launcher servers server game ns1 ns2 test dev beta randomzz9q; do
+            f=$n.$D; [ "$n" = "@" ] && f=$D
+            for t in A AAAA CNAME MX TXT CAA SRV NS; do
+              r=$(dig +short +norecurse @$NS $f $t | tr '\n' ' ')
+              [ -n "$r" ] && echo "$f $t $r (ttl $(dig +noall +answer @$NS $f $t | head -1 | awk '{print $2}'))"
+            done
+          done
+          for s in _ts3._udp _sip._tls _autodiscover._tcp; do r=$(dig +short @$NS $s.$D SRV); [ -n "$r" ] && echo "$s SRV $r"; done
+          echo "AXFR attempt:"; dig AXFR $D @$NS | head -60 || true
