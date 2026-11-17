@@ -1,0 +1,141 @@
+name: Release binaries (build and sign)
+
+# Builds the Windows release binaries of one release from public source on GitHub-hosted runners,
+# stages them as shipped (release names, no debug data, valid PE checksum) and, once the SignPath
+# Foundation project is set up, sends them to SignPath for code signing.
+#
+#   unsigned-<tag>   artifact: the staged binaries + MANIFEST.json (what the release gate tests)
+#   signed-<tag>     artifact: the same binaries signed by SignPath (what gets packaged)
+#
+# Signing happens only after the maintainer approves the request in SignPath; the job waits for
+# that. tools/sign/check_signed.py then proves each signed file is the unsigned file plus a signature.
+#
+# Setup (once SignPath accepts the project), in GitHub Settings > Secrets and variables > Actions:
+#   secret   SIGNPATH_API_TOKEN            submitter token of the SignPath CI user
+#   variable SIGNPATH_ORGANIZATION_ID      SignPath organisation id
+#   variable SIGNPATH_PROJECT_SLUG         e.g. truecombat-platinum
+#   variable SIGNPATH_SIGNING_POLICY_SLUG  release-signing (origin verification on, branch main)
+# Without the variable SIGNPATH_ORGANIZATION_ID the workflow builds and stages only.
+#
+# SignPath's open source rules: GitHub-hosted runners only, no build cache, no manual overrides of
+# build settings. Keep it that way: no actions/cache here, toolchains are downloaded and checksum-pinned.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release whose source to build (e.g. v0.38.1-sandbox35)"
+        required: true
+      exe_names:
+        description: "0.40.0 layout: engine and server as platinum-engine.exe / platinum-server.exe"
+        type: boolean
+        default: false
+      sign:
+        description: "Send the build to SignPath (needs the SignPath variables)"
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - "tools/sign/**"
+      - ".github/workflows/release-sign.yml"
+
+permissions:
+  contents: write   # read the hidden ci-deps draft release (EOS SDK headers); nothing is written
+  actions: read
+
+concurrency:
+  group: release-sign-${{ inputs.tag || github.ref }}
+  cancel-in-progress: false
+
+env:
+  LLVM_MINGW_VERSION: "20261020"
+  LLVM_MINGW_SHA256: "55064b60b991a1e1e8090b8c2f84e82b22cfe5903d12c159d65064cf5e8ae335"
+  STREAMLINE_VERSION: "2.14.16"
+  STREAMLINE_SHA256: "32041e51db0cab709a271b72a352281b690c2abbd669a827809401a5dd23956b"
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      version: ${{ steps.tag.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: tag
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          tag=${TAG:-$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)}
+          [[ "$tag" =~ ^v[0-9A-Za-z._-]+$ ]] || { echo "::error::bad tag"; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$(sed -E 's/^v([0-9]+\.[0-9]+\.[0-9]+).*/\1/' <<< "$tag")" >> "$GITHUB_OUTPUT"
+      - name: Toolchain (pinned, checksum verified)
+        run: tools/ci/setup-toolchain.sh ~/toolchain
+      - name: Source
+        run: tools/ci/compose-source.sh "${{ steps.tag.outputs.tag }}" src
+      - name: EOS SDK headers (Easy Anti-Cheat)
+        run: |
+          if python3 tools/ci/draft.py get ci-deps eos-sdk-include.zip eos.zip 2>/dev/null; then
+            unzip -q eos.zip -d eos && echo "EOS_INCLUDE=$PWD/eos/Include" >> "$GITHUB_ENV"
+          elif [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            echo "::notice::self-test without the private EOS SDK headers (Easy Anti-Cheat off)"
+          else
+            echo "::error::EOS SDK headers missing (draft ci-deps); a release build needs Easy Anti-Cheat"; exit 1
+          fi
+      - name: Build
+        run: |
+          export LLVM_MINGW=~/toolchain/llvm-mingw SL_SDK=~/toolchain/streamline RUN_PROBES=0
+          tools/ci/build-windows.sh src out
+      - name: Stage release binaries
+        run: |
+          python3 tools/sign/stage_release_binaries.py out staged --strip ~/toolchain/llvm-mingw/bin/llvm-strip \
+            ${{ inputs.exe_names && '--exe-names' || '' }}
+          cp out/summary.md out/options.txt staged/ 2>/dev/null || true
+          { echo "## Release binaries ${{ steps.tag.outputs.tag }}"; echo '```'; cat staged/MANIFEST.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-${{ steps.tag.outputs.tag }}
+          path: staged/
+          if-no-files-found: error
+          retention-days: 30
+
+  sign:
+    needs: build
+    if: github.event_name == 'workflow_dispatch' && inputs.sign && vars.SIGNPATH_ORGANIZATION_ID != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360   # waits for the maintainer's approval in SignPath (GitHub-hosted maximum: 6 h)
+    steps:
+      - uses: actions/checkout@v4
+      - name: Submit signing request (waits for approval)
+        uses: signpath/github-action-submit-signing-request@v3
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_SIGNING_POLICY_SLUG }}
+          artifact-configuration-slug: release-binaries
+          github-artifact-id: ${{ needs.build.outputs.artifact-id }}
+          wait-for-completion: true
+          wait-for-completion-timeout-in-seconds: 21000
+          output-artifact-directory: signed
+          parameters: |
+            version: "${{ needs.build.outputs.version }}"
+      - uses: actions/download-artifact@v4
+        with:
+          name: unsigned-${{ needs.build.outputs.tag }}
+          path: unsigned
+      - name: Check signatures
+        run: |
+          sudo apt-get update -q && sudo apt-get install -yq osslsigncode > /dev/null
+          python3 tools/sign/check_signed.py signed --unsigned-ref unsigned --json signed/SIGNED-CHECK.json
+          cp unsigned/MANIFEST.json signed/UNSIGNED-MANIFEST.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-${{ needs.build.outputs.tag }}
+          path: signed/
+          if-no-files-found: error
+          retention-days: 90
