@@ -1,0 +1,47 @@
+{
+  "zone": "truecombat.eu",
+  "_note": "The full DNS zone for truecombat.eu as Cloudflare should hold it. cf_setup.py makes Cloudflare match this list. proxied=true (orange cloud) only for the website itself; game, master (UDP), API, staff portal and mail stay DNS-only.",
+  "records": [
+    {"type": "A",     "name": "@",      "content": "2.24.59.195", "proxied": true,  "why": "website"},
+    {"type": "CNAME", "name": "www",    "content": "truecombat.eu", "proxied": true, "why": "website, Caddy redirects to apex"},
+    {"type": "A",     "name": "api",    "content": "2.24.59.195", "proxied": false, "why": "stats, launcher feed calls, game servers, EOS auth, Ko-fi webhook"},
+    {"type": "A",     "name": "master", "content": "2.24.59.195", "proxied": false, "why": "master server, UDP"},
+    {"type": "AAAA",  "name": "master", "content": "2a02:4780:83:c9f9::1", "proxied": false, "why": "master server, UDP"},
+    {"type": "A",     "name": "staff",  "content": "2.24.59.195", "proxied": false, "why": "staff portal"},
+    {"type": "AAAA",  "name": "staff",  "content": "2a02:4780:83:c9f9::1", "proxied": false, "why": "staff portal"},
+    {"type": "TXT",   "name": "@",      "content": "zoho-verification=zb76464286.zmverify.zoho.eu", "why": "Zoho Mail domain verification"},
+    {"type": "TXT",   "name": "@",      "content": "google-site-verification=Has8YzLIiAyteIAvLf-BZHIhEoUoD5_g-lUG8fRR5Gc", "why": "Google Search Console"},
+    {"type": "MX",    "name": "@",      "content": "mx.zoho.eu",  "priority": 10, "why": "Zoho Mail"},
+    {"type": "MX",    "name": "@",      "content": "mx2.zoho.eu", "priority": 20, "why": "Zoho Mail"},
+    {"type": "MX",    "name": "@",      "content": "mx3.zoho.eu", "priority": 50, "why": "Zoho Mail"},
+    {"type": "TXT",   "name": "@",      "content": "v=spf1 include:zohomail.eu ~all", "why": "SPF for Zoho Mail"},
+    {"type": "TXT",   "name": "_dmarc", "content": "v=DMARC1; p=quarantine; rua=mailto:gianni@truecombat.eu", "why": "DMARC"},
+    {"type": "CAA",   "name": "@",      "flags": 0, "tag": "issue", "value": "letsencrypt.org", "why": "Caddy certificates (Cloudflare adds its own CAs automatically)"},
+    {"type": "CAA",   "name": "@",      "flags": 0, "tag": "issue", "value": "sectigo.com", "why": "Caddy fallback CA (ZeroSSL)"}
+  ],
+  "settings": {
+    "ssl": "strict",
+    "always_use_https": "off",
+    "min_tls_version": "1.2",
+    "tls_1_3": "on",
+    "http3": "on",
+    "brotli": "on",
+    "email_obfuscation": "off",
+    "server_side_exclude": "off",
+    "rocket_loader": "off",
+    "browser_check": "off",
+    "browser_cache_ttl": 0,
+    "0rtt": "off",
+    "early_hints": "off"
+  },
+  "_settings_why": {
+    "ssl": "Full (strict): Cloudflare talks to Caddy over HTTPS and checks its real certificate.",
+    "always_use_https": "Caddy already redirects to HTTPS and sends HSTS; leaving this off lets Let's Encrypt HTTP challenges reach Caddy on port 80, so certificate renewals keep working behind the proxy.",
+    "email_obfuscation": "It rewrites HTML and injects a script that the site's CSP blocks.",
+    "server_side_exclude": "Also rewrites HTML.",
+    "rocket_loader": "Rewrites script tags; breaks the per-page CSP hashes.",
+    "browser_check": "Can block the launcher and other non-browser clients that fetch launcher-feed.txt and account endpoints.",
+    "browser_cache_ttl": "0 = respect the Cache-Control headers Caddy sends."
+  },
+  "bot_fight_mode": false
+}
