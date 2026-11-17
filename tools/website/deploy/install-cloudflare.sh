@@ -3,6 +3,9 @@
 #   sh install-cloudflare.sh            install, validate, reload, smoke test
 #   sh install-cloudflare.sh --ranges   only refresh Cloudflare's address list (safe to run from a timer)
 #   sh install-cloudflare.sh --undo     restore the Caddyfile from before the install
+#   sh install-cloudflare.sh --lock-origin     the website (truecombat.eu, www) serves only Cloudflare and this box;
+#                                              anyone else who connects straight to the VPS gets a redirect, no content
+#   sh install-cloudflare.sh --unlock-origin   undo --lock-origin
 #
 # What it changes, and why:
 #  1. /etc/caddy/cloudflare-ips.caddy: Cloudflare's published address ranges as trusted proxies, and
@@ -16,6 +19,8 @@ set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
 CADDYFILE=/etc/caddy/Caddyfile
 SNIPPET=/etc/caddy/cloudflare-ips.caddy
+LOCK=/etc/caddy/cloudflare-only.caddy
+LOCKLINE="import $LOCK"
 BACKUP=/etc/caddy/Caddyfile.before-cloudflare
 LINE="import $SNIPPET"
 
@@ -37,6 +42,15 @@ write_ranges() {
 		ranges=$(grep -E '^[0-9a-f.:]+/[0-9]+$' "$HERE/cloudflare-ips.txt" | tr '\n' ' ')
 		src="fallback list in the repo (cloudflare.com could not be reached)"
 	fi
+	# the origin lock snippet always follows the same list (harmless while no site block imports it)
+	{
+		echo "# Website answers only Cloudflare ($src) and this box. Written by install-cloudflare.sh --lock-origin."
+		echo "@tcp_not_cloudflare not remote_ip $ranges 127.0.0.1/8 ::1"
+		# redir, not abort: Caddy runs redir before handle and file_server, while abort would come after handle
+		# (so /api/account/* would slip past it). A direct visitor is sent to the real address, via Cloudflare.
+		echo "redir @tcp_not_cloudflare https://truecombat.eu{uri} 308"
+	} | sudo tee "$LOCK.new" >/dev/null
+	sudo mv "$LOCK.new" "$LOCK"
 	{
 		echo "# Cloudflare address ranges ($src). Written by install-cloudflare.sh; imported in the global servers block."
 		echo "trusted_proxies static $ranges"
@@ -57,6 +71,42 @@ if [ "${1:-}" = "--undo" ]; then
 	sudo cp "$BACKUP" "$CADDYFILE"
 	reload
 	echo "restored $CADDYFILE from $BACKUP ($SNIPPET left in place, unused)"
+	exit 0
+fi
+
+if [ "${1:-}" = "--lock-origin" ] || [ "${1:-}" = "--unlock-origin" ]; then
+	write_ranges || true
+	LBACKUP=/etc/caddy/Caddyfile.before-origin-lock
+	[ "$1" = "--lock-origin" ] && sudo cp "$CADDYFILE" "$LBACKUP"
+	sudo python3 - "$CADDYFILE" "$LOCKLINE" "$1" <<'PY'
+import re, sys
+path, line, mode = sys.argv[1], sys.argv[2], sys.argv[3]
+text = open(path).read()
+if mode == "--unlock-origin":
+    text, n = re.subn(r'(?m)^[ \t]*' + re.escape(line) + r'[ \t]*\n', "", text)
+    open(path, "w").write(text); print("removed %d import line(s)" % n); sys.exit(0)
+n = 0
+for host in (r"truecombat\.eu", r"www\.truecombat\.eu"):
+    m = re.search(r'(?m)^(?:https://)?' + host + r'(?::443)?\s*\{[ \t]*\n', text)
+    if not m:
+        sys.exit("no site block for %s; nothing changed" % host)
+    block_start = m.end()
+    if line in text[block_start:block_start + 200]:
+        continue
+    text = text[:block_start] + "\t" + line + "\n" + text[block_start:]
+    n += 1
+open(path, "w").write(text); print("origin lock added to %d site block(s)" % n)
+PY
+	if ! reload; then
+		echo "validation failed, restoring the old Caddyfile"
+		[ "$1" = "--lock-origin" ] && sudo cp "$LBACKUP" "$CADDYFILE"
+		exit 1
+	fi
+	sleep 2
+	echo "from this box (allowed): $(curl -s -o /dev/null -w '%{http_code}' --resolve truecombat.eu:443:127.0.0.1 https://truecombat.eu/)"
+	pub=$(curl -s -4 --max-time 10 https://api.ipify.org || echo 2.24.59.195)
+	echo "via the public address (308 = locked, 200 = open): $(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --resolve truecombat.eu:443:$pub https://truecombat.eu/ || true)"
+	echo "api still direct: $(curl -s -o /dev/null -w '%{http_code}' --max-time 10 --resolve api.truecombat.eu:443:$pub https://api.truecombat.eu/funding.json)"
 	exit 0
 fi
 

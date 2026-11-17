@@ -22,8 +22,8 @@ on:
     branches: [main]
     paths: ["docs/**"]
   workflow_run:
-    # the Website workflow commits rebuilt pages with the default token, which does not start push workflows
-    workflows: ["Website"]
+    # these workflows commit site files with the default token, which does not start push workflows
+    workflows: ["Website", "Virus scan"]
     types: [completed]
 
 permissions:
@@ -59,7 +59,6 @@ jobs:
       - name: Wait for the VPS to serve the change, then purge
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          ORIGIN: 2.24.59.195
         run: |
           if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "No CLOUDFLARE_API_TOKEN secret yet; nothing to do."; exit 0; fi
           # files under docs/ changed by the newest commit on main (dot files are never served)
@@ -71,9 +70,10 @@ jobs:
           url="/${probe#docs/}"
           want=$(sha256sum "$probe" | cut -d' ' -f1)
           echo "Waiting until the VPS serves $url (sha256 ${want:0:12})"
-          # ask the VPS directly (not through Cloudflare); the VPS pulls main every few minutes
+          # the VPS only answers Cloudflare for the website, so ask through Cloudflare with a query string that
+          # was never cached: Cloudflare has to fetch it fresh from the VPS
           for i in $(seq 1 40); do
-            got=$(curl -sL --max-time 15 --resolve "truecombat.eu:443:$ORIGIN" "https://truecombat.eu$url" | sha256sum | cut -d' ' -f1)
+            got=$(curl -sL --max-time 15 "https://truecombat.eu$url?cfcheck=$GITHUB_RUN_ID-$i" | sha256sum | cut -d' ' -f1)
             if [ "$got" = "$want" ]; then echo "Live on the VPS after $((i*15-15)) s."; break; fi
             if [ "$i" = 40 ]; then echo "The VPS still serves the old file after 10 minutes; purging anyway."; fi
             sleep 15
