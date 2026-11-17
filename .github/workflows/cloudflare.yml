@@ -1,0 +1,80 @@
+name: Cloudflare
+
+# truecombat.eu sits behind Cloudflare. This workflow
+#  - "setup" (run by hand): makes the Cloudflare zone match tools/website/cloudflare/records.json
+#    (DNS records, proxy on/off, SSL and other settings). mode=check only reports.
+#  - "purge" (automatic): after a site change reaches the VPS, empties Cloudflare's cache so
+#    visitors see the new files at once instead of a cached copy.
+# Needs the repository secret CLOUDFLARE_API_TOKEN. Without it every job skips quietly.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "check = report only, apply = change Cloudflare, purge = empty the cache now"
+        type: choice
+        options: [check, apply, purge]
+        default: check
+      delete_extras:
+        description: "apply only: also delete records that are not in records.json"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths: ["docs/**"]
+  workflow_run:
+    # the Website workflow commits rebuilt pages with the default token, which does not start push workflows
+    workflows: ["Website"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  setup:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cloudflare ${{ inputs.mode }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "No CLOUDFLARE_API_TOKEN secret yet; nothing to do."; exit 0; fi
+          extra=""
+          if [ "${{ inputs.delete_extras }}" = "true" ]; then extra="--delete-extras"; fi
+          python3 tools/website/cloudflare/cf_setup.py ${{ inputs.mode }} $extra | tee -a "$GITHUB_STEP_SUMMARY"
+
+  purge:
+    if: github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: cloudflare-purge
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 2
+      - name: Wait for the VPS to serve the change, then purge
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ORIGIN: 2.24.59.195
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "No CLOUDFLARE_API_TOKEN secret yet; nothing to do."; exit 0; fi
+          # files under docs/ changed by the newest commit on main (dot files are never served)
+          changed=$(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- docs | grep -v '/\.' || true)
+          if [ -z "$changed" ]; then echo "Newest commit does not change the site."; exit 0; fi
+          # prefer a non-HTML file as the probe: Caddy serves those byte for byte
+          probe=$(echo "$changed" | grep -v '\.html$' | head -1)
+          [ -n "$probe" ] || probe=$(echo "$changed" | head -1)
+          url="/${probe#docs/}"
+          want=$(sha256sum "$probe" | cut -d' ' -f1)
+          echo "Waiting until the VPS serves $url (sha256 ${want:0:12})"
+          # ask the VPS directly (not through Cloudflare); the VPS pulls main every few minutes
+          for i in $(seq 1 40); do
+            got=$(curl -sL --max-time 15 --resolve "truecombat.eu:443:$ORIGIN" "https://truecombat.eu$url" | sha256sum | cut -d' ' -f1)
+            if [ "$got" = "$want" ]; then echo "Live on the VPS after $((i*15-15)) s."; break; fi
+            if [ "$i" = 40 ]; then echo "The VPS still serves the old file after 10 minutes; purging anyway."; fi
+            sleep 15
+          done
+          python3 tools/website/cloudflare/cf_setup.py purge
