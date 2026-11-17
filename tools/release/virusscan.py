@@ -4,7 +4,7 @@
 Runs on GitHub Actions (.github/workflows/virus-scan.yml) when a release is published,
 when fast_publish.py asks for a draft to be checked, and once a day. For each release it
 looks at the installer (TrueCombat-Platinum-Setup.exe) and every program file the
-launcher installs (.exe and .dll assets):
+launcher installs (.exe and .dll assets, the engine and server .bin files, Linux .so):
 
   * the SHA-256 comes from GitHub's own asset digest (no download needed);
   * VirusTotal is asked about that hash first. Files it already knows cost one lookup;
@@ -42,7 +42,7 @@ STORE = ROOT / "tools" / "website" / "scans.json"
 REPO = os.environ.get("GITHUB_REPOSITORY", "Annoximeme/TrueCombat-Platinum")
 VT = "https://www.virustotal.com/api/v3"
 SETUP = "TrueCombat-Platinum-Setup.exe"
-PROGRAM = re.compile(r"\.(exe|dll)$", re.I)
+PROGRAM = re.compile(r"\.(exe|dll|so)$|platinum-(engine|server)\.bin$", re.I)
 GAP = 16.0                    # seconds between VirusTotal requests (free tier: 4 a minute)
 DIRECT_MAX = 32 * 1024 * 1024  # bigger uploads need /files/upload_url
 VT_MAX = 650 * 1024 * 1024     # VirusTotal does not take bigger files
