@@ -366,6 +366,17 @@
    "settle": false,
    "flagged_by": []
   },
+  "417afc8339199df47431514a3b2754ff6b3af9419ec0a94c25690792052d799f": {
+   "name": "platinum-engine.bin",
+   "bytes": 4481536,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 69,
+   "analysed": "2026-11-17T17:52:33Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:56:56Z",
+   "settle": true
+  },
   "443577e869352436ff7ec8f4d9c90418d3e95368436ce219261e0f4f07a38122": {
    "name": "sl.reflex.dll",
    "bytes": 388736,
@@ -914,6 +925,17 @@
    "settle": true,
    "flagged_by": []
   },
+  "a9de94daa4e02811811bd735bcf3de2d4bee725db0390f551ef32a073d00133f": {
+   "name": "platinum-engine.bin",
+   "bytes": 4187136,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T17:53:04Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:55:55Z",
+   "settle": true
+  },
   "ab25af350c48856633d671a16e8469277f9acee39186d69fe5b2a26100d738e8": {
    "name": "EOSSDK-Win64-Shipping.dll",
    "bytes": 19548600,
@@ -934,6 +956,17 @@
    "analysed": "2026-11-17T17:22:40Z",
    "flagged_by": [],
    "checked": "2026-11-17T17:30:38Z",
+   "settle": true
+  },
+  "ac2980f0cbaf8a11d95e655cb3e3ebc6d15cf2e26e4e47fdc0b820584ed5122f": {
+   "name": "platinum-engine.bin",
+   "bytes": 4482560,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T17:53:36Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T17:56:10Z",
    "settle": true
   },
   "b1d7395aebd7b9722841d64dcf7433680020b6a8e421f851c16d5ba0c2182edf": {
@@ -1350,6 +1383,17 @@
   }
  },
  "releases": {
+  "v0.38.1-avscan": {
+   "published": "",
+   "draft": true,
+   "setup": "48447e05e2fd829df298d168d64f90112a82a5182864b9950bba5539cce4b63f",
+   "files": {
+    "TrueCombat-Platinum-Setup.exe": "48447e05e2fd829df298d168d64f90112a82a5182864b9950bba5539cce4b63f",
+    "a__platinum-engine.bin": "417afc8339199df47431514a3b2754ff6b3af9419ec0a94c25690792052d799f",
+    "b__platinum-engine.bin": "a9de94daa4e02811811bd735bcf3de2d4bee725db0390f551ef32a073d00133f",
+    "c__platinum-engine.bin": "ac2980f0cbaf8a11d95e655cb3e3ebc6d15cf2e26e4e47fdc0b820584ed5122f"
+   }
+  },
   "v0.38.0-sandbox34": {
    "published": "2026-11-17T16:41:28Z",
    "draft": false,
