@@ -9,7 +9,8 @@ arrays in C/C++ sources (the launcher compiles its artwork in that way).
 
 Fix a hit at its source with tools/strip_image_metadata.py (pixels stay identical), then rebuild. Random 4-byte
 matches inside compressed or raw pixel data are not hits: only real JUMBF boxes, C2PA labels (c2pa.actions,
-urn:c2pa:...) and tool names inside metadata or text count. The NVIDIA DLSS / Streamline runtime is skipped.
+urn:c2pa:...) and tool names inside metadata or text count; a name that is a folder in a compiled-in build path
+(/home/claude/...) is not a hit either. The NVIDIA DLSS / Streamline runtime is skipped.
 Standard library only.
 """
 import io, json, os, re, struct, sys, zipfile
@@ -59,6 +60,8 @@ def flags(b):
             if C2PA_LABEL.match(b, m.start()) or b[max(0, m.start() - 4):m.start()].lower() == b'urn:':
                 f.append('c2pa label')
         elif w in (b'claude', b'anthropic', b'openai'):
+            if m.start() and b[m.start() - 1:m.start()] in (b'/', b'\\'):
+                continue  # a build path compiled in (__FILE__, PDB path), e.g. /home/claude/... in a cloud container
             f.append('names ' + w.decode())
     return sorted(set(f))
 

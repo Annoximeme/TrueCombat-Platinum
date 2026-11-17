@@ -66,6 +66,10 @@ build failures surface in the feature's own thread instead of mid-release on the
 tools/ci/kit-gate.sh v0.38.0-sandbox34 <kit folder> "obj_village obj_snow" 3
 ```
 
+Before a release is published its tag does not exist yet, so the base can also be the frozen candidate's
+source as a zip or folder (`tools/ci/kit-gate.sh /mnt/project-files/release-speed/base/<zip> <kit>`); the
+bots soak then uses the newest published release's game data under the kit's own server and modules.
+
 The kit folder holds `patches/*.patch` (applied in name order with `git apply`, no fuzz) and optionally
 `files/` (copied over the tree). The script composes the base release source, applies the kit, scans
 it, cross-builds Windows (with the probes when wine is installed), builds the Linux server and runs the
