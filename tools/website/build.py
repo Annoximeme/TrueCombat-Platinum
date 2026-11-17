@@ -21,6 +21,7 @@ Run it after changing any English page:   python tools/website/build.py
 import html as htmlmod
 import json
 import urllib.parse
+import os
 import pathlib
 import re
 import sys
@@ -1756,6 +1757,11 @@ def go_links():
 
 
 def main():
+    # every image in docs/ goes out without EXIF, XMP or C2PA metadata (lossless; see tools/strip_image_metadata.py)
+    sys.path.insert(0, str(HERE.parent))
+    import strip_image_metadata  # noqa: E402
+    for f in strip_image_metadata.run([str(DOCS)]):
+        print("stripped image metadata: " + os.path.relpath(f, DOCS))
     extend_tables()
     posts = {lang: devlog_posts(lang) for lang in LANGS}
     if [p["slug"] for p in posts["en"]] != [p["slug"] for p in posts["nl"]]:

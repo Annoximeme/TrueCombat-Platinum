@@ -46,6 +46,10 @@ version: 0.33.0
 ```
 
 Images go in `docs/img/devlog/`, 1280x720 WebP. The build stops if a referenced image is missing.
+The build strips EXIF, XMP and C2PA "Content Credentials" metadata from every image in `docs/` (pixels stay
+identical), and `check_site.py` fails on any image that still carries it. Images copied through a shared drive or
+an AI tool often pick it up; `python tools/strip_image_metadata.py <files or folders>` cleans them anywhere,
+including game and launcher assets before packaging.
 
 ## Writing
 
