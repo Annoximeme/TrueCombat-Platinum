@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Close quarters, together · TrueCombat: Platinum</title>
+<meta name="description" content="CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-close-quarters">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-close-quarters">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Close quarters, together">
+<meta property="og:description" content="CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-close-quarters.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-close-quarters.jpg">
+<meta property="article:published_time" content="2026-11-17">
+<meta property="article:section" content="Gameplay">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Close quarters, together","description":"CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental playlist you can try long before anything touches Ranked.","datePublished":"2026-11-17","dateModified":"2026-11-17","inLanguage":"en","articleSection":"Gameplay","timeRequired":"PT9M","image":"https://truecombat.eu/img/og-devlog-close-quarters.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-close-quarters","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Close quarters, together">
+<meta name="twitter:description" content="CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Close quarters, together","item":"https://truecombat.eu/devlog-close-quarters"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-close-quarters">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-close-quarters">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-close-quarters">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=a4531b4408">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-17" data-new="New">Devlog</a></li>
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Weapons</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Guide</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Leaderboards</a></li>
+      <li><a href="competitive">Competitive</a></li>
+      <li><a href="news">News</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Sections">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Search</button><a href="devlog">Devlog</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="media">Media</a><a href="guide">Guide</a><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="news">News</a><a href="studio">Studio</a><a href="support">Support</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Gallery</a><a href="./#graphics">Graphics</a><a href="faq">FAQ</a><a href="press">Press kit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="nl/devlog-close-quarters" hreflang="nl" lang="nl">Nederlands</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-close-quarters" hreflang="nl" lang="nl">Nederlands</a></div></details>
+    <a class="nav-support" href="support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Support</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Join the Discord" title="Join the Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="close-quarters" data-min="9">
+  <header class="page-head post-head cine-post">
+    <div class="head-art" style="--art: url(img/devlog/cqb-teaser-clean.webp); --art-s: url(img/devlog/cqb-teaser-clean-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <span class="cine-kicker">Update 0.38.0</span>
+      <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.38.0</span><time datetime="2026-11-17">17 Nov 2026</time><span>9 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="close-quarters" hidden></span></p>
+      <h1>Close quarters, together</h1>
+      <p class="lede">CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental playlist you can try long before anything touches Ranked.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#what-cqb-brings">What CQB brings</a></li>
+          <li><a href="#new-sidearms">New sidearms</a></li>
+          <li><a href="#the-new-weapons-in-game">The new weapons in game</a></li>
+          <li><a href="#harbour">Harbour</a></li>
+          <li><a href="#cqb-rules">CQB Rules</a></li>
+          <li><a href="#feel-and-detail">Feel and detail</a></li>
+          <li><a href="#why-experimental">Why Experimental</a></li>
+          <li><a href="#how-we-are-testing-it">How we are testing it</a></li>
+          <li><a href="#credit-where-it-is-due">Credit where it is due</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<figure class="wide">
+  <img src="img/devlog/cqb-teaser.webp" alt="Update 0.38.0 key art: Close Quarters" width="1280" height="720" loading="lazy">
+  <figcaption>Update 0.38.0: Close Quarters. Railhouse, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<p>In December 2010, GrooveSix Studios and Team Terminator released TrueCombat: CQB, a close-quarters take on TC:E with new weapons, far more detailed models and a set of ideas about how a modern tactical shooter should feel. Its last release was alpha 0.223, in April 2011.</p>
+<p>Platinum is built on TC:E. CQB grew from the same roots. Bringing the two together is the natural next step, and 0.38.0 is where it starts.</p>
+<div class="callout"><p>Everything from CQB arrives as <strong>Experimental</strong>. Ranked plays exactly as it does today until each piece has earned its place.</p></div>
+<h2 id="what-cqb-brings">What CQB brings</h2>
+<p>CQB is smaller than its reputation. It is an alpha with one map and one mode, but nearly every model in it was rebuilt from scratch. A first-person AK47 in TC:E has 777 triangles. CQB's has 6,698. The MP5 goes from 820 to 8,705.</p>
+<figure class="wide">
+  <img src="img/devlog/cqb-detail-compare.webp" alt="TC:E and CQB weapon models side by side" width="1280" height="720" loading="lazy">
+  <figcaption>Left: TC:E with Platinum's HD textures. Right: the same weapons from CQB.</figcaption>
+</figure>
+<p>Here is everything we are bringing over:</p>
+<ul>
+  <li><strong>14 new weapons</strong>, among them the SCAR, G3, M110, MP9, Mini Uzi, USP, Wilson Combat 1911, SG 552 and a sawn-off double-barrel shotgun, plus akimbo pistols.</li>
+  <li><strong>Upgraded models</strong> for the weapons Platinum already has, and new gear for the player models: helmets with goggles and masks, pouches and radios.</li>
+  <li><strong>Harbour</strong>, CQB's only map, rebuilt for Platinum.</li>
+  <li><strong>CQB Rules</strong>, a fast team mode with perks and health regeneration.</li>
+  <li><strong>Movement and feel</strong>: ledge grabbing, smarter spawns and smoother movement around corners.</li>
+  <li><strong>Optics, sound and impacts</strong>: new scope reticles, a red dot, radio callouts, indoor and outdoor gunfire reverb, and bullet holes for plastic.</li>
+</ul>
+<figure class="wide">
+  <img src="img/devlog/cqb-ak47-railhouse-ultra.webp" alt="CQB&#x27;s AK-47 on Railhouse with the Ultra preset" width="1280" height="720" loading="lazy">
+  <figcaption>CQB's AK-47 in the Railhouse west railyard, Ultra preset, DirectX 12</figcaption>
+</figure>
+<h2 id="new-sidearms">New sidearms</h2>
+<p>CQB replaced several of TC:E's pistols with new, far more detailed ones, and added the Shorty. These are studio renders of the first-person models, lit in a neutral scene so you can see the detail.</p>
+<figure class="wide">
+  <img src="img/devlog/cqb-render-1911.webp" alt="Wilson Combat 1911" width="1280" height="720" loading="lazy">
+  <figcaption>Wilson Combat 1911, first-person model</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-render-usp.webp" alt="H&amp;K USP .40" width="1280" height="720" loading="lazy">
+  <figcaption>H&amp;K USP .40</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-render-usp-sd.webp" alt="H&amp;K USP .40 with suppressor" width="1280" height="720" loading="lazy">
+  <figcaption>The USP with its suppressor</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-render-deagle.webp" alt="Desert Eagle" width="1280" height="720" loading="lazy">
+  <figcaption>CQB's new Desert Eagle model</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-render-shorty-angle.webp" alt="Sawn-off double-barrel shotgun" width="1280" height="720" loading="lazy">
+  <figcaption>The Shorty: two barrels, no stock, and it also comes in pairs</figcaption>
+</figure>
+<h2 id="the-new-weapons-in-game">The new weapons in game</h2>
+<p>Here is every new CQB weapon as it looks in Platinum today, in first person and on the player models. All of them are part of the experimental set, with stats based on TC:E weapons of the same calibre. One thing is not right yet: with some of these weapons the support hand hovers below the barrel instead of gripping it, in first person and on the player models. It is a known issue and we are fixing it.</p>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-scar-hip.webp" alt="SCAR in first person" width="1280" height="720" loading="lazy">
+  <figcaption>SCAR</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-scar-side.webp" alt="A player carrying the SCAR" width="1280" height="720" loading="lazy">
+  <figcaption>SCAR, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-g3-hip.webp" alt="G3 in first person" width="1280" height="720" loading="lazy">
+  <figcaption>G3</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-g3-side.webp" alt="A player carrying the G3" width="1280" height="720" loading="lazy">
+  <figcaption>G3, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-g3a3-hip.webp" alt="G3A3 in first person" width="1280" height="720" loading="lazy">
+  <figcaption>G3A3</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-g3a3-third.webp" alt="A player carrying the G3A3" width="1280" height="720" loading="lazy">
+  <figcaption>G3A3, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-sg552-hip.webp" alt="SG 552 in first person" width="1280" height="720" loading="lazy">
+  <figcaption>SG 552</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-sg552-third.webp" alt="A player carrying the SG 552" width="1280" height="720" loading="lazy">
+  <figcaption>SG 552, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-rec7-aimed.webp" alt="REC7 aimed down the sights" width="1280" height="720" loading="lazy">
+  <figcaption>REC7, aimed</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-rec7-third.webp" alt="A player carrying the REC7" width="1280" height="720" loading="lazy">
+  <figcaption>REC7, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-m110-hip.webp" alt="M110 with its 4x scope" width="1280" height="720" loading="lazy">
+  <figcaption>M110 with a 4x scope</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-m110-aimed.webp" alt="Looking through the M110 scope" width="1280" height="720" loading="lazy">
+  <figcaption>Through the M110 scope</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-m110sd-hip.webp" alt="M110 SD in first person" width="1280" height="720" loading="lazy">
+  <figcaption>M110 SD, suppressed</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-m110-side.webp" alt="A player carrying the M110" width="1280" height="720" loading="lazy">
+  <figcaption>M110, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-m110sd-side.webp" alt="A player carrying the M110 SD" width="1280" height="720" loading="lazy">
+  <figcaption>M110 SD, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-m110is-aimed.webp" alt="M110 with iron sights, aimed" width="1280" height="720" loading="lazy">
+  <figcaption>M110 with iron sights</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-m110is-side.webp" alt="A player carrying the M110 with iron sights" width="1280" height="720" loading="lazy">
+  <figcaption>M110 with iron sights, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-m110issd-side.webp" alt="A player carrying the suppressed M110 with iron sights" width="1280" height="720" loading="lazy">
+  <figcaption>M110 SD with iron sights, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-mp9-hip.webp" alt="MP9 in first person" width="1280" height="720" loading="lazy">
+  <figcaption>MP9</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-mp9-side.webp" alt="A player carrying the MP9" width="1280" height="720" loading="lazy">
+  <figcaption>MP9, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-miniuzi-aimed.webp" alt="Mini Uzi aimed" width="1280" height="720" loading="lazy">
+  <figcaption>Mini Uzi, aimed</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-miniuzi-third.webp" alt="A player carrying the Mini Uzi" width="1280" height="720" loading="lazy">
+  <figcaption>Mini Uzi, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-shorty-hip.webp" alt="Shorty in first person" width="1280" height="720" loading="lazy">
+  <figcaption>The Shorty</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-shorty-side.webp" alt="A player carrying the Shorty" width="1280" height="720" loading="lazy">
+  <figcaption>The Shorty, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-akimbo-shorty-third.webp" alt="A player with two Shorties" width="1280" height="720" loading="lazy">
+  <figcaption>Akimbo Shorties</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-1911-hip.webp" alt="Wilson Combat 1911 in first person" width="1280" height="720" loading="lazy">
+  <figcaption>Wilson Combat 1911</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-1911-third.webp" alt="A player carrying the 1911" width="1280" height="720" loading="lazy">
+  <figcaption>Wilson Combat 1911, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-akimbo-1911-third.webp" alt="A player with two 1911s" width="1280" height="720" loading="lazy">
+  <figcaption>Akimbo 1911s</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-usp-hip.webp" alt="USP .40 in first person" width="1280" height="720" loading="lazy">
+  <figcaption>H&amp;K USP .40</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-usp-third.webp" alt="A player carrying the USP" width="1280" height="720" loading="lazy">
+  <figcaption>H&amp;K USP .40, third person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-akimbo-1911-hip.webp" alt="Two 1911s in first person" width="1280" height="720" loading="lazy">
+  <figcaption>Akimbo 1911s, first person</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-gun-akimbo-shorty-hip.webp" alt="Two Shorties in first person" width="1280" height="720" loading="lazy">
+  <figcaption>Akimbo Shorties, first person</figcaption>
+</figure>
+<h2 id="harbour">Harbour</h2>
+<p>Harbour is a dockside district of warehouses, container yards, alleys and basements, with rain and city ambience. It suits the way CQB was meant to be played: short sightlines, lots of doors and constant decisions about which corner to clear first.</p>
+<p>To bring it into Platinum we gave it a tactical map and minimap, loading screen artwork and modern materials for 61 of its surfaces, so it holds up next to our other maps in DirectX 12.</p>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-01-harbour-main-yard.webp" alt="Harbour main yard" width="1280" height="720" loading="lazy">
+  <figcaption>Main yard</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-02-harbour-container-yard.webp" alt="Harbour container yard" width="1280" height="720" loading="lazy">
+  <figcaption>Container yard</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-03-harbour-central-warehouse.webp" alt="Harbour central warehouse" width="1280" height="720" loading="lazy">
+  <figcaption>Central warehouse</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-04-harbour-north-warehouse-upper.webp" alt="Harbour northern warehouse, upper floor" width="1280" height="720" loading="lazy">
+  <figcaption>Northern warehouse, upper floor</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-05-harbour-back-alley.webp" alt="Harbour back alley" width="1280" height="720" loading="lazy">
+  <figcaption>Back alley</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-06-harbour-gate.webp" alt="Harbour gate" width="1280" height="720" loading="lazy">
+  <figcaption>Gate</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-07-harbour-south-alley.webp" alt="Harbour southern alley" width="1280" height="720" loading="lazy">
+  <figcaption>Southern alley</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-08-harbour-basement.webp" alt="Harbour basement" width="1280" height="720" loading="lazy">
+  <figcaption>Basement</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-09-harbour-staircase-top.webp" alt="Harbour staircase, top floor" width="1280" height="720" loading="lazy">
+  <figcaption>Staircase, top floor</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-10-harbour-deposit.webp" alt="Harbour deposit" width="1280" height="720" loading="lazy">
+  <figcaption>Deposit</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-11-harbour-storage.webp" alt="Harbour storage" width="1280" height="720" loading="lazy">
+  <figcaption>Storage</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-12-harbour-chimney-stack.webp" alt="Harbour chimney stack" width="1280" height="720" loading="lazy">
+  <figcaption>Chimney stack</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-25-tacmap-harbour-callouts.webp" alt="Harbour tactical map" width="1280" height="720" loading="lazy">
+  <figcaption>The Harbour tactical map with its callouts</figcaption>
+</figure>
+<h2 id="cqb-rules">CQB Rules</h2>
+<p>CQB Rules is a fast team mode built around CQB's ideas. You respawn after one second, and a round ends at 20 kills or 20 minutes. The first kill of the match is called out as First Blood.</p>
+<p>Before you deploy, you pick one perk from each of three groups:</p>
+<ul>
+  <li><strong>Body:</strong> Lightweight (faster running and sprinting), Protected (an improved vest) or Tank (a heavy vest that costs you speed).</li>
+  <li><strong>Skill:</strong> Steady Aim (less spread and sway), Commando (more knife damage, and you can grab ledges) or Quick Reload.</li>
+  <li><strong>Gear:</strong> Extra Ammo, a Muzzle Attachment (suppressor, or a wider spread for shotguns) or High-grade Ammo (better penetration, and slugs for shotguns).</li>
+</ul>
+<p>Health comes back on its own if you stay out of fire for three seconds, but only partly. Take a heavy hit and you will recover to 80, 64 or 50 percent, never back to full. It rewards breaking contact without making you invulnerable.</p>
+<p>Movement is tuned the way CQB had it: a little faster on foot, shorter jumps, and heavier weapons slow you down more.</p>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-26-perk-picker.webp" alt="CQB Rules perk picker" width="1280" height="720" loading="lazy">
+  <figcaption>Pick one perk from each group, right next to the Deployment Menu</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-27-first-blood.webp" alt="A CQB Rules round on Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>A CQB Rules round in the container yard, with the mode tag under the clock</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-29-regen.webp" alt="Health recovering in CQB Rules" width="1280" height="720" loading="lazy">
+  <figcaption>After a heavy hit, health climbs back to the 64 line, not to full</figcaption>
+</figure>
+<h2 id="feel-and-detail">Feel and detail</h2>
+<p>Some of CQB's smaller ideas apply everywhere the experimental switch is on:</p>
+<ul>
+  <li><strong>Smarter spawns.</strong> You respawn at the point farthest from living enemies, so you are not dropped into a fight you cannot win.</li>
+  <li><strong>Ledge grabbing</strong> with the Commando perk. Harbour has its own list of places you cannot climb, so nobody ends up on a roof or outside the map.</li>
+  <li><strong>Smoother corners.</strong> CQB's movement change that stops you snagging on door frames and pillar edges.</li>
+  <li><strong>New optics.</strong> CQB's scope reticles and the M68 red dot.</li>
+  <li><strong>Sound.</strong> Radio callouts for contact, enemy down and man down, and gunfire that echoes differently indoors and outdoors.</li>
+  <li><strong>Impacts.</strong> Bullets now leave proper holes in plastic.</li>
+</ul>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-15-optics-m68-red-dot.webp" alt="M68 red dot" width="1280" height="720" loading="lazy">
+  <figcaption>The M68 red dot</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-16-optics-psg1-scope.webp" alt="CQB scope reticle" width="1280" height="720" loading="lazy">
+  <figcaption>The PSG-1 with CQB's scope reticle</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-18-holes-brick-plaster.webp" alt="Bullet holes in brick and plaster" width="1280" height="720" loading="lazy">
+  <figcaption>Bullet holes in brick and plaster</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-19-holes-container-metal.webp" alt="Bullet holes in container metal" width="1280" height="720" loading="lazy">
+  <figcaption>Bullet holes in container metal</figcaption>
+</figure>
+<h2 id="why-experimental">Why Experimental</h2>
+<p>CQB was an alpha, and parts of it were never finished. Some of its numbers had to be our best first guess, and a perk that feels fine in one round can break a match over twenty. So everything from CQB sits behind one switch that server owners can turn on. Ranked servers always keep it off.</p>
+<p>When the switch is on, you will see an <strong>EXPERIMENTAL</strong> tag on the HUD, on the loading screen, on the mode name and on every item that comes from CQB. Stats from those matches are marked as experimental, so they never mix with Ranked.</p>
+<p>Each piece then earns its way out on its own. When a weapon, the map or a perk is up to the standard of the rest of Platinum, it joins the normal game. The rest stays experimental until it is ready.</p>
+<figure class="wide">
+  <img src="img/devlog/cqb-shot-22-hud-experimental-tag.webp" alt="EXPERIMENTAL tag on the HUD" width="1280" height="720" loading="lazy">
+  <figcaption>The EXPERIMENTAL tag under the round clock</figcaption>
+</figure>
+<h2 id="how-we-are-testing-it">How we are testing it</h2>
+<p>Every phase of the merge builds cleanly for Windows and for the Linux server, and the rules behind regeneration, perks and spawns have their own automated checks. CQB went through the same combined test pass as the rest of 0.38.0: every map, both renderers, both HUD styles, with the switch off and on.</p>
+<h2 id="credit-where-it-is-due">Credit where it is due</h2>
+<p>TrueCombat: CQB was made by <strong>GrooveSix Studios</strong> and <strong>Team Terminator</strong>. The weapons, gear, map and many of the ideas in this post are theirs, and they are credited in the game's Credits screen. We are grateful for the work they put into keeping TrueCombat moving forward.</p>
+<p>If you play CQB Rules or Harbour on a server that runs them and something feels off, tell us on Discord or press <strong>F12</strong> in game. Experimental only works if you tell us what you think.</p>
+      </div>
+      <div class="post-rate" data-rate="close-quarters" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-crash-reports"><small>Older post</small>Fixing crashes on the PCs you actually play on</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Gameplay">
+        <a class="post-art" href="devlog-every-shot" tabindex="-1" aria-hidden="true"><img src="img/devlog/impacts-warehouse-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.33.0</span><time datetime="2026-11-08">8 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="every-shot" hidden></span></p>
+          <h2><a href="devlog-every-shot">Every shot leaves a mark</a></h2>
+          <p>Bullet holes, impact sounds, the crack of a near miss and the original weapon animations. How the next update brings back the feel of a TC:E firefight.</p>
+          <a class="more" href="devlog-every-shot">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Gameplay">
+        <a class="post-art" href="devlog-full-speed" tabindex="-1" aria-hidden="true"><img src="img/map-railhouse-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Shipped in v0.32.0</span><time datetime="2026-11-07">7 Nov 2026</time><span>2 min read</span><span class="post-stat" data-post-stat="full-speed" hidden></span></p>
+          <h2><a href="devlog-full-speed">Back to full speed</a></h2>
+          <p>For months Platinum felt a step slower than the game we remember. The cause turned out to be a single scaling factor, applied in the wrong place.</p>
+          <a class="more" href="devlog-full-speed">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>Engine code is released under the GPL. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=18c4378961"></script>
+</body>
+</html>

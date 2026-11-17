@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Close quarters, samen · TrueCombat: Platinum</title>
+<meta name="description" content="CQB nam TC:E mee naar gevechten op korte afstand, met nieuwe wapens, gedetailleerde modellen en frisse ideeën.">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-close-quarters">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-close-quarters">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Close quarters, samen">
+<meta property="og:description" content="CQB nam TC:E mee naar gevechten op korte afstand, met nieuwe wapens, gedetailleerde modellen en frisse ideeën.">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-close-quarters.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-close-quarters.jpg">
+<meta property="article:published_time" content="2026-11-17">
+<meta property="article:section" content="Gameplay">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Close quarters, samen","description":"CQB nam TC:E mee naar gevechten op korte afstand, met nieuwe wapens, gedetailleerde modellen en frisse ideeën. We brengen alles naar Platinum, eerst als experimentele playlist die je kunt proberen lang voordat er iets aan Ranked verandert.","datePublished":"2026-11-17","dateModified":"2026-11-17","inLanguage":"nl","articleSection":"Gameplay","timeRequired":"PT9M","image":"https://truecombat.eu/img/og-devlog-close-quarters.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-close-quarters","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Close quarters, samen">
+<meta name="twitter:description" content="CQB nam TC:E mee naar gevechten op korte afstand, met nieuwe wapens, gedetailleerde modellen en frisse ideeën.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Close quarters, samen","item":"https://truecombat.eu/nl/devlog-close-quarters"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-close-quarters">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-close-quarters">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-close-quarters">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=a4531b4408">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav">
+  <div class="wrap">
+    <a class="nav-brand" href="./"><img src="../img/team-terminus-64.webp" alt="" width="30" height="30">TrueCombat <b>Platinum</b></a>
+    <ul class="nav-links">
+      <li><a href="devlog" aria-current="page" data-devlog-new="2026-11-17" data-new="Nieuw">Devlog</a></li>
+      <li><a href="maps">Maps</a></li>
+      <li><a href="weapons">Wapens</a></li>
+      <li><a href="media">Media</a></li>
+      <li><a href="guide">Gids</a></li>
+      <li><a href="servers">Servers</a></li>
+      <li><a href="leaderboards">Ranglijsten</a></li>
+      <li><a href="competitive">Competitief</a></li>
+      <li><a href="news">Nieuws</a></li>
+    </ul>
+    <details class="menu" id="menu">
+      <summary aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><line x1="4" x2="20" y1="12" y2="12" /><line x1="4" x2="20" y1="6" y2="6" /><line x1="4" x2="20" y1="18" y2="18" /></svg></summary>
+      <nav aria-label="Onderdelen">
+        <button type="button" class="menu-search" data-search-open><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>Zoeken</button><a href="devlog">Devlog</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="media">Media</a><a href="guide">Gids</a><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="news">Nieuws</a><a href="studio">Studio</a><a href="support">Steun ons</a><a href="account">Account</a><hr><a href="download">Download</a><a href="truecombat-elite">TrueCombat: Elite</a><a href="./#gallery">Galerij</a><a href="./#graphics">Graphics</a><a href="faq">Vragen</a><a href="press">Perskit</a><a href="https://discord.gg/8kcHdg2Hch">Discord</a><hr><a href="../devlog-close-quarters" hreflang="en" lang="en">English</a>
+      </nav>
+    </details>
+    <button class="nav-search" type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button>
+    <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-close-quarters" hreflang="en" lang="en">English</a></div></details>
+    <a class="nav-support" href="support" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><span>Steun ons</span></a>
+    <a class="nav-icon nav-account" href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    <a class="nav-icon" href="https://discord.gg/8kcHdg2Hch" aria-label="Word lid van de Discord" title="Word lid van de Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+    <a class="btn" href="download">Download</a>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="close-quarters" data-min="9">
+  <header class="page-head post-head cine-post">
+    <div class="head-art" style="--art: url(../img/devlog/cqb-teaser-clean.webp); --art-s: url(../img/devlog/cqb-teaser-clean-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <span class="cine-kicker">Update 0.38.0</span>
+      <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Uitgebracht in v0.38.0</span><time datetime="2026-11-17">17 nov 2026</time><span>9 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="close-quarters" hidden></span></p>
+      <h1>Close quarters, samen</h1>
+      <p class="lede">CQB nam TC:E mee naar gevechten op korte afstand, met nieuwe wapens, gedetailleerde modellen en frisse ideeën. We brengen alles naar Platinum, eerst als experimentele playlist die je kunt proberen lang voordat er iets aan Ranked verandert.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#wat-cqb-meebrengt">Wat CQB meebrengt</a></li>
+          <li><a href="#nieuwe-pistolen">Nieuwe pistolen</a></li>
+          <li><a href="#de-nieuwe-wapens-in-de-game">De nieuwe wapens in de game</a></li>
+          <li><a href="#harbour">Harbour</a></li>
+          <li><a href="#cqb-rules">CQB Rules</a></li>
+          <li><a href="#gevoel-en-details">Gevoel en details</a></li>
+          <li><a href="#waarom-experimenteel">Waarom Experimenteel</a></li>
+          <li><a href="#hoe-we-het-testen">Hoe we het testen</a></li>
+          <li><a href="#eer-wie-eer-toekomt">Eer wie eer toekomt</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<figure class="wide">
+  <img src="../img/devlog/cqb-teaser.webp" alt="Key art voor update 0.38.0: Close Quarters" width="1280" height="720" loading="lazy">
+  <figcaption>Update 0.38.0: Close Quarters. Railhouse, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<p>In december 2010 brachten GrooveSix Studios en Team Terminator TrueCombat: CQB uit, een versie van TC:E voor gevechten op korte afstand, met nieuwe wapens, veel gedetailleerdere modellen en een eigen kijk op hoe een moderne tactische shooter moet aanvoelen. De laatste versie was alpha 0.223, in april 2011.</p>
+<p>Platinum is gebouwd op TC:E. CQB groeide uit dezelfde wortels. De twee samenbrengen is de logische volgende stap, en 0.38.0 is waar dat begint.</p>
+<div class="callout"><p>Alles uit CQB komt binnen als <strong>Experimenteel</strong>. Ranked speelt precies zoals vandaag, tot elk onderdeel zijn plaats verdiend heeft.</p></div>
+<h2 id="wat-cqb-meebrengt">Wat CQB meebrengt</h2>
+<p>CQB is kleiner dan zijn reputatie. Het is een alpha met één map en één modus, maar bijna elk model is volledig opnieuw gemaakt. Een AK47 in eerste persoon heeft in TC:E 777 driehoeken. Die van CQB heeft er 6.698. De MP5 gaat van 820 naar 8.705.</p>
+<figure class="wide">
+  <img src="../img/devlog/cqb-detail-compare.webp" alt="Wapenmodellen van TC:E en CQB naast elkaar" width="1280" height="720" loading="lazy">
+  <figcaption>Links: TC:E met de HD-texturen van Platinum. Rechts: dezelfde wapens uit CQB.</figcaption>
+</figure>
+<p>Dit is alles wat we overnemen:</p>
+<ul>
+  <li><strong>14 nieuwe wapens</strong>, onder meer de SCAR, G3, M110, MP9, Mini Uzi, USP, Wilson Combat 1911, SG 552 en een afgezaagd dubbelloops jachtgeweer, plus pistolen in elke hand.</li>
+  <li><strong>Betere modellen</strong> voor de wapens die Platinum al heeft, en nieuwe uitrusting voor de spelers: helmen met brillen en maskers, tassen en radio's.</li>
+  <li><strong>Harbour</strong>, de enige map van CQB, opnieuw opgebouwd voor Platinum.</li>
+  <li><strong>CQB Rules</strong>, een snelle teammodus met perks en gezondheid die vanzelf herstelt.</li>
+  <li><strong>Beweging en gevoel</strong>: richels vastgrijpen, slimmere spawns en vloeiender bewegen rond hoeken.</li>
+  <li><strong>Optiek, geluid en inslagen</strong>: nieuwe dradenkruizen, een red dot, radio-oproepen, galm van schoten binnen en buiten, en kogelgaten in plastic.</li>
+</ul>
+<figure class="wide">
+  <img src="../img/devlog/cqb-ak47-railhouse-ultra.webp" alt="De AK-47 van CQB op Railhouse met de Ultra-preset" width="1280" height="720" loading="lazy">
+  <figcaption>De AK-47 van CQB op de westelijke rangeerplaats van Railhouse, Ultra-preset, DirectX 12</figcaption>
+</figure>
+<h2 id="nieuwe-pistolen">Nieuwe pistolen</h2>
+<p>CQB verving een aantal pistolen uit TC:E door nieuwe, veel gedetailleerdere modellen, en voegde de Shorty toe. Dit zijn studio-renders van de modellen in eerste persoon, neutraal belicht zodat je de details ziet.</p>
+<figure class="wide">
+  <img src="../img/devlog/cqb-render-1911.webp" alt="Wilson Combat 1911" width="1280" height="720" loading="lazy">
+  <figcaption>Wilson Combat 1911, model in eerste persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-render-usp.webp" alt="H&amp;K USP .40" width="1280" height="720" loading="lazy">
+  <figcaption>H&amp;K USP .40</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-render-usp-sd.webp" alt="H&amp;K USP .40 met geluiddemper" width="1280" height="720" loading="lazy">
+  <figcaption>De USP met geluiddemper</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-render-deagle.webp" alt="Desert Eagle" width="1280" height="720" loading="lazy">
+  <figcaption>Het nieuwe Desert Eagle-model van CQB</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-render-shorty-angle.webp" alt="Afgezaagd dubbelloops jachtgeweer" width="1280" height="720" loading="lazy">
+  <figcaption>De Shorty: twee lopen, geen kolf, en ook per twee te krijgen</figcaption>
+</figure>
+<h2 id="de-nieuwe-wapens-in-de-game">De nieuwe wapens in de game</h2>
+<p>Hier zie je elk nieuw wapen uit CQB zoals het er vandaag in Platinum uitziet, in eerste persoon en op de spelersmodellen. Ze horen allemaal bij de experimentele set, met waarden gebaseerd op TC:E-wapens van hetzelfde kaliber. Eén ding klopt nog niet: bij sommige van deze wapens zweeft de steunhand onder de loop in plaats van hem vast te houden, in eerste persoon en op de spelersmodellen. Dat is een bekend probleem en we werken aan een oplossing.</p>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-scar-hip.webp" alt="SCAR in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>SCAR</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-scar-side.webp" alt="Een speler met de SCAR" width="1280" height="720" loading="lazy">
+  <figcaption>SCAR, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-g3-hip.webp" alt="G3 in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>G3</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-g3-side.webp" alt="Een speler met de G3" width="1280" height="720" loading="lazy">
+  <figcaption>G3, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-g3a3-hip.webp" alt="G3A3 in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>G3A3</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-g3a3-third.webp" alt="Een speler met de G3A3" width="1280" height="720" loading="lazy">
+  <figcaption>G3A3, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-sg552-hip.webp" alt="SG 552 in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>SG 552</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-sg552-third.webp" alt="Een speler met de SG 552" width="1280" height="720" loading="lazy">
+  <figcaption>SG 552, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-rec7-aimed.webp" alt="REC7 met gerichte vizieren" width="1280" height="720" loading="lazy">
+  <figcaption>REC7, gericht</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-rec7-third.webp" alt="Een speler met de REC7" width="1280" height="720" loading="lazy">
+  <figcaption>REC7, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-m110-hip.webp" alt="M110 met zijn 4x-kijker" width="1280" height="720" loading="lazy">
+  <figcaption>M110 met 4x-kijker</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-m110-aimed.webp" alt="Door de kijker van de M110" width="1280" height="720" loading="lazy">
+  <figcaption>Door de kijker van de M110</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-m110sd-hip.webp" alt="M110 SD in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>M110 SD, met geluiddemper</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-m110-side.webp" alt="Een speler met de M110" width="1280" height="720" loading="lazy">
+  <figcaption>M110, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-m110sd-side.webp" alt="Een speler met de M110 SD" width="1280" height="720" loading="lazy">
+  <figcaption>M110 SD, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-m110is-aimed.webp" alt="M110 met open vizier, gericht" width="1280" height="720" loading="lazy">
+  <figcaption>M110 met open vizier</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-m110is-side.webp" alt="Een speler met de M110 met open vizier" width="1280" height="720" loading="lazy">
+  <figcaption>M110 met open vizier, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-m110issd-side.webp" alt="Een speler met de M110 SD met open vizier" width="1280" height="720" loading="lazy">
+  <figcaption>M110 SD met open vizier, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-mp9-hip.webp" alt="MP9 in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>MP9</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-mp9-side.webp" alt="Een speler met de MP9" width="1280" height="720" loading="lazy">
+  <figcaption>MP9, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-miniuzi-aimed.webp" alt="Mini Uzi, gericht" width="1280" height="720" loading="lazy">
+  <figcaption>Mini Uzi, gericht</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-miniuzi-third.webp" alt="Een speler met de Mini Uzi" width="1280" height="720" loading="lazy">
+  <figcaption>Mini Uzi, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-shorty-hip.webp" alt="Shorty in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>De Shorty</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-shorty-side.webp" alt="Een speler met de Shorty" width="1280" height="720" loading="lazy">
+  <figcaption>De Shorty, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-akimbo-shorty-third.webp" alt="Een speler met twee Shorties" width="1280" height="720" loading="lazy">
+  <figcaption>Twee Shorties tegelijk</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-1911-hip.webp" alt="Wilson Combat 1911 in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>Wilson Combat 1911</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-1911-third.webp" alt="Een speler met de 1911" width="1280" height="720" loading="lazy">
+  <figcaption>Wilson Combat 1911, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-akimbo-1911-third.webp" alt="Een speler met twee 1911s" width="1280" height="720" loading="lazy">
+  <figcaption>Twee 1911s tegelijk</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-usp-hip.webp" alt="USP .40 in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>H&amp;K USP .40</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-usp-third.webp" alt="Een speler met de USP" width="1280" height="720" loading="lazy">
+  <figcaption>H&amp;K USP .40, derde persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-akimbo-1911-hip.webp" alt="Twee 1911s in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>Twee 1911s tegelijk, eerste persoon</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-gun-akimbo-shorty-hip.webp" alt="Twee Shorties in eerste persoon" width="1280" height="720" loading="lazy">
+  <figcaption>Twee Shorties tegelijk, eerste persoon</figcaption>
+</figure>
+<h2 id="harbour">Harbour</h2>
+<p>Harbour is een havenwijk vol pakhuizen, containerterreinen, steegjes en kelders, met regen en stadsgeluiden. De map past bij hoe CQB bedoeld was: korte zichtlijnen, veel deuren en steeds de keuze welke hoek je eerst vrijmaakt.</p>
+<p>Voor Platinum kreeg Harbour een tactische kaart en minimap, een laadscherm en moderne materialen voor 61 oppervlakken, zodat de map in DirectX 12 niet onderdoet voor onze andere maps.</p>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-01-harbour-main-yard.webp" alt="Grote binnenplaats van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Grote binnenplaats</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-02-harbour-container-yard.webp" alt="Containerterrein van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Containerterrein</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-03-harbour-central-warehouse.webp" alt="Centraal pakhuis van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Centraal pakhuis</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-04-harbour-north-warehouse-upper.webp" alt="Noordelijk pakhuis van Harbour, bovenverdieping" width="1280" height="720" loading="lazy">
+  <figcaption>Noordelijk pakhuis, bovenverdieping</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-05-harbour-back-alley.webp" alt="Achterste steeg van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Achterste steeg</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-06-harbour-gate.webp" alt="Poort van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Poort</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-07-harbour-south-alley.webp" alt="Zuidelijke steeg van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Zuidelijke steeg</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-08-harbour-basement.webp" alt="Kelder van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Kelder</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-09-harbour-staircase-top.webp" alt="Trappenhuis van Harbour, bovenste verdieping" width="1280" height="720" loading="lazy">
+  <figcaption>Trappenhuis, bovenste verdieping</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-10-harbour-deposit.webp" alt="Depot van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Depot</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-11-harbour-storage.webp" alt="Opslag van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Opslag</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-12-harbour-chimney-stack.webp" alt="Schoorsteen van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Schoorsteen</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-25-tacmap-harbour-callouts.webp" alt="Tactische kaart van Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>De tactische kaart van Harbour met de plaatsnamen</figcaption>
+</figure>
+<h2 id="cqb-rules">CQB Rules</h2>
+<p>CQB Rules is een snelle teammodus rond de ideeën van CQB. Je respawnt na één seconde en een ronde eindigt bij 20 kills of na 20 minuten. De eerste kill van de match wordt aangekondigd als First Blood.</p>
+<p>Voor je inzet kies je één perk uit elk van drie groepen:</p>
+<ul>
+  <li><strong>Lichaam:</strong> Lightweight (sneller lopen en sprinten), Protected (een beter vest) of Tank (een zwaar vest dat snelheid kost).</li>
+  <li><strong>Vaardigheid:</strong> Steady Aim (minder spreiding en zwaai), Commando (meer messchade, en je kunt richels vastgrijpen) of Quick Reload.</li>
+  <li><strong>Uitrusting:</strong> Extra Ammo, een Muzzle Attachment (geluiddemper, of bredere spreiding voor jachtgeweren) of High-grade Ammo (betere doorslag, en slugs voor jachtgeweren).</li>
+</ul>
+<p>Je gezondheid herstelt vanzelf als je drie seconden uit het vuur blijft, maar maar gedeeltelijk. Na een zware treffer kom je terug tot 80, 64 of 50 procent, nooit weer volledig. Contact verbreken loont, zonder dat je onkwetsbaar wordt.</p>
+<p>De beweging is afgesteld zoals in CQB: iets sneller te voet, kortere sprongen, en zware wapens vertragen je meer.</p>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-26-perk-picker.webp" alt="Perkkeuze in CQB Rules" width="1280" height="720" loading="lazy">
+  <figcaption>Kies één perk per groep, naast het Deployment Menu</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-27-first-blood.webp" alt="Een ronde CQB Rules op Harbour" width="1280" height="720" loading="lazy">
+  <figcaption>Een ronde CQB Rules op het containerterrein, met de modus onder de klok</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-29-regen.webp" alt="Gezondheid herstelt in CQB Rules" width="1280" height="720" loading="lazy">
+  <figcaption>Na een zware treffer herstelt je gezondheid tot de 64-lijn, niet volledig</figcaption>
+</figure>
+<h2 id="gevoel-en-details">Gevoel en details</h2>
+<p>Een aantal kleinere ideeën van CQB geldt overal waar de experimentele schakelaar aan staat:</p>
+<ul>
+  <li><strong>Slimmere spawns.</strong> Je respawnt op het punt dat het verst van levende vijanden ligt, zodat je niet midden in een verloren gevecht belandt.</li>
+  <li><strong>Richels vastgrijpen</strong> met de Commando-perk. Harbour heeft een eigen lijst van plekken waar je niet op kunt klimmen, zodat niemand op een dak of buiten de map terechtkomt.</li>
+  <li><strong>Vloeiender rond hoeken.</strong> De bewegingsaanpassing uit CQB waardoor je niet meer blijft haken aan deurposten en pilaren.</li>
+  <li><strong>Nieuwe optiek.</strong> De dradenkruizen van CQB en de M68 red dot.</li>
+  <li><strong>Geluid.</strong> Radio-oproepen voor contact, vijand neer en man neer, en schoten die binnen anders galmen dan buiten.</li>
+  <li><strong>Inslagen.</strong> Kogels laten nu echte gaten achter in plastic.</li>
+</ul>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-15-optics-m68-red-dot.webp" alt="M68 red dot" width="1280" height="720" loading="lazy">
+  <figcaption>De M68 red dot</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-16-optics-psg1-scope.webp" alt="Dradenkruis van CQB" width="1280" height="720" loading="lazy">
+  <figcaption>De PSG-1 met het dradenkruis van CQB</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-18-holes-brick-plaster.webp" alt="Kogelgaten in baksteen en pleister" width="1280" height="720" loading="lazy">
+  <figcaption>Kogelgaten in baksteen en pleister</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-19-holes-container-metal.webp" alt="Kogelgaten in containermetaal" width="1280" height="720" loading="lazy">
+  <figcaption>Kogelgaten in containermetaal</figcaption>
+</figure>
+<h2 id="waarom-experimenteel">Waarom Experimenteel</h2>
+<p>CQB was een alpha, en delen ervan zijn nooit afgewerkt. Sommige waarden moesten we zelf zo goed mogelijk inschatten, en een perk die in één ronde goed voelt, kan een match van twintig rondes kapotmaken. Daarom zit alles uit CQB achter één schakelaar die serverbeheerders kunnen aanzetten. Ranked servers laten hem altijd uit.</p>
+<p>Staat de schakelaar aan, dan zie je een <strong>EXPERIMENTAL</strong>-label op de HUD, op het laadscherm, bij de naam van de modus en bij elk onderdeel uit CQB. Statistieken uit die matches worden als experimenteel gemarkeerd, zodat ze nooit met Ranked vermengd raken.</p>
+<p>Daarna verdient elk onderdeel zijn eigen weg naar buiten. Zodra een wapen, de map of een perk het niveau van de rest van Platinum haalt, wordt het deel van het gewone spel. De rest blijft experimenteel tot het klaar is.</p>
+<figure class="wide">
+  <img src="../img/devlog/cqb-shot-22-hud-experimental-tag.webp" alt="EXPERIMENTAL-label op de HUD" width="1280" height="720" loading="lazy">
+  <figcaption>Het EXPERIMENTAL-label onder de rondeklok</figcaption>
+</figure>
+<h2 id="hoe-we-het-testen">Hoe we het testen</h2>
+<p>Elke fase van de samenvoeging bouwt foutloos voor Windows en voor de Linux-server, en de regels achter herstel, perks en spawns hebben hun eigen automatische controles. CQB ging door dezelfde gecombineerde testronde als de rest van 0.38.0: elke map, beide renderers, beide HUD-stijlen, met de schakelaar uit en aan.</p>
+<h2 id="eer-wie-eer-toekomt">Eer wie eer toekomt</h2>
+<p>TrueCombat: CQB werd gemaakt door <strong>GrooveSix Studios</strong> en <strong>Team Terminator</strong>. De wapens, de uitrusting, de map en veel van de ideeën in dit bericht zijn van hen, en ze staan vermeld op het Credits-scherm van de game. We zijn dankbaar voor het werk dat zij gestoken hebben in het levend houden van TrueCombat.</p>
+<p>Speel je CQB Rules of Harbour op een server die ze draait en voelt iets niet goed, laat het ons weten op Discord of druk in de game op <strong>F12</strong>. Experimenteel werkt alleen als jij ons vertelt wat je ervan vindt.</p>
+      </div>
+      <div class="post-rate" data-rate="close-quarters" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/8kcHdg2Hch">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-crash-reports"><small>Vorig artikel</small>Crashes oplossen op de pc&#x27;s waarop jullie echt spelen</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Gameplay">
+        <a class="post-art" href="devlog-every-shot" tabindex="-1" aria-hidden="true"><img src="../img/devlog/impacts-warehouse-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Uitgebracht in v0.33.0</span><time datetime="2026-11-08">8 nov 2026</time><span>2 min lezen</span><span class="post-stat" data-post-stat="every-shot" hidden></span></p>
+          <h2><a href="devlog-every-shot">Elk schot laat een spoor na</a></h2>
+          <p>Kogelgaten, inslaggeluiden, het knallen van een rakelingse kogel en de originele wapenanimaties. Zo brengt de volgende update het gevoel van een TC:E-vuurgevecht terug.</p>
+          <a class="more" href="devlog-every-shot">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Gameplay">
+        <a class="post-art" href="devlog-full-speed" tabindex="-1" aria-hidden="true"><img src="../img/map-railhouse-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Gameplay</span><span class="state shipped">Uitgebracht in v0.32.0</span><time datetime="2026-11-07">7 nov 2026</time><span>2 min lezen</span><span class="post-stat" data-post-stat="full-speed" hidden></span></p>
+          <h2><a href="devlog-full-speed">Terug op volle snelheid</a></h2>
+          <p>Maandenlang voelde Platinum een tikje trager dan het spel dat we kennen. De oorzaak bleek één schaalfactor, op de verkeerde plek toegepast.</p>
+          <a class="more" href="devlog-full-speed">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/8kcHdg2Hch" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/8kcHdg2Hch">Discord</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De enginecode valt onder de GPL. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=18c4378961"></script>
+</body>
+</html>
