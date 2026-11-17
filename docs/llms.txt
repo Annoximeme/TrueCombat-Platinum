@@ -80,6 +80,7 @@
 
 ## Devlog
 
+- [Close quarters, together](https://truecombat.eu/devlog-close-quarters): CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental playlist you can try long before anything touches Ranked.
 - [Fixing crashes on the PCs you actually play on](https://truecombat.eu/devlog-crash-reports): The launcher can now tell us where the game crashed and what hardware it runs on, if you say yes. It asks once, it is anonymous, and you can see the exact report before it leaves your PC.
 - [Inside 0.37.2, eyes up](https://truecombat.eu/devlog-inside-0372): A live minimap, hits you can feel, friendly fire, and a game that looks like Platinum from the taskbar to the first frame. Here is what changed in 0.37.2, and why.
 - [Inside 0.37.1, tuned to your reports](https://truecombat.eu/devlog-inside-0371): A HUD you can size to your screen, a magazine and health readout in the spirit of the original, weapons back at their true fire rates, smoother map loads and optional HD textures. Here is what changed in 0.37.1, and why.
