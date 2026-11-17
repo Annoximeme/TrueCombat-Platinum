@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/nl/devlog</id>
   <updated>2026-11-17T12:00:00Z</updated>
   <entry>
+    <title>Opnieuw gemodelleerd, op weg naar 0.40</title>
+    <link href="https://truecombat.eu/nl/devlog-remodelled"/>
+    <id>https://truecombat.eu/nl/devlog-remodelled</id>
+    <published>2026-11-17T12:00:00Z</published>
+    <updated>2026-11-17T12:00:00Z</updated>
+    <category term="Graphics"/>
+    <summary>We bouwen TrueCombat: Platinum van binnenuit opnieuw op, model per model. Een eerste blik op de nieuwe wapenmodellen, de vernieuwde interface en het lichtwerk voor 0.40, met elke voor-en-na die we tot nu toe hebben.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Close quarters, samen</title>
     <link href="https://truecombat.eu/nl/devlog-close-quarters"/>
     <id>https://truecombat.eu/nl/devlog-close-quarters</id>

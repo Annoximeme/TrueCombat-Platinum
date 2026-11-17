@@ -6,6 +6,16 @@
   <id>https://truecombat.eu/devlog</id>
   <updated>2026-11-17T12:00:00Z</updated>
   <entry>
+    <title>Remodelled, on the road to 0.40</title>
+    <link href="https://truecombat.eu/devlog-remodelled"/>
+    <id>https://truecombat.eu/devlog-remodelled</id>
+    <published>2026-11-17T12:00:00Z</published>
+    <updated>2026-11-17T12:00:00Z</updated>
+    <category term="Graphics"/>
+    <summary>We are rebuilding TrueCombat: Platinum from the inside out, one model at a time. A first look at the new weapon models, the redesigned interface and the lighting work heading for 0.40, with every before and after we have so far.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
+  <entry>
     <title>Close quarters, together</title>
     <link href="https://truecombat.eu/devlog-close-quarters"/>
     <id>https://truecombat.eu/devlog-close-quarters</id>

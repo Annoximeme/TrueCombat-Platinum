@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Close quarters,|together.
-text=CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas.
+title=Remodelled,|on the road to 0.40.
+text=We are rebuilding TrueCombat: Platinum from the inside out, one model at a time.
 button=Read the devlog
-url=https://truecombat.eu/devlog-close-quarters.html
+url=https://truecombat.eu/devlog-remodelled.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
-title=Close quarters, together
-text=CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas.
-url=https://truecombat.eu/devlog-close-quarters.html
+title=Remodelled, on the road to 0.40
+text=We are rebuilding TrueCombat: Platinum from the inside out, one model at a time.
+url=https://truecombat.eu/devlog-remodelled.html
 [news]
 tag=Community
 title=Weekend ranked ladder
