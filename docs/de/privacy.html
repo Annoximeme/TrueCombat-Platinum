@@ -85,7 +85,7 @@
 <section class="band">
   <div class="wrap doc">
     <nav class="doc-toc" aria-label="Auf dieser Seite">
-      <a href="#short">Kurz gesagt</a><a href="#website">Diese Website</a><a href="#game">Das Spiel</a><a href="#launcher">Der Launcher</a><a href="#choices">Deine Wahl</a><a href="#changes">Änderungen</a>
+      <a href="#short">Kurz gesagt</a><a href="#website">Diese Website</a><a href="#game">Das Spiel</a><a href="#launcher">Der Launcher</a><a href="#accounts">Konten</a><a href="#community">Moderation und Unterstützung</a><a href="#partners">Wer noch</a><a href="#choices">Deine Rechte</a><a href="#changes">Änderungen</a>
     </nav>
     <div class="doc-body">
       <section id="short">
@@ -96,6 +96,7 @@
           <li><b>Wir zählen Besuche, keine Besucher.</b> Die Website speichert Tagessummen und nichts, das auf eine Person zurückführt.</li>
           <li><b>Sagt dein Browser nein, hören wir zu.</b> Mit Global Privacy Control oder Do Not Track wirst du überhaupt nicht gezählt.</li>
           <li><b>Der Launcher teilt Absturz- und Hardwaredaten nur, wenn du zustimmst.</b> Er fragt einmal, mit zwei gleichwertigen Schaltflächen, und du kannst deine Antwort jederzeit ändern.</li>
+          <li><b>Ein echter Mensch antwortet.</b> Schreib an <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a>, wenn du eine Kopie deiner Daten, eine Berichtigung oder eine Löschung möchtest. Wir antworten innerhalb eines Monats.</li>
         </ul>
       </section>
 
@@ -114,8 +115,8 @@
           <li>Vollständige Adressen der Seiten, die dich zu uns geschickt haben</li>
           <li>Alles, was einen Besuch, eine Bewertung oder einen Download mit einer Person verknüpft</li>
         </ul>
-        <p>Deine Sternebewertungen im Devlog merkt sich dein eigener Browser, damit die Sterne gefüllt bleiben, wenn du wiederkommst. Diese Notiz verlässt nie deinen Computer und wird nicht zum Zählen verwendet.</p>
-        <p>Einige Seiten laden Live-Daten von <code>api.truecombat.eu</code> (Server, Ranglisten) und Patchnotes über die GitHub-API. Der Trailer kommt erst von YouTube, wenn du auf Abspielen klickst. Wie bei jeder Website sehen diese Server deine Verbindungsadresse, während sie antworten.</p>
+        <p>Dein Browser speichert ein paar kleine Notizen für die Seite selbst, nie zum Zählen: deine Sternebewertungen im Devlog, welche Devlog-Beiträge du schon gesehen hast, eine kurzlebige Kopie der Patchnotes und, während du einen PC mit deinem Konto verknüpfst, den einmaligen Verknüpfungscode. Wenn du deine Browserdaten löschst, sind sie weg.</p>
+        <p>Live-Daten wie Server und Bestenlisten kommen von <code>api.truecombat.eu</code>, und die Patchnotes werden auf diese Seite kopiert, sodass dein Browser GitHub nie danach fragt. Die Seite wird über Cloudflare ausgeliefert, das sie schnell hält und vor Angriffen schützt. Der Trailer kommt erst von YouTube, wenn du auf Abspielen klickst, und Downloads kommen von GitHub. Wie jeder Webserver sehen diese Dienste deine Verbindungsadresse, während sie antworten.</p>
       </section>
 
       <section id="game">
@@ -123,10 +124,11 @@
         <h2>Das Spiel und der Launcher</h2>
         <ul>
           <li><b>Online spielen.</b> Spielserver sehen deine Verbindungsadresse, wie bei jedem Onlinespiel. Unsere Moderationswerkzeuge speichern sie bis zu 90 Tage, um gegen Cheater und Missbrauch vorzugehen, und ein Bann-Eintrag behält die gesperrte Adresse.</li>
-          <li><b>Ranglisten.</b> Gewertete Matches auf offiziellen und verifizierten Servern speichern deinen Spielnamen, eine aus deinem Spielschlüssel gebildete Spieler-ID und deine Matchstatistiken. Daraus entstehen die Ranglisten und dein öffentliches Profil.</li>
+          <li><b>Bestenlisten.</b> Ranked-Matches auf offiziellen und verifizierten Servern erfassen deinen Spielnamen, eine aus deinem Spielschlüssel gebildete Spieler-ID und deine Matchstatistiken. Daraus entstehen die Bestenlisten und dein öffentliches Profil, und die Daten bleiben so lange erhalten wie die Bestenlisten, weil jeder Rang darauf aufbaut. Mit einem Konto kannst du dein Profil jederzeit verbergen. Ohne Konto schreibst du uns, und wir nehmen deinen Namen von den öffentlichen Seiten.</li>
           <li><b>Anti-Cheat.</b> Offizielle Server nutzen Easy Anti-Cheat, das unter der <a href="https://www.epicgames.com/site/privacypolicy">Datenschutzerklärung von Epic Games</a> läuft.</li>
           <li><b>Absturzberichte und Speicherabbilder</b> bleiben auf deinem PC. Sie erreichen uns nur, wenn du sie selbst einem Fehlerbericht anhängst. Wenn du Launcher-Daten teilst, wird nur die Absturzstelle gesendet, wie unten beschrieben.</li>
-          <li><b>Fehlerberichte</b>, die du aus dem Spiel sendest, enthalten deinen Text, einen Screenshot und technische Details wie Karte, Bildrate und Grafikkarte, damit wir das Problem nachstellen können.</li>
+          <li><b>Fehlerberichte</b>, die du aus dem Spiel sendest, enthalten deinen Text, einen Screenshot und technische Angaben wie Karte, Bildrate und Grafikkarte, damit wir das Problem nachstellen können. Ein Bericht und sein Screenshot werden 90 Tage nach dem Abschluss gelöscht.</li>
+          <li><b>Chat und Sprache.</b> Text- und Sprachchat laufen über den Spielserver zu den anderen Spielern. Unsere Server zeichnen keine Sprache auf. Textchat auf offiziellen Servern wird 30 Tage aufbewahrt, damit Meldungen über Missbrauch geprüft werden können.</li>
         </ul>
       </section>
 
@@ -145,18 +147,54 @@
         <p class="callout"><b>Sieh selbst nach.</b> Einstellungen &gt; Datenschutz &gt; Was geteilt wird zeigt im Launcher genau den Bericht, den dein PC als Nächstes senden würde, bevor er deinen Computer verlässt.</p>
       </section>
 
-      <section id="choices">
+      <section id="accounts">
         <span class="eyebrow">05</span>
-        <h2>Deine Wahl</h2>
+        <h2>Spielerkonten</h2>
+        <p>Konten sind freiwillig. Niemand braucht eines, um zu spielen. Wenn du eines anlegst, meldest du dich mit Discord an, und wir fragen Discord nur nach deiner Benutzer-ID und deinem Namen. Das Anmeldetoken von Discord verwerfen wir gleich danach.</p>
+        <ul>
+          <li><b>Was wir speichern.</b> Deine Discord-Benutzer-ID und deinen Discord-Namen, den Spielnamen, den du wählst, die verknüpften PCs (ein Code aus dem Spielschlüssel jedes PCs und die Bezeichnung, die du vergeben hast), hinzugefügte Passkeys (nur öffentliche Schlüssel), deine Profileinstellungen und deinen vorherigen Namen bis 30 Tage nach einer Umbenennung.</li>
+          <li><b>Angemeldet bleiben.</b> Ein Anmelde-Cookie auf truecombat.eu hält dich bis zu 30 Tage angemeldet. Das Konto braucht es, um zu funktionieren, und es dient zu nichts anderem. Jede Anmeldung wird 30 Tage lang mit ihrer Verbindungsadresse protokolliert, damit wir ein gestohlenes Konto erkennen.</li>
+          <li><b>Dein Profil.</b> Dein Profil ist öffentlich, solange du es nicht verbirgst, und dein Discord-Name erscheint nur, wenn du ihn einschaltest. Konten sind für Spieler ab 13 Jahren.</li>
+        </ul>
+        <p>Wir speichern das, weil du ein Konto angefordert hast (DSGVO Art. 6 Abs. 1 lit. b), und zwar bis du es löschst. Spielst du ein Jahr lang nicht und meldest dich nicht an, wird dein reservierter Name wieder frei. Deine Kontoseite hat einen Knopf, der alles herunterlädt, was wir zu deinem Konto speichern, und einen, der es endgültig löscht: Konto, verknüpfte PCs, Namen, Sitzungen und Anmeldeprotokoll. Matchstatistiken bleiben in den Bestenlisten, ohne Bezug zu deinem Konto. Wurde das Konto gesperrt, behält die Sperre einen Einweg-Code deiner Discord-ID, damit sie sich nicht mit einem neuen Konto umgehen lässt.</p>
+      </section>
+
+      <section id="community">
+        <span class="eyebrow">06</span>
+        <h2>Moderation, Discord und Unterstützung</h2>
+        <ul>
+          <li><b>Meldungen und Einsprüche.</b> Wird ein Spieler gemeldet oder gesperrt, behalten Moderatoren, was sie für die Entscheidung brauchen: die Meldung, Spielername und IDs sowie Beweise wie Screenshots oder Matchaufnahmen. Beweise werden nach einem Jahr gelöscht, außer der Fall ist noch offen. Eine Sperre und jeder Einspruch dagegen, mit den Kontaktdaten, die du selbst angibst, bleiben beim Sperrdatensatz.</li>
+          <li><b>Discord.</b> Unser Discord-Server und Bot sehen, was Discord mit jedem Server teilt, dem du beitrittst. Wenn du dein Konto verknüpfst, kann der Bot deinen Spielnamen und deine Statistiken abrufen, um Matchergebnisse zu posten und Rollen zu vergeben. Alles andere auf Discord fällt unter die <a href="https://discord.com/privacy">Datenschutzrichtlinie von Discord</a>.</li>
+          <li><b>Unterstützung über Ko-fi.</b> Spenden laufen über Ko-fi. Wir speichern den Betrag und den Namen, den du angibst, und zeigen den Namen nur, wenn du deine Unterstützung öffentlich gemacht hast. Deine E-Mail-Adresse, Zahlungsdaten oder Nachricht speichern wir nie.</li>
+        </ul>
+      </section>
+
+      <section id="partners">
+        <span class="eyebrow">07</span>
+        <h2>Wer sonst mit Daten arbeitet</h2>
+        <p>Wir verkaufen nie Daten und geben sie nie für Werbung weiter. Diese Unternehmen verarbeiten Daten in unserem Auftrag oder betreiben einen Dienst, den du mit uns nutzt:</p>
+        <ul>
+          <li><b>Hostinger</b>, unser Serverhoster: Spielserver, Website, Statistiken und Konten.</li>
+          <li><b>Cloudflare</b> liefert und schützt die Website.</li>
+          <li><b>Zoho</b> betreibt unsere E-Mail, in seinen europäischen Rechenzentren.</li>
+          <li><b>GitHub</b> liefert die Downloads und den Quellcode und verwahrt unsere privaten nächtlichen Server-Backups. Kontodaten in diesen Backups sind verschlüsselt.</li>
+          <li><b>Discord</b> für die Anmeldung und unsere Community. <b>Epic Games</b> für Easy Anti-Cheat auf offiziellen Servern. <b>Ko-fi</b> für Spenden. <b>YouTube</b> für den Trailer, erst nachdem du auf Abspielen klickst.</li>
+        </ul>
+        <p>Einige dieser Unternehmen sitzen außerhalb der EU. Die Übermittlung stützt sich auf einen Angemessenheitsbeschluss der EU, etwa den EU-US-Datenschutzrahmen oder den Beschluss für das Vereinigte Königreich, oder auf die Standardvertragsklauseln der Europäischen Kommission.</p>
+      </section>
+
+      <section id="choices">
+        <span class="eyebrow">08</span>
+        <h2>Deine Wahl und deine Rechte</h2>
         <p>Wenn du auf dieser Website nicht gezählt werden willst, schalte in deinem Browser Global Privacy Control oder Do Not Track ein. Auch das Blockieren von <code>api.truecombat.eu/insights</code> funktioniert, und die Seite funktioniert genau wie vorher.</p>
-        <p>Fragen, oder soll etwas gelöscht werden? Frag uns auf <a href="https://discord.gg/8kcHdg2Hch">Discord</a> oder eröffne ein Issue auf <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>. Der gesamte Zählcode liegt im öffentlichen Repository, du musst uns also nie einfach glauben.</p>
-        <p>Wir zählen Website-Besuche aufgrund unseres berechtigten Interesses zu wissen, wie die Seite genutzt wird (DSGVO Art. 6 Abs. 1 lit. f), mit den oben beschriebenen Schutzmaßnahmen. Nutzungsdaten aus dem Spiel erfassen wir nur mit deiner Einwilligung, die du jederzeit im Launcher widerrufen kannst. TrueCombat: Platinum wird von Team Terminus unter der Leitung von RaziC* entwickelt. Wenn du meinst, dass wir mit deinen Daten falsch umgehen, kannst du dich bei einer Datenschutzbehörde beschweren; in Belgien, wo wir ansässig sind, ist das die <a href="https://www.dataprotectionauthority.be">Datenschutzbehörde</a>.</p>
+        <p><b>Deine Rechte.</b> Du kannst eine Kopie deiner Daten verlangen, sie berichtigen oder löschen lassen, ihre Nutzung einschränken oder sie in einem übertragbaren Format erhalten. Außerdem kannst du allem widersprechen, was wir auf Grundlage berechtigter Interessen tun. Mit einem Konto lädst du alles selbst auf der Kontoseite herunter oder löschst es dort. Für alles andere schreib an <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a>. Wir antworten innerhalb eines Monats und bitten dich unter Umständen zu zeigen, dass die Daten dir gehören, etwa indem du vom betreffenden Konto aus schreibst. Der gesamte Zählcode liegt im <a href="https://github.com/Annoximeme/TrueCombat-Platinum">öffentlichen Repository</a>, du musst uns also nie einfach glauben.</p>
+        <p><b>Wer verantwortlich ist.</b> TrueCombat: Platinum wird von Team Terminus entwickelt. Verantwortlicher ist Gianni Goossens (RaziC*) mit Sitz in Belgien, erreichbar unter <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a>. Website-Zählung, Schutz der Spielserver, Moderation, Bestenlisten und Backups beruhen auf unserem berechtigten Interesse an einem fairen, sicheren und funktionierenden Spiel (DSGVO Art. 6 Abs. 1 lit. f), mit den hier beschriebenen Schutzmaßnahmen. Konten beruhen auf deiner Anfrage (Art. 6 Abs. 1 lit. b). Launcher-Daten und Fehlerberichte werden nur mit deiner Einwilligung gesendet (Art. 6 Abs. 1 lit. a), die du jederzeit widerrufen kannst. Wenn du meinst, dass wir falsch mit deinen Daten umgehen, kannst du dich bei einer Datenschutzbehörde beschweren; in Belgien ist das die <a href="https://www.dataprotectionauthority.be">Datenschutzbehörde</a>.</p>
       </section>
 
       <section id="changes">
-        <span class="eyebrow">06</span>
+        <span class="eyebrow">09</span>
         <h2>Änderungen an dieser Seite</h2>
-        <p>Wenn sich ändert, was wir erfassen, ändert sich zuerst diese Seite, und das Devlog sagt es. Zuletzt aktualisiert am 16. November 2026.</p>
+        <p>Wenn sich ändert, was wir erfassen, ändert sich zuerst diese Seite, und das Devlog sagt es. Zuletzt aktualisiert am 17. November 2026.</p>
         <p class="yt-note">Die Länderabfrage nutzt IP to Country Lite von <a href="https://db-ip.com">DB-IP</a>, lizenziert unter CC BY 4.0.</p>
       </section>
     </div>
@@ -197,6 +235,6 @@
 <!--/footer-->
 
 <script src="../js/lang-de.js"></script>
-<script src="../js/site.js?v=b0bf155caf"></script>
+<script src="../js/site.js?v=18c4378961"></script>
 </body>
 </html>
