@@ -210,3 +210,21 @@ path to the `SECRET` list of `/opt/tcp/backup/tcp_offsite_backup.py`, which encr
 `tcp-staff-watch.timer` checks the portal from outside every two minutes as its own unit: two failed checks in a row post
 "Staff portal is down" to the staff webhook, the next good one says it is back, and a missing or old snapshot is reported
 once a day. Player IP addresses and identity keys in the live server view are sent to admins only.
+
+## Devlog comments (1.5.0)
+
+Moderation for the comments players post under devlog posts on truecombat.eu (accounts service 1.3.0,
+`tools/accounts/tcp_comments.py`). Menu: Moderation, Devlog comments (moderators and up; closing a whole post is
+admin). The portal reads and acts through the accounts service's loopback `/internal/comments/*` with its own token
+(credential `accounts-token`, `install.sh accounts-link`), which reaches comments and nothing else in the accounts
+service.
+
+* **Needs a look:** held comments (first comment of an account with no linked PC, word filter, link from an account
+  with no linked PC) and reported ones, with account age, matches, linked PC, clean record and who reported it.
+* **Actions:** publish (the author posts freely from then on), hide, keep hidden, restore, remove (text kept 90 days
+  for appeals), no action (closes the reports), pin one comment per post, reply as team (posted under the staff
+  member's own TrueCombat account, which needs to exist), pause a player's comments for 1, 7 or 30 days or for good,
+  close or reopen a post (admin).
+* **Alerts:** once a minute the portal checks how many comments wait; when the number grows it raises a `comments`
+  alert (and the staff Discord post) with counts only, never comment text.
+* **Audit log:** every action, as `comment.<action>`, with the author and the first 200 characters.

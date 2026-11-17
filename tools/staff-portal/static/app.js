@@ -157,6 +157,7 @@ async function boot() {
   every(refreshAlertCount, 30000);
   every(refreshCaseCount, 60000);
   every(refreshAcCount, 60000);
+  every(refreshCommentCount, 60000);
   every(refreshDuty, 60000);
   liveSetup();
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
@@ -322,7 +323,7 @@ function route() {
     player: pagePlayer, bans: pageBans, audit: pageAudit, staff: pageStaff, health: pageHealth, alerts: pageAlerts,
     watchlist: pageWatchlist, review: pageReview, schedule: pageSchedule, filter: pageFilter, replies: pageReplies,
     weekly: pageWeekly, settings: pageSettings, insights: pageInsights, cases: pageCases, case: pageCase,
-    history: pageHistory, quality: pageQuality, anticheat: pageAnticheat };
+    history: pageHistory, quality: pageQuality, anticheat: pageAnticheat, comments: pageComments };
   let arg = "";
   try { arg = decodeURIComponent(parts[1] || ""); } catch (e) { arg = ""; }      // a broken link opens the page, not a blank screen
   (pages[page] || pageHome)(main, arg);
@@ -1989,3 +1990,121 @@ function pageAnticheat(main) {
 }
 
 boot();
+
+/* ------------------------------------------------------------------ devlog comments (truecombat.eu, accounts service) */
+const SITE = "https://truecombat.eu/";
+const CM_REASON = { new: "First comment, no linked PC", filter: "Word filter", link: "Link from an account with no linked PC",
+  reports: "Hidden by player reports", staff: "Hidden by staff" };
+const CM_REPORT = { spam: "Spam", abuse: "Abuse", cheats: "Cheats or exploits", other: "Something else" };
+function cmAge(t) {
+  const d = Math.floor((Date.now() / 1000 - t) / 86400);
+  return d < 1 ? "made today" : d < 60 ? d + " days old" : Math.round(d / 30) + " months old";
+}
+function cmCard(c) {
+  const a = c.author || null;
+  const reports = c.reports || [];
+  const tags = [];
+  if (c.state === "held") tags.push(`<span class="tag warn">Held: ${esc(CM_REASON[c.reason] || c.reason)}</span>`);
+  if (c.state === "hidden") tags.push(`<span class="tag bad">${esc(CM_REASON[c.reason] || "Hidden")}</span>`);
+  if (c.state === "removed") tags.push(`<span class="tag bad">Removed by ${esc(c.moderatedBy || "staff")}</span>`);
+  if (c.state === "live" && reports.length) tags.push(`<span class="tag warn">${reports.length} report${reports.length > 1 ? "s" : ""}</span>`);
+  if (c.state === "live" && !reports.length) tags.push('<span class="tag ok">Live</span>');
+  const kinds = [...new Set(reports.map((r) => r.reason))];
+  for (const k of kinds) tags.push(`<span class="tag">${esc(CM_REPORT[k] || k)}</span>`);
+  if (c.pinned) tags.push('<span class="tag staff">Pinned</span>');
+  if (c.parent) tags.push('<span class="tag">Reply</span>');
+  if (a && a.team) tags.push('<span class="tag staff">Team Terminus</span>');
+  const facts = a ? [cmAge(a.created), a.matches + " matches", a.pc ? "linked PC" : "no linked PC", a.badges.includes("clean") ? "clean record" : "",
+    a.today > 1 ? a.today + " comments today" : "", a.paused ? (a.paused === -1 ? "comments paused for good" : "paused, " + until(a.paused)) : ""].filter(Boolean).join(" · ")
+    : "Account deleted";
+  const who = reports.length ? " · reported by " + reports.map((r) => esc(r.name || "a deleted account") + (r.note ? ` (“${esc(r.note)}”)` : "")).join(", ") : "";
+  const b = (label, action, cls = "") => `<button class="btn btn-small ${cls}" data-cm="${c.id}" data-do="${action}">${label}</button>`;
+  const btns = [];
+  if (c.state === "held") btns.push(b("Publish", "publish"), b("Remove", "remove", "btn-danger"));
+  else if (c.state === "hidden") btns.push(b("Keep it hidden", "keep"), b("Restore", "restore"), b("Remove", "remove", "btn-danger"));
+  else if (c.state === "removed") btns.push(b("Restore", "restore"));
+  else {
+    if (reports.length) btns.push(b("No action", "dismiss"));
+    btns.push(b("Hide", "hide"), b("Remove", "remove", "btn-danger"));
+    if (!c.parent) btns.push(b(c.pinned ? "Unpin" : "Pin", c.pinned ? "unpin" : "pin"));
+    btns.push(b("Reply as team", "reply"));
+  }
+  if (a && !a.team) btns.push(a.paused ? `<button class="btn btn-small" data-cm-unpause="${esc(a.account)}" data-name="${esc(a.name)}">Unpause</button>`
+    : `<button class="btn btn-small btn-danger" data-cm-pause="${esc(a.account)}" data-name="${esc(a.name)}">Pause commenting</button>`);
+  const name = a ? (a.statsId ? `<a href="${SITE}player?id=${esc(a.statsId)}" target="_blank" rel="noopener">${esc(a.name)}</a>` : esc(a.name)) : "<span class=\"dim\">deleted account</span>";
+  return `<div class="panel cm-card"><div class="head"><div><div class="tags">${tags.join("")}</div>
+    <h2 class="cm-who">${name} <span class="muted cm-on">on <a href="${SITE}devlog-${esc(c.post)}.html#comments" target="_blank" rel="noopener">${esc(c.post)}</a> · ${ago(c.at)}${c.edited ? " · edited" : ""}${c.likes ? " · " + c.likes + " ♥" : ""}</span></h2>
+    <span class="muted">${facts}${who}</span></div><div class="actions">${btns.join("")}</div></div>
+    <p class="cm-text">${esc(c.text || "")}</p></div>`;
+}
+function pageComments(main) {
+  const state = { tab: "needs", q: "", post: "" };
+  main.innerHTML = `<div class="head"><div><p class="eyebrow">Moderation</p><h1>Devlog comments</h1></div>
+    <div class="actions">${can("comments.close") ? '<button class="btn btn-small" id="cm-close">Close or open a post</button>' : ""}</div></div>
+    <div class="cards cm-stats" id="cm-stats"></div>
+    <div class="tabs" id="cm-tabs"><button class="btn btn-small on" data-t="needs">Needs a look</button><button class="btn btn-small" data-t="recent">All recent</button><button class="btn btn-small" data-t="hidden">Hidden and removed</button><button class="btn btn-small" data-t="paused">Paused players</button></div>
+    <div class="cm-filter"><input id="cm-q" placeholder="Player name" maxlength="40" autocomplete="off"><input id="cm-post" placeholder="Post (slug), e.g. inside-0372" maxlength="80" autocomplete="off"></div>
+    <div id="cm-list"><p class="empty">Loading…</p></div>`;
+  $("#cm-tabs").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    for (const x of $("#cm-tabs").children) x.classList.toggle("on", x === b);
+    state.tab = b.dataset.t; draw();
+  };
+  let timer = 0;
+  for (const id of ["#cm-q", "#cm-post"]) $(id).oninput = () => { clearTimeout(timer); timer = setTimeout(() => { state.q = $("#cm-q").value.trim(); state.post = $("#cm-post").value.trim(); draw(); }, 250); };
+  if ($("#cm-close")) $("#cm-close").onclick = () => modal({ title: "Close or open comments on a post", ok: "Save",
+    sub: "Closed posts keep their comments readable; nobody can add new ones. Front matter comments: off does the same from the site.",
+    body: '<label>Post (slug)</label><input name="post" required maxlength="80" placeholder="inside-0372"><label><input type="checkbox" name="closed" checked> Closed</label>',
+    onOk: async (f) => { const r = await api("comments/close", { post: f.post.trim(), closed: !!f.closed }); toast(r.closed ? "Comments closed on " + r.post + "." : "Comments open on " + r.post + "."); stats(); } });
+  $("#cm-list").onclick = async (e) => {
+    const pz = e.target.closest("button[data-cm-pause]");
+    if (pz) return modal({ title: "Pause commenting", sub: pz.dataset.name + " can still read and like, but can't post or edit comments until the pause ends.", ok: "Pause", danger: true,
+      body: '<label>How long</label><select name="days"><option value="1">1 day</option><option value="7" selected>7 days</option><option value="30">30 days</option><option value="0">For good</option></select><label>Reason (staff only)</label><input name="reason" maxlength="200" placeholder="Repeated spam">',
+      onOk: async (f) => { await api("comments/pause", { account: pz.dataset.cmPause, days: +f.days, reason: f.reason }); toast(pz.dataset.name + " paused."); draw(); stats(); } });
+    const up = e.target.closest("button[data-cm-unpause]");
+    if (up) { await api("comments/unpause", { account: up.dataset.cmUnpause, name: up.dataset.name }).then(() => { toast("Pause lifted."); draw(); stats(); }, (err) => toast(err.message, true)); return; }
+    const b = e.target.closest("button[data-cm]"); if (!b) return;
+    const id = +b.dataset.cm, act = b.dataset.do;
+    if (act === "reply") return modal({ title: "Reply as team", sub: "Posted under your own TrueCombat account with the Team Terminus tag, straight away.", ok: "Post reply",
+      body: '<label>Reply</label><textarea name="text" maxlength="1000" required></textarea>',
+      onOk: async (f) => { await api("comments/reply", { parent: id, text: f.text }); toast("Reply posted."); draw(); } });
+    if (act === "remove") return modal({ title: "Remove this comment", sub: "It disappears from the site. The text stays here for 90 days in case of an appeal.", ok: "Remove", danger: true,
+      onOk: async () => { await api("comments/act", { id, action: "remove" }); toast("Comment removed."); draw(); stats(); } });
+    try {
+      await api("comments/act", { id, action: act === "keep" ? "hide" : act });
+      toast({ publish: "Published. The author's next comments post straight away.", hide: "Hidden.", restore: "Restored.", dismiss: "Reports closed.", pin: "Pinned on the post.", unpin: "Unpinned.", keep: "Kept hidden, reports closed." }[act] || "Done.");
+      draw(); stats();
+    } catch (err) { toast(err.message, true); }
+  };
+  async function stats() {
+    try {
+      const s = await api("comments/stats");
+      const tile = (label, n, sub) => `<div class="card"><div class="meta">${label}</div><div class="big">${n}${sub ? ` <small>${sub}</small>` : ""}</div></div>`;
+      $("#cm-stats").innerHTML = tile("Reported or hidden", s.reported + s.hidden) + tile("Held for a check", s.held) +
+        tile("New today", s.today, s.todayPosts ? "on " + s.todayPosts + " post" + (s.todayPosts > 1 ? "s" : "") : "") + tile("Paused players", s.paused);
+      const n = $("#nav-comments"); if (n) { n.textContent = s.needs; n.hidden = !s.needs; }
+    } catch (err) { $("#cm-stats").innerHTML = `<p class="error">${esc(err.message)}</p>`; }
+  }
+  async function draw() {
+    let r;
+    try { r = await api("comments?tab=" + state.tab + "&q=" + encodeURIComponent(state.q) + "&post=" + encodeURIComponent(state.post)); }
+    catch (err) { $("#cm-list").innerHTML = `<p class="error">${esc(err.message)}</p>`; return; }
+    if (state.tab === "paused") {
+      $("#cm-list").innerHTML = (r.paused || []).map((p) => `<div class="panel cm-card"><div class="head"><div><h2 class="cm-who">${esc(p.name)}</h2>
+        <span class="muted">${p.until === -1 ? "For good" : until(p.until)} · by ${esc(p.by || "staff")} · ${ago(p.at)}${p.reason ? " · " + esc(p.reason) : ""}</span></div>
+        <div class="actions"><button class="btn btn-small" data-cm-unpause="${esc(p.account)}" data-name="${esc(p.name)}">Unpause</button></div></div></div>`).join("") || '<p class="empty">Nobody is paused.</p>';
+      return;
+    }
+    $("#cm-list").innerHTML = (r.comments || []).map(cmCard).join("") || `<p class="empty">${state.tab === "needs" ? "Nothing waiting. Good." : "No comments here."}</p>`;
+  }
+  stats();
+  every(draw, 30000, "comments");
+}
+async function refreshCommentCount() {
+  if (!can("comments")) return;
+  try {
+    const s = await api("comments/stats");
+    $("#nav-comments").textContent = s.needs;
+    $("#nav-comments").hidden = !s.needs;
+  } catch (e) { /* not linked yet */ }
+}

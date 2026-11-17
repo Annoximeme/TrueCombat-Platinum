@@ -9,7 +9,8 @@ Optional accounts for TrueCombat: Platinum. Nobody needs one to play. A player w
 3. **A reserved name.** Official servers keep the name for its owner, look-alikes included.
 
 `tcp_accounts.py` is the whole service: Python 3.10+ standard library, one SQLite file. Tests: `python3 test_accounts.py`
-(103 checks) and `python3 test_accounts_more.py` (90 checks, everything added in 1.1.0); both need the `cryptography`
+(111 checks), `python3 test_accounts_more.py` (102 checks, everything added in 1.1.0), `python3 test_friends.py` and
+`python3 test_comments.py` (102 checks, devlog comments, 1.3.0); both need the `cryptography`
 package to sign like the launcher, the service itself does not. Passkeys are verified by `tcp_webauthn.py` (standard
 library only: CBOR, P-256 ECDSA and the WebAuthn checks).
 
@@ -232,3 +233,35 @@ bot sends a DM and reports back with `POST /internal/idle/warned` (a closed DM s
 reach the player). The hourly tidy deletes it once it has been warned at least 30 days (`IDLE_WARN_DAYS`) and is
 still idle. Signing in or playing again clears the warning. Without the bot running, nothing is ever deleted.
 A year of inactivity still releases the reserved name, as before.
+
+## Devlog comments (1.3.0)
+
+`tcp_comments.py`, same database and sign-in. Players with an account comment under devlog posts on truecombat.eu;
+anyone can read. One conversation per post slug, shared by every language of the site. Routes and states are listed
+at the top of `tcp_comments.py`.
+
+* **Text:** plain, 2 to 1,000 characters, line breaks kept. The page escapes it; links are never made clickable.
+* **Replies** one level deep, **likes** (not your own), **edit** for 15 minutes, **delete** any time,
+  **report** (spam, abuse, cheats, other; 10 a day).
+* **Held for staff:** the first comment of an account with no linked PC (until staff publish one), a word-filter
+  hit (the abuse list for names plus config `comments.words`), a link from an account with no linked PC.
+  Team Terminus (config `team`) is never held or rate limited.
+* **Pace:** 1 comment per 20 s, 8 an hour, 30 a day per account; 20 an hour per address (memory only); the same text
+  twice in a day is refused; 60 likes an hour.
+* **Reports:** 3 open reports from different accounts hide a comment until staff decide (team comments excepted).
+* **Staff** (portal, loopback, token `comments-token` that reaches `/internal/comments/*` only): publish, hide,
+  restore, remove, dismiss reports, pin one comment per post, pause a player (days or for good), close a post,
+  reply as themselves.
+* **Which posts:** with `comments.site_root` set, a slug is open only when `<site_root>/devlog-<slug>.html` exists and
+  carries `data-comments="on"` (build.py writes it; front matter `comments: off` writes `off`). Staff can also close
+  a post. Read again every 5 minutes.
+* **Privacy:** no IP addresses stored. Deleting the account (by the player or the two-year idle rule) deletes its
+  comments; one with replies stays as an empty, nameless "deleted" line while replies hang under it. Likes, reports,
+  pauses go too. Staff-removed comments are kept 90 days (appeals), closed reports 90 days, held comments nobody
+  reviewed 30 days. `GET export` includes comments, likes, reports sent and any pause. Deleting an account now also
+  removes its Friends data (before 1.3.0 it waited for the one-year purge).
+* **Sign-in from a post:** `GET login?next=/devlog-<slug>.html` (any language folder) returns the player to the post's
+  comments; a new player makes the account first and `account.html?next=` sends them back.
+
+Deploy: `install.sh install` (copies `tcp_comments.py`, makes `comments-token`), then `install.sh comments` (sets
+`site_root`, restarts), then the staff portal's `install.sh accounts-link`.
