@@ -169,6 +169,24 @@ def run(args):
     if z.get("original_name_servers"):
         print("Nameservers at the registrar when the site was added: %s" % ", ".join(z["original_name_servers"]))
 
+    # what this token may do: report every missing permission at once instead of failing on the first
+    probes = [("DNS (Zone > DNS > Edit)", "/zones/%s/dns_records?per_page=1" % zid),
+              ("Zone Settings (Zone > Zone Settings > Edit)", "/zones/%s/settings/ssl" % zid),
+              ("Bot Management (Zone > Bot Management > Edit)", "/zones/%s/bot_management" % zid)]
+    missing = []
+    for label, path in probes:
+        try:
+            call(token, "GET", path)
+        except CfError as e:
+            missing.append("%s: %s" % (label, str(e).split("-> ")[-1]))
+    if missing:
+        print("\nThe token cannot read:")
+        for m in missing:
+            print("  " + m)
+        if args.cmd != "purge":
+            print("Edit the token in Cloudflare (My Profile > API Tokens) and add these permissions for truecombat.eu.")
+            return 2
+
     if args.cmd == "purge":
         call(token, "POST", "/zones/%s/purge_cache" % zid, {"purge_everything": True})
         print("Cache purged.")
