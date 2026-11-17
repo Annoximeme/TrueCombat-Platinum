@@ -39,7 +39,7 @@ on:
       - ".github/workflows/release-sign.yml"
 
 permissions:
-  contents: read
+  contents: write   # read the hidden ci-deps draft release (EOS SDK headers); nothing is written
   actions: read
 
 concurrency:
@@ -80,6 +80,8 @@ jobs:
         run: |
           if python3 tools/ci/draft.py get ci-deps eos-sdk-include.zip eos.zip 2>/dev/null; then
             unzip -q eos.zip -d eos && echo "EOS_INCLUDE=$PWD/eos/Include" >> "$GITHUB_ENV"
+          elif [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            echo "::notice::self-test without the private EOS SDK headers (Easy Anti-Cheat off)"
           else
             echo "::error::EOS SDK headers missing (draft ci-deps); a release build needs Easy Anti-Cheat"; exit 1
           fi
