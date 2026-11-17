@@ -166,13 +166,13 @@ var TCP_API = 'https://api.truecombat.eu';
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') langs.open = false; });
   }
 
-  /* ---------- GitHub releases ---------- */
-  var RELEASES = 'https://api.github.com/repos/Annoximeme/TrueCombat-Platinum/releases?per_page=30';
+  /* ---------- GitHub releases (copied to truecombat.eu by tools/website/release_sync.py) ---------- */
+  var RELEASES = '/releases.json';
   function getReleases(cb) {
     var cached = null;
     try { cached = JSON.parse(sessionStorage.getItem('tcp-releases2') || 'null'); } catch (e) {}
     if (cached && Date.now() - cached.t < 30 * 60 * 1000) { cb(cached.data); return; }
-    fetch(RELEASES, { headers: { Accept: 'application/vnd.github+json' } })
+    fetch(RELEASES, { cache: 'no-cache' })
       .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (list) {
         var slim = list.filter(function (r) { return !r.draft && !r.prerelease; }).map(function (r) {
