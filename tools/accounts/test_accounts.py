@@ -258,6 +258,30 @@ acc.signup(sx, "Gh0st", "public", True)
 acc.new_session("222", "Ghosty", "", "198.51.100.2")
 check("a name taken while away stays with its new owner", acc.by_name("Ghost")["discord_id"] == "444")
 
+# tidy: two idle years delete an account, never without a warning first
+DAY = 86400
+sz = acc.session(acc.new_session("555", "Sleeper", "", "198.51.100.5"))
+az = acc.signup(sz, "Sleeper", "public", True)
+zid = az["id"] if "id" in az else acc.by_name("Sleeper")["id"]
+acc.store.x("UPDATE accounts SET last_active=? WHERE id=?", (time.time() - 650 * DAY, zid))
+check("not yet due a warning at 650 idle days", all(x["discordId"] != "555" for x in acc.idle_list()))
+acc.store.x("UPDATE accounts SET last_active=? WHERE id=?", (time.time() - 800 * DAY, zid))
+check("due a warning after 700 idle days", any(x["discordId"] == "555" for x in acc.idle_list()))
+acc.tidy()
+check("no deletion without a warning, however long idle", acc.account(zid) is not None)
+check("the bot marks the warning", acc.idle_warned("555")["ok"] and all(x["discordId"] != "555" for x in acc.idle_list()))
+acc.tidy()
+check("no deletion in the 30 days after the warning", acc.account(zid) is not None)
+acc.store.x("UPDATE accounts SET idle_warned=? WHERE id=?", (time.time() - 31 * DAY, zid))
+acc.store.x("UPDATE accounts SET last_active=? WHERE id=?", (time.time() - 5 * DAY, zid))
+acc.tidy()
+check("coming back clears the warning", acc.account(zid) is not None and acc.account(zid)["idle_warned"] is None)
+acc.store.x("UPDATE accounts SET last_active=?, idle_warned=? WHERE id=?", (time.time() - 760 * DAY, time.time() - 31 * DAY, zid))
+r = acc.tidy()
+check("warned and still idle after 30 days: deleted", acc.account(zid) is None and r["deleted_idle"] == 1
+      and acc.by_name("Sleeper") is None)
+check("an active account is never offered for a warning", acc.idle_warned("444")["ok"] is False)
+
 # ------------------------------------------------------------------ HTTP
 cfg = {"data_dir": str(tmp / "http"), "dev_login": True, "internal_token": "tok-internal", "public_url": "http://127.0.0.1:0"}
 import os  # noqa: E402
