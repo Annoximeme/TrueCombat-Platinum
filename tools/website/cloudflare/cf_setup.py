@@ -257,8 +257,72 @@ def run(args):
                 pending += 0 if have == want else 1
         except CfError as e:
             print("  %-20s could not check (%s); set it off by hand: Security > Bots" % ("bot_fight_mode", e))
+    pending += extras_section(token, zid, cfg, apply)
     print("\n%s" % ("Applied." if apply and not pending else "%d difference(s)." % pending if pending else "In step."))
     return 1 if pending else 0
+
+
+def rule_key(r):
+    keep = ("expression", "action", "action_parameters", "ratelimit", "enabled", "description")
+    return json.dumps({k: r.get(k) for k in keep if r.get(k) is not None}, sort_keys=True)
+
+
+def extras_section(token, zid, cfg, apply):
+    """Smart Tiered Cache, DNSSEC and the rulesets (cache rules, rate limiting). Returns differences left."""
+    pending = 0
+    print("\nCaching, DNSSEC and rules")
+    if "smart_tiered_cache" in cfg:
+        want = "on" if cfg["smart_tiered_cache"] else "off"
+        path = "/zones/%s/cache/tiered_cache_smart_topology_enable" % zid
+        try:
+            have = call(token, "GET", path)["result"].get("value")
+            if have != want and apply:
+                call(token, "PATCH", path, {"value": want})
+                print("  %-20s %s -> %s" % ("smart_tiered_cache", have, want))
+            else:
+                print("  %-20s %s%s" % ("smart_tiered_cache", have, "" if have == want else " (want %s)" % want))
+                pending += 0 if have == want else 1
+        except CfError as e:
+            print("  %-20s FAILED (%s)" % ("smart_tiered_cache", e))
+            pending += 1
+    if cfg.get("dnssec"):
+        path = "/zones/%s/dnssec" % zid
+        try:
+            d = call(token, "GET", path)["result"]
+            if d.get("status") in ("disabled", None) and apply:
+                d = call(token, "PATCH", path, {"status": "active"})["result"]
+                print("  %-20s disabled -> %s" % ("dnssec", d.get("status")))
+            else:
+                print("  %-20s %s" % ("dnssec", d.get("status")))
+                pending += 1 if d.get("status") in ("disabled", None) else 0
+            if d.get("ds"):
+                print("  DS record for the registrar (Hostinger): %s" % d["ds"])
+                print("    key tag %s, algorithm %s, digest type %s, digest %s" % (
+                    d.get("key_tag"), d.get("algorithm"), d.get("digest_type"), d.get("digest")))
+        except CfError as e:
+            print("  %-20s FAILED (%s)" % ("dnssec", e))
+            pending += 1
+    for phase, rules in (cfg.get("rulesets") or {}).items():
+        path = "/zones/%s/rulesets/phases/%s/entrypoint" % (zid, phase)
+        try:
+            have = call(token, "GET", path)["result"].get("rules") or []
+        except CfError:
+            have = []                       # no entrypoint yet
+        same = sorted(rule_key(r) for r in have) == sorted(rule_key(r) for r in rules)
+        if same:
+            print("  %-20s %d rule(s) in step" % (phase, len(rules)))
+            continue
+        if not apply:
+            print("  %-20s differs (%d rule(s) now, %d wanted)" % (phase, len(have), len(rules)))
+            pending += 1
+            continue
+        try:
+            call(token, "PUT", path, {"rules": rules})
+            print("  %-20s set %d rule(s)" % (phase, len(rules)))
+        except CfError as e:
+            print("  %-20s FAILED (%s)" % (phase, e))
+            pending += 1
+    return pending
 
 
 def main():

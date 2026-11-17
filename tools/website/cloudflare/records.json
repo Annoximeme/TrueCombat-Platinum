@@ -44,5 +44,34 @@
     "browser_check": "Can block the launcher and other non-browser clients that fetch launcher-feed.txt and account endpoints.",
     "browser_cache_ttl": "0 = respect the Cache-Control headers Caddy sends."
   },
+  "smart_tiered_cache": true,
+  "dnssec": true,
+  "rulesets": {
+    "http_request_cache_settings": [
+      {
+        "ref": "tcp_cache_site",
+        "description": "Cache the whole website at the edge; the Cloudflare workflow purges on every site change",
+        "expression": "(http.host eq \"truecombat.eu\" and not starts_with(http.request.uri.path, \"/api/\") and not starts_with(http.request.uri.path, \"/u/\") and not starts_with(http.request.uri.path, \"/.well-known/\"))",
+        "action": "set_cache_settings",
+        "action_parameters": {
+          "cache": true,
+          "edge_ttl": {"mode": "override_origin", "default": 14400,
+                       "status_code_ttl": [{"status_code_range": {"from": 400, "to": 599}, "value": -1}]},
+          "browser_ttl": {"mode": "respect_origin"}
+        },
+        "enabled": true
+      }
+    ],
+    "http_ratelimit": [
+      {
+        "ref": "tcp_rl_account",
+        "description": "Throttle floods on the account service (sign-in, linking and pairing codes)",
+        "expression": "(starts_with(http.request.uri.path, \"/api/account/\"))",
+        "action": "block",
+        "ratelimit": {"characteristics": ["cf.colo.id", "ip.src"], "period": 10, "requests_per_period": 30, "mitigation_timeout": 10},
+        "enabled": true
+      }
+    ]
+  },
   "bot_fight_mode": false
 }
