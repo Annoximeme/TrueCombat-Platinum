@@ -50,3 +50,17 @@ Images go in `docs/img/devlog/`, 1280x720 WebP. The build stops if a referenced 
 - Never publish server addresses other than the public game addresses, internal paths, file names of
   private tools, keys, passwords or anything from a private configuration.
 - Do not describe unreleased work as released. Use `version` and keep the body neutral about timing.
+
+## Teaser art for update posts
+
+Every post about a major update or patch gets teaser art. Make it from one clean in-game screenshot
+(2560x1440, Ultra, no HUD) with `tools/website/devlog/teaser.py`; the command for the 0.38.0 post is in
+the script header. It writes:
+
+- `<name>.webp` and `<name>-640.webp`: key art with the logo, the version and a headline. Put it as the
+  first image of the post body.
+- `<name>-clean.webp` and `-640`: the same shot and grade without logo or text. Use it as the front-matter
+  `image`, because the post header, the card and the share image print the title themselves.
+- `--format story` also renders a 1080x1920 version for Instagram stories.
+
+Keep timing words such as "out now" or "coming soon" out of devlog art; the `version` badge already says it.
