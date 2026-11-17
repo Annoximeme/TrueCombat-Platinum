@@ -19,7 +19,7 @@
    "engines": 70,
    "analysed": "2026-11-17T18:39:25Z",
    "flagged_by": [],
-   "checked": "2026-11-17T18:41:30Z",
+   "checked": "2026-11-17T23:18:37Z",
    "settle": true
   },
   "09f93d5ff96ae09767f3e1af3cdd43a5a58f2598654fc63089429bb6f9f4737f": {
@@ -29,7 +29,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:38:17Z",
-   "checked": "2026-11-17T17:14:09Z",
+   "checked": "2026-11-17T23:17:33Z",
    "settle": false,
    "flagged_by": []
   },
@@ -139,7 +139,7 @@
    "engines": 71,
    "analysed": "2026-11-17T21:32:11Z",
    "flagged_by": [],
-   "checked": "2026-11-17T21:34:33Z",
+   "checked": "2026-11-17T23:19:09Z",
    "settle": true
   },
   "18871eea87c90345da97d8109faa81ea7d5840e8d99b51b55b0e46cfa177f84e": {
@@ -149,7 +149,7 @@
    "suspicious": 0,
    "engines": 66,
    "analysed": "2026-11-16T05:40:45Z",
-   "checked": "2026-11-17T17:12:49Z",
+   "checked": "2026-11-17T23:16:13Z",
    "settle": false,
    "flagged_by": []
   },
@@ -191,7 +191,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:34:48Z",
-   "checked": "2026-11-17T17:10:57Z",
+   "checked": "2026-11-17T23:14:21Z",
    "settle": false,
    "flagged_by": []
   },
@@ -223,7 +223,7 @@
    "engines": 70,
    "analysed": "2026-11-17T22:59:46Z",
    "flagged_by": [],
-   "checked": "2026-11-17T23:04:57Z",
+   "checked": "2026-11-17T23:12:13Z",
    "settle": true
   },
   "28b03b0fe603a9bf8cf2570e518f79587459fe3987632bd4efa972a89689f312": {
@@ -342,7 +342,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:51:18Z",
-   "checked": "2026-11-17T17:12:33Z",
+   "checked": "2026-11-17T23:15:57Z",
    "settle": false,
    "flagged_by": []
   },
@@ -371,9 +371,9 @@
    "bytes": 57792,
    "malicious": 0,
    "suspicious": 0,
-   "engines": 69,
-   "analysed": "2026-11-17T17:00:21Z",
-   "checked": "2026-11-17T17:11:29Z",
+   "engines": 71,
+   "analysed": "2026-11-17T21:01:49Z",
+   "checked": "2026-11-17T23:14:53Z",
    "settle": true,
    "flagged_by": []
   },
@@ -384,7 +384,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:51:56Z",
-   "checked": "2026-11-17T17:13:05Z",
+   "checked": "2026-11-17T23:16:29Z",
    "settle": false,
    "flagged_by": []
   },
@@ -395,7 +395,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:41:17Z",
-   "checked": "2026-11-17T17:14:57Z",
+   "checked": "2026-11-17T23:18:21Z",
    "settle": false,
    "flagged_by": []
   },
@@ -407,7 +407,7 @@
    "engines": 71,
    "analysed": "2026-11-17T21:32:43Z",
    "flagged_by": [],
-   "checked": "2026-11-17T21:34:49Z",
+   "checked": "2026-11-17T23:19:58Z",
    "settle": true
   },
   "443577e869352436ff7ec8f4d9c90418d3e95368436ce219261e0f4f07a38122": {
@@ -417,7 +417,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:55:04Z",
-   "checked": "2026-11-17T17:13:53Z",
+   "checked": "2026-11-17T23:17:17Z",
    "settle": false,
    "flagged_by": []
   },
@@ -451,7 +451,7 @@
    "suspicious": 0,
    "engines": 60,
    "analysed": "2026-11-11T18:50:35Z",
-   "checked": "2026-11-17T17:09:37Z",
+   "checked": "2026-11-17T23:13:01Z",
    "settle": false,
    "flagged_by": []
   },
@@ -477,7 +477,7 @@
    "engines": 71,
    "analysed": "2026-11-17T18:39:57Z",
    "flagged_by": [],
-   "checked": "2026-11-17T18:42:48Z",
+   "checked": "2026-11-17T23:19:25Z",
    "settle": true
   },
   "49e3075697ecf14f068744797b68d3c0661086f083f94c08d6ac665d44e9fd75": {
@@ -555,7 +555,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-15T10:19:53Z",
-   "checked": "2026-11-17T17:10:25Z",
+   "checked": "2026-11-17T23:13:49Z",
    "settle": false,
    "flagged_by": []
   },
@@ -566,7 +566,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:54:13Z",
-   "checked": "2026-11-17T17:13:37Z",
+   "checked": "2026-11-17T23:17:01Z",
    "settle": false,
    "flagged_by": []
   },
@@ -592,7 +592,7 @@
     "Bkav: W32.Malware.5F7C3A83",
     "Elastic: malicious (high confidence)"
    ],
-   "checked": "2026-11-17T21:35:50Z",
+   "checked": "2026-11-17T23:11:57Z",
    "settle": true
   },
   "5d4d9e9b358ed297eb3669c342a2f3485369eebdbafcfb883185e258935e1a7e": {
@@ -742,7 +742,7 @@
    "engines": 71,
    "analysed": "2026-11-17T18:40:29Z",
    "flagged_by": [],
-   "checked": "2026-11-17T18:43:50Z",
+   "checked": "2026-11-17T23:19:42Z",
    "settle": true
   },
   "727bf01a9cf305f9c1b2003bf0717accb8b4baf7444817e64e347d4c0907965e": {
@@ -802,9 +802,9 @@
    "bytes": 643512,
    "malicious": 0,
    "suspicious": 0,
-   "engines": 70,
-   "analysed": "2026-11-17T17:00:18Z",
-   "checked": "2026-11-17T17:10:41Z",
+   "engines": 71,
+   "analysed": "2026-11-17T21:01:44Z",
+   "checked": "2026-11-17T23:14:05Z",
    "settle": true,
    "flagged_by": []
   },
@@ -860,7 +860,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:35:22Z",
-   "checked": "2026-11-17T17:11:45Z",
+   "checked": "2026-11-17T23:15:09Z",
    "settle": false,
    "flagged_by": []
   },
@@ -871,7 +871,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-10-22T00:24:16Z",
-   "checked": "2026-11-17T17:09:21Z",
+   "checked": "2026-11-17T23:12:29Z",
    "settle": false,
    "flagged_by": []
   },
@@ -882,7 +882,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:50:17Z",
-   "checked": "2026-11-17T17:12:17Z",
+   "checked": "2026-11-17T23:15:41Z",
    "settle": false,
    "flagged_by": []
   },
@@ -923,7 +923,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-16T17:27:29Z",
-   "checked": "2026-11-17T17:10:09Z",
+   "checked": "2026-11-17T23:13:34Z",
    "settle": false,
    "flagged_by": [
     "Cynet: Malicious (score: 100)",
@@ -949,7 +949,7 @@
    "engines": 71,
    "analysed": "2026-11-17T21:33:15Z",
    "flagged_by": [],
-   "checked": "2026-11-17T21:44:25Z",
+   "checked": "2026-11-17T23:20:13Z",
    "settle": true
   },
   "9de4e445bc417aa07593785e745fc76f5679b7fbbfd27b90ebf21d56f2bdbbd6": {
@@ -991,17 +991,17 @@
    "engines": 71,
    "analysed": "2026-11-17T16:50:36Z",
    "flagged_by": [],
-   "checked": "2026-11-17T17:09:05Z",
-   "settle": true
+   "checked": "2026-11-17T23:12:45Z",
+   "settle": false
   },
   "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e": {
    "name": "vcruntime140_1.dll",
    "bytes": 50112,
    "malicious": 0,
    "suspicious": 0,
-   "engines": 70,
-   "analysed": "2026-11-17T16:46:24Z",
-   "checked": "2026-11-17T17:14:41Z",
+   "engines": 71,
+   "analysed": "2026-11-17T21:01:30Z",
+   "checked": "2026-11-17T23:18:05Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1012,7 +1012,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-10-15T06:19:37Z",
-   "checked": "2026-11-17T17:09:53Z",
+   "checked": "2026-11-17T23:13:17Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1034,7 +1034,7 @@
    "suspicious": 0,
    "engines": 69,
    "analysed": "2026-11-17T03:52:45Z",
-   "checked": "2026-11-17T17:13:21Z",
+   "checked": "2026-11-17T23:16:45Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1116,7 +1116,7 @@
    "engines": 71,
    "analysed": "2026-11-17T21:31:40Z",
    "flagged_by": [],
-   "checked": "2026-11-17T21:34:16Z",
+   "checked": "2026-11-17T23:18:53Z",
    "settle": true
   },
   "be51db700302c301e5a18687a49169bc9e23105db967d5a238c48c75310a42b3": {
@@ -1208,7 +1208,7 @@
    "suspicious": 0,
    "engines": 69,
    "analysed": "2026-11-17T03:45:50Z",
-   "checked": "2026-11-17T17:12:01Z",
+   "checked": "2026-11-17T23:15:25Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1218,8 +1218,8 @@
    "malicious": 0,
    "suspicious": 0,
    "engines": 71,
-   "analysed": "2026-11-17T17:11:03Z",
-   "checked": "2026-11-17T17:14:25Z",
+   "analysed": "2026-11-17T21:00:49Z",
+   "checked": "2026-11-17T23:17:49Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1251,7 +1251,7 @@
    "suspicious": 0,
    "engines": 70,
    "analysed": "2026-11-13T21:34:54Z",
-   "checked": "2026-11-17T17:11:13Z",
+   "checked": "2026-11-17T23:14:38Z",
    "settle": false,
    "flagged_by": []
   },
