@@ -5,6 +5,8 @@
 #   sudo ./deploy/install.sh install       code, user, service, credentials (not Caddy, not the stats link)
 #   sudo ./deploy/install.sh stats-link    token + tcp-bridge drop-in so linked PCs merge in the stats (restarts tcp-bridge)
 #   sudo ./deploy/install.sh caddy         adds /api/account/* and /u/<name> to the truecombat.eu block (backup + validate + reload)
+#   sudo ./deploy/install.sh comments      1.3.0: turns devlog comments on (site_root in config.json); the staff portal
+#                                          links itself with its own install.sh accounts-link
 #   sudo ./deploy/install.sh uninstall     stops and removes the service (keeps data and config)
 #
 # Before install: the Discord OAuth client secret goes in /etc/tcp-accounts/client-secret (one line). It is the
@@ -44,6 +46,8 @@ inspect() {
   say "unit:    $(systemctl is-active $UNIT 2>/dev/null || true)"
   say "group:   $(getent group tcpgame >/dev/null && echo 'tcpgame present' || echo 'NO tcpgame GROUP: the reserved-name list cannot be written')"
   for h in $HOMES; do say "server:  $h $( [ -d "$h/tcetest" ] && echo "names list -> $h/tcetest/accounts/names.txt" || echo '(no such server)')"; done
+  say "comments: $(grep -q '"site_root"' $ETC/config.json 2>/dev/null && echo 'site_root set' || echo 'site_root not set (install.sh comments)'); token $( filled $ETC/comments-token && echo present || echo 'made on install')"
+  say "site:    $( [ -r /var/www/truecombat/devlog.html ] && echo '/var/www/truecombat readable' || echo '/var/www/truecombat/devlog.html NOT FOUND')"
 }
 
 install_all() {
@@ -51,11 +55,11 @@ install_all() {
   user=$(port_user)
   if [ -n "$user" ] && ! systemctl is-active -q $UNIT 2>/dev/null; then say "port $PORT is taken by $user; stop"; exit 1; fi
   python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' || { say "needs Python 3.10+"; exit 1; }
-  ( cd "$HERE" && python3 -m py_compile tcp_accounts.py tcp_webauthn.py tcp_friends.py )
+  ( cd "$HERE" && python3 -m py_compile tcp_accounts.py tcp_webauthn.py tcp_friends.py tcp_comments.py )
   getent group tcpaccounts >/dev/null || groupadd --system tcpaccounts
   id tcpaccounts >/dev/null 2>&1 || useradd --system --gid tcpaccounts --home-dir $DATA --shell /usr/sbin/nologin tcpaccounts
   install -d -m 0755 /opt/tcp "$APP"
-  for f in tcp_accounts.py tcp_webauthn.py tcp_friends.py; do
+  for f in tcp_accounts.py tcp_webauthn.py tcp_friends.py tcp_comments.py; do
     if [ -f "$APP/$f" ]; then cp -p "$APP/$f" "$APP/$f.bak-$(date -u +%Y%m%d-%H%M%S)"; fi
     install -m 0644 "$HERE/$f" "$APP/$f"
   done
@@ -67,7 +71,9 @@ install_all() {
   filled $ETC/client-secret || { say "put the Discord client secret in $ETC/client-secret first"; exit 1; }
   [ -f $ETC/stats-token ] || install -m 0600 -o root -g root /dev/null $ETC/stats-token
   filled $ETC/internal-token || { umask 077; head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > $ETC/internal-token; }
-  chmod 0600 $ETC/client-secret $ETC/stats-token $ETC/internal-token
+  # the staff portal's token: reaches /internal/comments/* only (the portal copies it with its install.sh accounts-link)
+  filled $ETC/comments-token || { umask 077; head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n' > $ETC/comments-token; }
+  chmod 0600 $ETC/client-secret $ETC/stats-token $ETC/internal-token $ETC/comments-token
   for h in $HOMES; do
     [ -d "$h/tcetest" ] || continue
     # setgid: names.txt keeps the tcpgame group whoever writes it
@@ -91,6 +97,25 @@ stats_link() {
   systemctl restart tcp-bridge.service
   systemctl restart $UNIT
   say "linked: rollback = rm /etc/systemd/system/tcp-bridge.service.d/70-accounts.conf; systemctl daemon-reload; systemctl restart tcp-bridge"
+}
+
+comments() {
+  need_root
+  [ -r /var/www/truecombat/devlog.html ] || { say "no /var/www/truecombat/devlog.html: the site sync must run first"; exit 1; }
+  cp -p $ETC/config.json "$ETC/config.json.bak-$(date -u +%Y%m%d-%H%M%S)-pre-comments"
+  python3 - "$ETC/config.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+cfg = json.load(open(p, encoding="utf-8"))
+c = cfg.setdefault("comments", {})
+c.setdefault("site_root", "/var/www/truecombat")
+c.setdefault("words", [])
+open(p, "w", encoding="utf-8").write(json.dumps(cfg, indent=2) + "\n")
+PY
+  systemctl restart $UNIT
+  sleep 2
+  code=$(curl -s -o /dev/null -w '%{http_code}' "http://127.0.0.1:$PORT/api/account/comments?post=inside-0372")
+  say "comments on: GET comments?post=inside-0372 answered $code (200 = the post page has data-comments=on; 404 = the site has no comment section yet)"
 }
 
 caddy() {
@@ -123,6 +148,7 @@ case "$MODE" in
   install) install_all ;;
   stats-link) stats_link ;;
   caddy) caddy ;;
+  comments) comments ;;
   uninstall) need_root; systemctl disable --now $UNIT || true; rm -f /etc/systemd/system/$UNIT; systemctl daemon-reload; say "removed (data in $DATA, config in $ETC kept)" ;;
-  *) say "usage: install.sh inspect|install|stats-link|caddy|uninstall"; exit 2 ;;
+  *) say "usage: install.sh inspect|install|stats-link|caddy|comments|uninstall"; exit 2 ;;
 esac

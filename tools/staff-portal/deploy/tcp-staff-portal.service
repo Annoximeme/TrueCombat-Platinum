@@ -24,6 +24,8 @@ LoadCredential=stats-token:/etc/tcp-staff-portal/stats-token
 LoadCredential=insights-key:/etc/tcp-staff-portal/insights-key
 # Shared token for /staff commands from our Discord bot (empty file = off; install.sh bot-link fills it).
 LoadCredential=bot-api-token:/etc/tcp-staff-portal/bot-api-token
+# The accounts service's comments token: the Devlog comments page (empty file = off; install.sh accounts-link fills it).
+LoadCredential=accounts-token:/etc/tcp-staff-portal/accounts-token
 # Staff certificate root (0.38.0+): "TCPSTAFFROOT1 <id> <seed hex>", made once with --make-staff-root (see
 # README, "Staff certificates"). Uncomment only after the file exists: a missing credential stops the service.
 #LoadCredential=staff-root:/etc/tcp-staff-portal/staff-root

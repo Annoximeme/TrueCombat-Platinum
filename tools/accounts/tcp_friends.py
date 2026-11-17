@@ -273,8 +273,12 @@ class Friends:
         """People who have not opened the launcher for a year leave on their own."""
         old = self.now() - days * 86400
         for r in self.store.all("SELECT id FROM fr_people WHERE seen<?", (old,)):
-            with self.store.tx() as db:
-                db.db.execute("DELETE FROM fr_people WHERE id=?", (r["id"],))
-                for table, cols in (("fr_links", ("a", "b")), ("fr_requests", ("src", "dst")), ("fr_invites", ("src", "dst"))):
-                    for col in cols:
-                        db.db.execute("DELETE FROM %s WHERE %s=?" % (table, col), (r["id"],))
+            self.forget(r["id"])
+
+    def forget(self, person: str) -> None:
+        """Every row about one person ("a:<account id>" or "k:<key id>"): an idle purge, or a deleted account."""
+        with self.store.tx() as db:
+            db.db.execute("DELETE FROM fr_people WHERE id=?", (person,))
+            for table, cols in (("fr_links", ("a", "b")), ("fr_requests", ("src", "dst")), ("fr_invites", ("src", "dst"))):
+                for col in cols:
+                    db.db.execute("DELETE FROM %s WHERE %s=?" % (table, col), (person,))
