@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SignPath artifact configuration "release-binaries" for .github/workflows/release-sign.yml.
+     Paste into the SignPath project (Artifact configurations > release-binaries). The artifact is the
+     zip that actions/upload-artifact makes of the staged folder. Every file we build is signed with
+     Authenticode; product name and version are enforced (SignPath Foundation requirement), the
+     version comes from the workflow parameter "version" (e.g. 0.40.0).
+     engine/server: *.bin until 0.39.x, *.exe from 0.40.0; both patterns are listed, the ones that
+     do not exist in a build are skipped (min-matches="0"). -->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <parameters>
+    <parameter name="version" required="true" />
+  </parameters>
+  <zip-file>
+    <pe-file-set product-name="TrueCombat: Platinum" product-version="${version}">
+      <include path="TrueCombatPlatinum.exe" />
+      <include path="TrueCombat-Platinum-Setup.exe" />
+      <include path="engine/platinum-engine.exe" min-matches="0" />
+      <include path="engine/platinum-engine.bin" min-matches="0" />
+      <include path="server/platinum-server.exe" min-matches="0" />
+      <include path="server/platinum-server.bin" min-matches="0" />
+      <include path="engine/renderer_dx12_x64.dll" />
+      <include path="engine/renderer_opengl1_x64.dll" />
+      <include path="tcetest/qagame_mp_x64.dll" />
+      <include path="tcetest/cgame_mp_x64.dll" />
+      <include path="tcetest/ui_mp_x64.dll" />
+      <for-each>
+        <authenticode-sign />
+      </for-each>
+    </pe-file-set>
+  </zip-file>
+</artifact-configuration>
