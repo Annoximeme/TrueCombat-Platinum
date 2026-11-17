@@ -5,8 +5,8 @@ After=network-online.target
 [Service]
 User=tcpsvc
 Group=tcpsvc
-# Add --public-reads to show read counts on the site (ratings appear after 5 votes either way)
-ExecStart=/usr/bin/python3 /opt/tcp/server-bridge/tcp_devlog.py --db /var/lib/tcp-devlog/devlog.db --key-file ${CREDENTIALS_DIRECTORY}/key --site-root /var/www/truecombat --listen 127.0.0.1:8092
+# --public-reads shows read counts on the site (on since 2026-11-17; ratings appear after 5 votes either way)
+ExecStart=/usr/bin/python3 /opt/tcp/server-bridge/tcp_devlog.py --db /var/lib/tcp-devlog/devlog.db --key-file ${CREDENTIALS_DIRECTORY}/key --site-root /var/www/truecombat --listen 127.0.0.1:8092 --public-reads
 LoadCredential=key:/etc/tcp-devlog/key
 Restart=on-failure
 RestartSec=5
