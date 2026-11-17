@@ -549,7 +549,7 @@ DL = {
            "discord": "Discuss on Discord", "copy": "Copy link", "copied": "Link copied", "drag": "comparison divider position", "latest": "Latest",
            "rateQ": "Was this worth the read?", "rateGroup": "Rate this post", "star": "1 star", "stars": "{n} stars",
            "rateThanks": "Thanks for rating. You can change your rating until the end of the day.", "rateFail": "Your rating could not be sent. Please try again later.",
-           "ratePriv": "Anonymous. No account, no cookies."},
+           "ratePriv": "Anonymous. No account, no cookies.", "comments": "Comments"},
     "nl": {"read": "Lees het artikel", "feed": "TrueCombat: Platinum devlog", "back": "Alle devlogartikelen", "by": "Team Terminus", "more": "Meer uit de devlog",
            "months": "jan feb mrt apr mei jun jul aug sep okt nov dec".split(), "min": "{n} min lezen", "toc": "In dit artikel",
            "shipped": "Uitgebracht in v{v}", "testing": "Volgende update · in test", "all": "Alle artikelen", "filter": "Filter artikelen op onderwerp",
@@ -557,7 +557,7 @@ DL = {
            "discord": "Bespreek op Discord", "copy": "Link kopiëren", "copied": "Link gekopieerd", "drag": "positie van de vergelijkingslijn", "latest": "Nieuwste",
            "rateQ": "Was dit artikel de moeite waard?", "rateGroup": "Beoordeel dit artikel", "star": "1 ster", "stars": "{n} sterren",
            "rateThanks": "Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen.", "rateFail": "Je beoordeling kon niet worden verzonden. Probeer het later opnieuw.",
-           "ratePriv": "Anoniem. Geen account, geen cookies."},
+           "ratePriv": "Anoniem. Geen account, geen cookies.", "comments": "Reacties"},
 }
 DISCORD = "https://discord.gg/8kcHdg2Hch"
 LATEST = None  # newest released version on the site, read from index.html
@@ -680,7 +680,8 @@ def post_meta(lang, p, by=False):
     extra = f"<span>{T['by']}</span>" if by else ""
     return (f'<p class="post-meta"><span class="tag">{htmlmod.escape(p["tag"])}</span>{status_chip(lang, p)}'
             f'<time datetime="{p["date"]}">{nice_date(lang, p["date"])}</time><span>{T["min"].format(n=p["minutes"])}</span>{extra}'
-            f'<span class="post-stat" data-post-stat="{p["slug"]}" hidden></span></p>')
+            f'<span class="post-stat" data-post-stat="{p["slug"]}" hidden></span>'
+            f'<span class="post-cmts" data-post-cmts="{p["slug"]}" hidden></span></p>')
 
 
 def post_cards(lang, posts, feature=False, h="h2", lead=None):
@@ -973,6 +974,12 @@ def devlog_page(lang, post, posts, template):
     cine = " cine-post" if post.get("kicker") else ""
     art = large(post["image"]) if cine else post["image"]
     kick = f'\n      <span class="cine-kicker">{kicker(lang, post)}</span>' if cine else ""
+    # comments (tools/accounts/tcp_comments.py): the service only takes comments for posts whose page says
+    # data-comments="on"; front matter `comments: off` leaves the section out. js/site.js fills it in and keeps
+    # it hidden while the account service is not answering.
+    comments = ""
+    if post.get("comments", "on").strip().lower() != "off":
+        comments = f'\n      <section class="cmt" id="comments" data-cmt="{post["slug"]}" data-comments="on" aria-label="{T["comments"]}" hidden></section>'
     RATE_STARS = "\n          ".join(f'<button type="button" role="radio" aria-checked="false" data-stars="{n}" aria-label="{T["star"] if n == 1 else T["stars"].format(n=n)}"></button>' for n in range(1, 6))
     body = f"""<!--nav-->
 <!--/nav-->
@@ -995,6 +1002,7 @@ def devlog_page(lang, post, posts, template):
       </div>
       <div class="post-rate" data-rate="{post['slug']}" data-thanks="{T['rateThanks']}" data-fail="{T['rateFail']}" hidden>
         <p class="rate-q" id="rate-q">{T['rateQ']}</p>
+        <p class="rate-sum" hidden></p>
         <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
           {RATE_STARS}
         </div>
@@ -1006,7 +1014,7 @@ def devlog_page(lang, post, posts, template):
           <a class="btn btn-ghost" href="{DISCORD}">{T['discord']}</a>
           <button type="button" class="btn btn-ghost" data-copy-link data-done="{T['copied']}">{T['copy']}</button>
         </div>
-      </div>{pager}
+      </div>{comments}{pager}
     </div>
   </div>
 </article>

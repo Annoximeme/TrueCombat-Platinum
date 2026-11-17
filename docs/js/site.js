@@ -9,6 +9,7 @@
      [data-yt]                    click-to-play YouTube embed (privacy-enhanced, nothing loads before a click)
      [data-compare] [data-post-filter] [data-copy-link]   devlog sliders, topic filter and copy-link button
      [data-post] [data-rate] [data-post-stat]             devlog reads and star ratings (tools/server-bridge/tcp_devlog.py, no cookies)
+     [data-cmt] [data-post-cmts]                          devlog comments and comment counts (tools/accounts/tcp_comments.py)
      [data-search-open]           opens the site search (also Ctrl+K and /), index in js/search-<lang>.json
    Every page also sends one cookie-free page view, and download clicks, to tools/server-bridge/tcp_insights.py
    (no cookies, nothing stored in the browser; skipped for Global Privacy Control and Do Not Track).
@@ -77,7 +78,20 @@ var TCP_API = 'https://api.truecombat.eu';
       acctBannedWhy: 'Reason: {r}', teamTip: 'Member of Team Terminus, the studio behind TrueCombat: Platinum', badgeClean: 'Clean record', badgeTrusted: 'Trusted', badgeCleanTip: 'A month on the servers, 20 matches, no sanction in 90 days',
       badgeTrustedTip: 'Two months and 50 matches with a clean record. Can take a reserved slot on official servers', acctFormerly: 'Formerly {names}',
       lfsLooking: 'Looking for a squad', lfsUntil: 'until {t}', medalsOf: '{n} of {of}', medalEarned: 'earned {d}', medalMatch: 'in this match',
-      rivalRecord: '{w} won, {l} lost', shareCard: 'Save share card', shareSaved: 'Saved', shareFor: 'Match report on truecombat.eu'
+      rivalRecord: '{w} won, {l} lost', shareCard: 'Save share card', shareSaved: 'Saved', shareFor: 'Match report on truecombat.eu',
+      cmTitle: 'Comments', cm_new: 'Newest', cm_old: 'Oldest', cm_top: 'Top', cmSort: 'Sort comments', cmAs: 'Commenting as {name}',
+      cmPh: 'Add to the conversation', cmReplyPh: 'Write a reply', cmPost: 'Post comment', cmReplyBtn: 'Post reply', cmCancel: 'Cancel', cmSave: 'Save',
+      cmHint: 'Plain text, up to 1,000 characters. Keep it civil.', cmFirst: 'Your first comment is checked by our team before it shows. Link a game PC on your account page to skip this.',
+      cmGateH: 'Join the conversation', cmGateP: 'Anyone can read the comments. To post, sign in with your free TrueCombat account.', cmSignin: 'Sign in to comment', cmSigninSub: 'With Discord, no email needed',
+      cmSignupH: 'One step left', cmSignupP: 'Pick your player name and you can start commenting.', cmSignup: 'Pick a name',
+      cmClosed: 'Comments on this post are closed.', cmPaused: 'Your comments are paused until {d}.', cmPausedForever: 'Your comments are paused until further notice.', cmBanned: 'Your account is suspended, so you cannot comment right now.',
+      cmRules: 'Comment rules', cmRuleList: ['Be respectful. No insults, harassment or hate.', 'Stay on topic. No spam, advertising or self-promotion.', 'No cheats, exploits or links to them.', 'No personal details, yours or anyone else\u2019s.', 'Moderators hide or remove comments that break these rules and can pause commenting for repeat offenders.'],
+      cmEmpty: 'No comments yet. Start the conversation.', cmReply: 'Reply', cmEdit: 'Edit', cmDelete: 'Delete', cmSure: 'Press again to delete', cmReport: 'Report', cmReported: 'Reported',
+      cmReportH: 'Report this comment', cm_spam: 'Spam or advertising', cm_abuse: 'Abuse or harassment', cm_cheats: 'Cheats or exploits', cm_other: 'Something else', cmSend: 'Send report',
+      cmYou: 'You', cmPinned: 'Pinned', cmEdited: 'edited', cmWait: 'In review', cmHeld: 'Waiting for a moderator. Only you can see it for now.',
+      cm_removed: 'This comment was removed by a moderator.', cm_hidden: 'This comment is hidden while our team takes a look.', cm_deleted: 'The author deleted this comment.',
+      cmMore: 'Show {n} more comments', cmMore1: 'Show 1 more comment', cmLike: 'Like', cmCount: '{n} comments', cmCount1: '1 comment',
+      cmThanksHeld: 'Thanks. Your comment shows once our team has checked it.', cmErr: 'That did not work. Please try again.'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -138,7 +152,21 @@ var TCP_API = 'https://api.truecombat.eu';
       acctBannedWhy: 'Reden: {r}', teamTip: 'Lid van Team Terminus, de studio achter TrueCombat: Platinum', badgeClean: 'Schoon blazoen', badgeTrusted: 'Vertrouwd', badgeCleanTip: 'Een maand op de servers, 20 potjes, geen sanctie in 90 dagen',
       badgeTrustedTip: 'Twee maanden en 50 potjes met een schoon blazoen. Mag een gereserveerde plek innemen op officiële servers', acctFormerly: 'Voorheen {names}',
       lfsLooking: 'Op zoek naar een squad', lfsUntil: 'tot {t}', medalsOf: '{n} van {of}', medalEarned: 'behaald op {d}', medalMatch: 'in dit potje',
-      rivalRecord: '{w} gewonnen, {l} verloren', shareCard: 'Deelkaart opslaan', shareSaved: 'Opgeslagen', shareFor: 'Wedstrijdverslag op truecombat.eu'
+      rivalRecord: '{w} gewonnen, {l} verloren', shareCard: 'Deelkaart opslaan', shareSaved: 'Opgeslagen', shareFor: 'Wedstrijdverslag op truecombat.eu',
+      cmTitle: 'Reacties', cm_new: 'Nieuwste', cm_old: 'Oudste', cm_top: 'Populair', cmSort: 'Reacties sorteren', cmAs: 'Je reageert als {name}',
+      cmPh: 'Praat mee', cmReplyPh: 'Schrijf een antwoord', cmPost: 'Plaats reactie', cmReplyBtn: 'Plaats antwoord', cmCancel: 'Annuleren', cmSave: 'Opslaan',
+      cmHint: 'Platte tekst, tot 1.000 tekens. Hou het netjes.', cmFirst: 'Je eerste reactie wordt door ons team nagekeken voor ze verschijnt. Koppel een game-pc op je accountpagina om dat over te slaan.',
+      cmGateH: 'Praat mee', cmGateP: 'Iedereen kan de reacties lezen. Om zelf te reageren meld je je aan met je gratis TrueCombat-account.', cmSignin: 'Aanmelden om te reageren', cmSigninSub: 'Met Discord, geen e-mail nodig',
+      cmSignupH: 'Nog één stap', cmSignupP: 'Kies je spelersnaam en je kunt meteen reageren.', cmSignup: 'Kies een naam',
+      cmClosed: 'Reageren op dit artikel is gesloten.', cmPaused: 'Je kunt weer reageren vanaf {d}.', cmPausedForever: 'Je kunt tot nader bericht niet reageren.', cmBanned: 'Je account is geschorst, dus je kunt nu niet reageren.',
+      cmRules: 'Regels voor reacties', cmRuleList: ['Wees respectvol. Geen beledigingen, intimidatie of haat.', 'Blijf bij het onderwerp. Geen spam, reclame of zelfpromotie.', 'Geen cheats, exploits of links ernaar.', 'Geen persoonlijke gegevens, niet van jezelf en niet van anderen.', 'Moderators verbergen of verwijderen reacties die deze regels breken en kunnen wie dat blijft doen een reactiepauze geven.'],
+      cmEmpty: 'Nog geen reacties. Begin jij het gesprek?', cmReply: 'Antwoorden', cmEdit: 'Bewerken', cmDelete: 'Verwijderen', cmSure: 'Druk nogmaals om te verwijderen', cmReport: 'Melden', cmReported: 'Gemeld',
+      cmReportH: 'Deze reactie melden', cm_spam: 'Spam of reclame', cm_abuse: 'Belediging of intimidatie', cm_cheats: 'Cheats of exploits', cm_other: 'Iets anders', cmSend: 'Melding versturen',
+      cmYou: 'Jij', cmPinned: 'Vastgezet', cmEdited: 'bewerkt', cmWait: 'In controle', cmHeld: 'Wacht op een moderator. Voorlopig zie alleen jij deze reactie.',
+      cm_removed: 'Deze reactie is verwijderd door een moderator.', cm_hidden: 'Deze reactie is verborgen terwijl ons team ze bekijkt.', cm_deleted: 'De schrijver heeft deze reactie verwijderd.',
+      cmMore: 'Toon nog {n} reacties', cmMore1: 'Toon nog 1 reactie', cmLike: 'Leuk', cmCount: '{n} reacties', cmCount1: '1 reactie',
+      cmThanksHeld: 'Bedankt. Je reactie verschijnt zodra ons team ze heeft nagekeken.', cmErr: 'Dat lukte niet. Probeer het opnieuw.',
+      cmErr400: 'Controleer je reactie: minstens 2 en hoogstens 1.000 tekens.', cmErr403: 'Dat kan nu niet met jouw account.', cmErr409: 'Dat kan niet meer. Vernieuw de pagina en probeer opnieuw.', cmErr429: 'Even rustig aan. Probeer het zo meteen opnieuw.'
     }
   };
   /* German, French and Polish strings arrive in js/lang-<code>.js (window.TCP_L); English fills any gap */
@@ -841,7 +869,12 @@ var TCP_API = 'https://api.truecombat.eu';
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       err('[data-acct-error]', null);
-      post('/signup', { name: form.name.value, visibility: form.visibility.value, age13: form.age13.checked }).then(render, function (x) { err('[data-acct-error]', x); });
+      post('/signup', { name: form.name.value, visibility: form.visibility.value, age13: form.age13.checked }).then(function (d) {
+        // came here from a devlog post's comment section: go back to it
+        var nx = new URLSearchParams(location.search).get('next') || '';
+        if (d && d.account && /^\/(?:(?:nl|de|fr|pl)\/)?devlog-[a-z0-9][a-z0-9-]{0,79}(?:\.html)?$/.test(nx)) { location.href = nx + '#comments'; return; }
+        render(d);
+      }, function (x) { err('[data-acct-error]', x); });
     });
     q('[data-acct-rename]').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -1628,10 +1661,17 @@ var TCP_API = 'https://api.truecombat.eu';
       // the best-rated post (5+ ratings, 4.0 or higher) gets a "Top rated" mark
       Object.keys(posts).forEach(function (k) { var p = posts[k]; if (p.rating >= 4 && (!best || p.rating > posts[best].rating || (p.rating === posts[best].rating && p.ratings > posts[best].ratings))) best = k; });
       var fmt = function (n) { return Number(n).toLocaleString({ nl: 'nl-BE', de: 'de-DE', fr: 'fr-FR', pl: 'pl-PL' }[lang] || 'en-GB'); };
+      function rated(p) { return esc(L.ratingOf).replace('{avg}', '<b>★ ' + esc(p.rating.toFixed(1)) + '</b>').replace('{n}', esc(fmt(p.ratings))); }
+      boxes.forEach(function (box) {
+        var p = posts[box.dataset.rate], sum = box.querySelector('.rate-sum');
+        if (!sum || !p || !p.rating) return;
+        sum.innerHTML = rated(p); sum.hidden = false;
+      });
       slots.forEach(function (el) {
         var p = posts[el.dataset.postStat]; if (!p) return;
         var bits = [];
-        if (p.rating) bits.push('<b>★ ' + esc(p.rating.toFixed(1)) + '</b>');
+        // the average and how many people rated it ("★ 4.3 from 12 ratings")
+        if (p.rating) bits.push(rated(p));
         if (p.reads) bits.push(esc(p.reads === 1 ? L.read1 : L.reads.replace('{n}', fmt(p.reads))));
         if (!bits.length) return;
         el.innerHTML = (el.dataset.postStat === best ? '<span class="top">' + esc(L.topRated) + '</span>' : '') + bits.join(' · ');
@@ -1639,6 +1679,231 @@ var TCP_API = 'https://api.truecombat.eu';
         el.hidden = false;
       });
     }).catch(function () {});
+  })();
+
+  /* ---------- devlog comments: [data-cmt] on post pages, [data-post-cmts] counts on cards ----------
+     Served by the account service (tools/accounts/tcp_comments.py) under /api/account/comments, same origin,
+     signed in with the account cookie. The section stays hidden until the service answers. Comment text is
+     only ever put on the page escaped, as plain text. */
+  (function () {
+    var fmt = function (n) { return Number(n).toLocaleString({ nl: 'nl-BE', de: 'de-DE', fr: 'fr-FR', pl: 'pl-PL' }[lang] || 'en-GB'); };
+    var BUBBLE = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"/></svg>';
+    var cslots = $all('[data-post-cmts]');
+    if (cslots.length) {
+      fetch(ACCT + '/comments/counts.json', { credentials: 'omit' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+        cslots.forEach(function (el) {
+          var n = +d[el.dataset.postCmts] || 0; if (!n) return;
+          el.innerHTML = BUBBLE + esc(fmt(n));
+          el.title = n === 1 ? L.cmCount1 : L.cmCount.replace('{n}', fmt(n));
+          el.hidden = false;
+        });
+      }).catch(function () {});
+    }
+
+    var root = document.querySelector('[data-cmt]');
+    if (!root) return;
+    var slug = root.dataset.cmt, sort = 'new', data = null, PAGE = 20, shown = PAGE, MAX = 1000, openReply = null, first = true, topKey = '';
+    var HEART = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.8 4.5c2.1 0 3.6 1.1 5.2 3 1.6-1.9 3.1-3 5.2-3 3.8 0 5.9 3.9 4.4 7.3C19.5 16.4 12 21 12 21Z"/></svg>';
+    var DISCORD = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17 17 0 0 0 5.2 2.6l1.1-1.8a11 11 0 0 1-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3a11 11 0 0 1-1.7.8l1.1 1.8a17 17 0 0 0 5.2-2.6c.4-4.4-.7-8.3-2.1-11.7ZM8.7 14.7c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg>';
+    var CLEAN = TICK.split(esc(L.verified)).join(esc(L.badgeClean));
+    var COLS = ['#7a3b3b', '#3b5a7a', '#5a3b7a', '#3b7a5c', '#7a663b', '#3b6f7a', '#6e3b5f', '#4d6a3b'];
+
+    root.innerHTML = '<div class="cmt-head"></div><div data-cmt-top></div><p class="cmt-err" data-cmt-status role="status" hidden></p><div data-cmt-list></div>';
+    var headEl = root.querySelector('.cmt-head'), topEl = root.querySelector('[data-cmt-top]'), listEl = root.querySelector('[data-cmt-list]'), statusEl = root.querySelector('[data-cmt-status]');
+
+    function say(text, bad) { statusEl.textContent = text || ''; statusEl.hidden = !text; statusEl.style.color = bad ? '' : 'var(--muted)'; }
+    function errText(x) { return lang === 'en' && x && x.status && x.message ? x.message : (x && L['cmErr' + x.status]) || L.cmErr; }
+    function send(path, body) {
+      return acctFetch('/comments/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF': (data && data.viewer.csrf) || '' }, body: JSON.stringify(body) });
+    }
+    function colour(name) { var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) | 0; return COLS[Math.abs(h) % COLS.length]; }
+    function avatar(name, team, sm) {
+      if (team) return '<span class="av crest' + (sm ? ' sm' : '') + '" aria-hidden="true"></span>';
+      return '<span class="av' + (sm ? ' sm' : '') + '" style="background:' + colour(name) + '" aria-hidden="true">' + esc(Array.from(name)[0] || '?') + '</span>';
+    }
+    function when(unix) { var iso = new Date(unix * 1000).toISOString(); return '<time datetime="' + iso + '" title="' + esc(fmtDate(iso)) + '">' + esc(ago(iso)) + '</time>'; }
+    function signedIn() { var v = data.viewer; return v.signedIn && !v.needsSignup; }
+    function counter(form) {
+      var t = form.querySelector('textarea'), n = Array.from(t.value).length, c = form.querySelector('.count'), b = form.querySelector('[type=submit]');
+      if (c) { c.textContent = fmt(n) + ' / ' + fmt(MAX); c.classList.toggle('over', n > MAX); }
+      if (b) b.disabled = t.value.trim().length < 2 || n > MAX;
+    }
+    function composer(cls, attr, ph, btn, cancel, hint) {
+      return '<form class="' + cls + '" ' + attr + '>' +
+        '<textarea name="text" rows="4" maxlength="' + MAX + '" placeholder="' + esc(ph) + '" aria-label="' + esc(ph) + '"></textarea>' +
+        '<div class="cmt-row"><span class="cmt-hint">' + hint + '</span><span class="cmt-send"><span class="count" aria-hidden="true">0 / ' + fmt(MAX) + '</span>' +
+        (cancel ? '<button type="button" class="btn btn-sm btn-ghost" data-act="cancel">' + esc(L.cmCancel) + '</button>' : '') +
+        '<button type="submit" class="btn btn-sm btn-post" disabled>' + esc(btn) + '</button></span></div>' +
+        '<p class="cmt-err" role="alert" hidden></p></form>';
+    }
+
+    function renderHead() {
+      var d = data;
+      headEl.innerHTML = '<h2 id="cmt-h">' + esc(L.cmTitle) + (d.count ? ' <span class="n">' + esc(fmt(d.count)) + '</span>' : '') + '</h2>' +
+        (d.comments.length > 1 ? '<div class="cmt-sort" role="group" aria-label="' + esc(L.cmSort) + '">' + ['new', 'old', 'top'].map(function (k) {
+          return '<button type="button" data-cmt-sort="' + k + '" aria-pressed="' + (sort === k) + '">' + esc(L['cm_' + k]) + '</button>';
+        }).join('') + '</div>' : '');
+    }
+    function renderTop() {
+      var d = data, v = d.viewer, html = '', key;
+      var here = encodeURIComponent(location.pathname.replace(/\.html$/, ''));
+      if (!v.signedIn) {
+        key = 'out';
+        html = '<div class="cmt-gate"><div><h3>' + esc(L.cmGateH) + '</h3><p>' + esc(L.cmGateP) + '</p></div>' +
+          '<a class="btn btn-play" href="' + ACCT + '/login?next=' + here + '">' + DISCORD + '<span class="stack"><span class="big">' + esc(L.cmSignin) +
+          '</span><span class="small">' + esc(L.cmSigninSub) + '</span></span></a></div>';
+      } else if (v.needsSignup) {
+        key = 'signup';
+        html = '<div class="cmt-gate"><div><h3>' + esc(L.cmSignupH) + '</h3><p>' + esc(L.cmSignupP) + '</p></div>' +
+          '<a class="btn btn-play" href="account?next=' + here + '"><span class="stack"><span class="big">' + esc(L.cmSignup) + '</span></span></a></div>';
+      } else if (v.banned) {
+        key = 'banned'; html = '<p class="cmt-note">' + esc(L.cmBanned) + '</p>';
+      } else if (!d.open) {
+        key = 'closed'; html = '<p class="cmt-note">' + esc(L.cmClosed) + '</p>';
+      } else if (v.pausedUntil) {
+        key = 'paused' + v.pausedUntil;
+        html = '<p class="cmt-note">' + esc(v.pausedUntil === -1 ? L.cmPausedForever : L.cmPaused.replace('{d}', fmtDate(new Date(v.pausedUntil * 1000).toISOString()))) + '</p>';
+      } else {
+        key = 'post' + v.name + v.firstHeld;
+        html = '<div class="cmt-compose">' + avatar(v.name, v.team) + '<div class="box"><span class="as">' + esc(L.cmAs).replace('{name}', '<b>' + esc(v.name) + '</b>') + '</span>' +
+          composer('cmt-reply', 'data-cmt-form', L.cmPh, L.cmPost, false, esc(v.firstHeld ? L.cmFirst : L.cmHint)) + '</div></div>';
+      }
+      html += '<details class="cmt-rules"><summary>' + esc(L.cmRules) + '</summary><ul>' + L.cmRuleList.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></details>';
+      if (key === topKey) return;          // keep a half-written comment when the list reloads
+      topKey = key;
+      topEl.innerHTML = html;
+    }
+    function item(c, reply, thread) {
+      var v = data.viewer, me = signedIn(), kids = c.replies || [];
+      var sub = kids.length ? '<ol class="cmt-replies">' + kids.map(function (k) { return item(k, true, c.id); }).join('') + '</ol>' : '';
+      if (!reply && openReply === c.id) sub += composer('cmt-reply', 'data-cmt-reply="' + c.id + '"', L.cmReplyPh, L.cmReplyBtn, true, '');
+      if (c.gone) {
+        return '<li class="cmt-item"><span class="av none" aria-hidden="true">–</span><div class="main"><p class="cmt-gone">' + esc(L['cm_' + c.gone] || L.cm_hidden) + '</p>' + sub + '</div></li>';
+      }
+      var cls = 'cmt-item' + (c.pinned && !reply ? ' cmt-pinned' : '') + (reply && c.team ? ' team-reply' : '');
+      var name = c.profile ? '<a class="name" href="' + esc(profileUrl(c.name)) + '">' + esc(c.name) + '</a>' : '<span class="name">' + esc(c.name) + '</span>';
+      var meta = name + (c.clean ? CLEAN : '') + (c.team ? '<span class="cmt-flag staff">Team Terminus</span>' : '') +
+        (c.pinned ? '<span class="cmt-flag pin">' + esc(L.cmPinned) + '</span>' : '') + (c.mine ? '<span class="cmt-flag you">' + esc(L.cmYou) + '</span>' : '') +
+        (c.held ? '<span class="cmt-flag wait">' + esc(L.cmWait) + '</span>' : '') + '<span>' + when(c.at) + (c.edited ? ' · ' + esc(L.cmEdited) : '') + '</span>';
+      var acts = [];
+      if (!c.held) {
+        var canLike = me && !c.mine && !v.banned;
+        acts.push('<button type="button" class="like' + (c.liked ? ' on' : '') + '" data-act="like" aria-pressed="' + !!c.liked + '" aria-label="' + esc(L.cmLike) + (c.likes ? ' (' + c.likes + ')' : '') + '"' +
+          (canLike ? '' : ' disabled') + '>' + HEART + (c.likes ? esc(fmt(c.likes)) : '') + '</button>');
+        if (v.canPost) acts.push('<button type="button" data-act="reply" data-thread="' + (thread || c.id) + '">' + esc(L.cmReply) + '</button>');
+      }
+      if (c.mine && c.editable && v.canPost) acts.push('<button type="button" data-act="edit">' + esc(L.cmEdit) + '</button>');
+      if (c.mine) acts.push('<button type="button" data-act="delete">' + esc(L.cmDelete) + '</button>');
+      if (me && !c.mine && !c.held && !v.banned) acts.push('<span class="cmt-menu"><button type="button" data-act="report" aria-expanded="false">' + esc(L.cmReport) + '</button></span>');
+      return '<li class="' + cls + '" data-id="' + c.id + '">' + avatar(c.name, c.team, reply) + '<div class="main"><div class="cmt-meta">' + meta + '</div>' +
+        '<p class="cmt-body">' + esc(c.text) + '</p>' + (c.held ? '<p class="cmt-held">' + esc(L.cmHeld) + '</p>' : '') +
+        '<div class="cmt-actions">' + acts.join('') + '</div>' + sub + '</div></li>';
+    }
+    function renderList() {
+      var all = data.comments, rest = all.length - shown;
+      listEl.innerHTML = all.length ? '<ol class="cmt-list">' + all.slice(0, shown).map(function (c) { return item(c, false, null); }).join('') + '</ol>' +
+        (rest > 0 ? '<div class="cmt-more"><button type="button" class="btn btn-ghost" data-act="more">' + esc(rest === 1 ? L.cmMore1 : L.cmMore.replace('{n}', fmt(Math.min(rest, PAGE)))) + '</button></div>' : '')
+        : '<p class="cmt-empty">' + esc(L.cmEmpty) + '</p>';
+      var rf = listEl.querySelector('[data-cmt-reply] textarea');
+      if (rf) rf.focus();
+    }
+    function load() {
+      return acctFetch('/comments?post=' + encodeURIComponent(slug) + '&sort=' + sort).then(function (d) {
+        if (!d || !d.viewer || !d.comments) throw new Error('bad answer');
+        data = d; root.hidden = false;
+        renderHead(); renderTop(); renderList();
+        if (first && location.hash === '#comments') root.scrollIntoView();
+        first = false;
+      }, function () { if (!data) root.hidden = true; });
+    }
+    function find(id) {
+      var hit = null;
+      data.comments.forEach(function (c) { if (c.id === id) hit = c; (c.replies || []).forEach(function (k) { if (k.id === id) hit = k; }); });
+      return hit;
+    }
+    function closePops() { $all('.cmt-pop', root).forEach(function (p) { var b = p.parentNode.querySelector('[data-act=report]'); if (b) b.setAttribute('aria-expanded', 'false'); p.remove(); }); }
+
+    root.addEventListener('input', function (e) { var f = e.target.closest('form'); if (f && e.target.tagName === 'TEXTAREA') counter(f); });
+    root.addEventListener('submit', function (e) {
+      var f = e.target; e.preventDefault();
+      var t = f.querySelector('textarea'), b = f.querySelector('[type=submit]'), er = f.querySelector('.cmt-err');
+      var body, path;
+      if (f.hasAttribute('data-cmt-form')) { path = 'post'; body = { post: slug, text: t.value }; }
+      else if (f.hasAttribute('data-cmt-reply')) { path = 'post'; body = { post: slug, text: t.value, parent: +f.dataset.cmtReply }; }
+      else if (f.hasAttribute('data-cmt-edit')) { path = 'edit'; body = { id: +f.dataset.cmtEdit, text: t.value }; }
+      else return;
+      b.disabled = true; er.hidden = true; say('');
+      send(path, body).then(function (r) {
+        if (path === 'post') { t.value = ''; counter(f); if (body.parent) openReply = null; }
+        if (r && r.held) say(L.cmThanksHeld);
+        if (path === 'post' && !body.parent && sort !== 'new') { sort = 'new'; }
+        return load();
+      }, function (x) { er.textContent = errText(x); er.hidden = false; b.disabled = false; });
+    });
+    root.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && root.querySelector('.cmt-pop')) { var b = root.querySelector('.cmt-pop').parentNode.querySelector('button'); closePops(); b.focus(); }
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && e.target.tagName === 'TEXTAREA') { var f = e.target.closest('form'), s = f && f.querySelector('[type=submit]'); if (s && !s.disabled) f.requestSubmit ? f.requestSubmit() : s.click(); }
+    });
+    document.addEventListener('click', function (e) { if (!e.target.closest('.cmt-menu')) closePops(); });
+    root.addEventListener('click', function (e) {
+      var s = e.target.closest('[data-cmt-sort]');
+      if (s) { if (s.dataset.cmtSort !== sort) { sort = s.dataset.cmtSort; shown = PAGE; load(); } return; }
+      var b = e.target.closest('[data-act]'); if (!b || b.disabled) return;
+      var act = b.dataset.act, li = b.closest('.cmt-item'), id = li ? +li.dataset.id : 0, c = id ? find(id) : null;
+      if (act === 'more') { shown += PAGE; renderList(); return; }
+      if (act === 'cancel') {
+        var f = b.closest('form');
+        if (f.hasAttribute('data-cmt-reply')) { openReply = null; renderList(); } else renderList();
+        return;
+      }
+      if (act === 'reply') { openReply = +b.dataset.thread; renderList(); return; }
+      if (act === 'edit' && c) {
+        var body = li.querySelector('.cmt-body');
+        if (li.querySelector('[data-cmt-edit]')) return;
+        body.insertAdjacentHTML('afterend', composer('cmt-reply', 'data-cmt-edit="' + id + '"', L.cmPh, L.cmSave, true, ''));
+        body.hidden = true;
+        var ef = li.querySelector('[data-cmt-edit]'), ta = ef.querySelector('textarea');
+        ta.value = c.text; counter(ef); ta.focus();
+        return;
+      }
+      if (act === 'delete') {
+        if (!b.classList.contains('sure')) {
+          b.classList.add('sure'); b.textContent = L.cmSure;
+          setTimeout(function () { if (b.isConnected) { b.classList.remove('sure'); b.textContent = L.cmDelete; } }, 4000);
+          return;
+        }
+        b.disabled = true;
+        send('delete', { id: id }).then(load, function (x) { b.disabled = false; say(errText(x), true); });
+        return;
+      }
+      if (act === 'like' && c) {
+        var on = !c.liked;
+        b.disabled = true;
+        send('like', { id: id, on: on }).then(function (r) { c.liked = r.liked; c.likes = r.likes; renderList(); }, function (x) { b.disabled = false; say(errText(x), true); });
+        return;
+      }
+      if (act === 'report') {
+        var open = b.getAttribute('aria-expanded') === 'true';
+        closePops();
+        if (open) return;
+        b.setAttribute('aria-expanded', 'true');
+        var nm = 'cmt-why-' + id;
+        b.insertAdjacentHTML('afterend', '<fieldset class="cmt-pop"><legend>' + esc(L.cmReportH) + '</legend>' +
+          ['spam', 'abuse', 'cheats', 'other'].map(function (k, i) { return '<label><input type="radio" name="' + nm + '" value="' + k + '"' + (i ? '' : ' checked') + '> ' + esc(L['cm_' + k]) + '</label>'; }).join('') +
+          '<div class="acts"><button type="button" class="btn btn-sm" data-act="pop-cancel">' + esc(L.cmCancel) + '</button><button type="button" class="btn btn-sm btn-post" data-act="pop-send">' + esc(L.cmSend) + '</button></div></fieldset>');
+        b.parentNode.querySelector('input').focus();
+        return;
+      }
+      if (act === 'pop-cancel') { var rb = b.closest('.cmt-menu').querySelector('[data-act=report]'); closePops(); rb.focus(); return; }
+      if (act === 'pop-send') {
+        var menu = b.closest('.cmt-menu'), pick = menu.querySelector('input:checked'), rep = menu.querySelector('[data-act=report]');
+        b.disabled = true;
+        send('report', { id: id, reason: pick ? pick.value : 'other' }).then(function () {
+          closePops(); rep.textContent = L.cmReported; rep.disabled = true;
+        }, function (x) { closePops(); say(errText(x), true); });
+      }
+    });
+    load();
   })();
 
   /* ---------- scroll reveal (progressive: without IntersectionObserver everything is simply shown) ---------- */
