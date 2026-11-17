@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-IV3MpHA7gxeONe8lFfD8kqvOTPTWqiDgE9FhI8IkqQU='">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg=' 'sha256-so9OqcH67hKgG1WctTarxsAZyrhVnXd4ydGxcPHjHGU='">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TrueCombat: Platinum · Gratis tactische shooter, TrueCombat: Elite herbouwd</title>
 <meta name="description" content="TrueCombat: Platinum is een gratis tactische shooter voor Windows: TrueCombat: Elite (TC:E) herbouwd als native 64-bit DirectX 12-game, met de originele maps, wapens en HUD.">
@@ -39,7 +39,7 @@
 <link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
 <!--/alt-->
 <link rel="icon" type="image/png" href="../img/favicon.png">
-<link rel="stylesheet" href="../style.css?v=676dbd3755">
+<link rel="stylesheet" href="../style.css?v=a4531b4408">
 </head>
 <body>
 
@@ -79,6 +79,7 @@
 
 <section class="hero" aria-label="TrueCombat: Platinum">
   <div class="slides" id="slides">
+<!--hero-teaser--><!--/hero-teaser-->
     <img class="slide" data-name="Railhouse" src="../img/hero-railhouse-yard.webp" srcset="../img/hero-railhouse-yard-640.webp 640w, ../img/hero-railhouse-yard.webp 1280w, ../img/hero-railhouse-yard-1920.webp 1920w" sizes="100vw" alt="" fetchpriority="high">
     <img class="slide" data-name="Village" data-src="../img/hero-village-rooftop.webp" data-srcset="../img/hero-village-rooftop-640.webp 640w, ../img/hero-village-rooftop.webp 1280w, ../img/hero-village-rooftop-1920.webp 1920w" sizes="100vw" alt="">
     <img class="slide" data-name="Delta" data-src="../img/hero-delta-night.webp" data-srcset="../img/hero-delta-night-640.webp 640w, ../img/hero-delta-night.webp 1280w, ../img/hero-delta-night-1920.webp 1920w" sizes="100vw" alt="">
@@ -100,15 +101,21 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>
         <span class="stack"><span class="big">Download <span data-version>v0.37.3</span></span><span class="small"><span data-kind="long">Windows-installatieprogramma</span> · <span data-size>9 MB</span> · gratis</span></span>
       </a>
-      <a class="hero-notes" href="#patch-notes">Wat is er nieuw</a>
       </div>
 <!--scan-hero--><!--/scan-hero-->
-<!--devlog-hero-->
-    <a class="hero-log" href="devlog-crash-reports"><img src="../img/devlog/launcher-2-play-640.webp" alt="" width="640" height="360"><span><b>Nieuwe devlog</b><strong>Crashes oplossen op de pc&#x27;s waarop jullie echt spelen</strong><time datetime="2026-11-16">16 nov 2026</time></span></a>
-<!--/devlog-hero-->
     </div>
+<!--devlog-hero-->
+    <aside class="hero-dev" aria-labelledby="hero-dev-h">
+      <span class="hd-k">Nieuwe devlog</span>
+      <a class="hd-art" href="devlog-crash-reports" tabindex="-1" aria-hidden="true"><img src="../img/devlog/launcher-2-play-640.webp" alt="" width="640" height="360"></a>
+      <h2 id="hero-dev-h"><a href="devlog-crash-reports">Crashes oplossen op de pc&#x27;s waarop jullie echt spelen</a></h2>
+      <p>De launcher kan ons nu vertellen waar de game crashte en op welke hardware hij draait, als jij ja zegt. Hij vraagt het één keer, het is anoniem en je ziet het exacte rapport voordat het je pc verlaat.</p>
+      <div class="hd-foot"><a class="btn btn-play hd-read" href="devlog-crash-reports">Lees de devlog <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a><time datetime="2026-11-16">16 nov 2026</time></div>
+    </aside>
+<!--/devlog-hero-->
     <div class="hero-meta">
       <span class="live" data-live hidden></span>
+      <a class="hero-notes" href="#patch-notes">Patchnotes</a>
       <span>DirectX 12 met OpenGL als terugval</span>
       <span>Optioneel NVIDIA DLSS / DLAA</span>
       <span>Ontwikkeld door RaziC* · Team Terminus</span>
@@ -759,6 +766,13 @@
 
   /* hero slideshow, like the launcher header; later slides load after the page */
   var wrap = document.getElementById('slides');
+  /* a new update's teaser opens the show for two weeks, then steps aside for the maps */
+  var teaser = wrap.querySelector('[data-until]');
+  if (teaser && new Date().toISOString().slice(0, 10) >= teaser.dataset.until) {
+    wrap.removeChild(teaser);
+    var first = wrap.firstElementChild;
+    if (first && first.dataset.src) { first.srcset = first.dataset.srcset; first.src = first.dataset.src; delete first.dataset.src; }
+  }
   var slides = Array.prototype.slice.call(wrap.children);
   var nameEl = document.getElementById('slide-name');
   var dots = document.getElementById('dots');
