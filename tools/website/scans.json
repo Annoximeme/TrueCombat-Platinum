@@ -11,6 +11,17 @@
    "checked": "2026-11-16T17:55:45Z",
    "settle": true
   },
+  "04c297a4cef718985bf08a970d22f1e0f510711252d29b3dbb332420e223bf4b": {
+   "name": "platinum-engine.bin",
+   "bytes": 4187136,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-17T18:39:25Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T18:41:30Z",
+   "settle": true
+  },
   "09f93d5ff96ae09767f3e1af3cdd43a5a58f2598654fc63089429bb6f9f4737f": {
    "name": "vccorlib140.dll",
    "bytes": 350648,
@@ -236,6 +247,20 @@
    "checked": "2026-11-17T17:49:16Z",
    "settle": true
   },
+  "2c8312eb36f719b83e2a3c4b79ee48f50f5f873b0a497c6473f25ae285f9556d": {
+   "name": "TrueCombatPlatinum-Launcher.exe",
+   "bytes": 7137792,
+   "malicious": 2,
+   "suspicious": 0,
+   "engines": 70,
+   "analysed": "2026-11-17T18:38:53Z",
+   "flagged_by": [
+    "CrowdStrike: win/malicious_confidence_60% (D)",
+    "McAfeeD: ti!2C8312EB36F7"
+   ],
+   "checked": "2026-11-17T18:41:14Z",
+   "settle": true
+  },
   "2d3163b6ee0a1539d83dbce80b39a9741fddb20bbc4252cda1f360fbfd881402": {
    "name": "platinum-engine.bin",
    "bytes": 3978240,
@@ -366,17 +391,6 @@
    "settle": false,
    "flagged_by": []
   },
-  "417afc8339199df47431514a3b2754ff6b3af9419ec0a94c25690792052d799f": {
-   "name": "platinum-engine.bin",
-   "bytes": 4481536,
-   "malicious": 0,
-   "suspicious": 0,
-   "engines": 69,
-   "analysed": "2026-11-17T17:52:33Z",
-   "flagged_by": [],
-   "checked": "2026-11-17T17:56:56Z",
-   "settle": true
-  },
   "443577e869352436ff7ec8f4d9c90418d3e95368436ce219261e0f4f07a38122": {
    "name": "sl.reflex.dll",
    "bytes": 388736,
@@ -434,6 +448,17 @@
     "Elastic: malicious (high confidence)"
    ],
    "checked": "2026-11-17T17:08:49Z",
+   "settle": true
+  },
+  "4943b4c88b092c60a17da00debf083c1b69fea7cc5d22dba4a8d5fd625a52016": {
+   "name": "platinum-server.bin",
+   "bytes": 1820672,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T18:39:57Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T18:42:48Z",
    "settle": true
   },
   "49e3075697ecf14f068744797b68d3c0661086f083f94c08d6ac665d44e9fd75": {
@@ -674,6 +699,17 @@
    "analysed": "2026-11-17T17:23:44Z",
    "flagged_by": [],
    "checked": "2026-11-17T17:31:10Z",
+   "settle": true
+  },
+  "71f0be245d312e9d7bd04e1b576755cb6799cdbdb24fbdedf547914d1ca4f16b": {
+   "name": "cgame_mp_x64.dll",
+   "bytes": 762368,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-17T18:40:29Z",
+   "flagged_by": [],
+   "checked": "2026-11-17T18:43:50Z",
    "settle": true
   },
   "727bf01a9cf305f9c1b2003bf0717accb8b4baf7444817e64e347d4c0907965e": {
@@ -925,17 +961,6 @@
    "settle": true,
    "flagged_by": []
   },
-  "a9de94daa4e02811811bd735bcf3de2d4bee725db0390f551ef32a073d00133f": {
-   "name": "platinum-engine.bin",
-   "bytes": 4187136,
-   "malicious": 0,
-   "suspicious": 0,
-   "engines": 71,
-   "analysed": "2026-11-17T17:53:04Z",
-   "flagged_by": [],
-   "checked": "2026-11-17T17:55:55Z",
-   "settle": true
-  },
   "ab25af350c48856633d671a16e8469277f9acee39186d69fe5b2a26100d738e8": {
    "name": "EOSSDK-Win64-Shipping.dll",
    "bytes": 19548600,
@@ -956,17 +981,6 @@
    "analysed": "2026-11-17T17:22:40Z",
    "flagged_by": [],
    "checked": "2026-11-17T17:30:38Z",
-   "settle": true
-  },
-  "ac2980f0cbaf8a11d95e655cb3e3ebc6d15cf2e26e4e47fdc0b820584ed5122f": {
-   "name": "platinum-engine.bin",
-   "bytes": 4482560,
-   "malicious": 0,
-   "suspicious": 0,
-   "engines": 71,
-   "analysed": "2026-11-17T17:53:36Z",
-   "flagged_by": [],
-   "checked": "2026-11-17T17:56:10Z",
    "settle": true
   },
   "b1d7395aebd7b9722841d64dcf7433680020b6a8e421f851c16d5ba0c2182edf": {
@@ -1383,15 +1397,16 @@
   }
  },
  "releases": {
-  "v0.38.1-avscan": {
+  "v0.38.1-avscan2": {
    "published": "",
    "draft": true,
    "setup": "48447e05e2fd829df298d168d64f90112a82a5182864b9950bba5539cce4b63f",
    "files": {
     "TrueCombat-Platinum-Setup.exe": "48447e05e2fd829df298d168d64f90112a82a5182864b9950bba5539cce4b63f",
-    "a__platinum-engine.bin": "417afc8339199df47431514a3b2754ff6b3af9419ec0a94c25690792052d799f",
-    "b__platinum-engine.bin": "a9de94daa4e02811811bd735bcf3de2d4bee725db0390f551ef32a073d00133f",
-    "c__platinum-engine.bin": "ac2980f0cbaf8a11d95e655cb3e3ebc6d15cf2e26e4e47fdc0b820584ed5122f"
+    "TrueCombatPlatinum-Launcher.exe": "2c8312eb36f719b83e2a3c4b79ee48f50f5f873b0a497c6473f25ae285f9556d",
+    "engine__platinum-engine.bin": "04c297a4cef718985bf08a970d22f1e0f510711252d29b3dbb332420e223bf4b",
+    "server__platinum-server.bin": "4943b4c88b092c60a17da00debf083c1b69fea7cc5d22dba4a8d5fd625a52016",
+    "tcetest__cgame_mp_x64.dll": "71f0be245d312e9d7bd04e1b576755cb6799cdbdb24fbdedf547914d1ca4f16b"
    }
   },
   "v0.38.0-sandbox34": {
