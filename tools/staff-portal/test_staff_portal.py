@@ -1456,6 +1456,87 @@ class PortalTest(unittest.TestCase):
             srv.server_close()
 
 
+    def test_comments_page_drives_the_accounts_service(self):
+        """1.5.0: the Devlog comments page reads and moderates through the accounts service's /internal/comments/*."""
+        import sys as _sys
+        import tempfile as _tf
+        _sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "accounts"))
+        try:
+            import tcp_accounts
+        except ImportError:
+            self.skipTest("tools/accounts/tcp_accounts.py not in this checkout")
+        from http.server import ThreadingHTTPServer
+        acc = tcp_accounts.Accounts({"data_dir": _tf.mkdtemp(), "comments_token": "ctok", "internal_token": "itok",
+                                     "team": {"dev-moderator": "Moderator"}})
+        srv = ThreadingHTTPServer(("127.0.0.1", 0), tcp_accounts.make_handler(acc))
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+
+        def account(discord, name):
+            s = acc.session(acc.new_session(discord, name, "", "127.0.0.9"))
+            acc.signup(s, name, "public", True)
+            return acc.session(acc.new_session(discord, name, "", "127.0.0.9"))
+
+        self.sessions["admin"] = self.login("admin")      # earlier tests may have signed the shared admin out
+        try:
+            self.portal.cfg["accounts_api"] = "http://127.0.0.1:%d" % srv.server_address[1]
+            self.portal.cfg.pop("accounts_token", None)
+            code, body = self.call("moderator", "GET", "/api/comments")
+            self.assertEqual(code, 409)                                               # not linked yet
+            self.assertIn("accounts-link", body["error"])
+            self.portal.cfg["accounts_token"] = "wrong"
+            self.assertEqual(self.call("moderator", "GET", "/api/comments")[0], 404)
+            self.portal.cfg["accounts_token"] = "ctok"
+            web = account("300000000000000001", "Webonly")
+            held = acc.comments.post(web, {"post": "inside-0372", "text": "First comment from the web"}, "127.0.0.9")
+            self.assertTrue(held["held"])
+            self.assertEqual(self.call(None, "GET", "/api/comments")[0], 401)
+            code, body = self.call("moderator", "GET", "/api/comments?tab=needs")
+            self.assertEqual(code, 200)
+            self.assertEqual(body["comments"][0]["author"]["name"], "Webonly")
+            self.assertEqual(body["comments"][0]["reason"], "new")
+            self.assertEqual(self.call("moderator", "GET", "/api/comments/stats")[1]["held"], 1)
+            self.assertEqual(self.call("moderator", "POST", "/api/comments/act", {"id": held["id"], "action": "nuke"})[0], 400)
+            code, body = self.call("moderator", "POST", "/api/comments/act", {"id": held["id"], "action": "publish"})
+            self.assertEqual((code, body["comment"]["state"]), (200, "live"))
+            audit = self.portal.store.one("SELECT * FROM audit WHERE action='comment.publish' ORDER BY id DESC LIMIT 1")
+            self.assertEqual(audit["target"], "Webonly")
+            self.assertIn("First comment", audit["detail"])
+            code, body = self.call("moderator", "POST", "/api/comments/reply", {"parent": held["id"], "text": "Welcome aboard."})
+            self.assertEqual(code, 409)                                               # the moderator has no player account yet
+            account("dev-moderator", "ModMan")
+            code, body = self.call("moderator", "POST", "/api/comments/reply", {"parent": held["id"], "text": "Welcome aboard."})
+            self.assertEqual(code, 200)
+            listing = acc.comments.listing("inside-0372", "new", None)
+            self.assertTrue(listing["comments"][0]["replies"][0]["team"])
+            code, body = self.call("moderator", "POST", "/api/comments/pause", {"name": "Webonly", "days": 7, "reason": "spam"})
+            self.assertEqual((code, body["name"]), (200, "Webonly"))
+            self.assertEqual(self.call("moderator", "GET", "/api/comments?tab=paused")[1]["paused"][0]["name"], "Webonly")
+            self.assertEqual(self.call("moderator", "POST", "/api/comments/unpause", {"account": body["account"]})[0], 200)
+            self.assertEqual(self.call("moderator", "POST", "/api/comments/close", {"post": "inside-0372"})[0], 403)   # admins only
+            code, body = self.call("admin", "POST", "/api/comments/close", {"post": "inside-0372"})
+            self.assertEqual((code, body.get("closed")), (200, True), body)
+            self.assertEqual(acc.comments.post_state("inside-0372"), "closed")
+            self.assertEqual(self.call("admin", "POST", "/api/comments/close", {"post": "inside-0372", "closed": False})[1]["closed"], False)
+            # the loop's alert: more waiting than last time -> one alert, no comment text in it
+            acc.comments.post(account("300000000000000002", "Webtwo"), {"post": "inside-0372", "text": "Secret words here"}, "127.0.0.9")
+            self.portal.meta("comments_needs", "0")
+            self.portal.stop.clear()
+            st = self.portal.comments_api("GET", "stats")
+            self.assertEqual(st["needs"], 1)
+            t = threading.Thread(target=self.portal.comments_loop, daemon=True)
+            t.start()
+            deadline = time.time() + 5
+            alert = None
+            while time.time() < deadline and not alert:
+                alert = self.portal.store.one("SELECT * FROM alerts WHERE kind='comments' ORDER BY id DESC LIMIT 1")
+                time.sleep(0.1)
+            self.assertIsNotNone(alert)
+            self.assertNotIn("Secret", alert["text"] + alert["title"])
+        finally:
+            self.portal.cfg.pop("accounts_token", None)
+            srv.shutdown()
+            srv.server_close()
+
     def test_35_staff_certificates(self):
         """0.38.0: the portal signs active staff keys into certificates every game server checks offline."""
         root_seed, staff_seed = bytes([0x11]) * 32, bytes([0x22]) * 32

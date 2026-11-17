@@ -45,7 +45,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.4.3"
+VERSION = "1.5.0"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -97,6 +97,8 @@ PERMS = {
     "history": "trial",               # player counts over time, uptime, busiest hours
     "quality": "admin",               # what each staff member did and how it held up
     "anticheat": "admin",             # anti-cheat review queue
+    "comments": "moderator",          # devlog comments on truecombat.eu: review, hide, remove, pause, pin, reply
+    "comments.close": "admin",        # close or reopen comments on a whole devlog post
     "duty": "trial",                  # go on duty: phone alerts for everything, not only urgent ones
     "2fa.reset": "owner",
 }
@@ -1573,10 +1575,12 @@ class Watchers:
 
     COLOURS = {"server_down": 0xD63B3B, "server_up": 0x4FBF7A, "suspicion": 0xD63B3B, "dodger": 0xD63B3B,
                "reports": 0xE7A73C, "mod_ban": 0x5B9BD5, "watch": 0xE7A73C, "appeal": 0x5B9BD5, "filter": 0xE7A73C,
-               "teamkill": 0xE7A73C, "weekly": 0xFF9914, "bugreport": 0x9AA3B3, "backup": 0xD63B3B}
+               "teamkill": 0xE7A73C, "weekly": 0xFF9914, "bugreport": 0x9AA3B3, "backup": 0xD63B3B,
+               "comments": 0xE7A73C}
     LINKS = {"suspicion": "player", "dodger": "player", "reports": "reports", "watch": "player", "appeal": "reports",
              "mod_ban": "bans", "filter": "chat", "teamkill": "player", "server_down": "health", "server_up": "health",
-             "weekly": "weekly", "bugreport": "reports", "backup": "health"}
+             "weekly": "weekly", "bugreport": "reports", "backup": "health",
+             "comments": "comments"}
 
     def alert_loop(self) -> None:
         import queue
@@ -2302,6 +2306,66 @@ class Operations:
             raise ApiError(502 if e.code >= 500 else 409, "The insights service said: %s" % e.code) from e
         except (urllib.error.URLError, OSError, ValueError) as e:
             raise ApiError(502, "The insights service did not answer.") from e
+
+    # -- devlog comments (tools/accounts/tcp_comments.py: the accounts service's /internal/comments/*, loopback only;
+    #    token from the systemd credential 'accounts-token', filled by install.sh accounts-link)
+    def accounts_token(self) -> str:
+        cred = os.environ.get("CREDENTIALS_DIRECTORY")
+        token = ""
+        if cred and (Path(cred) / "accounts-token").exists():
+            token = (Path(cred) / "accounts-token").read_text(encoding="utf-8").strip()
+        return token or str(self.cfg.get("accounts_token", "") or "")
+
+    def comments_api(self, method: str, sub: str, body: dict | None = None, qs: dict | None = None) -> dict:
+        base = str(self.cfg.get("accounts_api", "http://127.0.0.1:8095")).rstrip("/")
+        token = self.accounts_token()
+        if not token:
+            raise ApiError(409, "Devlog comments are not connected yet (run install.sh accounts-link on the VPS).")
+        url = "%s/internal/comments/%s" % (base, sub)
+        if qs:
+            url += "?" + urllib.parse.urlencode({k: v for k, v in qs.items() if v not in (None, "")})
+        data = json.dumps(body).encode() if body is not None else None
+        req = urllib.request.Request(url, data=data, method=method, headers={
+            "X-Accounts-Token": token, "User-Agent": "TCPStaff", "Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=15) as r:
+                return json.loads(r.read().decode() or "{}")
+        except urllib.error.HTTPError as e:
+            try:
+                msg = json.loads(e.read().decode()).get("error") or ""
+            except (ValueError, OSError, AttributeError):
+                msg = ""
+            if e.code == 404 and msg in ("", "Not found."):     # an old accounts service, or a token it does not know
+                msg = "The accounts service refused: it needs accounts 1.3.0 and the token from install.sh accounts-link."
+            raise ApiError(e.code if 400 <= e.code < 500 else 502, msg or "The accounts service said: %s" % e.code) from e
+        except (urllib.error.URLError, OSError, ValueError) as e:
+            raise ApiError(502, "The accounts service did not answer.") from e
+
+    def comments_loop(self) -> None:
+        """Every minute: when more comments wait for staff than before, one alert (no comment text in it)."""
+        while not self.stop.is_set():
+            if self.accounts_token():
+                try:
+                    st = self.comments_api("GET", "stats")
+                    n = int(st.get("needs") or 0)
+                    last = int(self.meta("comments_needs") or 0)
+                    if n > last:
+                        held, rep = int(st.get("held") or 0), int(st.get("reported") or 0) + int(st.get("hidden") or 0)
+                        self.alert("comments", "Devlog comments: %d waiting" % n,
+                                   "%d held for a check, %d reported or hidden. Open Devlog comments in the portal." % (held, rep),
+                                   key="comments:%d:%d" % (n, now() // 600))
+                    if n != last:
+                        self.meta("comments_needs", str(n))
+                except ApiError as e:
+                    log.debug("comments check: %s", e.message)
+            self.stop.wait(60)
+
+    def comments_audit(self, who: dict, action: str, row: dict | None, detail: str = "") -> None:
+        author = ((row or {}).get("author") or {})
+        target = author.get("name", "")
+        text = ((row or {}).get("text") or "").replace("\n", " ")
+        self.store.audit(who, "comment." + action, target=target,
+                         detail=(detail + " · " if detail else "") + ("#%s on %s: %s" % ((row or {}).get("id", ""), (row or {}).get("post", ""), text[:200]) if row else ""))
 
     # -- stats review queue (the stats service's staff routes, loopback only)
     def stats_staff(self, method: str, route: str, body: dict | None = None):
@@ -3484,7 +3548,7 @@ class Portal(Moderation, Watchers, Operations, Overview, Casework, Team):
         loops = [(self.poll_loop, "poll"), (self.report_loop, "reports"), (self.ban_loop, "bans"),
                  (self.prune_loop, "prune"), (self.alert_loop, "alerts"), (self.suspicion_loop, "suspicion"),
                  (self.schedule_loop, "schedule"), (self.enforce_loop, "enforce"), (self.weekly_loop, "weekly"),
-                 (self.backup_loop, "backup"), (self.push_loop, "push")]
+                 (self.backup_loop, "backup"), (self.push_loop, "push"), (self.comments_loop, "comments")]
         for s in self.servers.values():
             loops.append((lambda s=s: self.chat_loop(s), "chat-" + s.key))
         for fn, name in loops:
@@ -5121,6 +5185,51 @@ def make_handler(portal: Portal):
                 weeks = max(0, min(52, int(qs.get("weeks_ago") or 0)))
                 w = portal.weekly(now() - weeks * 7 * 86400)
                 return self.json(dict(w, text=portal.weekly_text(w)))
+            # devlog comments (accounts service)
+            if route == "comments/stats" and G:
+                self.need(s, "comments")
+                return self.json(portal.comments_api("GET", "stats"))
+            if route == "comments" and G:
+                self.need(s, "comments")
+                tab = qs.get("tab", "needs") if qs.get("tab") in ("needs", "recent", "hidden", "paused") else "needs"
+                return self.json(portal.comments_api("GET", "queue", qs={"tab": tab, "post": qs.get("post", "")[:80],
+                                                                          "q": qs.get("q", "")[:40]}))
+            if route == "comments/act" and P:
+                self.need(s, "comments")
+                d = self.body_json()
+                action = str(d.get("action", ""))
+                if action not in ("publish", "hide", "restore", "remove", "dismiss", "pin", "unpin"):
+                    raise ApiError(400, "Unknown action.")
+                out = portal.comments_api("POST", "act", {"id": d.get("id"), "action": action, "by": s["name"]})
+                portal.comments_audit(s, action, out.get("comment"))
+                return self.json(out)
+            if route == "comments/pause" and P:
+                self.need(s, "comments")
+                d = self.body_json()
+                out = portal.comments_api("POST", "pause", {"account": d.get("account"), "name": d.get("name"),
+                                                            "days": d.get("days", 0), "reason": d.get("reason", ""), "by": s["name"]})
+                portal.store.audit(s, "comment.pause", target=out.get("name", ""),
+                                   detail="%s · %s" % ("for good" if out.get("until") == -1 else "%s days" % d.get("days"), d.get("reason", "")))
+                return self.json(out)
+            if route == "comments/unpause" and P:
+                self.need(s, "comments")
+                d = self.body_json()
+                out = portal.comments_api("POST", "unpause", {"account": d.get("account"), "by": s["name"]})
+                portal.store.audit(s, "comment.unpause", target=str(d.get("name", "")))
+                return self.json(out)
+            if route == "comments/close" and P:
+                self.need(s, "comments.close")
+                d = self.body_json()
+                out = portal.comments_api("POST", "close", {"post": d.get("post"), "closed": d.get("closed") is not False, "by": s["name"]})
+                portal.store.audit(s, "comment.close" if out.get("closed") else "comment.reopen", target=str(out.get("post", "")))
+                return self.json(out)
+            if route == "comments/reply" and P:
+                self.need(s, "comments")
+                d = self.body_json()
+                out = portal.comments_api("POST", "reply", {"parent": d.get("parent"), "text": d.get("text", ""),
+                                                            "discord": s["discord_id"], "by": s["name"]})
+                portal.store.audit(s, "comment.reply", detail="on #%s: %s" % (d.get("parent"), str(d.get("text", ""))[:200]))
+                return self.json(out)
             # website insights
             if route == "insights" and G:
                 self.need(s, "insights")

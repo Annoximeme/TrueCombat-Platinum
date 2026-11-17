@@ -398,3 +398,12 @@ a.tile:hover { border-color: var(--line-hi); }
 .rights { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; max-height: 50vh; overflow: auto; font-size: 13px; }
 .rights select { padding: 2px 6px; }
 @media (max-width: 760px) { .heat { grid-template-columns: 24px repeat(24, 1fr); font-size: 8px; } .bars .bar { grid-template-columns: 90px 1fr 44px; } }
+
+/* devlog comments (1.5.0) */
+.cm-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 16px; }
+@media (max-width: 900px) { .cm-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.cm-filter { display: flex; gap: 8px; margin-bottom: 14px; max-width: 560px; }
+.cm-card + .cm-card { margin-top: 12px; }
+.cm-who { margin-top: 6px; }
+.cm-on { font: 400 13px var(--f-body); text-transform: none; letter-spacing: 0; }
+.cm-text { margin: 12px 0 0; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }

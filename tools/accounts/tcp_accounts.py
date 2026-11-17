@@ -18,6 +18,7 @@ Routes (all under /api/account, behind Caddy on the main site so the session coo
   GET  login, callback, me, check?name=, link/status?code=, export, profile?u=, names.json, team.json, reserved.txt
   POST logout, signup, name, settings, link/start, claim (from the launcher), unlink, delete
   GET  /internal/... loopback-only, shared token: account lookup for the Discord bot and the staff portal
+  comments*: devlog comments, see tcp_comments.py (1.3.0)
 
 Python 3.10+ standard library only. State in one SQLite file.
 
@@ -43,10 +44,11 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+import tcp_comments
 import tcp_friends
 import tcp_webauthn as webauthn
 
-VERSION = "1.2.0"
+VERSION = "1.3.0"
 log = logging.getLogger("tcp-accounts")
 
 LINK_TAG = b"TrueCombat account link v1\n"
@@ -367,6 +369,7 @@ class Accounts:
         self.stop = threading.Event()
         self.dirty.set()
         self.friends = tcp_friends.Friends(self, ApiError, ed25519_verify, key_id, display_name, now)
+        self.comments = tcp_comments.Comments(self, ApiError, note_problem, account_pid, now)
 
     # -- small helpers
     def limited(self, key: str, count: int, window: int) -> bool:
@@ -548,6 +551,9 @@ class Accounts:
             db.db.execute("DELETE FROM sessions WHERE discord_id=?", (acct["discord_id"],))
             db.db.execute("DELETE FROM signins WHERE account=?", (acct["id"],))
             db.db.execute("DELETE FROM accounts WHERE id=?", (acct["id"],))
+        # what other parts of the service keep about the player goes too: comments, likes, reports, friends
+        self.comments.forget(acct["id"])
+        self.friends.forget("a:" + acct["id"])
         self.dirty.set()
 
     def export(self, acct: dict) -> dict:
@@ -565,6 +571,7 @@ class Accounts:
             "passkeys": self.store.all("SELECT label, created, used FROM passkeys WHERE account=?", (a["id"],)),
             "lookingForSquad": {"until": a["lfs_until"], "note": a["lfs_note"]}, "weeklyReport": bool(a["weekly"]),
             "sanctions": self.store.all("SELECT kind, reason, created, until, lifted FROM bans WHERE account=?", (a["id"],)),
+            "devlogComments": self.comments.export(a["id"]),
             "note": "Match stats are public and anonymous; see your profile or the stats service for them.",
         }
 
@@ -1158,6 +1165,7 @@ class Accounts:
         self.store.x("DELETE FROM name_history WHERE until<?", (t,))
         out["sessions"] = self.store.x("DELETE FROM sessions WHERE created<?", (t - SESSION_DAYS * 86400,)).rowcount
         self.friends.purge(INACTIVE_DAYS)
+        out["comments"] = self.comments.tidy()
         # names of accounts with no sign-in and no linked-PC use for a year are released; the account stays
         idle = self.store.all("SELECT id, skeleton FROM accounts WHERE last_active<?", (t - INACTIVE_DAYS * 86400,))
         released = 0
@@ -1305,6 +1313,8 @@ SECURITY_HEADERS = {
     "Cross-Origin-Resource-Policy": "same-origin",
 }
 PREFIX = "/api/account"
+# where a sign-in may send the player back to: a devlog post, in any language of the site
+RETURN_TO = re.compile(r"/(?:(?:nl|de|fr|pl)/)?devlog-[a-z0-9][a-z0-9-]{0,79}(?:\.html)?")
 
 
 def make_handler(acc: Accounts):
@@ -1316,6 +1326,8 @@ def make_handler(acc: Accounts):
     state_cookie = ("__Host-" if secure_cookie else "") + "tcpacct_state"
     dev_login = bool(cfg.get("dev_login")) and os.environ.get("TCP_ACCOUNTS_DEV") == "1"
     internal_token = credential("internal-token", cfg.get("internal_token", ""))
+    comments_token = credential("comments-token", cfg.get("comments_token", ""))     # the staff portal: comments only
+    next_cookie = ("__Host-" if secure_cookie else "") + "tcpacct_next"
     oauth = cfg.get("discord", {})
 
     class Handler(BaseHTTPRequestHandler):
@@ -1445,7 +1457,11 @@ def make_handler(acc: Accounts):
             url = "https://discord.com/oauth2/authorize?" + urllib.parse.urlencode({
                 "client_id": oauth.get("client_id", ""), "response_type": "code",
                 "redirect_uri": public + PREFIX + "/callback", "scope": "identify", "state": state, "prompt": "none"})
-            self.redirect(url, [self.set_cookie(state_cookie, state, 600)])
+            cookies = [self.set_cookie(state_cookie, state, 600)]
+            nxt = qs.get("next", "")
+            if RETURN_TO.fullmatch(nxt):                 # back to the devlog post the player signed in from
+                cookies.append(self.set_cookie(next_cookie, nxt, 600))
+            self.redirect(url, cookies)
 
         def get_callback(self, qs):
             state = self.cookie(state_cookie)
@@ -1467,8 +1483,12 @@ def make_handler(acc: Accounts):
             # the Discord access token is not kept: we only needed who you are
             sid = acc.new_session(str(me["id"]), str(me.get("global_name") or me.get("username") or ""),
                                   str(me.get("avatar") or ""), self.client_ip())
+            nxt = self.cookie(next_cookie)
+            if RETURN_TO.fullmatch(nxt):
+                # an account already: straight back to the post; none yet: make one first, then the page sends them back
+                back = site + nxt + "#comments" if acc.by_discord(str(me["id"])) else back + "?next=" + urllib.parse.quote(nxt, safe="/")
             self.redirect(back, [self.set_cookie(cookie_name, sid, SESSION_DAYS * 86400),
-                                 self.set_cookie(state_cookie, "", 0)])
+                                 self.set_cookie(state_cookie, "", 0), self.set_cookie(next_cookie, "", 0)])
 
         def get_dev(self, qs):
             if not (dev_login and self.local()):
@@ -1628,6 +1648,33 @@ def make_handler(acc: Accounts):
         def get_trusted_txt(self, qs):
             self.send(200, acc.trusted_txt().encode(), "text/plain; charset=utf-8", {"Cache-Control": "public, max-age=300"})
 
+        # -- devlog comments (tcp_comments.py)
+        def get_comments(self, qs):
+            self.json(acc.comments.listing(qs.get("post", ""), qs.get("sort", "new"), self.session()))
+
+        def get_comments_counts_json(self, qs):
+            self.json(acc.comments.counts(), extra={"Cache-Control": "public, max-age=60"})
+
+        def post_comments_post(self, qs):
+            s = self.need_account()
+            self.json(acc.comments.post(s, self.body_json(16384), self.client_ip()))
+
+        def post_comments_edit(self, qs):
+            s = self.need_account()
+            self.json(acc.comments.edit(s, self.body_json(16384)))
+
+        def post_comments_delete(self, qs):
+            s = self.need_account()
+            self.json(acc.comments.delete(s, self.body_json()))
+
+        def post_comments_like(self, qs):
+            s = self.need_account()
+            self.json(acc.comments.like(s, self.body_json()))
+
+        def post_comments_report(self, qs):
+            s = self.need_account()
+            self.json(acc.comments.report(s, self.body_json()))
+
         # -- public reads (cacheable)
         def get_profile(self, qs):
             p = acc.profile(qs.get("u", ""))
@@ -1650,9 +1697,14 @@ def make_handler(acc: Accounts):
 
         # -- loopback only: the Discord bot and the staff portal
         def internal(self, method, path, qs):
-            if (not internal_token or not self.local()
-                    or not hmac.compare_digest(self.headers.get("X-Accounts-Token", ""), internal_token)):
+            given = self.headers.get("X-Accounts-Token", "")
+            ok = bool(internal_token) and hmac.compare_digest(given, internal_token)
+            if not ok and path.startswith("/internal/comments/") and comments_token:
+                ok = hmac.compare_digest(given, comments_token)      # the portal's token reaches comments, nothing else
+            if not ok or not self.local():
                 raise ApiError(404, "Not found.")
+            if path.startswith("/internal/comments/"):
+                return self.internal_comments(method, path[len("/internal/comments/"):], qs)
             if method == "GET" and path == "/internal/lookup":
                 a = acc.internal_lookup(qs.get("discord", ""), qs.get("name", ""), qs.get("pid", ""))
                 return self.json(a) if a else self.json({"error": "No such account."}, 404)
@@ -1682,6 +1734,17 @@ def make_handler(acc: Accounts):
                     if re.fullmatch(r"[0-9a-f]{40}", str(kid)):
                         acc.touch_key(str(kid))
                 return self.json({"ok": True})
+            raise ApiError(404, "Not found.")
+
+        def internal_comments(self, method, sub, qs):
+            cm = acc.comments
+            if method == "GET" and sub == "stats":
+                return self.json(cm.stats())
+            if method == "GET" and sub == "queue":
+                return self.json(cm.queue(qs.get("tab", "needs"), qs.get("post", ""), qs.get("q", "")[:40]))
+            post = {"act": cm.act, "pause": cm.pause, "unpause": cm.unpause, "close": cm.close, "reply": cm.staff_reply}
+            if method == "POST" and sub in post:
+                return self.json(post[sub](self.body_json(16384)))
             raise ApiError(404, "Not found.")
 
     return Handler
