@@ -58,4 +58,4 @@ jobs:
         if: env.changed == '1'
         run: |
           sleep 180   # the web server picks up main every two minutes
-          python tools/website/indexnow.py
+          python tools/website/indexnow.py --since HEAD~1
