@@ -12,7 +12,7 @@ import math
 from functools import lru_cache
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 from . import text as T
 
@@ -546,3 +546,135 @@ def banner(site_root: str | None = None) -> bytes:
     f = font("mono", 30)
     d.text((x0 + (720 - f.getlength("truecombat.eu")) / 2, y + 60), "truecombat.eu", font=f, fill=AMBER)
     return png(img)
+
+
+# ================================================================ release briefing banner
+STEEL = _token("steel", (176, 184, 198))
+INK_DEEP = _token("ink", (9, 11, 15))
+BRAND = ASSETS / "brand"
+
+
+def jpeg(img: Image.Image, quality: int = 90) -> bytes:
+    buf = io.BytesIO()
+    img.convert("RGB").save(buf, "JPEG", quality=quality, optimize=True, progressive=True)
+    return buf.getvalue()
+
+
+def _spaced(d: ImageDraw.ImageDraw, x: float, y: float, text: str, f, fill, tracking: float = 0.0,
+            anchor: str = "la") -> float:
+    """Text with letter spacing (Pillow has none); returns the end x."""
+    for ch in text:
+        d.text((x, y), ch, font=f, fill=fill, anchor=anchor)
+        x += f.getlength(ch) + tracking
+    return x
+
+
+def _spaced_len(text: str, f, tracking: float = 0.0) -> float:
+    return sum(f.getlength(ch) + tracking for ch in text) - (tracking if text else 0)
+
+
+def _cover(pic: Image.Image, w: int, h: int, focus_x: float = 0.5, focus_y: float = 0.5) -> Image.Image:
+    scale = max(w / pic.width, h / pic.height)
+    pic = pic.resize((math.ceil(pic.width * scale), math.ceil(pic.height * scale)), Image.LANCZOS)
+    left = int((pic.width - w) * focus_x)
+    top = int((pic.height - h) * focus_y)
+    return pic.crop((left, top, left + w, top + h))
+
+
+def _wrap_title(title: str, width: int, sizes=(142, 124, 108, 94, 82, 72)) -> tuple[list[str], ImageFont.FreeTypeFont, int]:
+    words = title.upper().split()
+    for size in sizes:
+        f = font("head", size)
+        track = size * 0.03
+        lines, line = [], ""
+        for w in words:
+            cand = (line + " " + w).strip()
+            if _spaced_len(cand, f, track) <= width or not line:
+                line = cand
+            else:
+                lines.append(line)
+                line = w
+        lines.append(line)
+        if len(lines) <= 2 and all(_spaced_len(l, f, track) <= width for l in lines):
+            return lines, f, size
+    f = font("head", sizes[-1])
+    return [_fit(l, f, width) for l in lines[:2]], f, sizes[-1]
+
+
+def release_banner(version: str, title: str = "", chips: list[str] | None = None,
+                   art: Path | None = None) -> bytes:
+    """The Briefing post's banner, 1600x640 (shown about 600 wide): map art on the right, chrome
+    wordmark, kicker, the update's title (or its version) and the headline features on the left."""
+    W, H = 1600, 640
+    img = Image.new("RGB", (W, H), INK)
+    if art and Path(art).is_file():
+        try:
+            pic = _cover(Image.open(art).convert("RGB"), W, H, 0.62, 0.5)
+            img = Image.blend(img, pic, 0.92)
+        except OSError:
+            pass
+    # left-to-right and bottom shades so the text always reads
+    ramp = [(0.0, 0.96), (0.30, 0.86), (0.62, 0.25), (0.80, 0.0), (1.0, 0.0)]
+    row = Image.new("L", (W, 1))
+    for x in range(W):
+        t = x / (W - 1)
+        for (a, va), (b, vb) in zip(ramp, ramp[1:]):
+            if a <= t <= b:
+                row.putpixel((x, 0), int(255 * (va + (vb - va) * (t - a) / (b - a))))
+                break
+    col = Image.new("L", (1, H))
+    for y in range(H):
+        t = (y - H * 0.6) / (H * 0.4)
+        col.putpixel((0, y), int(255 * 0.7 * max(0.0, min(1.0, t))))
+    mask = ImageChops.lighter(row.resize((W, H)), col.resize((W, H)))
+    img.paste(Image.new("RGB", (W, H), INK_DEEP), (0, 0), mask)
+    d = ImageDraw.Draw(img)
+
+    wm_path = BRAND / "wordmark.png"
+    if wm_path.is_file():
+        wm = Image.open(wm_path).convert("RGBA")
+        wm = wm.resize((400, round(wm.height * 400 / wm.width)), Image.LANCZOS)
+        img.paste(wm, (72, 64), wm)
+    else:
+        d.text((72, 64), "TRUECOMBAT: PLATINUM", font=font("head", 48), fill=TEXT)
+
+    if title:
+        lines, f, size = _wrap_title(title, 820)
+        step = int(size * 0.9)
+        first = 540 - step * (len(lines) - 1)      # baselines; the last line sits just above the chips
+    else:
+        f, size, lines, first = font("head", 230), 230, [], 540
+    cap = -f.getbbox("H", anchor="ls")[1]
+    y = first
+    for line in lines:
+        _spaced(d, 68, y, line, f, (255, 255, 255), size * 0.03, "ls")
+        y += step
+    if not title:
+        head, _, last = version.rpartition(".")
+        x = _spaced(d, 66, first, head, f, (255, 255, 255), 2, "ls")
+        x = _spaced(d, x, first, ".", f, RED, 2, "ls")
+        _spaced(d, x, first, last, f, (255, 255, 255), 2, "ls")
+
+    mono = font("mono", 24, 500)
+    kb = first - cap - 34                           # kicker baseline, just above the title
+    d.rectangle((72, kb - 10, 118, kb - 8), fill=RED)
+    kicker = ("Update %s  /  Patch notes" % version) if title else "TrueCombat: Platinum  /  Patch notes"
+    _spaced(d, 134, kb, kicker.upper(), mono, STEEL, 2.0, "ls")
+
+    if chips:
+        body = font("body", 24)
+        d.text((72, 592), _fit("  ·  ".join(chips), body, 960), font=body, fill=MUTED, anchor="ls")
+
+    # red hairline fading out to the right, HUD corner brackets, address
+    for x in range(int(W * 0.7)):
+        a = 1.0 - x / (W * 0.7)
+        d.line((x, H - 3, x, H), fill=_mix(INK_DEEP, RED, a))
+    b, s = 2, 34
+    edge = _mix(INK_DEEP, TEXT, 0.6)
+    d.rectangle((W - 40 - s, 40, W - 40, 40 + b), fill=edge)
+    d.rectangle((W - 40 - b, 40, W - 40, 40 + s), fill=edge)
+    d.rectangle((W - 40 - s, H - 40 - b, W - 40, H - 40), fill=edge)
+    d.rectangle((W - 40 - b, H - 40 - s, W - 40, H - 40), fill=edge)
+    small = font("mono", 18)
+    _spaced(d, W - 92 - _spaced_len("truecombat.eu", small, 1.5), H - 64, "truecombat.eu", small, edge, 1.5)
+    return jpeg(img)

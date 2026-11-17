@@ -13,6 +13,8 @@ Devlog: new articles in the website's Atom feed are posted automatically
 
 from __future__ import annotations
 
+import asyncio
+import io
 import logging
 import re
 from datetime import datetime, timezone
@@ -21,10 +23,11 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
-from .. import embeds
+from .. import briefing, cards, embeds
 from ..bot import UserFacingError, staff_only
 from ..sources import article_meta, load_devlog, release_download, release_page_ready, release_version
 from ..text import split_notes
+from .community import OptInButton
 
 log = logging.getLogger("tcpbot.news")
 KEEP = ("id", "tag_name", "name", "body", "html_url", "published_at", "assets")
@@ -156,6 +159,25 @@ class News(commands.Cog):
             d["notes"] = text
             self.save_draft(rid, d)
 
+    # ------------------------------------------------------------ the post
+    def briefing_style(self) -> bool:
+        return self.cfg["releases"].get("style", "briefing") == "briefing"
+
+    async def briefing_post(self, rel: dict, ping: str = "") -> dict:
+        """send() arguments for the Briefing card: the layout, plus the banner as an attachment."""
+        b = briefing.plan(rel, self.cfg.site, self.cfg["devlog"]["site_root"], embeds.patch_notes_url(self.cfg, rel))
+        out, art = {}, embeds.banner(self.cfg, "og-news")
+        if self.cfg["cards"]["enabled"]:
+            try:
+                data = await asyncio.to_thread(cards.release_banner, b.version, b.title, b.chips, b.art)
+                out["file"] = discord.File(io.BytesIO(data), filename=briefing.banner_name(b))
+                art = "attachment://" + briefing.banner_name(b)
+            except Exception:  # noqa: BLE001  (a missing banner never blocks the post)
+                log.exception("release banner failed; using the site's share image")
+        out["view"] = briefing.layout(b, art, ping, OptInButton("patchnotes", label="Notify me",
+                                                                emoji="\N{BELL}"))
+        return out
+
     # ------------------------------------------------------------ releases
     @tasks.loop(minutes=10)
     async def release_loop(self):
@@ -206,8 +228,13 @@ class News(commands.Cog):
         if staff is None:
             log.warning("release %s waiting, but channels.staff is not set", rel.get("tag_name"))
             return "No staff channel is configured."
-        await staff.send(content=embeds.release_draft_notice(self.cfg, rel, bool(notes)),
-                         embed=embeds.release_announcement(self.cfg, rel), view=draft_view(rel["id"]))
+        notice = embeds.release_draft_notice(self.cfg, rel, bool(notes))
+        if self.briefing_style():
+            await staff.send(**await self.briefing_post(rel))      # exactly what members will see
+            await staff.send(content=notice, view=draft_view(rel["id"]))
+        else:
+            await staff.send(content=notice, embed=embeds.release_announcement(self.cfg, rel),
+                             view=draft_view(rel["id"]))
         return staff.mention
 
     async def publish(self, rid: int) -> tuple[bool, str]:
@@ -218,11 +245,16 @@ class News(commands.Cog):
         rel = draft["release"]
         ping_id = int(self.cfg["releases"].get("ping_role_id") or 0) or self.bot.role_id("patchnotes")
         ping = self.bot.guild.get_role(ping_id) if (ping_id and self.bot.guild) else None
+        mentions = discord.AllowedMentions(roles=[ping] if ping else False)
         try:
-            first = await channel.send(
-                content=ping.mention if ping else None,
-                embed=embeds.release_announcement(self.cfg, rel), view=release_buttons(self.cfg, rel),
-                allowed_mentions=discord.AllowedMentions(roles=[ping] if ping else False))
+            if self.briefing_style():
+                first = await channel.send(**await self.briefing_post(rel, ping.mention if ping else ""),
+                                           allowed_mentions=mentions)
+            else:
+                first = await channel.send(
+                    content=ping.mention if ping else None,
+                    embed=embeds.release_announcement(self.cfg, rel), view=release_buttons(self.cfg, rel),
+                    allowed_mentions=mentions)
             for part in split_notes(draft.get("notes") or ""):
                 await channel.send(part, allowed_mentions=discord.AllowedMentions.none(),
                                    suppress_embeds=True)

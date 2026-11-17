@@ -488,11 +488,13 @@ def devlog_headline(article: dict, role_id: int = 0) -> str:
 
 def release_draft_notice(cfg, rel: dict, has_notes: bool) -> str:
     version = release_version(rel)
+    where = "below" if cfg["releases"].get("style") == "classic" else "above"
     if has_notes:
-        return ("**%s** was published on GitHub. The announcement below is ready for the announcements "
-                "channel, followed by the full patch notes." % version)
-    return ("**%s** was published on GitHub. The announcement below is ready for the announcements channel. "
-            "Use **Add patch notes** to attach the Discord patch notes first, or publish it as it is." % version)
+        return ("**%s** was published on GitHub. The announcement %s is ready for the announcements "
+                "channel, followed by the full patch notes." % (version, where))
+    return ("**%s** was published on GitHub. The announcement %s is ready for the announcements channel. "
+            "Use **Add patch notes** to attach the Discord patch notes first, or publish it as it is."
+            % (version, where))
 
 
 # ================================================================ community
