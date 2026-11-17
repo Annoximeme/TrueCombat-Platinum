@@ -85,7 +85,7 @@
 <section class="band">
   <div class="wrap doc">
     <nav class="doc-toc" aria-label="On this page">
-      <a href="#short">The short version</a><a href="#website">This website</a><a href="#game">The game</a><a href="#launcher">The launcher</a><a href="#choices">Your choices</a><a href="#changes">Changes</a>
+      <a href="#short">The short version</a><a href="#website">This website</a><a href="#game">The game</a><a href="#launcher">The launcher</a><a href="#accounts">Accounts</a><a href="#community">Moderation and support</a><a href="#partners">Who else</a><a href="#choices">Your rights</a><a href="#changes">Changes</a>
     </nav>
     <div class="doc-body">
       <section id="short">
@@ -96,6 +96,7 @@
           <li><b>We count visits, not visitors.</b> The website keeps daily totals and nothing that points back to a person.</li>
           <li><b>Your browser says no, we listen.</b> With Global Privacy Control or Do Not Track switched on, you are not counted at all.</li>
           <li><b>The launcher shares crash and hardware data only if you say yes.</b> It asks once, with two equal buttons, and you can change your answer at any time.</li>
+          <li><b>A real person answers.</b> Write to <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a> for a copy of your data, a correction or a deletion. We reply within one month.</li>
         </ul>
       </section>
 
@@ -114,8 +115,8 @@
           <li>Full addresses of the pages that sent you here</li>
           <li>Anything that links one visit, rating or download to a person</li>
         </ul>
-        <p>Your devlog star ratings are remembered in your own browser, so the stars stay filled in when you come back. That note never leaves your computer and is not used for counting.</p>
-        <p>Some pages fetch live data from <code>api.truecombat.eu</code> (servers, leaderboards) and patch notes from the GitHub API. The trailer comes from YouTube only after you click play. As with any website, these servers see your connection address while they answer.</p>
+        <p>Your browser keeps a few small notes for the site itself, never for counting: your devlog star ratings, which devlog posts you have already seen, a short-lived copy of the release notes and, while you link a PC to your account, the one-time link code. Clearing your browser data removes them.</p>
+        <p>Live data such as servers and leaderboards comes from <code>api.truecombat.eu</code>, and release notes are copied onto this site, so your browser never asks GitHub for them. The site is delivered through Cloudflare, which keeps it fast and shields it from attacks. The trailer comes from YouTube only after you click play, and downloads come from GitHub. Like any web server, each of these sees your connection address while it answers.</p>
       </section>
 
       <section id="game">
@@ -123,10 +124,11 @@
         <h2>The game and the launcher</h2>
         <ul>
           <li><b>Online play.</b> Game servers see your connection address, as every online game does. Our moderation tools keep it for up to 90 days to deal with cheating and abuse, and a ban record keeps the address that was banned.</li>
-          <li><b>Leaderboards.</b> Ranked matches on official and verified servers record your in-game name, a player ID made from your game key, and your match statistics. That is what fills the leaderboards and your public profile.</li>
+          <li><b>Leaderboards.</b> Ranked matches on official and verified servers record your in-game name, a player ID made from your game key, and your match statistics. That is what fills the leaderboards and your public profile, and the records are kept for as long as the leaderboards exist, because every rank is built from them. Account holders can hide their profile at any time. Without an account, write to us and we take your name off the public pages.</li>
           <li><b>Anti-cheat.</b> Official servers use Easy Anti-Cheat, which runs under the <a href="https://www.epicgames.com/site/privacypolicy">Epic Games privacy policy</a>.</li>
           <li><b>Crash reports and memory dumps</b> stay on your PC. They only reach us if you attach them to a bug report yourself. If you choose to share launcher data, only the crash location is sent, as described below.</li>
-          <li><b>Bug reports</b> you send from the game include what you write, a screenshot and technical details such as the map, frame rate and graphics card, so we can reproduce the problem.</li>
+          <li><b>Bug reports</b> you send from the game include what you write, a screenshot and technical details such as the map, frame rate and graphics card, so we can reproduce the problem. A report and its screenshot are deleted 90 days after the issue is closed.</li>
+          <li><b>Chat and voice.</b> Text and voice chat travel through the game server to the other players. Our servers do not record voice. Text chat on official servers is kept for 30 days so that reports of abuse can be checked.</li>
         </ul>
       </section>
 
@@ -145,18 +147,54 @@
         <p class="callout"><b>See it for yourself.</b> Settings &gt; Privacy &gt; What is shared in the launcher shows the exact report your PC would send next, before it leaves your computer.</p>
       </section>
 
-      <section id="choices">
+      <section id="accounts">
         <span class="eyebrow">05</span>
-        <h2>Your choices</h2>
+        <h2>Player accounts</h2>
+        <p>Accounts are optional. Nobody needs one to play. If you make one, you sign in with Discord, and we ask Discord for your user ID and name only. The Discord sign-in token is thrown away straight after.</p>
+        <ul>
+          <li><b>What we keep.</b> Your Discord user ID and name, the player name you pick, the PCs you linked (a code made from each PC's game key, plus the label you gave it), any passkeys you add (public keys only), your profile settings, and your previous name for 30 days after a rename.</li>
+          <li><b>Staying signed in.</b> A sign-in cookie on truecombat.eu keeps you signed in for up to 30 days. The account needs it to work, and it is used for nothing else. Each sign-in is logged with its connection address for 30 days, so we can spot a stolen account.</li>
+          <li><b>Your profile.</b> Your profile is public unless you set it to hidden, and your Discord name only shows if you switch it on. Accounts are for players aged 13 and over.</li>
+        </ul>
+        <p>We hold this because you asked for an account (GDPR Article 6(1)(b)), and we keep it until you delete it. If you neither play nor sign in for a year, your reserved name is released. Your account page has a button that downloads everything we hold about your account, and one that deletes it for good: the account, linked PCs, names, sessions and sign-in log. Match statistics stay on the leaderboards, no longer tied to your account. If the account was banned, the ban keeps a one-way code of your Discord ID so it cannot be dodged with a new account.</p>
+      </section>
+
+      <section id="community">
+        <span class="eyebrow">06</span>
+        <h2>Moderation, Discord and support</h2>
+        <ul>
+          <li><b>Reports and appeals.</b> When a player is reported or banned, moderators keep what they need to decide: the report, the player name and IDs, and evidence such as screenshots or match recordings. Evidence is deleted after a year unless its case is still open. A ban, and any appeal against it with the contact details you choose to give, is kept with the ban record.</li>
+          <li><b>Discord.</b> Our Discord server and bot see what Discord shares with every server you join. If you link your account, the bot can look up your player name and statistics to post match results and hand out roles. Everything else on Discord falls under <a href="https://discord.com/privacy">Discord's privacy policy</a>.</li>
+          <li><b>Support on Ko-fi.</b> Donations go through Ko-fi. We store the amount and the name you give, and show that name only if you made your support public. We never store your email address, payment details or message.</li>
+        </ul>
+      </section>
+
+      <section id="partners">
+        <span class="eyebrow">07</span>
+        <h2>Who else handles data</h2>
+        <p>We never sell data or share it for advertising. These companies handle data on our behalf, or run a service you use with us:</p>
+        <ul>
+          <li><b>Hostinger</b>, our server host: game servers, website, statistics and accounts.</li>
+          <li><b>Cloudflare</b> delivers and protects the website.</li>
+          <li><b>Zoho</b> handles our email, in its EU data centres.</li>
+          <li><b>GitHub</b> serves the downloads and the source code, and holds our private nightly server backups. Account data inside those backups is encrypted.</li>
+          <li><b>Discord</b> for account sign-in and our community. <b>Epic Games</b> for Easy Anti-Cheat on official servers. <b>Ko-fi</b> for donations. <b>YouTube</b> for the trailer, only after you click play.</li>
+        </ul>
+        <p>Some of these companies are outside the EU. Transfers rely on an EU adequacy decision, such as the EU-US Data Privacy Framework or the decision for the United Kingdom, or on the European Commission's standard contractual clauses.</p>
+      </section>
+
+      <section id="choices">
+        <span class="eyebrow">08</span>
+        <h2>Your choices and rights</h2>
         <p>To stop being counted on this website, switch on Global Privacy Control or Do Not Track in your browser. Blocking <code>api.truecombat.eu/insights</code> works too, and the site keeps working exactly the same.</p>
-        <p>Questions, or want something removed? Ask us on <a href="https://discord.gg/8kcHdg2Hch">Discord</a> or open an issue on <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>. All of the counting code is in the public repository, so you never have to take our word for it.</p>
-        <p>We count website visits because we have a legitimate interest in knowing how the site is used (GDPR Article 6(1)(f)), with the safeguards described above. Usage data from the game is only collected with your consent, which you can withdraw at any time in the launcher. TrueCombat: Platinum is run by Team Terminus, led by RaziC*. If you believe we handle your data wrongly, you can complain to a data protection authority; in Belgium, where we are based, that is the <a href="https://www.dataprotectionauthority.be">Data Protection Authority</a>.</p>
+        <p><b>Your rights.</b> You can ask for a copy of your data, have it corrected or deleted, restrict how we use it, or receive it in a portable form. You can also object to anything we do on the basis of legitimate interest. Account holders can download or delete everything themselves on the account page. For anything else, write to <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a>. We reply within one month, and may ask you to show the data is yours, for example by writing from the account in question. All of the counting code is in the <a href="https://github.com/Annoximeme/TrueCombat-Platinum">public repository</a>, so you never have to take our word for it.</p>
+        <p><b>Who is responsible.</b> TrueCombat: Platinum is made by Team Terminus. The data controller is Gianni G. (RaziC*), based in Belgium and reachable at <a href="mailto:gianni@truecombat.eu">gianni@truecombat.eu</a>. Website counting, protecting the game servers, moderation, leaderboards and backups rest on our legitimate interest in running a fair, secure game that works (GDPR Article 6(1)(f)), with the safeguards described here. Accounts rest on your request for one (Article 6(1)(b)). Launcher data and bug reports are only sent with your consent (Article 6(1)(a)), which you can withdraw at any time. If you believe we handle your data wrongly, you can complain to a data protection authority; in Belgium, that is the <a href="https://www.dataprotectionauthority.be">Data Protection Authority</a>.</p>
       </section>
 
       <section id="changes">
-        <span class="eyebrow">06</span>
+        <span class="eyebrow">09</span>
         <h2>Changes to this page</h2>
-        <p>If what we collect changes, this page changes first, and the devlog says so. Last updated 16 November 2026.</p>
+        <p>If what we collect changes, this page changes first, and the devlog says so. Last updated 17 November 2026.</p>
         <p class="yt-note">Country lookup uses IP to Country Lite by <a href="https://db-ip.com">DB-IP</a>, licensed under CC BY 4.0.</p>
       </section>
     </div>
@@ -196,6 +234,6 @@
 </footer>
 <!--/footer-->
 
-<script src="js/site.js?v=b0bf155caf"></script>
+<script src="js/site.js?v=18c4378961"></script>
 </body>
 </html>

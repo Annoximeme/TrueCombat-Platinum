@@ -8,8 +8,9 @@ deleted (and once a day), followed by build.py for the Dutch pages. It rewrites:
   - the size, date and link of the newest installer, TrueCombat-Platinum-Setup.exe
     ([data-size], [data-date], [data-download]); releases from before the installer fall back to their zip.
 
-The browser script (docs/js/site.js) renders the same notes the same way, so
-visitors see a new release right away, before this workflow has run.
+It also writes docs/releases.json (the newest 30 releases, trimmed to what the page uses).
+The browser script (docs/js/site.js) reads that file from truecombat.eu itself, so a
+visitor's browser never contacts GitHub just to show the notes.
 
   GITHUB_TOKEN=... python tools/website/release_sync.py
 """
@@ -139,6 +140,14 @@ def put(text, rels, limit):
     return re.sub(r"<!--releases-->.*?<!--/releases-->", lambda m: "<!--releases-->\n" + block + "\n<!--/releases-->", text, count=1, flags=re.S)
 
 
+def slim(rels, limit=30):
+    """The release fields docs/js/site.js uses, newest first."""
+    return [{"tag_name": r.get("tag_name"), "name": r.get("name"), "html_url": r.get("html_url"),
+             "published_at": r.get("published_at"), "body": r.get("body"),
+             "assets": [{"name": a["name"], "size": a["size"], "browser_download_url": a["browser_download_url"]}
+                        for a in r.get("assets", [])]} for r in rels[:limit]]
+
+
 def main():
     rels = fetch()
     if not rels:
@@ -167,6 +176,7 @@ def main():
                      "short": "Installer" if is_setup else "Full game, zip"}
             text = re.sub(r'(<span data-kind="(long|short)">)[^<]*(</span>)', lambda m: m.group(1) + kinds[m.group(2)] + m.group(3), text)
         path.write_text(text, encoding="utf-8")
+    (DOCS / "releases.json").write_text(json.dumps(slim(rels), ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print("website synced to %s (%d releases, download %s)" % (latest, len(rels), zip_asset["name"] if zip_asset else "none"))
 
 
