@@ -6,6 +6,7 @@ summary: Een HUD die je op je scherm afstemt, een magazijn- en gezondheidsweerga
 image: img/hero-snow-warehouse.webp
 tag: Release
 version: 0.37.1
+kicker: Update 0.37.1
 ---
 0.37.0 was de grootste update die Platinum ooit gehad heeft, en zette in één keer veel nieuws voor veel spelers neer. Jullie lieten snel weten wat goed voelde en wat niet. Versie 0.37.1 is ons antwoord op die meldingen. Het is een vervolg en geen nieuwe lading functies, maar klein is het niet: de update raakt de HUD, de gunplay, de bots, de prestaties en de launcher.
 

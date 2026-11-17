@@ -6,6 +6,7 @@ summary: Voice chat, team pings, bots that read the map, a full audio overhaul a
 image: img/hero-village-contact.webp
 tag: Release
 version: 0.36.0
+kicker: Update 0.36.0
 ---
 Version 0.36.0 is out, one day after 0.35.0. That timing is not a coincidence. A lot of the work in this update was nearly finished when 0.35.0 shipped, and we chose to give it one more day of testing rather than rush it into the previous release.
 

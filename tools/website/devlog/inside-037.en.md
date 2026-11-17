@@ -6,6 +6,7 @@ summary: A rebuilt interface, a tactical map, photo mode, optional player accoun
 image: img/devlog/a-new-look.webp
 tag: Release
 version: 0.37.0
+kicker: Update 0.37.0
 ---
 Version 0.37.0 is out, a day after the 0.36.1 hotfix. It is the largest update TrueCombat: Platinum has had. Six separate pieces of work that had been built and tested on their own were brought together into one release: a new interface, a set of visual and quality-of-life features, optional player accounts, a studio refresh, smarter bots and a batch of fixes from your playtest reports.
 

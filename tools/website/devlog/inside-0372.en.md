@@ -6,6 +6,7 @@ summary: A live minimap, hits you can feel, friendly fire, and a game that looks
 image: img/hero-snow-warehouse.webp
 tag: Release
 version: 0.37.2
+kicker: Update 0.37.2
 ---
 0.37.1 was about fixing what you told us felt wrong. 0.37.2 is about awareness: knowing where your team is, knowing when you are under fire, and knowing that every round you fire counts, including the ones that hit a teammate.
 

@@ -26,6 +26,11 @@ version: 0.33.0
   about upcoming work never claims a release that has not happened.
 - `updated: YYYY-MM-DD` is optional, for a post that was revised later.
 - `time: HH:MM` is optional. Posts from the same day are listed newest time first (no time counts as 00:00).
+- `kicker: Update 0.38.0` is optional and marks a post about a major update or patch. The newest post with a
+  kicker takes the big spot on the home page and at the top of `devlog.html`, and its own page opens on the
+  `image` at full size with the kicker above the title. Give these posts clean teaser art as `image` (no logo or
+  text, see `teaser.py`); a `-1920.webp` next to it is used on wide screens when it exists. Without any kicker
+  post, the newest post takes the spot.
 
 ## Body
 
