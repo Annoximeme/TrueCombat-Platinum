@@ -1,4 +1,5 @@
-# Reference copy of the live /etc/caddy/Caddyfile on the VPS, as of 2026-11-13 (player accounts added),
+# Reference copy of the live /etc/caddy/Caddyfile on the VPS, as of 2026-11-17 (Cloudflare in front of
+# truecombat.eu: install-cloudflare.sh added the cloudflare-ips import and the header_up lines),
 # after the upgrade to Caddy 2.11.9 and the website audit hardening.
 # This file is not installed by any script. It records what the server runs so that
 # a future install or rebuild can start from it instead of undoing it.
@@ -6,6 +7,7 @@
 # The two imported snippets are the files next to this one:
 #   security-headers.caddy  ->  /etc/caddy/security-headers.caddy
 #   clean-urls.caddy        ->  /etc/caddy/clean-urls.caddy
+#   cloudflare-ips.caddy    ->  written on the VPS by install-cloudflare.sh (fallback list: cloudflare-ips.txt)
 
 {
 	# admin API on a private unix socket (full audit 2026-11-13), not 127.0.0.1:2019.
@@ -14,6 +16,7 @@
 	servers {
 		# a request must name the same host in TLS (SNI) and in the Host header
 		strict_sni_host on
+		import /etc/caddy/cloudflare-ips.caddy
 	}
 }
 
@@ -32,22 +35,34 @@ api.truecombat.eu {
 		respond 204
 	}
 	handle /kofi/* {
-		reverse_proxy 127.0.0.1:8091
+		reverse_proxy 127.0.0.1:8091 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 	handle /devlog/* {
-		reverse_proxy 127.0.0.1:8092
+		reverse_proxy 127.0.0.1:8092 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 	handle /insights/* {
-		reverse_proxy 127.0.0.1:8094
+		reverse_proxy 127.0.0.1:8094 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 	handle /funding.json {
-		reverse_proxy 127.0.0.1:8091
+		reverse_proxy 127.0.0.1:8091 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 	handle /eos/* {
-		reverse_proxy 127.0.0.1:8093
+		reverse_proxy 127.0.0.1:8093 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 	handle {
-		reverse_proxy 127.0.0.1:8090
+		reverse_proxy 127.0.0.1:8090 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 }
 
@@ -55,7 +70,9 @@ truecombat.eu {
 	# Player accounts (tools/accounts). Goes INSIDE the truecombat.eu site block, before the file server,
 	# so the session cookie is first-party. install.sh caddy adds it (backup + caddy validate + reload).
 	handle /api/account/* {
-		reverse_proxy 127.0.0.1:8095
+		reverse_proxy 127.0.0.1:8095 {
+			header_up X-Forwarded-For {client_ip}
+		}
 	}
 	# short profile addresses: truecombat.eu/u/<name> -> player?u=<name>. Matched on the raw request URI, so the name
 	# stays URL-encoded in the redirect (a path match sees it decoded: "Mr.%20Bean" would become a bare space)
@@ -110,5 +127,7 @@ staff.truecombat.eu {
 	header >Strict-Transport-Security "max-age=31536000; includeSubDomains"
 	@preflight method OPTIONS
 	respond @preflight 204
-	reverse_proxy 127.0.0.1:8097
+	reverse_proxy 127.0.0.1:8097 {
+		header_up X-Forwarded-For {client_ip}
+	}
 }
