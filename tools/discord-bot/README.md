@@ -11,7 +11,7 @@ folder) and only talks to Discord and the public GitHub releases API.
 | **Feed** | "New #1 on the leaderboard" (confirmed on two checks) and "Match on now" when 4+ people are on an official server, pinging the opt-in **Match alerts** role, at most every 3 hours. |
 | **Stats** | `/profile` (rank with XP bar, rating and peak, position, win rate, K/D, headshots, time played, favourite weapons, last five matches with rating change), `/top` (by rating, XP, kills, K/D, headshots or wins; all time or 30 days), `/compare`, `/servers`, `/matches`. Player names autocomplete. |
 | **Account linking** | `/link` gives a one-time code; the player enters `/link CODE` in the game console (or `!link CODE` in chat) on an official server and Discord confirms within seconds. Needs the game patch in `game/` (next release). No passwords, no sign-up, the game key file stays the identity. |
-| **Releases** | New GitHub releases are staged in the private staff channel with **Publish**, **Add patch notes** and **Skip**. Nothing reaches the community until someone presses Publish. Every patch-notes link in the announcement opens the version's own page on truecombat.eu (for example `truecombat.eu/release-0-37-0`); until the site has built that page, it opens the version's entry on the patch notes page instead. In auto mode the bot waits up to 30 minutes for the page before posting. Patch notes split on `----- NEXT DISCORD MESSAGE -----` exactly like the files we write. |
+| **Releases** | New GitHub releases are staged in the private staff channel with **Publish**, **Add patch notes** and **Skip**. Nothing reaches the community until someone presses Publish. Every patch-notes link in the announcement opens the version's own page on truecombat.eu (for example `truecombat.eu/release-0-37-0`); until the site has built that page, it opens the version's entry on the patch notes page instead. In auto mode the bot waits up to 30 minutes for the page before posting. Patch notes split on `----- NEXT DISCORD MESSAGE -----` exactly like the files we write. Since 1.5.0 the announcement is the **Briefing** card (see [Release posts](#release-posts-briefing)); `releases.style: "classic"` brings back the older embed. |
 | **Devlog** | New devlog articles are posted automatically with their cover image. |
 | **Roles** | Rank tiers from linked profiles (Enlisted, Non-Commissioned Officer, Officer, General Staff), **Top 10** by skill rating, **Verified player**. Opt-in **Match alerts**, **Playtester** and **Event alerts** via `/notify` or the get-started panel. |
 | **Welcome** | New members get a welcome card with install, guide, match and linking steps, plus the alert buttons. |
@@ -237,3 +237,42 @@ The pickup queue and a full scrim run against a fake game server on real UDP.
 - **Server cards** show a player bar (players, bots, open slots), the round count and a Join server button.
 - **Profile.** Banner and About me are set once per design change; the status line follows the busiest server.
 - **Welcome and get-started** use Discord's newer layout (framed card with banner, choices and buttons).
+
+
+## Release posts (Briefing)
+
+Since 1.5.0 every release is announced as one framed card in Discord's newer message layout, in the
+same Command style as the website and the in-game menus (colours and fonts from `assets/tokens.json`):
+
+1. A 1600x640 banner drawn by the bot (`cards.release_banner`): map art, the chrome wordmark, a kicker,
+   the update's title (or its version number) and its headline features.
+2. `PATCH NOTES · v0.38.0 · 41 changes`, the first sentence of the intro as the heading, then the intro.
+3. Up to four headline features, each with an in-game thumbnail when the site has one.
+4. **Everything else in 0.38.0**: one short line per remaining section.
+5. **Full patch notes** (the version's page on truecombat.eu), **Download**, an optional **Devlog**
+   button and **Notify me**, which turns the Patch notes ping on or off for whoever presses it.
+
+In draft mode staff see this exact card in the staff channel, followed by the Publish / Add patch notes /
+Skip buttons. Patch notes attached with **Add patch notes** still follow the card as extra messages.
+
+Everything comes from the GitHub release body. Experimental sections and features with a bold title
+become headlines automatically. For a hand-picked post, add this block to the release body. It is an
+HTML comment, so GitHub does not show it:
+
+```
+<!-- discord
+title: Close Quarters
+chips: Harbour | Battlefield pickups | Firing range | Vaulting
+headline: Experimental: TrueCombat: CQB | Harbour, a new close-quarters map ... | cqb.webp
+headline: Battlefield pickups | Weapons now drop when a player falls. ... | pickups.webp
+summary: Aim and Performance | Instant ADS zoom · New Aim speed option · Frame rate limit from 60 to 500 FPS
+devlog: https://truecombat.eu/devlog/...
+-->
+```
+
+Every line is optional. `headline` is `title | text | picture` (four at most), `summary` is
+`section | short line` and replaces the automatic summaries. Pictures are file names in the website's
+`img/releases/<release-x-y-z>/` folder (or full https URLs); without a name the bot looks for `1.webp`,
+`2.webp`... in the same order as the headlines, and `hero.webp` (or .jpg/.png) becomes the banner art.
+Use Ultra-preset captures. The card stays inside Discord's limits (4,000 characters, 40 components):
+summaries are shortened first if a release is very long.

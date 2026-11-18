@@ -89,6 +89,9 @@ DEFAULTS: dict = {
         # "draft": new releases wait in the staff channel for a Publish click.
         # "auto": they are announced straight away (the release itself is the approval).
         "mode": "draft",
+        # "briefing": one Command-style card (banner, headline features, summaries, buttons).
+        # "classic": the older embed with the first sections listed.
+        "style": "briefing",
         "ping_role_id": 0,   # 0 = the "Patch notes" opt-in role from /setup roles
     },
     # Image cards for /profile, /top and match reports (drawn with Pillow, map art from the site copy)
@@ -298,6 +301,8 @@ def validate(raw: dict) -> list[str]:
             problems.append("chat_bridge.patterns: %s" % e)
     if raw["releases"]["mode"] not in ("draft", "auto"):
         problems.append("releases.mode must be \"draft\" or \"auto\"")
+    if raw["releases"].get("style", "briefing") not in ("briefing", "classic"):
+        problems.append("releases.style must be \"briefing\" or \"classic\"")
     try:
         from zoneinfo import ZoneInfo
         ZoneInfo(raw["timezone"])
