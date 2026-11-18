@@ -18,6 +18,7 @@ A fix update for 0.39.0: working voice chat, steadier shadows, cleaner competiti
 ## Gameplay
 - The M4 SOPMOD's red dot no longer hangs in the air when you push the gun against a wall.
 - Running out of breath while holding sprint no longer makes your view stutter.
+- Standing, crouching and going prone now look smoother, in first and third person.
 - You can no longer fire while your weapon is pulled back against a wall.
 - Small steps and thresholds under low ceilings and door frames no longer stop you.
 - Muzzle flashes now sit at the end of the barrel and follow the gun on every weapon, in first and third person, including both guns when firing akimbo.
