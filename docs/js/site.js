@@ -7,6 +7,7 @@
      [data-player]                player profile page (player?id=<player id>)
      [data-gallery]               screenshot grid with filter tabs and a lightbox (media page)
      [data-yt]                    click-to-play YouTube embed (privacy-enhanced, nothing loads before a click)
+     [data-trailer-open]          plays the trailer in a lightbox over the page, same privacy-enhanced embed
      [data-compare] [data-post-filter] [data-copy-link]   devlog sliders, topic filter and copy-link button
      [data-post] [data-rate] [data-post-stat]             devlog reads and star ratings (tools/server-bridge/tcp_devlog.py, no cookies)
      [data-cmt] [data-post-cmts]                          devlog comments and comment counts (tools/accounts/tcp_comments.py)
@@ -1688,6 +1689,40 @@ var TCP_API = 'https://api.truecombat.eu';
       f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
       f.allowFullscreen = true;
       box.innerHTML = ''; box.appendChild(f); box.classList.add('playing');
+    });
+  });
+
+  /* ---------- trailer lightbox: [data-trailer-open="<video id>"] plays the video over the page (youtube-nocookie, loads on the click) ---------- */
+  var tlb = null, tlbFrom = null;
+  function trailerClose() { if (tlb && tlb.open) tlb.close(); }
+  $all('[data-trailer-open]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      if (typeof HTMLDialogElement !== 'function' || e.ctrlKey || e.metaKey || e.shiftKey) return;  /* no dialog support: the link scrolls to the trailer section */
+      e.preventDefault();
+      if (!tlb) {
+        tlb = document.createElement('dialog');
+        tlb.className = 'trailer-lb';
+        tlb.setAttribute('aria-label', L.play);
+        tlb.innerHTML = '<div class="tl-bar"><span>TrueCombat: Platinum</span><button type="button" class="tl-close" aria-label="' + L.close + '">×</button></div><div class="tl-frame"></div>';
+        document.body.appendChild(tlb);
+        tlb.querySelector('.tl-close').addEventListener('click', trailerClose);
+        tlb.addEventListener('click', function (ev) { if (ev.target === tlb) trailerClose(); });
+        tlb.addEventListener('close', function () {
+          tlb.querySelector('.tl-frame').innerHTML = '';  /* removing the player stops the sound */
+          document.documentElement.style.overflow = '';
+          if (tlbFrom) tlbFrom.focus();
+        });
+      }
+      tlbFrom = a;
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(a.dataset.trailerOpen) + '?autoplay=1&rel=0&playsinline=1';
+      f.title = L.play;
+      f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      tlb.querySelector('.tl-frame').appendChild(f);
+      document.documentElement.style.overflow = 'hidden';
+      tlb.showModal();
+      tlb.querySelector('.tl-close').focus();
     });
   });
 
