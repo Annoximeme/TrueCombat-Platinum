@@ -399,19 +399,6 @@
    "settle": false,
    "flagged_by": []
   },
-  "3fa2a77871850b7019ea82e8f3f0a9953532dc9e08c847f63fe5e6bcbc086e0e": {
-   "name": "TrueCombatPlatinum-deftest-a.exe",
-   "bytes": 5526528,
-   "malicious": 1,
-   "suspicious": 0,
-   "engines": 71,
-   "analysed": "2026-11-18T12:37:56Z",
-   "flagged_by": [
-    "Microsoft: Trojan:Win32/Wacatac.B!ml"
-   ],
-   "checked": "2026-11-18T12:54:18Z",
-   "settle": true
-  },
   "40f39e8cee5f5a531b4010e18b807e8fe265b908dc58f959ecb7ebc6ea6cb11a": {
    "name": "vcruntime140_threads.dll",
    "bytes": 38840,
@@ -987,17 +974,6 @@
    "checked": "2026-11-16T18:00:01Z",
    "settle": true
   },
-  "93c01066c59c97235878c0f4f2c16372e3cfbd35e38003f5f4e48a59409f051b": {
-   "name": "TrueCombatPlatinum-deftest-c.exe",
-   "bytes": 5526528,
-   "malicious": 0,
-   "suspicious": 0,
-   "engines": 71,
-   "analysed": "2026-11-18T12:38:59Z",
-   "flagged_by": [],
-   "checked": "2026-11-18T12:54:50Z",
-   "settle": true
-  },
   "95b71bda48d846eb6fa5b05cf6c4b0ac5ee69b7108be184af9b537940f587240": {
    "name": "OpenAL64.dll",
    "bytes": 1022464,
@@ -1141,17 +1117,6 @@
    "checked": "2026-11-16T18:01:05Z",
    "settle": true
   },
-  "b2ab8efe3b233e9d9f9022bb64cc67ee75a0463e0380e716d25a2d40a74599c3": {
-   "name": "TrueCombat-Platinum-Setup.exe",
-   "bytes": 5526528,
-   "malicious": 0,
-   "suspicious": 0,
-   "engines": 70,
-   "analysed": "2026-11-18T12:37:24Z",
-   "flagged_by": [],
-   "checked": "2026-11-18T12:54:02Z",
-   "settle": true
-  },
   "b3ca589856b162fc5681bdade43adf520d91a742951b2197c9e6e513e6656a68": {
    "name": "TrueCombat-Platinum-Setup.exe",
    "bytes": 9724928,
@@ -1168,19 +1133,6 @@
     "Elastic: malicious (moderate confidence)",
     "Trapmine: malicious.moderate.ml.score"
    ]
-  },
-  "b410fab2977585eb4cb26dd0a665ea885b798eda8e04c54a698a41c7b8158f3f": {
-   "name": "TrueCombatPlatinum-deftest-b.exe",
-   "bytes": 7377408,
-   "malicious": 1,
-   "suspicious": 0,
-   "engines": 71,
-   "analysed": "2026-11-18T12:38:29Z",
-   "flagged_by": [
-    "Microsoft: Trojan:Win32/Wacatac.C!ml"
-   ],
-   "checked": "2026-11-18T12:54:34Z",
-   "settle": true
   },
   "b48a0fda2d1c4bd37ad5202cf711a5feaa2303f978de3d56b5ad81b4e6793647": {
    "name": "cgame_mp_x64.dll",
@@ -1604,18 +1556,6 @@
   }
  },
  "releases": {
-  "deftest-launcher": {
-   "published": "",
-   "draft": true,
-   "setup": "b2ab8efe3b233e9d9f9022bb64cc67ee75a0463e0380e716d25a2d40a74599c3",
-   "files": {
-    "TrueCombat-Platinum-Setup.exe": "b2ab8efe3b233e9d9f9022bb64cc67ee75a0463e0380e716d25a2d40a74599c3",
-    "TrueCombatPlatinum-deftest-a.exe": "3fa2a77871850b7019ea82e8f3f0a9953532dc9e08c847f63fe5e6bcbc086e0e",
-    "TrueCombatPlatinum-deftest-b.exe": "b410fab2977585eb4cb26dd0a665ea885b798eda8e04c54a698a41c7b8158f3f",
-    "TrueCombatPlatinum-deftest-c.exe": "93c01066c59c97235878c0f4f2c16372e3cfbd35e38003f5f4e48a59409f051b",
-    "TrueCombatPlatinum-deftest-d.exe": "b2ab8efe3b233e9d9f9022bb64cc67ee75a0463e0380e716d25a2d40a74599c3"
-   }
-  },
   "v0.38.2-sandbox36": {
    "published": "2026-11-18T03:29:59Z",
    "draft": false,
