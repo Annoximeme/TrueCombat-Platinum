@@ -1,0 +1,152 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index b9feace..69b9272 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -145,8 +145,9 @@ static void reconcileModels(void){
+  * mover whose box (a sphere around its origin when it is turned) is clear of the swept move box is skipped. A mover
+  * with unknown bounds is always traced, as before. */
+ typedef struct {clipHandle_t handle;float lo[3],hi[3],radius;signed char state;} moverClip_t;static moverClip_t moverClip[MAX_MODELS];
++static int traceMask=TCP_MOVE_MASK; /* 0.39.1: CONTENTS_SOLID for the gun-at-a-wall check (traceSolid) */
+ static void trace(trace_t *tr,const vec3_t a,const vec3_t lo,const vec3_t hi,const vec3_t b,int skip){
+-    (void)skip;SystemCall(CG_CM_BOXTRACE,tr,a,b,lo,hi,0,TCP_MOVE_MASK);tr->entityNum=tr->fraction<1?ENTITYNUM_WORLD:ENTITYNUM_NONE;
++    (void)skip;SystemCall(CG_CM_BOXTRACE,tr,a,b,lo,hi,0,traceMask);tr->entityNum=tr->fraction<1?ENTITYNUM_WORLD:ENTITYNUM_NONE;
+     if(!ready)return;
+     float slo[3],shi[3];for(int k=0;k<3;k++){slo[k]=(a[k]<b[k]?a[k]:b[k])+lo[k]-2.f;shi[k]=(a[k]>b[k]?a[k]:b[k])+hi[k]+2.f;}
+     for(int i=0;i<snap.numEntities;i++){
+@@ -162,10 +163,11 @@ static void trace(trace_t *tr,const vec3_t a,const vec3_t lo,const vec3_t hi,con
+             else for(int k=0;k<3;k++)if(slo[k]>o[k]+m->hi[k]||shi[k]<o[k]+m->lo[k])clear=1;
+             if(clear)continue;}
+         const clipHandle_t handle=m->handle;trace_t t;
+-        SystemCall(CG_CM_TRANSFORMEDBOXTRACE,&t,a,b,lo,hi,handle,TCP_MOVE_MASK,e->pos.trBase,e->apos.trBase);
++        SystemCall(CG_CM_TRANSFORMEDBOXTRACE,&t,a,b,lo,hi,handle,traceMask,e->pos.trBase,e->apos.trBase);
+         qboolean start=tr->startsolid;if(t.fraction<tr->fraction||t.allsolid){*tr=t;tr->entityNum=e->number;}tr->startsolid|=start|t.startsolid;
+     }
+ }
++static void traceSolid(trace_t *tr,const vec3_t a,const vec3_t lo,const vec3_t hi,const vec3_t b,int skip){traceMask=CONTENTS_SOLID;trace(tr,a,lo,hi,b,skip);traceMask=TCP_MOVE_MASK;}
+ static void pic(float x,float y,float w,float h,float s,float t,float s2,float t2,qhandle_t shader){SystemCall(CG_R_DRAWSTRETCHPIC,TCP_Float(x),TCP_Float(y),TCP_Float(w),TCP_Float(h),TCP_Float(s),TCP_Float(t),TCP_Float(s2),TCP_Float(t2),shader);}
+ /* Original TC:E 0.49b HUD (cgame_mp_x86.dll, cg_aspectMode 0). Positions use the
+  * original virtual screen: 853.33 units wide stretched to the window width, 480 tall
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index cce84a6..3ce7a79 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -176,6 +176,7 @@ _Static_assert(offsetof(entity_t,shared)==0,"Engine-visible entity prefix");
+ _Static_assert(offsetof(client_t,ps)==0,"Engine-visible player prefix");
+ static void print(const char *s){SystemCall(G_PRINT,s);}
+ static void trace(trace_t *t,const vec3_t a,const vec3_t lo,const vec3_t hi,const vec3_t b,int skip){SystemCall(G_TRACE,t,a,lo,hi,b,skip,TCP_MOVE_MASK);}
++static void traceSolid(trace_t *t,const vec3_t a,const vec3_t lo,const vec3_t hi,const vec3_t b,int skip){SystemCall(G_TRACE,t,a,lo,hi,b,skip,CONTENTS_SOLID);} /* 0.39.1 gun at a wall */
+ static int contents(const vec3_t at,int pass){return (int)SystemCall(G_POINT_CONTENTS,at,pass);}
+ static int Q_stricmpn_native(const char *a,const char *b){for(;;a++,b++){int x=*a,y=*b;if(x>='a'&&x<='z')x-=32;if(y>='a'&&y<='z')y-=32;if(x!=y)return x-y;if(!x)return 0;}}
+ #include "tcp_lagcomp.h"
+@@ -2121,6 +2122,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+                 const int sprinting=((cmd.buttons&BUTTON_SPRINT)&&(cmd.forwardmove||cmd.rightmove)&&!(c->ps.pm_flags&PMF_DUCKED)&&!(c->ps.eFlags&EF_PRONE)&&TCP_SprintAllowed(&c->ps))||(c->ps.pm_flags&TCP_PMF_VAULT); /* 0.38.0: a vault holds the weapon too */
+                 if((c->ps.pm_flags&TCP_PMF_VAULT)&&c->aim.aimed){c->aim.aimed=0;TCP_AimDisturb(&c->aim);} /* 0.38.0: vaulting drops aim (tcp_lagpredict.c mirrors) */
+                 if(sprinting&&GUN(c)->next_fire<lagCmdTime+250)GUN(c)->next_fire=lagCmdTime+250;
++                if(TCP_MuzzleBlocked(&c->ps,traceSolid)&&GUN(c)->next_fire<lagCmdTime+TCP_MUZZLE_HOLD_MS)GUN(c)->next_fire=lagCmdTime+TCP_MUZZLE_HOLD_MS; /* 0.39.1: gun at a wall holds fire (tcp_lagpredict.c mirrors) */
+                 const int flip=TCP_AdsFocusStep(&c->focus,&c->focusStart,qolHoldAim[n],zoom,c->zoomHeld,(cmd.buttons&BUTTON_SPRINT)!=0,sprinting,c->aim.aimed,lagCmdTime); /* 0.39: ADS focus (tcp_lagpredict.c mirrors) */
+                 if((!sprinting||TCP_AdsBlocksSprint())&&flip&&!GUN(c)->reload_end){ /* 0.37.1: aiming ends a sprint */ /* TCP_QOL: cg_holdAim */
+                     /* +zoom toggles TC:E aim mode (stats[8] & 4): disturbance 1000, new sway phase, +300 ms weapon time. */
+diff --git a/game_src/native/tcp_lagclient.h b/game_src/native/tcp_lagclient.h
+index 03ccba6..472e612 100644
+--- a/game_src/native/tcp_lagclient.h
++++ b/game_src/native/tcp_lagclient.h
+@@ -110,8 +110,9 @@ static void lagClientFrame(int time,int fresh){
+     if(lagQueueCount){int keep=0;for(int i=0;i<lagQueueCount;i++)if(lagQueue[i]>ack-1500)lagQueue[keep++]=lagQueue[i];lagQueueCount=keep;}
+ }
+ /* Prediction loop hooks. */
++static void traceSolid(trace_t *tr,const vec3_t a,const vec3_t lo,const vec3_t hi,const vec3_t b,int skip); /* tcp_cgame.c */
+ static void lagPredBegin(playerState_t *p){
+-    lagStepped=0;lagPendingCount=0;
++    lagStepped=0;lagPendingCount=0;TCP_LagSetWallTrace(traceSolid); /* 0.39.1 gun at a wall */
+     if(!lagPredictCvar.integer||!TCP_LagUnpack(&lagState,p)){lagState.valid=0;return;}
+     TCP_LagCanonicalAngles(p);
+ }
+diff --git a/game_src/native/tcp_lagpredict.c b/game_src/native/tcp_lagpredict.c
+index fa6679c..9ca1809 100644
+--- a/game_src/native/tcp_lagpredict.c
++++ b/game_src/native/tcp_lagpredict.c
+@@ -87,6 +87,18 @@ static int gunWeapon(int w){
+     return w!=TCP_KNIFE_WEAPON&&w!=TCP_SMOKE_WEAPON&&w!=TCP_FRAG_WEAPON&&w!=TCP_STUN_WEAPON;
+ }
+ 
++int TCP_MuzzleBlocked(const playerState_t *ps,tcp_trace_fn trace){
++    if(!ps||!trace)return 0;
++    static const vec3_t mn={-3,-3,-3},mx={3,3,3};vec3_t ax[3],to;const vec3_t eye={ps->origin[0],ps->origin[1],ps->origin[2]+(float)ps->viewheight};
++    vec3_t from={eye[0],eye[1],eye[2]};TCP_Axes(ps->viewangles,ax);
++    if(ps->leanf!=0){const vec3_t flat={ps->viewangles[0],ps->viewangles[1],0};vec3_t fl[3];TCP_Axes(flat,fl); /* the qagame fire() muzzle */
++        for(int k=0;k<3;k++)from[k]-=fl[1][k]*ps->leanf;}
++    for(int k=0;k<3;k++)to[k]=from[k]+ax[0][k]*TCP_MUZZLE_BLOCK_RANGE;
++    trace_t tr;memset(&tr,0,sizeof(tr));trace(&tr,from,mn,mx,to,ps->clientNum);
++    return !tr.startsolid&&!tr.allsolid&&tr.fraction<1.f;
++}
++static tcp_trace_fn lagWallTrace;
++void TCP_LagSetWallTrace(tcp_trace_fn trace){lagWallTrace=trace;}
+ void TCP_LagPredictCmd(tcp_lag_pred *lp,playerState_t *ps,const usercmd_t *cmd,int before,tcp_lag_shot *out){
+     if(out)memset(out,0,sizeof(*out));
+     if(!lp||!lp->valid||lp->stale||!ps||!cmd)return;
+@@ -115,6 +127,7 @@ void TCP_LagPredictCmd(tcp_lag_pred *lp,playerState_t *ps,const usercmd_t *cmd,i
+             const int sprinting=((cmd->buttons&BUTTON_SPRINT)&&(cmd->forwardmove||cmd->rightmove)&&!(ps->pm_flags&PMF_DUCKED)&&!(ps->eFlags&EF_PRONE)&&TCP_SprintAllowed(ps))||(ps->pm_flags&TCP_PMF_VAULT);
+             if((ps->pm_flags&TCP_PMF_VAULT)&&a->aimed){a->aimed=0;TCP_AimDisturb(a);} /* 0.38.0, as the qagame */
+             if(sprinting&&g->next_fire<now+250)g->next_fire=now+250;
++            if(TCP_MuzzleBlocked(ps,lagWallTrace)&&g->next_fire<now+TCP_MUZZLE_HOLD_MS)g->next_fire=now+TCP_MUZZLE_HOLD_MS; /* 0.39.1, as the qagame */
+             const int flip=TCP_AdsFocusStep(&lp->focus,&lp->focusStart,lp->holdAim,zoom,lp->zoomHeld,(cmd->buttons&BUTTON_SPRINT)!=0,sprinting,a->aimed,now); /* as qagame */
+             if((!sprinting||TCP_AdsBlocksSprint())&&flip&&!g->reload_end){
+                 a->aimed=!a->aimed;TCP_AimDisturb(a);uint32_t sd=a->seed+(uint32_t)now;
+diff --git a/game_src/native/tcp_lagpredict.h b/game_src/native/tcp_lagpredict.h
+index ddcdb8b..233008c 100644
+--- a/game_src/native/tcp_lagpredict.h
++++ b/game_src/native/tcp_lagpredict.h
+@@ -78,6 +78,14 @@ void TCP_LagClips(const tcp_native_gun *g,int out[2]);
+  * qagame GAME_CLIENT_THINK for a held firearm: kick recovery/spread frame,
+  * aim toggle, reload start, trigger and fire. Applies the kick to ps->delta_angles. */
+ void TCP_LagPredictCmd(tcp_lag_pred *lp,playerState_t *ps,const usercmd_t *cmd,int before,tcp_lag_shot *out);
++/* 0.39.1 gun at a wall: with a wall within TCP_MUZZLE_BLOCK_RANGE in front of the eye (a 6 u box along the view, solid
++ * world and movers only: not players, not player clip) the gun is pulled back and does not fire; it is held for
++ * TCP_MUZZLE_HOLD_MS after the wall is clear, while it comes back up. The qagame and the client prediction both call
++ * TCP_MuzzleBlocked after TCP_Move with a CONTENTS_SOLID trace; the client sets it with TCP_LagSetWallTrace. */
++#define TCP_MUZZLE_BLOCK_RANGE 20.f
++#define TCP_MUZZLE_HOLD_MS 200
++int TCP_MuzzleBlocked(const playerState_t *ps,tcp_trace_fn trace);
++void TCP_LagSetWallTrace(tcp_trace_fn trace);
+ /* View angles as TCP_Move derives them from the command and delta angles. */
+ void TCP_LagViewAngles(playerState_t *ps,const usercmd_t *cmd);
+ /* ADS focus (serverinfo g_adsFocus, absent on older servers = off). Toggle aim: a press while aimed
+diff --git a/game_src/native/tcp_viewfx.h b/game_src/native/tcp_viewfx.h
+index 4c293bb..11a6137 100644
+--- a/game_src/native/tcp_viewfx.h
++++ b/game_src/native/tcp_viewfx.h
+@@ -52,7 +52,9 @@ static float vfxSup,vfxShake;static int vfxSupLast,vfxSupTick,vfxShakeTime,vfxSu
+ /* 0.38.0 firefight: explosion shake (tcp_firefight_cg.h ffBlast), degrees at the peak, fading out over 0.9 s. */
+ static float vfxBlastAmp;static int vfxBlastTime;
+ /* 0.38.0 immersion: gun pulled back from a wall in front (0..1, eased) and the gun's landing drop scale by fall speed. */
+-static struct {float wall,gunLand;} vfxImm;
++static struct {float wall,gunLand,wallBlock;} vfxImm; /* 0.39.1 wallBlock: eased 0..1 while the gun cannot fire at a wall */
++#include "tcp_lagpredict.h" /* 0.39.1: TCP_MuzzleBlocked */
++static void traceSolid(trace_t *tr,const vec3_t a,const vec3_t lo,const vec3_t hi,const vec3_t b,int skip); /* tcp_cgame.c */
+ static void vfxBlastShake(float amp,int time){
+     if(vfxBlastTime){const int dt=time-vfxBlastTime;if(dt>=0&&dt<900){const float left=vfxBlastAmp*(1.f-dt/900.f)*(1.f-dt/900.f);if(left>amp)return;}}
+     vfxBlastAmp=amp;vfxBlastTime=time;
+@@ -171,8 +173,12 @@ static void vfxView(const playerState_t *p,int followed,int time,vec3_t origin,v
+     {trace_t tr;static const vec3_t mn={-3,-3,-3},mx={3,3,3};vec3_t ax[3],eye={p->origin[0],p->origin[1],p->origin[2]+p->viewheight},to;
+      TCP_Axes(p->viewangles,ax);VectorMA(eye,30.f,ax[0],to);
+      SystemCall(CG_CM_BOXTRACE,&tr,eye,to,mn,mx,0,CONTENTS_SOLID|CONTENTS_PLAYERCLIP);
+-     const float want=tr.startsolid?0.f:tr.fraction<1.f?(1.f-tr.fraction)*2.2f:0.f;const float w=want>1.f?1.f:want; /* fix1: full at ~16 u (the box's closest), was ~8 u */
+-     if(w>vfxImm.wall){vfxImm.wall+=msec/120.f;if(vfxImm.wall>w)vfxImm.wall=w;}else{vfxImm.wall-=msec/250.f;if(vfxImm.wall<w)vfxImm.wall=w;}}
++     /* 0.39.1: full at TCP_MUZZLE_BLOCK_RANGE (20 u), where the gun stops firing (was full at ~16 u); fully pulled back
++      * even when aimed while it cannot fire (aimed it was a third of the pose, so the gun still pointed at the wall). */
++     const float want=tr.startsolid?0.f:tr.fraction<1.f?(1.f-tr.fraction)*(30.f/(30.f-TCP_MUZZLE_BLOCK_RANGE)):0.f;const float w=want>1.f?1.f:want;
++     if(w>vfxImm.wall){vfxImm.wall+=msec/120.f;if(vfxImm.wall>w)vfxImm.wall=w;}else{vfxImm.wall-=msec/250.f;if(vfxImm.wall<w)vfxImm.wall=w;}
++     const float blocked=TCP_MuzzleBlocked(p,traceSolid)?1.f:0.f;
++     if(blocked>vfxImm.wallBlock){vfxImm.wallBlock+=msec/120.f;if(vfxImm.wallBlock>1.f)vfxImm.wallBlock=1.f;}else{vfxImm.wallBlock-=msec/(float)TCP_MUZZLE_HOLD_MS;if(vfxImm.wallBlock<0.f)vfxImm.wallBlock=0.f;}}
+ 
+     float bob=vfxBobCvar.value;if(bob<0)bob=0;if(bob>1)bob=1;
+     vec3_t axis[3];TCP_Axes(angles,axis);
+@@ -288,7 +294,7 @@ static void vfxGun(const refdef_t *rd,const playerState_t *p,int weapon,int kick
+     if(vfx.landChange<0&&!(aim&&scoped>1)){const int dt=time-vfx.landTime;const float gl=(vfxImm.gunLand>0?vfxImm.gunLand:1.f)-1.f;
+         if(dt<=150){origin[2]+=dt*vfx.landChange*gl/600.f;a[0]+=dt/150.f*(-vfx.landChange)*.12f;}
+         else if(dt<=450){origin[2]+=(450-dt)*vfx.landChange*gl/1200.f;a[0]+=(450-dt)/300.f*(-vfx.landChange)*.12f;}}
+-    if(vfxImm.wall>0){const float wk=vfxImm.wall*vfxImm.wall*(3.f-2.f*vfxImm.wall)*(aim?.35f:1.f);
++    if(vfxImm.wall>0||vfxImm.wallBlock>0){const float wv=vfxImm.wall>vfxImm.wallBlock?vfxImm.wall:vfxImm.wallBlock,wk=wv*wv*(3.f-2.f*wv)*(aim?.35f+.65f*vfxImm.wallBlock:1.f);
+         VectorMA(origin,-9.f*wk,f[0],origin);VectorMA(origin,-3.f*wk,f[2],origin);VectorMA(origin,1.5f*wk,f[1],origin);a[0]+=22.f*wk;a[1]+=8.f*wk;}
+     for(int k=0;k<3;k++)a[k]+=vfxWeapAngles[k];
+     TCP_Axes(a,axis);

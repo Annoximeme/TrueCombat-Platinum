@@ -1,0 +1,94 @@
+diff --git a/game_src/native/tcp_move.c b/game_src/native/tcp_move.c
+index 759fd40..0123bf3 100644
+--- a/game_src/native/tcp_move.c
++++ b/game_src/native/tcp_move.c
+@@ -139,14 +139,25 @@ static void stepPlain(move_t *m,float dt,int grounded){
+     playerState_t *p=m->p;
+     vec3_t start,velocity,flat,flatvel,end;memcpy(start,p->origin,sizeof(start));memcpy(velocity,p->velocity,sizeof(velocity));
+     slide(m,dt);if(!grounded)return;
+-    memcpy(flat,p->origin,sizeof(flat));memcpy(flatvel,p->velocity,sizeof(flatvel));memcpy(end,start,sizeof(end));end[2]+=18;
+-    trace_t tr;m->trace(&tr,start,m->mins,m->maxs,end,p->clientNum);if(tr.allsolid||tr.fraction<1)return;
+-    memcpy(p->origin,tr.endpos,sizeof(vec3_t));memcpy(p->velocity,velocity,sizeof(vec3_t));slide(m,dt);
+-    memcpy(end,p->origin,sizeof(end));end[2]-=18;m->trace(&tr,p->origin,m->mins,m->maxs,end,p->clientNum);
+-    if(!tr.allsolid)memcpy(p->origin,tr.endpos,sizeof(vec3_t));
+-    float a=(flat[0]-start[0])*(flat[0]-start[0])+(flat[1]-start[1])*(flat[1]-start[1]);
+-    float b=(p->origin[0]-start[0])*(p->origin[0]-start[0])+(p->origin[1]-start[1])*(p->origin[1]-start[1]);
+-    if(tr.allsolid||tr.plane.normal[2]<.7f||a>=b){memcpy(p->origin,flat,sizeof(flat));memcpy(p->velocity,flatvel,sizeof(flatvel));}
++    memcpy(flat,p->origin,sizeof(flat));memcpy(flatvel,p->velocity,sizeof(flatvel));
++    const float a=(flat[0]-start[0])*(flat[0]-start[0])+(flat[1]-start[1])*(flat[1]-start[1]);
++    /* 0.39.1 steps: (1) under a low ceiling (stairwell, low passage) the step is tried with the room there is, as ET's
++     * PM_StepSlideMove does; it was dropped whenever anything was within 18 u above the head, so an 8 u step under a
++     * ceiling 80 u up stopped the player dead. (2) When the 18 u try gets no further (the raised box hits a low door
++     * frame or beam over the step), a 9 u try follows, so a threshold or small step under a low frame is walkable. */
++    float lift=18;
++    for(int attempt=0;attempt<2;attempt++){
++        memcpy(end,start,sizeof(end));end[2]+=lift;
++        trace_t tr;m->trace(&tr,start,m->mins,m->maxs,end,p->clientNum);if(tr.allsolid||tr.startsolid)break;
++        const float rise=tr.endpos[2]-start[2];if(rise<1.f)break;
++        memcpy(p->origin,tr.endpos,sizeof(vec3_t));memcpy(p->velocity,velocity,sizeof(vec3_t));slide(m,dt);
++        memcpy(end,p->origin,sizeof(end));end[2]-=rise;m->trace(&tr,p->origin,m->mins,m->maxs,end,p->clientNum);
++        if(!tr.allsolid)memcpy(p->origin,tr.endpos,sizeof(vec3_t));
++        const float b=(p->origin[0]-start[0])*(p->origin[0]-start[0])+(p->origin[1]-start[1])*(p->origin[1]-start[1]);
++        if(!tr.allsolid&&tr.plane.normal[2]>=.7f&&a<b)return;
++        if(rise<9.5f)break;lift=9;
++    }
++    memcpy(p->origin,flat,sizeof(flat));memcpy(p->velocity,flatvel,sizeof(flatvel));
+ }
+ static int toggle(const playerState_t *p){return (p->stats[TCP_STAT_STANCE]&TCP_STANCE_TOGGLE_PREF)!=0;}
+ static int clearAt(move_t *m,float maxz){
+diff --git a/game_src/tests/step_probe.c b/game_src/tests/step_probe.c
+new file mode 100644
+index 0000000..02a3050
+--- /dev/null
++++ b/game_src/tests/step_probe.c
+@@ -0,0 +1,50 @@
++/* GPL-3.0-or-later. 0.39.1 step probe (test only): a small step is walkable under a low ceiling or a low door frame
++ * when the player fits after the step, and steps over 18 u or frames too low for the player still block.
++ * Build: -DMODLIB -I <etlegacy/src> with tcp_move.c. */
++#include "../native/tcp_native.h"
++#include <stdio.h>
++typedef struct{float lo[3],hi[3];}box_t;
++static box_t W[8];static int NW;
++static void sweep(trace_t *t,const vec3_t a,const vec3_t lo,const vec3_t hi,const vec3_t b,int skip){
++    (void)skip;memset(t,0,sizeof(*t));t->fraction=1;t->entityNum=ENTITYNUM_NONE;
++    int anyStart=0,allIn=0;
++    for(int w=0;w<NW;w++){
++        float bl[3],bh[3];for(int k=0;k<3;k++){bl[k]=W[w].lo[k]-hi[k];bh[k]=W[w].hi[k]-lo[k];}
++        /* slab test with enter/leave */
++        float enter=-1e9f,leave=1e9f;int ek=-1;float es=0;int startIn=1,endIn=1;
++        for(int k=0;k<3;k++){
++            float d=b[k]-a[k];
++            if(!(a[k]>bl[k]+.0f&&a[k]<bh[k]-.0f))startIn=0;
++            if(!(b[k]>bl[k]&&b[k]<bh[k]))endIn=0;
++            if(fabsf(d)<1e-9f){if(a[k]<=bl[k]||a[k]>=bh[k]){enter=2;break;}continue;}
++            float t0=(bl[k]-a[k])/d,t1=(bh[k]-a[k])/d;if(t0>t1){float x=t0;t0=t1;t1=x;}
++            if(t0>enter){enter=t0;ek=k;es=d>0?-1:1;}if(t1<leave)leave=t1;
++        }
++        if(startIn){anyStart=1;if(endIn)allIn=1;continue;}
++        if(enter>1||enter>=leave||enter<0||ek<0)continue;
++        float f=enter-.03125f/ (fabsf(b[ek]-a[ek])>1e-6f?fabsf(b[ek]-a[ek]):1);if(f<0)f=0;
++        if(f<t->fraction){t->fraction=f;memset(t->plane.normal,0,sizeof(vec3_t));t->plane.normal[ek]=es;t->entityNum=ENTITYNUM_WORLD;}
++    }
++    t->startsolid=anyStart;t->allsolid=allIn;if(allIn)t->fraction=0;
++    for(int k=0;k<3;k++)t->endpos[k]=a[k]+t->fraction*(b[k]-a[k]);
++}
++static void add(float x0,float y0,float z0,float x1,float y1,float z1){box_t *b=&W[NW++];b->lo[0]=x0;b->lo[1]=y0;b->lo[2]=z0;b->hi[0]=x1;b->hi[1]=y1;b->hi[2]=z1;}
++static float walk(float h,float top,float doorDepth,int ms){
++    NW=0;add(-9999,-9999,-64,9999,9999,0);add(60,-9999,0,9999,9999,h);
++    if(top>0)add(doorDepth>0?60:-9999,-9999,top,doorDepth>0?60+doorDepth:9999,9999,top+64);
++    playerState_t p;memset(&p,0,sizeof(p));p.origin[2]=24;p.weapon=44;p.stats[TCP_STAT_STAMINA]=TCP_SPRINT_MAX;p.stats[TCP_STAT_PRIMARY_CLASS]=4;
++    usercmd_t c;memset(&c,0,sizeof(c));c.forwardmove=127;
++    for(int t=ms;t<=2000;t+=ms){c.serverTime=t;TCP_Move(&p,&c,sweep);}
++    return p.origin[0];
++}
++int main(void){
++    const int rates[]={8,4,2};
++    for(int r=0;r<3;r++){const int ms=rates[r];
++        for(float h=4;h<=18;h+=2)if(walk(h,0,0,ms)<120){printf("FAIL open step %.0f at %d ms\n",h,ms);return 1;}
++        if(walk(19,0,0,ms)>60||walk(24,0,0,ms)>60){printf("FAIL step over 18 u climbed\n");return 1;}
++        if(walk(8,80,0,ms)<120||walk(16,88,0,ms)<120){printf("FAIL step under a low ceiling at %d ms\n",ms);return 1;}
++        if(walk(4,80,16,ms)<120||walk(8,84,16,ms)<120||walk(9,80,16,ms)<120){printf("FAIL threshold under a low door frame at %d ms\n",ms);return 1;}
++        if(walk(8,74,0,ms)>60||walk(8,76,16,ms)>60){printf("FAIL passed under a frame lower than the player\n");return 1;}
++    }
++    printf("PASS: steps up to 18 u, steps under low ceilings and door frames, 19/24 u steps and too-low frames still block (8/4/2 ms)\n");return 0;
++}
