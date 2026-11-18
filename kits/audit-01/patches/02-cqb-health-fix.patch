@@ -1,0 +1,68 @@
+diff --git a/game_src/native/tcp_cqb_g.h b/game_src/native/tcp_cqb_g.h
+index ea264fe..a6995b6 100644
+--- a/game_src/native/tcp_cqb_g.h
++++ b/game_src/native/tcp_cqb_g.h
+@@ -130,13 +130,21 @@ static void cqbSpawnTune(int n){
+     cqbLastHealth[n]=c->health.health;cqbRegenCapOf[n]=c->health.health;cqbDamageAt[n]=levelTime;
+     cqbReloadSeen[n][0]=cqbReloadSeen[n][1]=0;
+ }
+-/* Protected / Tank: torso hits lose 10 / 20 % of the damage (health given back right after the hit). */
+-static void cqbArmor(int victim,int branch,int healthBefore){
+-    if(branch!=TCP_REGION_BODY_OR_TIE)return;
+-    const float s=cqbHas(victim,0,CQB_PROTECTED)||cqbHas(victim,0,CQB_TANK)?TCP_CqbBodyDamageScale(cqbPerkLive[victim][0]):1.f;if(s>=1.f)return;
+-    tcp_region_health *h=&clients[victim].health;const int taken=healthBefore-h->health;if(taken<=0)return;
+-    const int back=taken-(int)((float)taken*s+.5f);if(back<=0)return;
+-    h->health+=back;if(h->health>100)h->health=100;
++/* audit 0.38.1: health is derived from the head/body/legs damage totals on every hit, so regenerated health has to come off
++ * those totals (body first, then legs, then head); written to health alone it was lost again at the next hit. */
++static void cqbHeal(tcp_region_health *h,int target){
++    if(!h||h->health<=0||target<=h->health)return;if(target>100)target=100;
++    int32_t *part[3]={&h->body,&h->legs,&h->head};
++    for(int k=0;k<3&&h->health<target;k++)while(*part[k]>0&&h->health<target){
++        --*part[k];int32_t now=h->health;
++        if(!tcp_health_from_regions(h->head,h->body,h->legs,0,TCP_HEALTH_WIDE,&now)||now>target){++*part[k];break;}
++        if(now>h->health)h->health=now;}
++}
++/* Protected / Tank: torso hits lose 10 / 20 % of the damage. Returns the scale for this hit (1 = none); the caller applies
++ * the hit again with the scaled damage (audit 0.38.1: health given back afterwards was lost at the next hit). */
++static float cqbArmorScale(int victim,int branch){
++    if(branch!=TCP_REGION_BODY_OR_TIE)return 1.f;
++    return cqbHas(victim,0,CQB_PROTECTED)||cqbHas(victim,0,CQB_TANK)?TCP_CqbBodyDamageScale(cqbPerkLive[victim][0]):1.f;
+ }
+ static int cqbKnife(int n,int damage){return cqbHas(n,1,CQB_COMMANDO)?(int)((float)damage*CQB_KNIFE_SCALE):damage;}
+ /* Steady Aim: the shot endpoint moves back towards the view direction (less spread and sway). */
+@@ -182,7 +190,7 @@ static void TCP_CqbFrame(void){
+         if(h<cqbLastHealth[n]&&h>0){cqbDamageAt[n]=levelTime;cqbRegenCapOf[n]=TCP_CqbRegenCap(h);cqbRegenNext[n]=levelTime+CQB_REGEN_DELAY;}
+         if(regen&&h>0&&!matchHold){
+             if(levelTime>=cqbRegenNext[n]){const int nh=TCP_CqbRegenTick(h,cqbRegenCapOf[n],levelTime-cqbDamageAt[n]);
+-                if(nh!=h){c->health.health=nh;TCP_XpUse(TCP_XP_REGEN);
++                if(nh!=h){if(nh>h)cqbHeal(&c->health,nh);else c->health.health=nh;TCP_XpUse(TCP_XP_REGEN);
+                     if(nh>=cqbRegenCapOf[n]){char m[96];snprintf(m,sizeof(m),"TCP_NATIVE_CQBREGEN slot=%d hp=%d cap=%d\n",n,nh,cqbRegenCapOf[n]);print(m);}}
+                 cqbRegenNext[n]=levelTime+CQB_REGEN_STEP_MS;}}
+         cqbLastHealth[n]=c->health.health;
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index 0d31e6e..4dd1ce1 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -15,7 +15,7 @@
+ /* 0.38.0 CQB merge hooks (tcp_cqb_g.h): CQB Rules flag and the per-player perk effects used by the code below. */
+ static int cqbRules;
+ static int cqbSuppressed(int n);static void cqbKill(int victim,int killer);static void cqbSpawnTune(int n);
+-static void cqbArmor(int victim,int branch,int healthBefore);static int cqbKnife(int n,int damage);
++static float cqbArmorScale(int victim,int branch);static int cqbKnife(int n,int damage);
+ static void cqbSteady(int n,const vec3_t muzzle,vec3_t endpoint);static int cqbSlug(int n);static float cqbPenScale(int n);
+ static void cqbDisperse(int n,const vec3_t muzzle,tcp_shotgun_result *r);
+ static intptr_t(QDECL *syscall)(intptr_t,...);
+@@ -1323,9 +1323,10 @@ static int shootSegment(int n,const vec3_t muzzle,const vec3_t end,int damage,ve
+         tcp_region_health *health=player?&clients[victim].health:&targets[victim-targetBase].health;
+         tcp_region_weights weights;
+         const int healthBefore=health->health;
+-        int hpBefore=health->health;
++        int hpBefore=health->health;const tcp_region_health regionsBefore=*health;
+         if(TCP_RegionHit(health,damage,tr.endpos,dir,&boxes,fractions,&weights)){
+-            if(player)cqbArmor(victim,(int)weights.branch,hpBefore); /* 0.38.0 CQB Protected / Tank */
++            if(player){const float armor=cqbArmorScale(victim,(int)weights.branch); /* 0.38.0 CQB Protected / Tank; audit 0.38.1: the same hit with less damage */
++                if(armor<1.f){tcp_region_weights w2;*health=regionsBefore;if(TCP_RegionHit(health,(int)((float)damage*armor+.5f),tr.endpos,dir,&boxes,fractions,&w2))weights=w2;}}
+             segmentApplied=hpBefore-health->health;segmentVictim=victim;if(player)clogRayHit(n,victim,(int)weights.branch,segmentApplied,tr.endpos);
+             if(player)TCP_StatsHit(n,victim,GUN(c)->weapon,(int)weights.branch,!c->lastHit);
+             c->hits++;c->lastHit=1;
