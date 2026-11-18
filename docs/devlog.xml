@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/devlog"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog</id>
-  <updated>2026-11-17T12:00:00Z</updated>
+  <updated>2026-11-18T12:00:00Z</updated>
+  <entry>
+    <title>Front lines</title>
+    <link href="https://truecombat.eu/devlog-front-lines"/>
+    <id>https://truecombat.eu/devlog-front-lines</id>
+    <published>2026-11-18T12:00:00Z</published>
+    <updated>2026-11-18T12:00:00Z</updated>
+    <category term="Update"/>
+    <summary>Bots that listen and plan, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather and sound across every map.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Remodelled, on the road to 0.40</title>
     <link href="https://truecombat.eu/devlog-remodelled"/>

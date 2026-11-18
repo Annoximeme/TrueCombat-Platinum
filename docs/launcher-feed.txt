@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Remodelled,|on the road to 0.40.
-text=We are rebuilding TrueCombat: Platinum from the inside out, one model at a time.
+title=Front|lines.
+text=Bots that listen and plan, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather and sound across every map.
 button=Read the devlog
-url=https://truecombat.eu/devlog-remodelled.html
+url=https://truecombat.eu/devlog-front-lines.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
-title=Remodelled, on the road to 0.40
-text=We are rebuilding TrueCombat: Platinum from the inside out, one model at a time.
-url=https://truecombat.eu/devlog-remodelled.html
+title=Front lines
+text=Bots that listen and plan, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather and sound across every map.
+url=https://truecombat.eu/devlog-front-lines.html
 [news]
 tag=Community
 title=Weekend ranked ladder

@@ -80,6 +80,7 @@
 
 ## Devlog
 
+- [Front lines](https://truecombat.eu/devlog-front-lines): Bots that listen and plan, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather and sound across every map.
 - [Remodelled, on the road to 0.40](https://truecombat.eu/devlog-remodelled): We are rebuilding TrueCombat: Platinum from the inside out, one model at a time. A first look at the new weapon models, the redesigned interface and the lighting work heading for 0.40, with every before and after we have so far.
 - [Close quarters, together](https://truecombat.eu/devlog-close-quarters): CQB took TC:E into close quarters with new weapons, detailed models and fresh ideas. We are bringing all of it into Platinum, starting as an experimental playlist you can try long before anything touches Ranked.
 - [Fixing crashes on the PCs you actually play on](https://truecombat.eu/devlog-crash-reports): The launcher can now tell us where the game crashed and what hardware it runs on, if you say yes. It asks once, it is anonymous, and you can see the exact report before it leaves your PC.
