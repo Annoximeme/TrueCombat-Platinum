@@ -1,7 +1,7 @@
 <!-- discord
 chips: Fix update | Voice chat | Graphics | Matches | Launcher 3.0.3
 summary: Graphics | Brightness defaults to 1.0 · No sky flicker on Ultra · No own shadow after death · Steadier shadows on grass and fences · Player shadows start at the feet · No rare one-frame flicker · More detailed crash reports
-summary: Gameplay | No firing with the gun pulled back at a wall · Small steps under low door frames no longer stop you · Muzzle flashes sit at the barrel on every gun · M4 SOPMOD red dot no longer floats at walls · No view stutter when out of breath while sprinting
+summary: Gameplay | Smoother stand, crouch and prone · No firing with the gun pulled back at a wall · Small steps under low door frames no longer stop you · Muzzle flashes sit at the barrel on every gun · M4 SOPMOD red dot no longer floats at walls · No view stutter when out of breath while sprinting
 summary: Voice chat | Voice activation works on real microphones · Push-to-talk always transmits · Pick your microphone and output device
 summary: Matches and interface | Callout icons only over teammates · Team changes confirmed on screen · Competitive round numbers, results and side swaps fixed · Community map names read properly
 summary: Launcher 3.0.3 | Patch notes cards show the update number · No ghost text when the featured story changes
