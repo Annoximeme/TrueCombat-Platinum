@@ -1,0 +1,40 @@
+--- a/game_src/native/tcp_tracer_cg.h
++++ b/game_src/native/tcp_tracer_cg.h
+@@ -25,7 +25,7 @@
+ #define TR_LIGHT_RADIUS 100.f
+ typedef struct {int start,shooter,retarget,seq,flesh;vec3_t from,to,dir,rdir;float len,rlen,speed;} trRound_t;
+ static trRound_t trRounds[TR_MAX];static int trNext,trReady,trCount;
+-static qhandle_t trShader;static polyBuffer_t trBuf[2];static int trFrame,trPremul,trLastVerts;
++static qhandle_t trShader;static polyBuffer_t trBuf[2];static int trFrame,trPremul,trLastVerts,trDbgUntil,trDbgLast;
+ static vec3_t trImpactAt[MAX_CLIENTS];static int trImpactTime[MAX_CLIENTS],trImpactFlesh[MAX_CLIENTS];
+ static vec3_t trViewOrg,trViewAxis[3];static int trLastTime;
+ 
+@@ -165,13 +165,27 @@
+                 trQuad(b,hb,hf,side,core*2.2f,hz,hc);}
+         }
+     }
+-    trLastVerts=b->numVerts;if(b->numVerts)SystemCall(CG_R_ADDPOLYBUFFERTOSCENE,b);
++    /* submitted as plain quads through AddPolyToScene, the path every other native effect uses (the poly buffer
++     * syscall drew nothing in the Windows release engine) */
++    trLastVerts=b->numVerts;
++    for(int v=0;v+3<b->numVerts;v+=4){polyVert_t pv[4];
++        for(int i=0;i<4;i++){VectorCopy(b->xyz[v+i],pv[i].xyz);pv[i].st[0]=b->st[v+i][0];pv[i].st[1]=b->st[v+i][1];memcpy(pv[i].modulate,b->color[v+i],4);}
++        SystemCall(CG_R_ADDPOLYTOSCENE,trShader,4,pv);}
++    /* for 10 s after trTest: once a second, what is alive and what was drawn */
++    if(time<trDbgUntil&&time-trDbgLast>=1000){trDbgLast=time;int alive=0,first=-1;for(int i=0;i<TR_MAX;i++)if(trRounds[i].len>0){alive++;if(first<0)first=i;}
++        char m[240];if(first>=0){const trRound_t *r=&trRounds[first];const float age=(float)(time-r->start)*.001f,hd=age*r->speed,tot=r->len+r->rlen;
++            snprintf(m,sizeof(m),"TCP_TRACER frame alive %d verts %d shader %d premul %d | age %.3f head %.0f total %.0f speed %.0f | v0 %d,%d,%d,%d v4 %d,%d,%d,%d\n",alive,b->numVerts,(int)trShader,trPremul,age,hd,tot,r->speed,
++                b->numVerts>0?b->color[0][0]:-1,b->numVerts>0?b->color[0][1]:-1,b->numVerts>0?b->color[0][2]:-1,b->numVerts>0?b->color[0][3]:-1,
++                b->numVerts>4?b->color[4][0]:-1,b->numVerts>4?b->color[4][1]:-1,b->numVerts>4?b->color[4][2]:-1,b->numVerts>4?b->color[4][3]:-1);}
++        else snprintf(m,sizeof(m),"TCP_TRACER frame alive 0 verts %d time %d\n",b->numVerts,time);
++        SystemCall(CG_PRINT,m);}
+     for(int q=0;q<nl;q++)SystemCall(CG_R_ADDLIGHTTOSCENE,lAt[q],TCP_Float(TR_LIGHT_RADIUS*(.75f+.25f*lK[q])),TCP_Float(.6f*lK[q]),TCP_Float(1.f),TCP_Float(.42f),TCP_Float(.14f),0,0);
+ }
+ /* developer preview: "trTest [n] [d] [slow] [ground]" fires n tracers (default 3) across the view, d units ahead (default
+  * 600); slow (0.01..1) slows them down for a screenshot; ground aims them at the floor ahead to show ricochets */
+ static int trCommand(const char *cmd){
+     if(_stricmp(cmd,"trTest"))return 0;
++    trDbgUntil=trLastTime+10000;trDbgLast=0;
+     char a[32];int n=3;float dd=600.f;
+     if(SystemCall(CG_ARGC)>1){SystemCall(CG_ARGV,1,a,sizeof(a));n=atoi(a);if(n<1)n=1;if(n>12)n=12;}
+     if(SystemCall(CG_ARGC)>2){SystemCall(CG_ARGV,2,a,sizeof(a));dd=(float)atof(a);}
