@@ -211,4 +211,4 @@ Further out, each with its own decision still to be made: more maps from TC:E's 
 
 ## What you can do
 
-The order above came directly from what players told us after the playtests, and it can change the same way. If something here matters more to you than the rest, or something is missing, tell us on [Discord](https://discord.gg/8kcHdg2Hch). The [roadmap](index.html#roadmap) follows this plan, and each piece gets its own devlog post when it lands.
+The order above came directly from what players told us after the playtests, and it can change the same way. If something here matters more to you than the rest, or something is missing, tell us on [Discord](https://discord.gg/7Dg4yhhvGF). The [roadmap](index.html#roadmap) follows this plan, and each piece gets its own devlog post when it lands.

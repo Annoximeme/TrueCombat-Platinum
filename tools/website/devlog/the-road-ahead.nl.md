@@ -211,4 +211,4 @@ Verder weg, telkens met een eigen beslissing die nog genomen moet worden: meer m
 
 ## Wat jij kunt doen
 
-De volgorde hierboven komt rechtstreeks uit wat spelers ons na de playtests vertelden, en ze kan op dezelfde manier veranderen. Als iets hier voor jou zwaarder weegt dan de rest, of als er iets ontbreekt, laat het weten op [Discord](https://discord.gg/8kcHdg2Hch). De [roadmap](index.html#roadmap) volgt dit plan, en elk onderdeel krijgt een eigen devlogpost als het klaar is.
+De volgorde hierboven komt rechtstreeks uit wat spelers ons na de playtests vertelden, en ze kan op dezelfde manier veranderen. Als iets hier voor jou zwaarder weegt dan de rest, of als er iets ontbreekt, laat het weten op [Discord](https://discord.gg/7Dg4yhhvGF). De [roadmap](index.html#roadmap) volgt dit plan, en elk onderdeel krijgt een eigen devlogpost als het klaar is.

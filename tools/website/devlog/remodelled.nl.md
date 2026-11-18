@@ -193,4 +193,4 @@ Haalt iets de lat niet, dan wacht het op de volgende update. We brengen liever e
 
 0.40 wordt de grootste update die Platinum tot nu toe kreeg: de nieuwe interface, het lichtwerk en de eerste golf nieuwe modellen. Ze staat voorlopig gepland voor begin februari 2027. Die datum ligt nog niet vast, en we bevestigen hem hier zodra de laatste testronde achter de rug is.
 
-Het hermodelleren stopt niet bij 0.40. Het is een lang project, en we blijven voor-en-na-beelden posten telkens als een nieuw model in de game komt. Laat ons weten wat je ervan vindt in de reacties hieronder, of op [Discord](https://discord.gg/8kcHdg2Hch). Welk model moeten we als volgende opnieuw bouwen?
+Het hermodelleren stopt niet bij 0.40. Het is een lang project, en we blijven voor-en-na-beelden posten telkens als een nieuw model in de game komt. Laat ons weten wat je ervan vindt in de reacties hieronder, of op [Discord](https://discord.gg/7Dg4yhhvGF). Welk model moeten we als volgende opnieuw bouwen?

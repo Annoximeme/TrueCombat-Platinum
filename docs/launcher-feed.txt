@@ -23,7 +23,7 @@ eyebrow=Community
 title=Play|together.
 text=Find a squad, join match nights and tell us what to build next on Discord.
 button=Join Discord
-url=https://discord.gg/8kcHdg2Hch
+url=https://discord.gg/7Dg4yhhvGF
 [news]
 tag=Devlog
 title=Front lines
