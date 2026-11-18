@@ -1,0 +1,51 @@
+--- a/game_src/native/tcp_mapvote_cg.h
++++ b/game_src/native/tcp_mapvote_cg.h
+@@ -14,9 +14,48 @@
+ static void mapVoteReset(void) { memset(&cgVote, 0, sizeof(cgVote)); }
+ static int mapVoteShowing(void) { return cgVote.active; }
+ 
++/* 0.39.1: a map's own display name from the optional 'title' line of gfx/platinum/maps/<map>.txt
++ * (community maps: "obj_villa2_1" -> "Villa 2.1"); a trailing " (...)" is dropped. Cached per map. */
++static int mapVoteDataTitle(const char *map, char *out, int size)
++{
++    static struct { char map[MAX_QPATH], title[48]; } cache[16];
++    static int used;
++    for (int i = 0; i < used; ++i)
++        if (!_stricmp(cache[i].map, map)) { if (!cache[i].title[0]) return 0; snprintf(out, size, "%s", cache[i].title); return 1; }
++    char path[96], buf[4096], title[48] = "";
++    fileHandle_t f = 0;
++    snprintf(path, sizeof(path), "gfx/platinum/maps/%s.txt", map);
++    const int len = (int)SystemCall(CG_FS_FOPENFILE, path, &f, FS_READ);
++    if (len > 0 && f) {
++        const int n = len < (int)sizeof(buf) - 1 ? len : (int)sizeof(buf) - 1;
++        SystemCall(CG_FS_READ, buf, n, f);
++        buf[n] = 0;
++        for (char *s = buf; s && *s; ) {
++            char *e = strchr(s, '\n');
++            if (e) *e = 0;
++            if (!strncmp(s, "title ", 6)) {
++                snprintf(title, sizeof(title), "%s", s + 6);
++                for (char *q = title; *q; ++q) if (*q == '\r') *q = 0;
++                char *q = strstr(title, " (");
++                if (q) *q = 0;
++                break;
++            }
++            s = e ? e + 1 : NULL;
++        }
++    }
++    if (f) SystemCall(CG_FS_FCLOSEFILE, f);
++    const int slot = used < 16 ? used++ : 15;
++    snprintf(cache[slot].map, sizeof(cache[slot].map), "%s", map);
++    snprintf(cache[slot].title, sizeof(cache[slot].title), "%s", title);
++    if (!title[0]) return 0;
++    snprintf(out, size, "%s", title);
++    return 1;
++}
++
+ /* "obj_railhouse" -> "Railhouse": drop the TC:E obj_ prefix, capitalise words. */
+ static void mapVotePretty(const char *map, char *out, int size)
+ {
++    if (mapVoteDataTitle(map, out, size)) return;
+     if (!strncmp(map, "obj_", 4)) map += 4;
+     int n = 0, up = 1;
+     for (; *map && n < size - 1; ++map) {

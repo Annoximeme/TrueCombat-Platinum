@@ -1,0 +1,33 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 13da2ad..90d5df0 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -1463,10 +1463,27 @@ static void joinPendFrame(void){
+     for(int i=0;i<8;i++){if(!joinPend[i].until)continue;
+         if(joinPopup(joinPend[i].slot,joinPend[i].team)||hudNow>joinPend[i].until||hudNow+4000<joinPend[i].until)joinPend[i].until=0;}
+ }
++/* audit-10 (0.39.1): the server's answer to a team change ("You will join the Terrorists when you next deploy.",
++ * "That team has too many players.", a refused spectate, locked teams, a staff move, and the answers to the match
++ * commands /ready, /timeout, /unpause, /stay, /swap) came as a console print only,
++ * so after DEPLOY in the menu nothing on screen said the change was queued or refused. Shown as a big popup now;
++ * only these fixed texts, any other print stays in the console. */
++static void teamAnswer(const char *msg){
++    static const char *const known[]={"You will join the ","You joined the ","That team has too many players.",
++        "Spectator mode is limited to ","Teams are locked during a match.","This is a pickup match: ","^3Server staff moved you to the ",
++        /* competitive match commands (tcp_match.h), typed as /ready, /timeout ... in the chat line as often as in the console */
++        "Ready-up only works in warmup.","Your team has no timeouts left.","Timeouts are only available during a match.",
++        "An admin paused the match; only an admin can resume it.","Only the team that called the timeout can end it early.",
++        "The match is not paused.","The match is already paused.","There is no side to choose right now.",
++        "The knife round winners choose the side.","No competitive match on this server"};
++    for(size_t i=0;i<sizeof(known)/sizeof(known[0]);i++)if(!strncmp(msg,known[i],strlen(known[i]))){
++        char line[160];size_t n=0;for(const char *c=msg;*c&&*c!='\n'&&n<sizeof(line)-1;c++)line[n++]=*c;line[n]=0;
++        addBigPopup(line,hudVoiceChat,hudNow);return;}
++}
+ static void serverCommands(int last){
+     while(sequence<last){sequence++;if(!SystemCall(CG_GETSERVERCOMMAND,sequence))continue;char cmd[64],msg[MAX_STRING_CHARS];SystemCall(CG_ARGV,0,cmd,sizeof(cmd));if(qolServerCommand(cmd))continue; /* TCP_QOL */if(rangeServerCommand(cmd))continue; /* TCP_RANGE */
+         if(!strcmp(cmd,"map_restart")){restartPresentation();roundWipe("map_restart");memset(dbFrags,0,sizeof(dbFrags));SystemCall(CG_GETGAMESTATE,&gs);refreshMovementSettings();}
+-        else if(!strcmp(cmd,"print")){SystemCall(CG_ARGV,1,msg,sizeof(msg));SystemCall(CG_PRINT,msg);qolVoteAnswer(msg);}
++        else if(!strcmp(cmd,"print")){SystemCall(CG_ARGV,1,msg,sizeof(msg));SystemCall(CG_PRINT,msg);qolVoteAnswer(msg);teamAnswer(msg);}
+         else if(!strcmp(cmd,"tcp_staffchal"))staffChallenge(); /* TCP_STAFF */
+         else if(!strcmp(cmd,"tcp_idchal"))acctChallenge(); /* 0.37.0 player accounts */
+         else if(!strcmp(cmd,"tcp_break"))dbBreakCommand(hudNow);
