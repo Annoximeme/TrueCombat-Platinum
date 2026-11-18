@@ -470,6 +470,26 @@
    "en": "Smarter bots: varied routes, cleaner lines of fire, fewer stuck moments",
    "nl": "Slimmere bots: gevarieerde routes, betere schootslijnen, minder vastlopen",
    "version": "0.38"
+  },
+  {
+   "en": "Bots that listen, plan bomb rounds together and learn every map",
+   "nl": "Bots die luisteren, bomrondes samen plannen en elke map leren kennen",
+   "version": "0.39"
+  },
+  {
+   "en": "Four classic community maps: Villa 2.1, Shozen, Snowtown and Chlite",
+   "nl": "Vier klassieke communitymaps: Villa 2.1, Shozen, Snowtown en Chlite",
+   "version": "0.39"
+  },
+  {
+   "en": "Wind, sun shafts, wet ground and a colour mood for every map",
+   "nl": "Wind, zonnestralen, natte grond en een eigen kleursfeer per map",
+   "version": "0.39"
+  },
+  {
+   "en": "Launcher 3.0: server browser, friends and accessibility settings",
+   "nl": "Launcher 3.0: serverbrowser, vrienden en toegankelijkheidsinstellingen",
+   "version": "0.39"
   }
  ]
 }
