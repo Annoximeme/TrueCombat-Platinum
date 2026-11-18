@@ -62,6 +62,10 @@ Voor schutters is er een nieuwe focuszoom: houd tijdens het richten de rechtermu
 
 De launcher is van de grond af opnieuw opgebouwd. De Play-pagina toont live servers met hun map en spelers, de serverbrowser krijgt favorieten, recente servers en zoeken, en nieuws opent als volledige artikels. Met Vrienden voeg je elkaar toe met een code, zie je wie er speelt en sluit je met één klik aan. Het is optioneel en blijft uit tot je het zelf aanzet. Downloads kun je pauzeren en hervatten, en nieuwe toegankelijkheidsinstellingen bieden hoog contrast, grotere tekst, markeringen die werken bij kleurenblindheid en minder beweging. De launcher is nu ook in het Nederlands beschikbaar.
 
+![De nieuwe Play-pagina in Launcher 3.0](img/devlog/front-lines-launcher-play-nl.webp "De nieuwe Play-pagina: live servers, nieuws en snel spelen op één plek.")
+
+![Vrienden in Launcher 3.0](img/devlog/front-lines-launcher-friends-nl.webp "Vrienden: voeg elkaar toe met een code, zie wie er speelt en sluit met één klik aan.")
+
 ## Ook in deze update
 
 - De havengeluiden van Northport spelen weer. Ze waren stil sinds de originele release.
