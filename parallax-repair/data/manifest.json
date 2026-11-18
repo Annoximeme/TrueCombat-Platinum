@@ -1,0 +1,166 @@
+{
+ "full_relief": 0.006,
+ "green_down": false,
+ "highpass": 8.0,
+ "missing": [],
+ "pak": {
+  "bytes": 12878302,
+  "name": "zzz_hd_v1_heights.pk3",
+  "sha256": "108fcadabd77d4b2dd2a063bd964def479bac5cdc212bfe6996a6827a1e83158"
+ },
+ "skipped": {},
+ "textures": {
+  "textures/bruce_brick/brick_wall_beige": {
+   "bytes": 349668,
+   "sha256": "20c5949e8321e8ccd955e24a61fcd1e1a0280b30a3b4255cf9c4d4d26f95472d"
+  },
+  "textures/bruce_brick/muur_wit": {
+   "bytes": 349668,
+   "sha256": "8155ac159d700f1202b1507eb679dceaddd3087a26646e0ad1c3aa58535cd47d"
+  },
+  "textures/bruce_brick/oldbrick": {
+   "bytes": 349668,
+   "sha256": "9e519595f8e464463c73c05c3aa7dfd8d4555f12b34549b0fbd0e82aecf5df17"
+  },
+  "textures/bruce_brick/redbrick": {
+   "bytes": 349668,
+   "sha256": "565320a6d51c43c6b19746e40286b7409040c483af60875c2c327ce847fef12f"
+  },
+  "textures/bruce_brick/redbrick_dn": {
+   "bytes": 349668,
+   "sha256": "1553986114e5688cb28763f30b9e3fc04863576d0151f0a10a9b7a8e5f6939b0"
+  },
+  "textures/bruce_brick/redbrick_old": {
+   "bytes": 349668,
+   "sha256": "37a2b6b766c201b7e8bb422c2009d517c4a442b93cb0176b38bffae8c275c5e9"
+  },
+  "textures/bruce_brick/stained_bricks": {
+   "bytes": 699188,
+   "sha256": "c8902f1f5b9af3e81fc7c3acda49130c41844d6d8b4d712d26d0f660bf6cbb8a"
+  },
+  "textures/bruce_brick/stained_bricks_dark": {
+   "bytes": 699188,
+   "sha256": "e54a59db122f6aad06739af3a735716366dcb372c765d9b978cb601f017dcf7e"
+  },
+  "textures/bruce_floor/gravel": {
+   "bytes": 349668,
+   "sha256": "6df0ad2040fff735f3289aa553cfeb84f1ee18331ff033318eb19fcbfc8824ac"
+  },
+  "textures/bruce_misc/brick_qs": {
+   "bytes": 43828,
+   "sha256": "c07beaea7c7021f5c09092251e13e572b44d1a53fb3eb4e5c71a7b7213998ccd"
+  },
+  "textures/coroner/bricks_b1": {
+   "bytes": 349668,
+   "sha256": "6d0a4d568b468ac9359b92eb53d5e7412442c67a6674e3a7ce4d7627bfabcc33"
+  },
+  "textures/coroner/bricks_b1a": {
+   "bytes": 349668,
+   "sha256": "17e90499f840a6ee990bd614965693a702f9abead13e5f31d991f493adfa7c53"
+  },
+  "textures/coroner/bricks_b1b": {
+   "bytes": 349668,
+   "sha256": "d0527c61058cd387f7d849ee96c15db4c8e1d054f91265d621a87e54bcc2fc92"
+  },
+  "textures/coroner/bricks_b1r": {
+   "bytes": 43828,
+   "sha256": "59ca3fd66fc570a2ff76731081b2600cbb33610670838f7f8fdc9cbb1734ea55"
+  },
+  "textures/coroner/bricks_k3": {
+   "bytes": 349668,
+   "sha256": "027d9ab0273dd385d92083363ad3470c0af66d3acfe85b6231f009f36c369588"
+  },
+  "textures/coroner/bricks_k7": {
+   "bytes": 349668,
+   "sha256": "2f276308859799e654f6ca7cef7ae2e4a78c6bc25fea9ec6c02ea36a324ccd22"
+  },
+  "textures/coroner/bricks_o1": {
+   "bytes": 349668,
+   "sha256": "49088c6908bd7ac4a8268a7c9a32eb645c4f2698eec0fe239899c6246c0e55e3"
+  },
+  "textures/coroner/bricks_o3": {
+   "bytes": 349668,
+   "sha256": "7f9fc5f754ced08f28ee7f4af2b18a45c96a5d931d820b1e24e037195dead8ee"
+  },
+  "textures/coroner/bricks_o3_d": {
+   "bytes": 349668,
+   "sha256": "38ec2262eadfbd7e7c7606f1985c83422f36a021718dd647555154b8523631de"
+  },
+  "textures/coroner_common/ground2sandrocks": {
+   "bytes": 87524,
+   "sha256": "a4e68fc55fcab1a7fc635f4170011e7e49f474e59ead53eadc9a6a15562f8a82"
+  },
+  "textures/coroner_common/sandrocks2sand": {
+   "bytes": 87524,
+   "sha256": "04c93a9f1c83340a17f3c37457e1ded8e8cbe3f753d30d5809abf567084a3790"
+  },
+  "textures/coroner_dust/sandrocks01": {
+   "bytes": 349668,
+   "sha256": "7516bfa1216cd59968f592776fa7871ba983f765176829c16bd48c9bf89da828"
+  },
+  "textures/liq3/rock1": {
+   "bytes": 349668,
+   "sha256": "01cf06a365683aa482ec0296ced3177c442d7aa45fbdbd8115147a1f537e9242"
+  },
+  "textures/twy_brickstiles/brick_2": {
+   "bytes": 349668,
+   "sha256": "2219df0af08ec10f8beaa31cb072a379c28eededbeb9c7bed3a350ce438ef839"
+  },
+  "textures/twy_brickstiles/brick_3a": {
+   "bytes": 349668,
+   "sha256": "a2772b019a694edf0c2fe508b60cd7bd1d411a21bc098f3b831b607c962d45bb"
+  },
+  "textures/twy_brickstiles/brick_5": {
+   "bytes": 349668,
+   "sha256": "9622acf518ba025525f0ddd752740d2b6f087ed01dceacda33c858037066dd0e"
+  },
+  "textures/twy_brickstiles/brick_5a": {
+   "bytes": 349668,
+   "sha256": "f8c580946bda4206fd4f3e3e742d468bcc2965b6e499f1ce512535cd222c7697"
+  },
+  "textures/twy_brickstiles/brick_7_top": {
+   "bytes": 21908,
+   "sha256": "f204ec5ff3cba5aeb0f8b5577b1848cf64c028fc780db0d7383b29816953ad80"
+  },
+  "textures/twy_brickstiles/brick_7a": {
+   "bytes": 349668,
+   "sha256": "2f689fec82ae4baba11c7d635beafe8609c52347a3afbe289e3b744f0ce14843"
+  },
+  "textures/twy_brickstiles/brick_7b": {
+   "bytes": 349668,
+   "sha256": "7ec5c264b4c99f65787ba2d5df07bfade102d1009aa4840bce748af7695acc67"
+  },
+  "textures/twy_brickstiles/brick_9": {
+   "bytes": 349668,
+   "sha256": "f77fb024996ea7400a870abf631fb2291327181e2134ab46cc4ccd6dfbf91487"
+  },
+  "textures/twy_brickstiles/brick_big_1": {
+   "bytes": 349668,
+   "sha256": "b0da509d804d34aad215da0a5ca8da7bd206c7679c3926b75a880b976a487b6e"
+  },
+  "textures/twy_brickstiles/brick_dirt_6a": {
+   "bytes": 699188,
+   "sha256": "ffbcbdcb9f2f7e670716c8253133e5ce261851519feb82d1217b4a46e20a7025"
+  },
+  "textures/twy_brickstiles/brick_dirt_7": {
+   "bytes": 349668,
+   "sha256": "7ef711d9003784fa5d3b34b3ddbef313014c8ccf50b1a619e4f61c3f1588e3ae"
+  },
+  "textures/twy_brickstiles/brick_dirt_8": {
+   "bytes": 349668,
+   "sha256": "50c5907d3c44ae6a23a02655f13d41ab36a0e678f3af042b8eefebc439709f04"
+  },
+  "textures/twy_brickstiles/brick_dirt_9": {
+   "bytes": 349668,
+   "sha256": "2d74487675ad73c1348e04aea717d73f119f07a92a3cd3663226f4f0e2b4c121"
+  },
+  "textures/twy_brickstiles/tiles_dirt_1": {
+   "bytes": 349668,
+   "sha256": "51985f92b56838dc36b7a1e66a3e89075296023942b2f3556fa05ff12b9b60dd"
+  },
+  "textures/twy_sandgravelgras/dirt_1": {
+   "bytes": 349668,
+   "sha256": "3eb1a02be60239a6c4d6af481c570185c68050359541c23e97374da822448cdc"
+  }
+ }
+}
