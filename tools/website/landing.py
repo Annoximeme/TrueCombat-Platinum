@@ -10,7 +10,8 @@ Placeholders: [[key]] is copy from the language table, {{name}} is a value
 build.py fills in (version, link, asset prefix).
 """
 
-ART = {"download": "map-northport", "faq": "hero-stadtrand-canal", "truecombat-elite": "map-delta", "privacy": "map-stadtrand"}
+ART = {"download": "map-northport", "faq": "hero-stadtrand-canal", "truecombat-elite": "map-delta", "privacy": "map-stadtrand",
+       "banners": "hero-northport-gashouse"}
 
 DOWNLOAD_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 19h16" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
 
@@ -709,6 +710,103 @@ PRIVACY_T = {
 }
 
 
+# ---------------------------------------------------------------- server banners
+# live PNGs drawn by the web bridge (tools/server-bridge/tcp_banner.py), served from api.truecombat.eu
+BANNER_API = "https://api.truecombat.eu/banner/"
+BANNER_LINK = "https://truecombat.eu/servers"
+BANNER_LIST = [("all", "b_all"), ("official1", "b_o1"), ("official2", "b_o2")]
+BANNER_SIZES = [("wide", 600, 120), ("small", 468, 60)]
+
+BANNERS_T = {
+    "en": {
+        "title": "Server banners for forums and Discord · TrueCombat: Platinum",
+        "desc": "Free live banners that show who is playing TrueCombat: Platinum right now. Copy the code for a forum signature, Discord, a clan page or a GitHub README.",
+        "og": "Live player counts for your forum, Discord or clan page",
+        "eyebrow": "Server banners", "h1": "Put the servers on your page",
+        "lede": "Live banners that show who is playing right now. Paste one into a forum signature, a Discord channel, a clan page or a README, and it keeps itself up to date.",
+        "b_all": "All servers", "b_all_p": "Everyone in a match right now, across every public server.",
+        "b_o1": "Official #1 · Ranked", "b_o1_p": "The ranked server, with its current map, mode and player count.",
+        "b_o2": "Official #2 · Unranked", "b_o2_p": "The unranked server, with its current map, mode and player count.",
+        "wide": "Wide · 600 × 120", "small": "Compact · 468 × 60", "code": "Embed code", "copy": "Copy", "copied": "Copied",
+        "fmt": "Format", "html": "HTML", "bb": "BBCode", "md": "Markdown", "url": "Image link",
+        "alt_all": "TrueCombat: Platinum players online now", "alt_o1": "TrueCombat: Platinum Official #1, live status", "alt_o2": "TrueCombat: Platinum Official #2, live status",
+        "how_h": "How they work",
+        "how1": "Each banner is redrawn as soon as the server list changes, at most once a minute. Nothing runs on your page: it is a plain image.",
+        "how2": "A banner shows the server name, map, mode and player count. It never shows a server address.",
+        "how3": "Use them anywhere, free of charge. Keep the link to truecombat.eu so new players can find the game.",
+    },
+    "nl": {
+        "title": "Serverbanners voor forums en Discord · TrueCombat: Platinum",
+        "desc": "Gratis live banners die laten zien wie er nu TrueCombat: Platinum speelt. Kopieer de code voor een forumhandtekening, Discord, een clanpagina of een GitHub-README.",
+        "og": "Live spelersaantallen voor je forum, Discord of clanpagina",
+        "eyebrow": "Serverbanners", "h1": "Zet de servers op je pagina",
+        "lede": "Live banners die laten zien wie er nu speelt. Plak er een in een forumhandtekening, een Discord-kanaal, een clanpagina of een README, en hij houdt zichzelf bij.",
+        "b_all": "Alle servers", "b_all_p": "Iedereen die nu een potje speelt, op alle publieke servers samen.",
+        "b_o1": "Official #1 · Ranked", "b_o1_p": "De ranked server, met de huidige map, modus en het aantal spelers.",
+        "b_o2": "Official #2 · Unranked", "b_o2_p": "De unranked server, met de huidige map, modus en het aantal spelers.",
+        "wide": "Breed · 600 × 120", "small": "Compact · 468 × 60", "code": "Code om in te voegen", "copy": "Kopiëren", "copied": "Gekopieerd",
+        "fmt": "Formaat", "html": "HTML", "bb": "BBCode", "md": "Markdown", "url": "Afbeeldingslink",
+        "alt_all": "TrueCombat: Platinum spelers nu online", "alt_o1": "TrueCombat: Platinum Official #1, live status", "alt_o2": "TrueCombat: Platinum Official #2, live status",
+        "how_h": "Zo werken ze",
+        "how1": "Elke banner wordt opnieuw getekend zodra de serverlijst verandert, hooguit eens per minuut. Er draait niets op je pagina: het is gewoon een afbeelding.",
+        "how2": "Een banner toont de servernaam, map, modus en het aantal spelers. Een serveradres staat er nooit op.",
+        "how3": "Gebruik ze overal, gratis. Laat de link naar truecombat.eu staan, zodat nieuwe spelers het spel vinden.",
+    },
+}
+
+
+def banners_body(lang, values):
+    T = BANNERS_T[lang]
+    e = lambda t: t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+    blocks = []
+    for key, tk in BANNER_LIST:
+        alt = T["alt_" + tk[2:]]
+        figs, codes = [], []
+        for size, w, h in BANNER_SIZES:
+            src = BANNER_API + "%s-%s.png" % (key, size)
+            figs.append('<figure class="bn-fig bn-%s"><img src="%s" alt="%s" width="%d" height="%d" loading="lazy" decoding="async"><figcaption>%s</figcaption></figure>'
+                        % (size, src, e(alt), w, h, T[size]))
+            fm = {"html": '<a href="%s"><img src="%s" alt="%s" width="%d" height="%d"></a>' % (BANNER_LINK, src, alt, w, h),
+                  "bb": "[url=%s][img]%s[/img][/url]" % (BANNER_LINK, src),
+                  "md": "[![%s](%s)](%s)" % (alt, src, BANNER_LINK),
+                  "url": src}
+            codes.append("".join('<pre class="bn-code" data-fmt-for="%s" data-size-for="%s"><code>%s</code></pre>' % (f, size, e(c)) for f, c in fm.items()))
+        seg_f = "".join('<button type="button" data-bn-fmt="%s" aria-pressed="%s">%s</button>' % (f, str(f == "html").lower(), T[f]) for f in ("html", "bb", "md", "url"))
+        seg_s = "".join('<button type="button" data-bn-size="%s" aria-pressed="%s">%s</button>' % (s_, str(s_ == "wide").lower(), T[s_].split(" · ")[0]) for s_, _, _ in BANNER_SIZES)
+        blocks.append(f"""
+      <article class="bn" id="{key}" data-bn data-fmt="html" data-size="wide">
+        <header><h2>{T[tk]}</h2><p>{T[tk + '_p']}</p></header>
+        <div class="bn-figs">{''.join(figs)}</div>
+        <div class="bn-tools" role="group" aria-label="{T['code']}">
+          <div class="seg" role="group" aria-label="{T['fmt']}">{seg_f}</div>
+          <div class="seg" role="group">{seg_s}</div>
+        </div>
+        <div class="bn-codes">{''.join(codes)}<button type="button" class="btn btn-ghost bn-copy" data-copied="{T['copied']}">{T['copy']}</button></div>
+      </article>""")
+    return fill(f"""<section class="page-head">
+  <div class="head-art" style="--art: url({{{{up}}}}img/hero-northport-gashouse.webp); --art-s: url({{{{up}}}}img/hero-northport-gashouse-640.webp)" aria-hidden="true"></div>
+  <div class="wrap">
+    <span class="eyebrow">[[eyebrow]]</span>
+    <h1>[[h1]]</h1>
+    <p class="lede">[[lede]]</p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap banners">{''.join(blocks)}
+      <aside class="bn-how">
+        <h2>[[how_h]]</h2>
+        <ul>
+          <li>[[how1]]</li>
+          <li>[[how2]]</li>
+          <li>[[how3]]</li>
+        </ul>
+      </aside>
+  </div>
+</section>
+""", T, values)
+
+
 def fill(template, table, values):
     out = template
     for k, v in values.items():
@@ -769,11 +867,13 @@ def body(page, lang, values):
         return faq_body(lang, values)
     if page == "privacy":
         return fill(PRIVACY, PRIVACY_T[lang], values)
+    if page == "banners":
+        return banners_body(lang, values)
     return elite_body(lang, values)
 
 
 def meta(page, lang):
-    T = {"download": DOWNLOAD_T, "faq": FAQ, "truecombat-elite": ELITE_T, "privacy": PRIVACY_T}[page][lang]
+    T = {"download": DOWNLOAD_T, "faq": FAQ, "truecombat-elite": ELITE_T, "privacy": PRIVACY_T, "banners": BANNERS_T}[page][lang]
     return T["title"], T["desc"], T["og"]
 
 

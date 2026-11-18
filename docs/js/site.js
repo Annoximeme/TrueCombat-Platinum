@@ -23,6 +23,7 @@ var TCP_API = 'https://api.truecombat.eu';
       months: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
       latest: 'Latest', kindSetupLong: 'Windows installer', kindSetup: 'Installer', kindZip: 'Full game, zip', offline: 'Master server offline', online: 'Online', loading: 'Checking…',
       noServersOffline: 'The live server list is unreachable right now. The Servers tab in the launcher shows the same list.',
+      wkEye: 'Weekly highlights', wkTitle7: 'This week on the servers', wkTitle30: 'This month on the servers', wkSub7: 'Last 7 days. Verified matches against real players.', wkSub30: 'Last 30 days. Verified matches against real players.', wkMatches: 'Matches', wkPlayers: 'Players', wkNew: 'New players', wkKills: 'Kills', wkHs: 'Headshots', wkHours: 'Hours played', wkPotw: 'Player of the week', wkPotm: 'Player of the month', wkXp: '{n} XP from {m} matches', wkProfile: 'View profile', wkBest: 'Top performance', wkBestV: '{k} kills on {map}', wkReport: 'Match report', wkMostKills: 'Most kills', wkClimb: 'Biggest climb', wkClimbV: '+{n} rating', wkWins: 'Most wins', wkWinsV: '{n} wins', wkKillsV: '{n} kills', wkKd: 'Best K/D', wkActive: 'Most active', wkWeapon: 'Weapon of the week', wkWeaponM: 'Weapon of the month', wkWeaponV: '{k} kills · {h} headshots', wkMap: 'Busiest map', wkMatchesN: '{n} matches', wkBoards: 'Full leaderboards',
       moreNotes: 'Show the full notes', topAll: 'All time', top30: 'Last 30 days', cmpAdd: 'Compare', cmpOn: 'Comparing', cmpTitle: 'Compare weapons', cmpHint: 'Pick up to three weapons to compare.', cmpClear: 'Clear', cmpDmg: 'Damage per hit', cmpRpm: 'Fire rate', cmpDps: 'Damage per second', cmpMag: 'Magazine', cmpEmpty: 'Time to empty', cmpReload: 'Full reload', cmpPellets: 'pellets', cmpNote: 'Body hits before range and armour. Shotguns count every pellet.', lessNotes: 'Show less', liveNow: '{p} playing on {s} servers right now', liveIdle: '{s} servers online right now',
       noServers: 'Nobody is hosting a public server right now. Host one from the launcher with List publicly switched on.',
       players: 'players', servers: 'servers', password: 'Password', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Matches count toward the leaderboards', need1: 'Needs 1 player', needN: 'Needs {n} players', needTip: 'A player left mid-match. Fill in now and you cannot lose rating this match.', unrankedTip: 'Matches do not count toward the leaderboards', bot: 'bot', bots: 'bots', copy: 'Copy address', copied: 'Copied', verified: 'Verified', verifiedTip: 'Checked by the TrueCombat: Platinum team', eac: 'Anti-cheat', eacTip: 'Protected by Easy Anti-Cheat', eacReqTip: 'Protected by Easy Anti-Cheat. Required to join.', joinBtn: 'Join',
@@ -97,6 +98,7 @@ var TCP_API = 'https://api.truecombat.eu';
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
       latest: 'Nieuwste', kindSetupLong: 'Windows-installatieprogramma', kindSetup: 'Installatieprogramma', kindZip: 'Volledig spel, zip', offline: 'Masterserver offline', online: 'Online', loading: 'Bezig…',
       noServersOffline: 'De live serverlijst is nu niet bereikbaar. Het tabblad Servers in de launcher toont dezelfde lijst.',
+      wkEye: 'Hoogtepunten van de week', wkTitle7: 'Deze week op de servers', wkTitle30: 'Deze maand op de servers', wkSub7: 'Laatste 7 dagen. Geverifieerde potjes tegen echte spelers.', wkSub30: 'Laatste 30 dagen. Geverifieerde potjes tegen echte spelers.', wkMatches: 'Potjes', wkPlayers: 'Spelers', wkNew: 'Nieuwe spelers', wkKills: 'Kills', wkHs: 'Headshots', wkHours: 'Uren gespeeld', wkPotw: 'Speler van de week', wkPotm: 'Speler van de maand', wkXp: '{n} XP uit {m} potjes', wkProfile: 'Bekijk profiel', wkBest: 'Topprestatie', wkBestV: '{k} kills op {map}', wkReport: 'Matchverslag', wkMostKills: 'Meeste kills', wkClimb: 'Grootste stijger', wkClimbV: '+{n} rating', wkWins: 'Meeste overwinningen', wkWinsV: '{n} overwinningen', wkKillsV: '{n} kills', wkKd: 'Beste K/D', wkActive: 'Meest actief', wkWeapon: 'Wapen van de week', wkWeaponM: 'Wapen van de maand', wkWeaponV: '{k} kills · {h} headshots', wkMap: 'Drukste map', wkMatchesN: '{n} potjes', wkBoards: 'Alle ranglijsten',
       moreNotes: 'Toon alle notities', topAll: 'Altijd', top30: 'Laatste 30 dagen', cmpAdd: 'Vergelijk', cmpOn: 'Vergeleken', cmpTitle: 'Wapens vergelijken', cmpHint: 'Kies tot drie wapens om te vergelijken.', cmpClear: 'Wissen', cmpDmg: 'Schade per treffer', cmpRpm: 'Vuursnelheid', cmpDps: 'Schade per seconde', cmpMag: 'Magazijn', cmpEmpty: 'Tijd tot leeg', cmpReload: 'Volledig herladen', cmpPellets: 'hagels', cmpNote: 'Rompschoten, voor afstand en bepantsering. Bij hagelgeweren telt elke hagel mee.', lessNotes: 'Minder tonen', liveNow: '{p} spelers op {s} servers op dit moment', liveIdle: '{s} servers nu online',
       noServers: 'Er host nu niemand een publieke server. Host er zelf een vanuit de launcher met Openbaar tonen aan.',
       players: 'spelers', servers: 'servers', password: 'Wachtwoord', ranked: 'Ranked', unranked: 'Unranked', rankedTip: 'Potjes tellen mee voor de ranglijsten', need1: 'Zoekt 1 speler', needN: 'Zoekt {n} spelers', needTip: 'Er is iemand vertrokken tijdens het potje. Val nu in en je kunt deze match geen rating verliezen.', unrankedTip: 'Potjes tellen niet mee voor de ranglijsten', bot: 'bot', bots: 'bots', copy: 'Adres kopiëren', copied: 'Gekopieerd', verified: 'Geverifieerd', verifiedTip: 'Gecontroleerd door het TrueCombat: Platinum-team', eac: 'Anti-cheat', eacTip: 'Beschermd door Easy Anti-Cheat', eacReqTip: 'Beschermd door Easy Anti-Cheat. Verplicht om te joinen.', joinBtn: 'Joinen',
@@ -644,6 +646,55 @@ var TCP_API = 'https://api.truecombat.eu';
     }).catch(function () {});
   });
 
+  /* weekly highlights on the home page (bridge /recap.json): the last 7 days, or 30 while the week is quiet */
+  var WPAGES = 'ak-47 ak-74m-spetsnaz akimbo-beretta akimbo-glock aks-74u-sd aks-74u beretta desert-eagle dynamite glock knife m16 m3-super-90 m4-sopmod m4 m590-compact m76 m83-smoke mac-10-sd mac-10 mk3a2-m26 mp5-10 mp5sd psg-1 r93 sig-550-sd sig-552 spas-12 spr-sd sr-8 ump45 xm84-stun'.split(' ');
+  $all('[data-week]').forEach(function (root) {
+    function fill(t, o) { return String(t).replace(/\{(\w+)\}/g, function (m, k) { return o[k] != null ? o[k] : m; }); }
+    function who(p) { return '<a class="wk-name" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a>'; }
+    function mapName(m) { return MAPS[String(m || '').toLowerCase()] || esc(String(m || '').replace(/^obj_/, '')); }
+    function card(cls, label, body, sub) {
+      return '<article class="wk-card ' + cls + '"><span class="wk-label">' + label + '</span>' + body + (sub ? '<span class="wk-sub">' + sub + '</span>' : '') + '</article>';
+    }
+    function show(d) {
+      var month = d.days > 7, cards = [];
+      if (!d.matches) return false;
+      var stats = [[L.wkMatches, d.matches], [L.wkPlayers, d.players], [L.wkNew, d.newPlayers], [L.wkKills, d.kills], [L.wkHs, d.headshots],
+                   [L.wkHours, Math.round((d.timePlayed || 0) / 3600)]];
+      var hero = d.mostXp || d.mostKills, busy = (d.maps || [])[0];
+      var bg = mapArt(busy ? busy.map : (d.bestMatch || {}).map).replace('-640.webp', '.webp');
+      var feature = hero ? '<article class="wk-hero" style="--wk-art: url(' + bg + ')"><span class="wk-label">' + (month ? L.wkPotm : L.wkPotw) + '</span>' +
+        '<p class="wk-big">' + who(hero) + '</p><p class="wk-sub">' + (d.mostXp ? fill(L.wkXp, { n: num(d.mostXp.value), m: num(d.mostXp.matches) }) : fill(L.wkKillsV, { n: num(hero.value) })) + '</p>' +
+        '<a class="wk-more" href="' + esc(profileHref(hero.id)) + '">' + L.wkProfile + '</a></article>' : '';
+      if (d.bestMatch) cards.push(card('best', L.wkBest, '<p class="wk-val">' + who(d.bestMatch) + '</p>',
+        fill(L.wkBestV, { k: num(d.bestMatch.kills), map: mapName(d.bestMatch.map) }) + (MID.test(d.bestMatch.match || '') ? ' · <a href="' + matchHref(d.bestMatch.match) + '">' + L.wkReport + '</a>' : '')));
+      if (d.mostKills) cards.push(card('kills', L.wkMostKills, '<p class="wk-val">' + who(d.mostKills) + '</p>', fill(L.wkKillsV, { n: num(d.mostKills.value) })));
+      if (d.mostWins) cards.push(card('wins', L.wkWins, '<p class="wk-val">' + who(d.mostWins) + '</p>', fill(L.wkWinsV, { n: num(d.mostWins.value) })));
+      if (d.biggestClimb && d.biggestClimb.value > 0) cards.push(card('climb', L.wkClimb, '<p class="wk-val">' + who(d.biggestClimb) + '</p>', fill(L.wkClimbV, { n: num(Math.round(d.biggestClimb.value)) })));
+      if (d.bestKd) cards.push(card('kd', L.wkKd, '<p class="wk-val">' + who(d.bestKd) + '</p>', Number(d.bestKd.value).toLocaleString(lang, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + L.kd));
+      if (d.mostActive) cards.push(card('active', L.wkActive, '<p class="wk-val">' + who(d.mostActive) + '</p>', fill(L.wkMatchesN, { n: num(d.mostActive.value) })));
+      if (d.topWeapon) {
+        var slug = String(d.topWeapon.weapon).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        var wn = WPAGES.indexOf(slug) >= 0 ? '<a class="wk-name" href="weapon-' + slug + '">' + esc(d.topWeapon.weapon) + '</a>' : '<span class="wk-name">' + esc(d.topWeapon.weapon) + '</span>';
+        cards.push(card('weapon', month ? L.wkWeaponM : L.wkWeapon, '<p class="wk-val">' + wn + '</p>', fill(L.wkWeaponV, { k: num(d.topWeapon.kills), h: num(d.topWeapon.headshots) })));
+      }
+      if (busy) {
+        var mn = MAPS[String(busy.map).toLowerCase()];
+        cards.push(card('map', L.wkMap, '<p class="wk-val">' + (mn ? '<a class="wk-name" href="map-' + mn.toLowerCase() + '">' + mn + '</a>' : '<span class="wk-name">' + mapName(busy.map) + '</span>') + '</p>',
+          fill(L.wkMatchesN, { n: num(busy.matches) })));
+      }
+      root.innerHTML = '<header class="wk-head"><div><span class="eyebrow">' + L.wkEye + '</span><h3>' + (month ? L.wkTitle30 : L.wkTitle7) + '</h3>' +
+        '<p class="muted">' + (month ? L.wkSub30 : L.wkSub7) + '</p></div><a class="wk-all" href="leaderboards">' + L.wkBoards + '</a></header>' +
+        '<dl class="wk-stats">' + stats.map(function (x) { return '<div><dt>' + x[0] + '</dt><dd>' + num(x[1]) + '</dd></div>'; }).join('') + '</dl>' +
+        '<div class="wk-grid">' + feature + '<div class="wk-cards">' + cards.join('') + '</div></div>';
+      root.hidden = false;
+      return true;
+    }
+    api('/recap.json?days=7').then(function (d) {
+      if ((d.matches || 0) >= 3 && show(d)) return;
+      return api('/recap.json?days=30').then(function (m) { if (!show(m)) show(d); });
+    }).catch(function () {});
+  });
+
   /* weapon comparison (weapons page): cards carry their stats in data-w */
   (function () {
     var cards = $all('.wcard[data-w]');
@@ -792,7 +843,7 @@ var TCP_API = 'https://api.truecombat.eu';
     return acctNamesP;
   }
   /* links to a profile by id show the account name with a tick, and lead to the short profile address */
-  if (document.querySelector('[data-leaderboard],[data-top],[data-recent],[data-servers],[data-player],[data-match],[data-statboard],[data-pf-detail]')) {
+  if (document.querySelector('[data-leaderboard],[data-top],[data-week],[data-recent],[data-servers],[data-player],[data-match],[data-statboard],[data-pf-detail]')) {
     acctNames().then(function (names) {
       if (!Object.keys(names).length) return;
       var busy = false;
@@ -1654,10 +1705,15 @@ var TCP_API = 'https://api.truecombat.eu';
     });
   });
 
-  /* ---------- map layouts: bomb or flag objectives, location names on or off ---------- */
+  /* ---------- map layouts: bomb or flag objectives, location names, routes and the who-gets-there-first overlay ---------- */
   $all('[data-layout]').forEach(function (lo) {
     lo.addEventListener('click', function (e) {
-      var m = e.target.closest('[data-lo-mode]'), c = e.target.closest('[data-lo-call]');
+      var m = e.target.closest('[data-lo-mode]'), c = e.target.closest('[data-lo-call]'), o = e.target.closest('[data-lo-opt]');
+      if (o) {
+        var opt = o.getAttribute('aria-pressed') !== 'true';
+        o.setAttribute('aria-pressed', String(opt));
+        lo.classList.toggle('opt-' + o.dataset.loOpt, opt);
+      }
       if (m) {
         lo.dataset.mode = m.dataset.loMode;
         $all('[data-lo-mode]', lo).forEach(function (b) { b.setAttribute('aria-pressed', String(b === m)); });
@@ -1666,6 +1722,27 @@ var TCP_API = 'https://api.truecombat.eu';
         var on = c.getAttribute('aria-pressed') !== 'true';
         c.setAttribute('aria-pressed', String(on));
         lo.classList.toggle('no-call', !on);
+      }
+    });
+  });
+
+  /* ---------- server banners page: format and size switches, copy the embed code ---------- */
+  $all('[data-bn]').forEach(function (bn) {
+    bn.addEventListener('click', function (e) {
+      var f = e.target.closest('[data-bn-fmt]'), z = e.target.closest('[data-bn-size]'), c = e.target.closest('.bn-copy');
+      if (f || z) {
+        var b = f || z, attr = f ? 'bnFmt' : 'bnSize';
+        bn.dataset[f ? 'fmt' : 'size'] = b.dataset[attr];
+        $all(f ? '[data-bn-fmt]' : '[data-bn-size]', bn).forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+      }
+      if (c) {
+        var pre = bn.querySelector('[data-fmt-for="' + bn.dataset.fmt + '"][data-size-for="' + bn.dataset.size + '"]');
+        var label = c.textContent;
+        (navigator.clipboard ? navigator.clipboard.writeText(pre.textContent) : Promise.reject()).then(function () {
+          c.textContent = c.dataset.copied; setTimeout(function () { c.textContent = label; }, 1400);
+        }, function () {
+          var r = document.createRange(); r.selectNodeContents(pre); var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+        });
       }
     });
   });
