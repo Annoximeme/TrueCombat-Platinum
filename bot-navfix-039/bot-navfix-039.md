@@ -1,6 +1,6 @@
-# Bot navigation fixes + sniper-scope freeze fix for the 0.39.0 rebuild (kit bot-navfix-039)
+# Bot navigation fixes + sniper-scope freeze fix + sniper bots scoping in, for the 0.39.0 rebuild (kit bot-navfix-039)
 
-Thread "Make bots smarter in matches". Gianni approved putting these in the 0.39.0 rebuild ("All of them", 2026-11-18 12:45Z): the bot nav fixes without the ping replies (those wait for the 0.40 pings), plus the sniper-scope freeze fix.
+Thread "Make bots smarter in matches". Gianni approved putting these in the 0.39.0 rebuild ("All of them", 2026-11-18 12:45Z): the bot nav fixes without the ping replies (those wait for the 0.40 pings), plus the sniper-scope freeze fix. Patch 03 (sniper bots scope in) answers Gianni's report "Bot don't ADS snipers" (13:19Z), added for the same rebuild.
 
 ## 1. Kit
 Folder: /mnt/project-files/integ039/kits/bot-navfix-039/
@@ -9,6 +9,7 @@ Folder: /mnt/project-files/integ039/kits/bot-navfix-039/
 |---|---|
 | patches/01-bot-navfix.patch | Bot nav fixes, the same patch as the 0.40 kit (integ040/kits/bot-navfix). Files: tcp_bots.h, tcp_bot_nav.h, tcp_bot_obj.h, tcp_bot_smart.h, tcp_bot_vary.h. |
 | patches/02-bot-lof-free.patch | The sniper-scope freeze fix. File: tcp_bot_tactics.h only. It does not depend on 01. |
+| patches/03-bot-snipe-ads.patch | Sniper bots scope in at every skill. File: tcp_bots.h only (applies after 01). |
 
 For each one: `git apply -p1` at the repo root. CRLF is kept where the files use it. The sha256 values are in the SUMMARY.
 
@@ -17,10 +18,11 @@ Apply order:
 2. The community maps botflags patch (sha256 f1969535…, patch 02 of integ039/kits/community-polish).
 3. 01.
 4. 02.
+5. 03.
 
 01 also edits navNearest, the same function botflags edits, so botflags must go first.
 
-**KIT GATE PASSED 2026-11-18 13:05Z** (kit checksum 777294561bd2ef1c): [bot-navfix-039/SUMMARY.md](bot-navfix-039/SUMMARY.md).
+**KIT GATE PASSED 2026-11-18 13:47Z, round 2 with 03** (kit checksum c25917caca6739b5; replaces the 13:05Z gate 777294561bd2ef1c): [bot-navfix-039/SUMMARY.md](bot-navfix-039/SUMMARY.md).
 - The gate base was TrueCombat-Platinum-0.39.0-sandbox37-source.zip (sha256 20e7673f…) with botflags applied, packed as one zip.
 - compose, Windows -Werror build, built-file scan, Linux server and bots soak (Village, Snow, Railhouse): pass.
 - scan: the one known hit in the unmodified base (preflight_release.py comment), counted as passed per the release thread.
@@ -30,6 +32,7 @@ Apply order:
 |---|---|
 | 01-bot-navfix.patch | d15cf6164efb69f5fe21673eb1f26fd3e0d4865b71f1d20b3c04ef6cd6f5adf1 |
 | 02-bot-lof-free.patch | 05b7c0115d43ae7bb3016a4e67a1a7913d4a1122e1158088b838a7cb7a8785d4 |
+| 03-bot-snipe-ads.patch | b8e31e697d68a963f51132f48b70a9337372acee6417f1c9f1447d97f3a3102a |
 
 ## 2. Extra build steps
 None. The change is qagame only: no cgame, no paks, no protocol change.
@@ -38,6 +41,7 @@ New server cvars (archived):
 - `bot_navfix 1` (0 = the 0.39.0 bot nav behaviour).
 - `bot_smart_quiet 1` (0 = off).
 - `bot_lof_free 1` (0 = the 0.38/0.39 behaviour).
+- `bot_snipe_ads 1` (0 = the 0.39 behaviour: skill 1 bots never scope).
 
 ## 3. What it fixes
 **Sniper-scope freeze (02):**
@@ -47,6 +51,11 @@ New server cvars (archived):
   - A bot that cannot leave the cone now crouches below your aim and keeps moving.
   - After a dodge, it waits 4 s before dodging again for the same player. After an 8 s timeout, it waits 10 s.
 - **Status counters:** the TACSTAT line gains `lof_timeouts` and `lof_boxed_walks`.
+
+**Sniper bots scope in (03):**
+- **The bug:** bots at skill 1 never used the scope (skill 2 and up already did). In a cloud test with sniper-only bots at skill 1, 0 of 5,568 shots were scoped.
+- **The fix:** sniper rifles go to the scope at every skill. The bot holds the shot until the scope is up (at most 700 ms), then settles for longer on low skill (skill 1: 900 ms, skill 2: 500 ms from the start of the wait, skill 3+: no extra wait). Bolt rifles still drop the scope after each shot and the bot scopes back in.
+- **Result:** skill 1 now 100% of shots scoped; skill 2 and 3 unchanged (100%). Scoped sniper shots do 1.5x damage, so skill 1 sniper bots are deadlier than before (bot-only kills on Railhouse, Snow and Village about 560 before, 1,650 after; skill 3 about 1,540; one run per map).
 
 **Nav fixes (01):** the details are in integ040/kits/bot-navfix.md, section 3.
 - Climb loops: these also caused the bomb carrier to flip-flop between sites.
@@ -66,7 +75,8 @@ Columns: `map | renderer | cvars/commands | look at | pass rule | shot`
 - obj_snow, obj_stadtrand | either | bomb mode, 12 bots | the carrier | goes to one site and plants; no back-and-forth | n
 - obj_village | either | CTF, you take the flag and stand still | bots around you | no bot model inside your view | y
 - any | either | g_perfSpike 8 | round start | round-start hitches not worse than 0.38.2 | n
-- any | either | `bot_navfix 0; bot_smart_quiet 0; bot_lof_free 0` + map_restart | bots | same as before this kit | n
+- any | either | bot_skill 1, bots with sniper rifles | an enemy sniper bot at range | it scopes in before it shoots | y
+- any | either | `bot_navfix 0; bot_smart_quiet 0; bot_lof_free 0; bot_snipe_ads 0` + map_restart | bots | same as before this kit | n
 
 ## 5. Cloud evidence
 - **Nav fixes:** 48-run bench against the 0.39 bots: PASS.
@@ -81,6 +91,7 @@ Columns: `map | renderer | cvars/commands | look at | pass rule | shot`
   - Not yet seen with a real human scoping in.
 
 ## 6. Public patch notes lines (suggested)
+- Bots with sniper rifles now use the scope on every difficulty.
 - Bots no longer freeze in front of you while you aim down a scope. If they can't get out of your line of fire, they crouch and keep moving.
 - Bots no longer get stuck climbing the same ledge over and over, and the bomb carrier no longer keeps switching between sites.
 - Bots that got stuck at the start of their route, or ended up somewhere with no route (a roof, a pit by a ladder), now find their way out.

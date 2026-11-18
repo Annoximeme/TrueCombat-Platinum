@@ -1,0 +1,47 @@
+diff --git a/game_src/native/tcp_bots.h b/game_src/native/tcp_bots.h
+index 47caed4..8573644 100644
+--- a/game_src/native/tcp_bots.h
++++ b/game_src/native/tcp_bots.h
+@@ -57,7 +57,7 @@ typedef struct {
+     float errYaw, errPitch; int errAt, wantHead;
+     int strafe, strafeUntil, fireUntil, pauseUntil, nextTap, lastHealth;
+     int investigateUntil; float investigatePos[3];
+-    int wantAimUntil;
++    int wantAimUntil, snipeHoldAt;   /* 0.39.0: snipeHoldAt = when a sniper bot started waiting for its scope */
+     /* pass 2: stances, grenades, peeking, counters */
+     int hurtAt, retreatUntil, retreatPlanned, peeks, peekUntil, peekDir, proneUntil, proneToggleAt;
+     int nadeStage, nadeWeapon, nadeAt, nadeNext; float nadeYaw, nadePitch;
+@@ -138,6 +138,8 @@ static const float botAimError[6] = {0, 6.5f, 4.2f, 2.6f, 1.6f, 0.9f}; /* degree
+ static const float botTurnRate[6] = {0, 220, 320, 460, 620, 820};      /* degrees per second */
+ static const int   botTapMs[6]    = {0, 330, 270, 210, 170, 135};      /* semi-auto trigger cadence */
+ static int botSkillClamp(int s) { return s < 1 ? 1 : s > 5 ? 5 : s; }
++/* 0.39.0 bot_snipe_ads (archived, 1): sniper rifles scope in at every skill and wait for the scope before the shot. */
++static int botSnipeAds(void) { return (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_snipe_ads") != 0; }
+ /* BOT_BRAIN adaptive bots: effective skill = base + offset (-1..+1), the tables interpolated between rows.
+  * With offset 0 every lookup returns exactly the table entry. */
+ static float botAdaptOffset;
+@@ -1555,6 +1557,16 @@ static void botThink(int n)
+                 b->holdAt = levelTime; b->strafe = side; b->strafeUntil = levelTime + 350;
+                 if (!b->objAnchor && !botObjRunner(n)) cmd.rightmove = (signed char)(side * 127);
+             }
++            /* 0.39.0: sniper rifles go to the scope at every skill (skill 1 never aimed) and hold the shot until the
++             * scope is up (at most 700 ms) and settled by skill; bolt rifles drop the scope after each shot and go back to it. */
++            int snipe = TCP_WeaponClass(gun->weapon) == 5 && !gun->pellets && botSnipeAds();
++            if (snipe) b->wantAimUntil = levelTime + 1200;
++            if (snipe && lined && c->selected == gun->weapon && !gun->reload_end) {
++                int settle = skill <= 1 ? 900 : skill == 2 ? 500 : 0;   /* lower skills take longer to settle in the scope */
++                if (!c->aim.aimed) { if (!b->snipeHoldAt) b->snipeHoldAt = levelTime; if (levelTime - b->snipeHoldAt < 700) lined = 0; }
++                else if (b->snipeHoldAt && levelTime - b->snipeHoldAt < settle) lined = 0;
++                else b->snipeHoldAt = 0;
++            } else if (!snipe) b->snipeHoldAt = 0;
+             if (clip > 0 && !gun->reload_end && lined) {
+                 if (gun->mode == TCP_MODE_AUTO) {
+                     if (levelTime >= b->pauseUntil) {
+@@ -1882,6 +1894,7 @@ static void botInit(void)
+     botLastFill = levelTime + 2000;
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_minplayers", "0", CVAR_ARCHIVE | CVAR_SERVERINFO);
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_skill", "3", CVAR_ARCHIVE);
++    SystemCall(G_CVAR_REGISTER, NULL, "bot_snipe_ads", "1", CVAR_ARCHIVE);
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_testpeace", "0", 0);   /* 0.38 test aids, need sv_cheats: 1 = bots never engage */
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_balance", "1", 0);     /* 0 = no bot team balancing */
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_allowClientCommands", "0", CVAR_ARCHIVE);
