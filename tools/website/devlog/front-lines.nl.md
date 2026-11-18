@@ -49,7 +49,7 @@ Sommigen van jullie merkten een korte hapering op het einde van rondes op server
 
 Bots kregen ook een reeks navigatiefixes. Ze klimmen niet meer steeds opnieuw op dezelfde richel, en een bomdrager blijft bij één site in plaats van heen en weer te wisselen. Een bot die vastloopt aan het begin van zijn route, of ergens belandt zonder route, zoals op een dak of in de put bij de ladder op Railhouse, vindt nu zelf de weg terug. Eén bot houdt de taak om te ontmantelen of de bom op te rapen, in plaats van twee bots die ze steeds overnemen, en bots staan niet meer in je wanneer je stilstaat op de plek waar ze naartoe wilden. Dicht bij een bekende vijand lopen ze stil, en rondestarts met een volle server bots verlopen vlotter.
 
-Eén fix zullen velen meteen merken: bots bevriezen niet meer voor je neus terwijl je door een scope richt. Kunnen ze niet uit je schootslijn, dan bukken ze en blijven ze bewegen.
+Eén fix zullen velen meteen merken: bots bevriezen niet meer voor je neus terwijl je door een scope richt. Kunnen ze niet uit je schootslijn, dan bukken ze en blijven ze bewegen. En bots met een sluipschuttersgeweer gebruiken nu op elke moeilijkheidsgraad de scope.
 
 ## Vier klassiekers keren terug
 

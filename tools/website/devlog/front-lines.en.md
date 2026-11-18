@@ -49,7 +49,7 @@ Some of you noticed a short hitch at the end of rounds on servers with bots. We 
 
 Bots also got a round of navigation fixes. They no longer climb the same ledge over and over, and a bomb carrier sticks to one site instead of switching back and forth. A bot that gets stuck at the start of its route, or ends up somewhere with no route at all, like a roof or the pit by the Railhouse ladder, now finds its way out. One bot keeps the defuse or bomb pickup job instead of two bots swapping it, and bots no longer stand inside you when you stop on the spot they were heading for. Close to a known enemy they walk quietly, and round starts with a full server of bots are smoother.
 
-One fix many of you will feel straight away: bots no longer freeze in front of you while you aim down a scope. If they can't get out of your line of fire, they crouch and keep moving.
+One fix many of you will feel straight away: bots no longer freeze in front of you while you aim down a scope. If they can't get out of your line of fire, they crouch and keep moving. And bots with sniper rifles now use the scope on every difficulty.
 
 ## Four classics return
 
