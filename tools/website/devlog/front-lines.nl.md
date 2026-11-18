@@ -201,6 +201,9 @@ Vanaf deze update draait Official #2 (Unranked) met experimentele content aan: d
 - Vlotter bewegen langs de glazen gevels op Railhouse, en minder korte haperingen de eerste keer dat een geluid of effect gebruikt wordt.
 - Er verschijnt een melding "Verbinding onderbroken" wanneer de server niet meer antwoordt.
 - Opgenomen demo's spelen af zonder dat er menu's over openen.
+- Het vizier van de M4 SOPMOD toont in 1440p en 4K één rode stip.
+- Bugmeldingen (F12) in hoge resoluties zeggen niet meer dat de screenshot te groot is om te uploaden.
+- Het Deployment-menu sluit wanneer de wedstrijd afloopt.
 - We hebben onze beveiligingsmaatregelen aangescherpt en uitgebreid.
 
 ## Hoe we het getest hebben
