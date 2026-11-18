@@ -10,6 +10,8 @@ does it for the website and serves the result as JSON over HTTP:
   GET /player.json?id=<player id>   one player's profile (tcp-player/1)
   GET /search.json?q=<name>         find players by name
   GET /recent.json, /ranks.json     latest matches, the rank table
+  GET /banner/<all|official1|official2>-<wide|small>.png
+                                    live server banner for forums, Discord and READMEs (tcp_banner.py)
   POST /api/v1/match                signed match report from a ranked server
   GET /health
 
@@ -197,6 +199,13 @@ def server_entry(addr, status, modes):
 
 # ------------------------------------------------------------------ service
 class Bridge:
+    def banners(self):
+        """The banner renderer, loaded on first use (its assets live in banner/ next to this file)."""
+        if self._banners is None:
+            import tcp_banner
+            self._banners = tcp_banner.Banners()
+        return self._banners
+
     def __init__(self, args):
         self.args = args
         self.staff_token = ""
@@ -207,6 +216,7 @@ class Bridge:
                 k, _, v = pair.partition("=")
                 self.modes[k.strip()] = v.strip()
         self.lock = threading.Lock()
+        self._banners = None
         self.servers = {"schema": "tcp-servers/1", "updated": None, "master": {"online": False}, "servers": []}
         self.stats = tcp_stats.StatsStore(args.stats_db or ":memory:", allow_cheats=args.allow_cheats,
                                           min_matches=args.min_matches,
@@ -269,8 +279,27 @@ def make_handler(bridge):
             if self.command != "HEAD":
                 self.wfile.write(body)
 
+        def send_png(self, body):
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "public, max-age=60")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            if self.command != "HEAD":
+                self.wfile.write(body)
+
         def do_GET(self):
             u = urlparse(self.path)
+            if u.path.startswith("/banner/"):
+                with bridge.lock:
+                    doc = bridge.servers
+                try:
+                    png = bridge.banners().get(doc, u.path[len("/banner/"):])
+                except Exception as exc:          # missing assets: answer like an unknown route
+                    print("banner failed:", exc, flush=True)
+                    png = None
+                return self.send_png(png) if png else self.send_json({"error": "not found"}, 404)
             with bridge.lock:
                 if u.path == "/servers.json":
                     return self.send_json(bridge.servers)
