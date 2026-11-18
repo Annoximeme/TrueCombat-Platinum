@@ -60,14 +60,6 @@ PAGES["index"] = [
     ('<h3>Signed updates</h3>', '<h3>Ondertekende updates</h3>'),
     ('<p>The launcher checks GitHub for new versions, shows download speed and time left, and only installs updates signed by Team Terminus. Your settings and servers are kept.</p>',
      '<p>De launcher zoekt op GitHub naar nieuwe versies, toont downloadsnelheid en resterende tijd, en installeert alleen updates die door Team Terminus zijn ondertekend. Je instellingen en servers blijven bewaard.</p>'),
-    ('data-title="TrueCombat gameplay video"', 'data-title="TrueCombat-gameplayvideo"'),
-    ('aria-label="Play the gameplay video"', 'aria-label="Speel de gameplayvideo af"'),
-    ('<span class="eyebrow">Watch</span>', '<span class="eyebrow">Kijk</span>'),
-    ('<h2>Gameplay</h2>', '<h2>Gameplay</h2>'),
-    ('<p class="lede">One life per round, real-world weapons and maps built for patient, tactical play. The video starts at 0:32.</p>',
-     '<p class="lede">Eén leven per ronde, echte wapens en maps gemaakt voor geduldig, tactisch spel. De video begint bij 0:32.</p>'),
-    ('<p class="yt-note">The video plays from YouTube in privacy-enhanced mode. Nothing loads from YouTube until you press play.</p>',
-     '<p class="yt-note">De video speelt af via YouTube in de privacyvriendelijke modus. Er wordt niets van YouTube geladen tot je op afspelen drukt.</p>'),
     ('<h2>All six original maps</h2>', '<h2>Alle zes originele maps</h2>'),
     ('href="maps.html">See every map</a>', 'href="maps.html">Bekijk alle maps</a>'),
     ('href="media.html">All screenshots</a>', 'href="media.html">Alle screenshots</a>'),
@@ -1008,4 +1000,21 @@ COMMON = [
     ('Village rooftops on the High preset', 'Daken van Village op de preset High'),
     ('Village rooftops on the Low preset', 'Daken van Village op de preset Low'),
     ('data-media-count>39 screenshots<', 'data-media-count>39 screenshots<'),
+] + COMMON
+
+# 2026-11-18 official trailer (hero button, home band, media page)
+COMMON = [
+    ('<span class="big">Watch the trailer</span>', '<span class="big">Bekijk de trailer</span>'),
+    ('<span class="small">Official trailer</span>', '<span class="small">Officiële trailer</span>'),
+    ('<span class="cine-kicker">Official trailer</span>', '<span class="cine-kicker">Officiële trailer</span>'),
+    ('<h2 id="trailer-h">One life. Every round.</h2>', '<h2 id="trailer-h">Eén leven. Elke ronde.</h2>'),
+    ('<p class="lede">Six original maps rebuilt on DirectX 12, real-world weapons and rounds decided by a single mistake. This is TrueCombat: Platinum in motion.</p>',
+     '<p class="lede">Zes originele maps herbouwd op DirectX 12, echte wapens en rondes die door één fout beslist worden. Dit is TrueCombat: Platinum in beweging.</p>'),
+    ('data-title="TrueCombat: Platinum official trailer"', 'data-title="Officiële trailer van TrueCombat: Platinum"'),
+    ('aria-label="Play the official trailer"', 'aria-label="Speel de officiële trailer af"'),
+    ('<b>Play trailer</b>', '<b>Speel trailer af</b>'),
+    ('<p class="yt-note">Music: &ldquo;Venom&rdquo; by Scott Buckley, released under CC BY 4.0.', '<p class="yt-note">Muziek: &ldquo;Venom&rdquo; van Scott Buckley, uitgebracht onder CC BY 4.0.'),
+    ('rel="noopener">Watch on YouTube</a>', 'rel="noopener">Bekijk op YouTube</a>'),
+    ('<p class="yt-note">The video plays from YouTube in privacy-enhanced mode. Nothing loads from YouTube until you press play.</p>',
+     '<p class="yt-note">De video speelt af via YouTube in de privacyvriendelijke modus. Er wordt niets van YouTube geladen tot je op afspelen drukt.</p>'),
 ] + COMMON
