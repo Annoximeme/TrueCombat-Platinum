@@ -113,6 +113,50 @@ One finished match for its page on the website (`match.html?id=`): map, mode, le
 Headers `X-TCP-Server`, `X-TCP-Time` (unix seconds) and `X-TCP-Signature`; body is the report. Answers
 200 stored, 409 already stored, 401 bad server/signature/time, 422 refused report, 429 rate limited.
 
+## Seasons, contracts and solo boards (`tcp_season.py`, 0.40.0)
+
+Rules live in `tcp_season.py`; `tcp_stats.py` keeps the tables (`season_players`, `contract_progress`, `solo_runs`) and
+rebuilds the first two on `recompute`, like every other total. Season dates come built in (Season 1: Fri 5 Feb 2027
+17:00 UTC to Fri 7 May 2027 16:00 UTC, double XP and the Frontline badge until Sun 14 Feb 23:00 UTC); set
+`TCP_STATS_SEASONS=/etc/tcp-stats/seasons.json` (a list of seasons, same keys) to move them without a code change.
+
+- **Season rating**: a second Elo next to the all-time one, moved by the same ranked results (`rate()`). A player's
+  first season rating is `1000 + (all-time rating - 1000) / 2`. Faster K for the first 10 season matches, as all-time.
+- **Tiers** 1-8 (Rookie, Contender, Operator, Veteran, Elite, Vanguard, Spearhead, Platinum) from 850 / 950 / 1050 /
+  1150 / 1250 / 1350 / 1450; tier 1 has no floor. Shown after one ranked season match. A drop needs 25 points under the
+  old tier's cut-off; Platinum also needs 10 ranked season matches. Emblems: `rank1`..`rank8` (UI kit K25).
+- **Contracts**: three a week (easy, medium, hard), Monday 00:00 Europe/Brussels, same for everyone, from the fixed
+  pool in `CONTRACTS`. Counted from the same per-match stats as the boards (real players, verified servers), ranked and
+  unranked. A finished contract adds 150 XP to the match that finished it, all three 250 more; launch week doubles it.
+- **Solo boards** (practice records, no XP, no rating): `range` (Range Run, time), `drill` (Accuracy Drill, points),
+  `bots` (weekly bot challenge, time). Runs are `tcp-solo/1`, signed with the player's identity key (Ed25519 over
+  `"tcp-solo/1\n" + canonical JSON without "sig"`), checked against this week's seed, weapon and challenge and against
+  what no human can do. Full shot logs are kept for each board's weekly top 10 only.
+
+Routes:
+
+- `GET /season.json[?season=s1]` (`tcp-season/1`): state (`upcoming`, `live`, `ended`), tiers, rules, this and next
+  week's contracts, this week's solo setup, and the season rating board (`players[]` with tier, progress, rating).
+- `GET /contracts.json?id=<player id>[&week=2027-W06]` (`tcp-contracts/1`): one player's contracts with progress.
+- `GET /solo.json?board=range|drill|bots&period=week|season[&week=]` (`tcp-solo-board/1`): best run per player.
+- `POST /api/v1/solo`: a signed run from the launcher (64 KB max, one a minute per key). 200 stored, 409 duplicate,
+  422 refused with the reason.
+- Staff (loopback + staff token): `POST /staff/solo/void` / `/staff/solo/unvoid` `{"id": "<run id>"}`; CLI
+  `void-run` / `unvoid-run`.
+- Player JSON (`/player.json`, leaderboards, search) gains `season` (`tier`, `name`, `emblem`, `progress`, `rating`,
+  `peakTier`, `rankedMatches`, `xp`) once the player has season data.
+
+`ranks.txt` for game servers (`serve --ranks-file <path>` refreshes it every minute, or `export-ranks <file>`):
+
+```
+TCPRANKS1 <unix time> <season id or ->
+<player id> <tier 0-8> <progress 0-99> [badge,badge]
+```
+
+Player ids are the same ids `ratings.txt` uses (every linked guid and key id of a player carries its line). Tier 0
+means badges only. The game server sends tier and progress as `rk` / `rkp` in the player's configstring, and the
+badges next to the name. Badges today: `frontline` (one counted match in launch week).
+
 ## Detailed stats (`tcp-match/2`, game 0.35.0)
 
 Game servers from 0.35.0 write `tcp-match/2`. It is `tcp-match/1` plus the integrity record and an event log,
