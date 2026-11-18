@@ -1,0 +1,36 @@
+brick-relief-0.jpg | obj_railhouse | brick wall with the new height maps, shallow angle | DX12 Ultra 3840x2160, HUD hidden
+brick-relief-1.jpg | obj_railhouse | brick wall with the new height maps, shallow angle | DX12 Ultra 3840x2160, HUD hidden
+brick-relief-2.jpg | obj_railhouse | brick wall with the new height maps, shallow angle | DX12 Ultra 3840x2160, HUD hidden
+villa-tacmap.jpg | obj_villa2_1 | tactical map open: plan, sites, callouts (title reads VILLA2 1, 0.39.1 item) | DX12 Ultra 3840x2160, HUD on
+chlite-minimap.jpg | obj_chlite | community map with the minimap in a normal HUD | DX12 Ultra 3840x2160, HUD on
+capture-point.jpg | obj_railhouse | Capture Point objective card and minimap marker | DX12 Ultra 3840x2160, HUD on
+community-obj_snowtown-minimap.jpg | obj_snowtown | community map: minimap with plan | DX12 Ultra 3840x2160, HUD on
+community-obj_shozen-tacmap.jpg | obj_shozen | community map: tacmap with plan | DX12 Ultra 3840x2160, HUD on
+community-obj_snowtown-tacmap.jpg | obj_snowtown | community map: tacmap with plan | DX12 Ultra 3840x2160, HUD on
+community-obj_chlite-tacmap.jpg | obj_chlite | community map: tacmap with plan | DX12 Ultra 3840x2160, HUD on
+villa-siteA-blast-01.jpg | obj_villa2_1 | bomb detonates at site A: crate breaks, Terrorists win the round banner (frame 01) | DX12 Ultra 1920x1080, HUD on
+villa-siteA-blast-02.jpg | obj_villa2_1 | bomb detonates at site A: crate breaks, Terrorists win the round banner (frame 02) | DX12 Ultra 1920x1080, HUD on
+villa-siteA-blast-03.jpg | obj_villa2_1 | bomb detonates at site A: crate breaks, Terrorists win the round banner (frame 03) | DX12 Ultra 1920x1080, HUD on
+wind-0.jpg | obj_village | trees and grass in the wind | DX12 Ultra 3840x2160, HUD hidden
+wind-1.jpg | obj_village | trees and grass in the wind | DX12 Ultra 3840x2160, HUD hidden
+focus-0.jpg | obj_village | aimed down the sights / focus zoom | DX12 Ultra 3840x2160, HUD hidden
+focus-1.jpg | obj_village | aimed down the sights / focus zoom | DX12 Ultra 3840x2160, HUD hidden
+mood-obj_delta-nograde.jpg | obj_delta | colour mood OFF (comparison) | DX12 Ultra 3840x2160, HUD hidden
+mood-obj_delta.jpg | obj_delta | colour mood | DX12 Ultra 3840x2160, HUD hidden
+mood-obj_snow-nograde.jpg | obj_snow | colour mood OFF (comparison) | DX12 Ultra 3840x2160, HUD hidden
+mood-obj_snow.jpg | obj_snow | colour mood | DX12 Ultra 3840x2160, HUD hidden
+mood-obj_stadtrand-nograde.jpg | obj_stadtrand | colour mood OFF (comparison) | DX12 Ultra 3840x2160, HUD hidden
+mood-obj_stadtrand.jpg | obj_stadtrand | colour mood | DX12 Ultra 3840x2160, HUD hidden
+mood-obj_village-nograde.jpg | obj_village | colour mood OFF (comparison) | DX12 Ultra 3840x2160, HUD hidden
+mood-obj_village.jpg | obj_village | colour mood | DX12 Ultra 3840x2160, HUD hidden
+bombcard-0.jpg | obj_railhouse | clean Bomb HUD with the objective card | DX12 Ultra 3840x2160, HUD on
+bombcard-1.jpg | obj_railhouse | clean Bomb HUD with the objective card | DX12 Ultra 3840x2160, HUD on
+bombcard-2.jpg | obj_railhouse | clean Bomb HUD with the objective card | DX12 Ultra 3840x2160, HUD on
+m68-village-aimed.jpg | obj_village | M4 SOPMOD aimed: one red dot | DX12 Ultra 2560x1440, HUD on
+m68-harbour-aimed.jpg | harbour | M4 SOPMOD aimed (CQB optic): one red dot | DX12 Ultra 2560x1440, HUD on
+frost-sun-obj_snow-1-045.jpg | obj_snow | lens frost at the screen edges in the cold | DX12 Ultra 3840x2160, HUD hidden
+frost-sun-obj_snow-1-090.jpg | obj_snow | lens frost at the screen edges in the cold | DX12 Ultra 3840x2160, HUD hidden
+cqb-06.jpg | harbour | Harbour TDM with the CQB weapons, close fight | DX12 Ultra 3840x2160, spectating, HUD hidden
+cqb-09.jpg | harbour | Harbour TDM with the CQB weapons, close fight | DX12 Ultra 3840x2160, spectating, HUD hidden
+retake-03.jpg | obj_stadtrand | Bomb mode with bots: entries, holds and retakes | DX12 Ultra 3840x2160, spectating, HUD hidden
+spectate-04.jpg | obj_railhouse | spectating a teammate: sprint, aim, weapon sway | DX12 Ultra 3840x2160, spectating, HUD hidden
