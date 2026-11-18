@@ -1,0 +1,57 @@
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index deb377a..b485727 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -713,6 +713,16 @@ static int shownIdentity[MAX_CLIENTS];
+ static int bodyChoice[MAX_CLIENTS]; /* 0.38.0: userinfo cg_body (1 female), shown to every client as "g" */
+ static void playerConfig(int slot);
+ static int cqbSpawnOrder(int n,int *order); /* tcp_cqb_g.h (0.38.0): CQB spawn selection, 0 = stock order */
++/* audit-12 (0.39.1): set while a competitive match moves everyone to the new side's spawns (tcp_match.h matchSwapSides).
++ * The players are frozen then, so neither the spawning player's trace nor the others' bodies use CONTENTS_BODY, and
++ * team mates were put on the same spawn spot (the view inside a team mate for the 3 s countdown). With it set, a spot
++ * where a player of this batch already stands is skipped; when no free spot is left the stock choice applies. */
++static int spawnSpread;static unsigned char spawnBatch[TCP_MAX_PLAYERS];
++static int spawnTaken(int n,const vec3_t at){
++    for(int i=0;i<maxClients;i++){if(i==n||!spawnBatch[i])continue;
++        const float *o=clients[i].ps.origin;if(fabsf(o[0]-at[0])<32.f&&fabsf(o[1]-at[1])<32.f&&fabsf(o[2]-at[2])<72.f)return 1;}
++    return 0;
++}
+ static void spawn(int n){
+     if(clients[n].spectator){specHold(n);return;}
+     const int cqbRespawn=clients[n].respawnAt!=0; /* 0.38.0: a respawn after a death, not a round start or join */
+@@ -729,6 +739,7 @@ static void spawn(int n){
+     /* Prefer faction spawns, then neutral spawns, then any clear spawn. 0.38.0: with CQB spawns (experimental) a respawn
+      * first tries its team's and the neutral spawns, farthest from the living enemies first (tcp_cqb_g.h). */
+     static int cqbOrder[256];int cqbCount=cqbRespawn?cqbSpawnOrder(n,cqbOrder):0;
++    for (int spread=spawnSpread; spread>=0; --spread)
+     for (int attempt=0; attempt<2; ++attempt, cqbCount=0)
+     for (int pass=0; pass<(cqbCount ? 1 : teamMode ? 3 : 1); ++pass)
+     for(int a=0;a<(cqbCount?cqbCount:spawnCount);a++){
+@@ -737,7 +748,8 @@ static void spawn(int n){
+                          (pass==1 && s->team!=TCP_TEAM_NONE)))
+             continue;
+         memcpy(start,s->origin,sizeof(start));start[2]+=1;
+-        trace_t tr;SystemCall(G_TRACE,&tr,start,tcp_mins,tcp_maxs,start,n,TCP_MOVE_MASK | (canFight(c) ? CONTENTS_BODY : 0));if(tr.startsolid||tr.allsolid)continue;
++        if(spread&&spawnTaken(n,start))continue; /* audit-12 */
++        trace_t tr;SystemCall(G_TRACE,&tr,start,tcp_mins,tcp_maxs,start,n,TCP_MOVE_MASK | (canFight(c) ? CONTENTS_BODY : 0));if(tr.startsolid||tr.allsolid)continue;if(spawnSpread)spawnBatch[n]=1; /* audit-12 */
+         memcpy(p->origin,start,sizeof(start));p->delta_angles[1]=((int)(s->yaw*65536/360)-cmd.angles[1])&65535;p->viewangles[1]=s->yaw;syncStats(n);linkPlayer(n);targetSpawn(n);botSpawned(n);qolSpawned(n);rangeSpawned(n); /* TCP_QOL, TCP_RANGE */
+         char msg[180];snprintf(msg,sizeof(msg),"TCP_NATIVE_SPAWN slot=%d generation=%u teleport=%d xyz=%.3f,%.3f,%.3f\n",n,connectionIds[n],teleport!=0,p->origin[0],p->origin[1],p->origin[2]);print(msg);return;
+     }
+diff --git a/game_src/native/tcp_match.h b/game_src/native/tcp_match.h
+index cf27d12..b652784 100644
+--- a/game_src/native/tcp_match.h
++++ b/game_src/native/tcp_match.h
+@@ -212,11 +212,13 @@ static void matchSwapSides(void)
+         teamSwapQuiet = 1; announceTeam(i); teamSwapQuiet = 0; /* audit-11: no "has joined" line per player */
+     }
+     /* Show everyone at the new side's spawns; they stay frozen until the next round. */
++    memset(spawnBatch, 0, sizeof(spawnBatch)); spawnSpread = 1; /* audit-12: one spawn spot each, see tcp_game.c */
+     for (int i = 0; i < maxClients; ++i) {
+         if (!clients[i].begun) continue;
+         clients[i].inRound = 0;
+         spawn(i);
+     }
++    spawnSpread = 0;
+     matchLog("swap");
+ }
+ 
