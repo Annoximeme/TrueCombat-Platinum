@@ -29,7 +29,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:38:17Z",
-   "checked": "2026-11-18T08:48:16Z",
+   "checked": "2026-11-18T09:24:20Z",
    "settle": false,
    "flagged_by": []
   },
@@ -149,7 +149,7 @@
    "suspicious": 0,
    "engines": 66,
    "analysed": "2026-11-16T05:40:45Z",
-   "checked": "2026-11-18T08:46:56Z",
+   "checked": "2026-11-18T09:23:00Z",
    "settle": false,
    "flagged_by": []
   },
@@ -182,7 +182,7 @@
    "engines": 71,
    "analysed": "2026-11-18T07:57:14Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:49:20Z",
+   "checked": "2026-11-18T09:25:24Z",
    "settle": true
   },
   "1de6be5c36a123a35d8fb8012db654d1f4d7846b359d918d515b74d53a852e06": {
@@ -202,7 +202,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:34:48Z",
-   "checked": "2026-11-18T08:45:04Z",
+   "checked": "2026-11-18T09:21:08Z",
    "settle": false,
    "flagged_by": []
   },
@@ -234,7 +234,7 @@
    "engines": 70,
    "analysed": "2026-11-17T22:59:46Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:51:28Z",
+   "checked": "2026-11-18T09:27:32Z",
    "settle": false
   },
   "28b03b0fe603a9bf8cf2570e518f79587459fe3987632bd4efa972a89689f312": {
@@ -277,8 +277,8 @@
    "engines": 71,
    "analysed": "2026-11-18T03:23:57Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:52:32Z",
-   "settle": true
+   "checked": "2026-11-18T09:28:36Z",
+   "settle": false
   },
   "2bf16cb2e29a4b9c356b1dbc4002c7093e9941d3c5a06ce5116f6ffe77b44770": {
    "name": "platinum-engine.bin",
@@ -364,7 +364,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:51:18Z",
-   "checked": "2026-11-18T08:46:40Z",
+   "checked": "2026-11-18T09:22:44Z",
    "settle": false,
    "flagged_by": []
   },
@@ -395,7 +395,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T21:01:49Z",
-   "checked": "2026-11-18T08:45:36Z",
+   "checked": "2026-11-18T09:21:40Z",
    "settle": false,
    "flagged_by": []
   },
@@ -406,7 +406,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:51:56Z",
-   "checked": "2026-11-18T08:47:12Z",
+   "checked": "2026-11-18T09:23:16Z",
    "settle": false,
    "flagged_by": []
   },
@@ -417,7 +417,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:41:17Z",
-   "checked": "2026-11-18T08:49:04Z",
+   "checked": "2026-11-18T09:25:08Z",
    "settle": false,
    "flagged_by": []
   },
@@ -429,7 +429,7 @@
    "engines": 71,
    "analysed": "2026-11-18T07:57:45Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:49:36Z",
+   "checked": "2026-11-18T09:25:40Z",
    "settle": true
   },
   "4353811500cde0829ddb70e1ab5d6180ebaf498559105f0644c1a029584eecae": {
@@ -440,8 +440,8 @@
    "engines": 71,
    "analysed": "2026-11-18T03:22:21Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:51:44Z",
-   "settle": true
+   "checked": "2026-11-18T09:27:48Z",
+   "settle": false
   },
   "437cb36a15ab04efbcf5c323caa0fdb0d37fcdac91f63892d7be0c36664663bd": {
    "name": "qagame_mp_x64.dll",
@@ -461,7 +461,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:55:04Z",
-   "checked": "2026-11-18T08:48:00Z",
+   "checked": "2026-11-18T09:24:04Z",
    "settle": false,
    "flagged_by": []
   },
@@ -473,7 +473,7 @@
    "engines": 71,
    "analysed": "2026-11-18T08:00:25Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:50:56Z",
+   "checked": "2026-11-18T09:27:00Z",
    "settle": true
   },
   "4554ae35d85d6073a6fa2ef5da99e5d84adf37b268a46f6fe29f0e56af293ad3": {
@@ -506,7 +506,7 @@
    "suspicious": 0,
    "engines": 60,
    "analysed": "2026-11-11T18:50:35Z",
-   "checked": "2026-11-18T08:43:44Z",
+   "checked": "2026-11-18T09:19:48Z",
    "settle": false,
    "flagged_by": []
   },
@@ -610,7 +610,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-15T10:19:53Z",
-   "checked": "2026-11-18T08:44:32Z",
+   "checked": "2026-11-18T09:20:36Z",
    "settle": false,
    "flagged_by": []
   },
@@ -621,7 +621,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:54:13Z",
-   "checked": "2026-11-18T08:47:44Z",
+   "checked": "2026-11-18T09:23:48Z",
    "settle": false,
    "flagged_by": []
   },
@@ -644,8 +644,8 @@
    "engines": 71,
    "analysed": "2026-11-18T03:22:53Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:52:00Z",
-   "settle": true
+   "checked": "2026-11-18T09:28:04Z",
+   "settle": false
   },
   "5c75d6196bcae554d0f4ef9a29487f6ada8ecf3d755d6b31327c0123bcb7ebb5": {
    "name": "TrueCombat-Platinum-Setup.exe",
@@ -742,8 +742,8 @@
    "engines": 69,
    "analysed": "2026-11-18T03:25:33Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:53:20Z",
-   "settle": true
+   "checked": "2026-11-18T09:29:24Z",
+   "settle": false
   },
   "633d29e2510e11a61658e545c5cb1acfe6a03c89fe408994601530f161241c57": {
    "name": "TrueCombatPlatinum.exe",
@@ -787,8 +787,8 @@
     "Bkav: W32.Malware.A80D2986",
     "Elastic: malicious (high confidence)"
    ],
-   "checked": "2026-11-18T08:51:12Z",
-   "settle": true
+   "checked": "2026-11-18T09:27:16Z",
+   "settle": false
   },
   "67fafa6f083eab07abc13b04170333d8e41cb5f5d22b550ebe44d5940815b23a": {
    "name": "cgame_mp_x64.dll",
@@ -833,7 +833,7 @@
    "engines": 71,
    "analysed": "2026-11-18T07:58:49Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:50:08Z",
+   "checked": "2026-11-18T09:26:12Z",
    "settle": true
   },
   "71f0be245d312e9d7bd04e1b576755cb6799cdbdb24fbdedf547914d1ca4f16b": {
@@ -866,7 +866,7 @@
    "engines": 71,
    "analysed": "2026-11-18T07:58:17Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:49:52Z",
+   "checked": "2026-11-18T09:25:56Z",
    "settle": true
   },
   "74fda10b1c51640faec7c2272ea256580cec437cff8b9bfe96dfd5cfad004762": {
@@ -918,7 +918,7 @@
    "engines": 70,
    "analysed": "2026-11-18T07:59:21Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:50:24Z",
+   "checked": "2026-11-18T09:26:28Z",
    "settle": true
   },
   "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca": {
@@ -928,7 +928,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T21:01:44Z",
-   "checked": "2026-11-18T08:44:48Z",
+   "checked": "2026-11-18T09:20:52Z",
    "settle": false,
    "flagged_by": []
   },
@@ -984,7 +984,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:35:22Z",
-   "checked": "2026-11-18T08:45:52Z",
+   "checked": "2026-11-18T09:21:56Z",
    "settle": false,
    "flagged_by": []
   },
@@ -995,7 +995,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-10-22T00:24:16Z",
-   "checked": "2026-11-18T08:43:28Z",
+   "checked": "2026-11-18T09:19:32Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1006,7 +1006,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:50:17Z",
-   "checked": "2026-11-18T08:46:24Z",
+   "checked": "2026-11-18T09:22:29Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1097,7 +1097,7 @@
     "Bkav: W32.Malware.F1667149",
     "Elastic: malicious (high confidence)"
    ],
-   "checked": "2026-11-18T08:42:56Z",
+   "checked": "2026-11-18T09:19:00Z",
    "settle": true
   },
   "a596b28d6f841ec98ff4622a32e9fe9f2739b258c383e34d073c52eb9150ca94": {
@@ -1139,7 +1139,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-18T04:14:57Z",
-   "checked": "2026-11-18T08:48:48Z",
+   "checked": "2026-11-18T09:24:52Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1153,7 +1153,7 @@
    "flagged_by": [
     "Microsoft: Trojan:Win32/Wacatac.B!ml"
    ],
-   "checked": "2026-11-18T08:43:12Z",
+   "checked": "2026-11-18T09:19:16Z",
    "settle": true
   },
   "ab25af350c48856633d671a16e8469277f9acee39186d69fe5b2a26100d738e8": {
@@ -1163,7 +1163,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-10-15T06:19:37Z",
-   "checked": "2026-11-18T08:44:00Z",
+   "checked": "2026-11-18T09:20:04Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1185,7 +1185,7 @@
    "suspicious": 0,
    "engines": 69,
    "analysed": "2026-11-17T03:52:45Z",
-   "checked": "2026-11-18T08:47:28Z",
+   "checked": "2026-11-18T09:23:32Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1235,8 +1235,8 @@
    "engines": 71,
    "analysed": "2026-11-18T03:24:29Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:52:48Z",
-   "settle": true
+   "checked": "2026-11-18T09:28:52Z",
+   "settle": false
   },
   "b4dac59944d24bd793fdee5d7cb440b41ed7d3c2dad50507e7d9d0f6dae37096": {
    "name": "ui_mp_x64.dll",
@@ -1289,7 +1289,7 @@
    "engines": 68,
    "analysed": "2026-11-18T07:59:53Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:50:40Z",
+   "checked": "2026-11-18T09:26:44Z",
    "settle": true
   },
   "be51db700302c301e5a18687a49169bc9e23105db967d5a238c48c75310a42b3": {
@@ -1320,8 +1320,8 @@
    "engines": 71,
    "analysed": "2026-11-18T03:23:25Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:52:16Z",
-   "settle": true
+   "checked": "2026-11-18T09:28:20Z",
+   "settle": false
   },
   "c2a1fe9557ec8c461802b7732b03fbd73405be6da3b21f2da889cb6746cbf104": {
    "name": "TrueCombatPlatinum.exe",
@@ -1392,7 +1392,7 @@
    "suspicious": 0,
    "engines": 69,
    "analysed": "2026-11-17T03:45:50Z",
-   "checked": "2026-11-18T08:46:08Z",
+   "checked": "2026-11-18T09:22:12Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1403,7 +1403,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T21:00:49Z",
-   "checked": "2026-11-18T08:48:32Z",
+   "checked": "2026-11-18T09:24:36Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1435,7 +1435,7 @@
    "suspicious": 0,
    "engines": 70,
    "analysed": "2026-11-13T21:34:54Z",
-   "checked": "2026-11-18T08:45:20Z",
+   "checked": "2026-11-18T09:21:24Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1492,7 +1492,7 @@
    "flagged_by": [
     "Skyhigh: BehavesLike.Win64.Dropper.cc"
    ],
-   "checked": "2026-11-18T08:44:16Z",
+   "checked": "2026-11-18T09:20:20Z",
    "settle": true
   },
   "e0e13d8e4350082a8ab1a2cf2873a07e25df1a89753cb8174a77b0d0e187491e": {
@@ -1514,8 +1514,8 @@
    "engines": 71,
    "analysed": "2026-11-18T03:25:01Z",
    "flagged_by": [],
-   "checked": "2026-11-18T08:53:04Z",
-   "settle": true
+   "checked": "2026-11-18T09:29:08Z",
+   "settle": false
   },
   "eb6802fdbce7e35d9d252e8ec7ebf508dbd2056b26cea56d356df3216b48c343": {
    "name": "TrueCombatPlatinum.exe",
