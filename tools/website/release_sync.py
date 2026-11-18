@@ -29,7 +29,8 @@ CHEV = ' <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none
 
 # Section headings as release notes write them (upper case) -> how the site shows them.
 TITLES = {"HUD": "HUD", "UI": "UI", "DX12": "DirectX 12", "DIRECTX 12": "DirectX 12", "STATUS": "Known issues",
-          "KNOWN ISSUES": "Known issues", "FIXES": "Fixes", "BUG FIXES": "Fixes"}
+          "KNOWN ISSUES": "Known issues", "FIXES": "Fixes", "BUG FIXES": "Fixes",
+          "CQB (EXPERIMENTAL)": "CQB (experimental)"}
 SKIP = {"DEVELOPMENT"}
 
 
