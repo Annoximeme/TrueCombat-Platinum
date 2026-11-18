@@ -47,7 +47,7 @@ FEED = GITHUB + "/releases.atom"
 MAPLIST = ["delta", "northport", "railhouse", "snow", "stadtrand", "village"]
 # written out in full by this script from landing.py (the other pages are hand-edited)
 LANDING = ["download", "faq", "truecombat-elite", "privacy"]
-PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio", "support",
+PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "season", "player", "competitive", "news", "devlog", "press", "studio", "support",
          "account"]
 # pages that only make sense with a signed-in player or a query (player?u=, account): not in the sitemap or site search
 HIDDEN = ("player", "account")
@@ -55,7 +55,7 @@ HIDDEN = ("player", "account")
 LABELS = {
     "en": {
         "maps": "Maps", "weapons": "Weapons", "guide": "Guide", "servers": "Servers",
-        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support", "privacy": "Privacy",
+        "leaderboards": "Leaderboards", "season": "Season 1", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support", "privacy": "Privacy",
         "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About", "truecombat-elite": "TrueCombat: Elite", "search": "Search", "top": "Back to top",
         "download": "Download", "menu": "Menu", "sections": "Sections", "discord": "Join the Discord", "language": "Language",
         "other": "Nederlands", "other_short": "NL", "skip": "Skip to content", "footer": "Footer", "releases": "Releases",
@@ -65,7 +65,7 @@ LABELS = {
     },
     "nl": {
         "maps": "Maps", "weapons": "Wapens", "guide": "Gids", "servers": "Servers",
-        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons", "privacy": "Privacy",
+        "leaderboards": "Ranglijsten", "season": "Seizoen 1", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons", "privacy": "Privacy",
         "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over", "truecombat-elite": "TrueCombat: Elite", "search": "Zoeken", "top": "Terug naar boven",
         "download": "Download", "menu": "Menu", "sections": "Onderdelen", "discord": "Word lid van de Discord", "language": "Taal",
         "other": "English", "other_short": "EN", "skip": "Naar de inhoud", "footer": "Voettekst", "releases": "Releases",
@@ -135,7 +135,7 @@ MENU = {
            "f_play": "Free · Windows 10 and 11, 64-bit", "f_game": "{m} maps · {w} weapons", "f_compete": "Ranked play on the official servers", "f_community": "{n} devlog posts so far",
            "d": {"download": "Free Windows installer", "guide": "Controls, modes and tactics", "servers": "Live servers, join in one click", "faq": "Answers to common questions",
                  "truecombat-elite": "Where it all began", "maps": "Every map, with plans in 3D", "weapons": "The full arsenal, compared", "graphics": "Low, High and Ultra side by side",
-                 "gallery": "In-game screenshots", "leaderboards": "Ratings, ranks and stat leaders", "competitive": "Ranked play and its rules", "account": "Your profile, stats and friends",
+                 "gallery": "In-game screenshots", "leaderboards": "Ratings, ranks and stat leaders", "season": "Tiers, weekly contracts and solo boards", "competitive": "Ranked play and its rules", "account": "Your profile, stats and friends",
                  "devlog": "How the game is being built", "news": "Patch notes for every release", "media": "Trailers, screenshots and wallpapers", "discord": "Find a match, talk to the team",
                  "studio": "The team behind the game", "press": "Logos, key art and facts"}},
     "nl": {"play": "Spelen", "game": "Het spel", "compete": "Competitie", "community": "Community", "close": "Menu sluiten",
@@ -143,12 +143,12 @@ MENU = {
            "f_play": "Gratis · Windows 10 en 11, 64-bit", "f_game": "{m} maps · {w} wapens", "f_compete": "Ranked spelen op de officiële servers", "f_community": "Al {n} devlogartikelen",
            "d": {"download": "Gratis Windows-installatie", "guide": "Besturing, modi en tactiek", "servers": "Live servers, meedoen in één klik", "faq": "Antwoorden op veelgestelde vragen",
                  "truecombat-elite": "Waar het allemaal begon", "maps": "Elke map, met plattegronden in 3D", "weapons": "Het volledige arsenaal, vergeleken", "graphics": "Low, High en Ultra naast elkaar",
-                 "gallery": "Screenshots uit het spel", "leaderboards": "Ratings, rangen en topspelers", "competitive": "Ranked spelen en de regels", "account": "Je profiel, statistieken en vrienden",
+                 "gallery": "Screenshots uit het spel", "leaderboards": "Ratings, rangen en topspelers", "season": "Tiers, wekelijkse contracten en solo-ranglijsten", "competitive": "Ranked spelen en de regels", "account": "Je profiel, statistieken en vrienden",
                  "devlog": "Hoe het spel gebouwd wordt", "news": "Patchnotes van elke release", "media": "Trailers, screenshots en wallpapers", "discord": "Zoek een potje, praat met het team",
                  "studio": "Het team achter het spel", "press": "Logo's, key art en feiten"}},
 }
 MENU_GROUPS = [("play", ["download", "guide", "servers", "faq", "truecombat-elite"]), ("game", ["maps", "weapons", "graphics", "gallery"]),
-               ("compete", ["leaderboards", "competitive", "account"]), ("community", ["devlog", "news", "media", "discord", "studio", "press"])]
+               ("compete", ["leaderboards", "season", "competitive", "account"]), ("community", ["devlog", "news", "media", "discord", "studio", "press"])]
 _NI = {
     "download": '<path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/>', "guide": '<path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/>',
     "servers": '<rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/>',
@@ -157,6 +157,7 @@ _NI = {
     "weapons": '<circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/>', "graphics": '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
     "gallery": '<rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/>',
     "leaderboards": '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>',
+    "season": '<path d="m4 13 8-8 8 8M7 19h10"/>',
     "competitive": '<path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/>', "account": '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
     "devlog": '<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>', "news": '<path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/>',
     "media": '<rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/>',
@@ -297,7 +298,7 @@ def footer(lang, page=""):
     up = upp(lang)
     cols = [
         (L["col_game"], [(href(p), L[p]) for p in ("download", "maps", "weapons", "guide", "media", "faq", "truecombat-elite")]),
-        (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "competitive")] + [(href("account"), ACCOUNT_T.get(lang, "Account"))]),
+        (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "season", "competitive")] + [(href("account"), ACCOUNT_T.get(lang, "Account"))]),
         (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press", "support", "privacy")]),
         (L["col_community"], [(DISCORD, "Discord"), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]),
     ]
