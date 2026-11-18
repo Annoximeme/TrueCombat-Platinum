@@ -1,0 +1,35 @@
+diff --git a/game_src/native/tcp_immersion_cg.h b/game_src/native/tcp_immersion_cg.h
+index 96d04dd..d91b5bc 100644
+--- a/game_src/native/tcp_immersion_cg.h
++++ b/game_src/native/tcp_immersion_cg.h
+@@ -388,7 +388,7 @@ typedef struct {short on,team;float o[3],a[3],v[3];int eflags,weapon,ground,heal
+ typedef struct {int serverTime;imsPl_t pl[MAX_CLIENTS];} imsRec_t;
+ static imsRec_t imsRec[IMS_REC];static int imsRecNext,imsRecLast;
+ static struct {int victim,killer,serverTime,round;} imsKillLast;
+-static struct {int on,start,from,until,victim,killer,phase;vec3_t cam,look;int camInit;} imsRp;
++static struct {int on,start,from,until,victim,killer,phase;vec3_t cam,look;int camInit,side;} imsRp;
+ static void imsKill(int victim,int killer){imsKillLast.victim=victim;imsKillLast.killer=killer;imsKillLast.serverTime=snap.serverTime;imsKillLast.round=1;}
+ static void imsRecord(const playerState_t *p){
+     if(snap.serverTime==imsRecLast||imsRp.on)return;imsRecLast=snap.serverTime;
+@@ -436,8 +436,19 @@ static int imsReplayView(const playerState_t *p,int time,vec3_t origin,vec3_t an
+         /* over the killer's shoulder: behind and to the right of the killer, looking at the victim */
+         vec3_t eye={ko[0],ko[1],ko[2]+(a->pl[k].eflags&EF_PRONE?TCP_PRONE_VIEWHEIGHT:a->pl[k].eflags&EF_CROUCHING?TCP_CROUCH_VIEWHEIGHT:TCP_STAND_VIEWHEIGHT)};
+         vec3_t d;VectorSubtract(look,eye,d);d[2]=0;float l=sqrtf(DotProduct(d,d));if(l<1)l=1;VectorScale(d,1.f/l,d);
+-        for(int c=0;c<3;c++)want[c]=eye[c]-d[c]*64.f;want[0]+=d[1]*22.f;want[1]-=d[0]*22.f;want[2]+=14.f;
+-        trace_t tr;static const vec3_t mn={-6,-6,-6},mx={6,6,6};SystemCall(CG_CM_BOXTRACE,&tr,eye,want,mn,mx,0,CONTENTS_SOLID);VectorCopy(tr.endpos,want);}
++        /* polish-03: with a wall at the killer's right or back the trace ended inside the killer's head. Try the right
++         * shoulder, the left shoulder and straight behind and higher; keep the roomiest (chosen once per replay). If
++         * none has room, the camera goes just in front of the killer's face. Player clip counts as a wall here, so the
++         * camera stays on the killer's side of fences and railings. */
++        static const float cand[3][3]={{64.f,22.f,14.f},{64.f,-22.f,14.f},{52.f,0.f,34.f}};
++        trace_t tr;static const vec3_t mn={-6,-6,-6},mx={6,6,6};
++        if(!imsRp.camInit){float bestF=-1;imsRp.side=0;
++            for(int s=0;s<3;s++){vec3_t w;for(int c=0;c<3;c++)w[c]=eye[c]-d[c]*cand[s][0];w[0]+=d[1]*cand[s][1];w[1]-=d[0]*cand[s][1];w[2]+=cand[s][2];
++                SystemCall(CG_CM_BOXTRACE,&tr,eye,w,mn,mx,0,CONTENTS_SOLID|CONTENTS_PLAYERCLIP);if(tr.fraction>bestF+.05f){bestF=tr.fraction;imsRp.side=s;}}
++            if(bestF<.45f)imsRp.side=3;}
++        if(imsRp.side==3){for(int c=0;c<3;c++)want[c]=eye[c]+d[c]*14.f;want[2]+=2.f;}
++        else{const float *o=cand[imsRp.side];for(int c=0;c<3;c++)want[c]=eye[c]-d[c]*o[0];want[0]+=d[1]*o[1];want[1]-=d[0]*o[1];want[2]+=o[2];
++            SystemCall(CG_CM_BOXTRACE,&tr,eye,want,mn,mx,0,CONTENTS_SOLID|CONTENTS_PLAYERCLIP);VectorCopy(tr.endpos,want);}}
+     else{const float yaw=(va[1]+150.f)*.01745329f+(time-imsRp.start)*.0002f; /* no killer (fall, own blast): slow orbit */
+         vec3_t to={vo[0]+cosf(yaw)*110.f,vo[1]+sinf(yaw)*110.f,vo[2]+70.f};trace_t tr;static const vec3_t mn={-6,-6,-6},mx={6,6,6};
+         SystemCall(CG_CM_BOXTRACE,&tr,look,to,mn,mx,0,CONTENTS_SOLID);VectorCopy(tr.endpos,want);}

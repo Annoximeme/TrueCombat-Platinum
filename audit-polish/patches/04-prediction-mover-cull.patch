@@ -1,0 +1,42 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 1216555..b9d29f8 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -140,12 +140,28 @@ static void reconcileModels(void){
+     if(own>=0&&own<MAX_GENTITIES){present[own]=1;observeModel(own,1,own,snap.ps.eFlags&EF_TELEPORT_BIT,snap.ps.stats[TCP_STAT_SHOTS]);}
+     for(int i=0;i<MAX_GENTITIES;i++)if(!present[i]&&TCP_LifeAbsent(&modelLife[i]))retireModel(i,TCP_LIFE_MISSING);
+ }
++/* audit 0.38.1: the prediction trace tested every mover in the snapshot on every call (obj_railhouse has 116 breakable
++ * panes: about 16,000 traces a frame while predicting). Each mover's clip handle and bounds are looked up once, and a
++ * mover whose box (a sphere around its origin when it is turned) is clear of the swept move box is skipped. A mover
++ * with unknown bounds is always traced, as before. */
++typedef struct {clipHandle_t handle;float lo[3],hi[3],radius;signed char state;} moverClip_t;static moverClip_t moverClip[MAX_MODELS];
+ static void trace(trace_t *tr,const vec3_t a,const vec3_t lo,const vec3_t hi,const vec3_t b,int skip){
+     (void)skip;SystemCall(CG_CM_BOXTRACE,tr,a,b,lo,hi,0,TCP_MOVE_MASK);tr->entityNum=tr->fraction<1?ENTITYNUM_WORLD:ENTITYNUM_NONE;
+     if(!ready)return;
++    float slo[3],shi[3];for(int k=0;k<3;k++){slo[k]=(a[k]<b[k]?a[k]:b[k])+lo[k]-2.f;shi[k]=(a[k]>b[k]?a[k]:b[k])+hi[k]+2.f;}
+     for(int i=0;i<snap.numEntities;i++){
+         entityState_t *e=&snap.entities[i];if(e->eType!=ET_MOVER||e->modelindex<=0||e->modelindex>=MAX_MODELS)continue;
+-        clipHandle_t handle=(clipHandle_t)SystemCall(CG_CM_INLINEMODEL,e->modelindex);trace_t t;
++        moverClip_t *m=&moverClip[e->modelindex];
++        if(!m->state){
++            m->handle=(clipHandle_t)SystemCall(CG_CM_INLINEMODEL,e->modelindex);m->state=-1;
++            if(inlineModels[e->modelindex]){vec3_t mn={0,0,0},mx={0,0,0};float r=0;SystemCall(CG_R_MODELBOUNDS,inlineModels[e->modelindex],mn,mx);
++                if(mx[0]>mn[0]&&mx[1]>mn[1]&&mx[2]>mn[2]){for(int k=0;k<3;k++){const float f=fabsf(mn[k])>fabsf(mx[k])?fabsf(mn[k]):fabsf(mx[k]);r+=f*f;m->lo[k]=mn[k];m->hi[k]=mx[k];}m->radius=sqrtf(r);m->state=1;}}
++        }
++        if(m->state>0){const float *o=e->pos.trBase,*ang=e->apos.trBase;int clear=0;
++            if(ang[0]!=0.f||ang[1]!=0.f||ang[2]!=0.f){for(int k=0;k<3;k++)if(slo[k]>o[k]+m->radius||shi[k]<o[k]-m->radius)clear=1;}
++            else for(int k=0;k<3;k++)if(slo[k]>o[k]+m->hi[k]||shi[k]<o[k]+m->lo[k])clear=1;
++            if(clear)continue;}
++        const clipHandle_t handle=m->handle;trace_t t;
+         SystemCall(CG_CM_TRANSFORMEDBOXTRACE,&t,a,b,lo,hi,handle,TCP_MOVE_MASK,e->pos.trBase,e->apos.trBase);
+         qboolean start=tr->startsolid;if(t.fraction<tr->fraction||t.allsolid){*tr=t;tr->entityNum=e->number;}tr->startsolid|=start|t.startsolid;
+     }
+@@ -1199,6 +1215,7 @@ static void init(int serverNum,int reliable){
+     snprintf(path,sizeof(path),"maps/%s.bsp",map);SystemCall(CG_CM_LOADMAP,path);SystemCall(CG_R_LOADWORLDMAP,path);
+     int count=(int)SystemCall(CG_CM_NUMINLINEMODELS);if(count>MAX_MODELS){SystemCall(CG_ERROR,"Native sandbox: too many inline models");return;}
+     for(int i=1;i<count;i++){char name[32];snprintf(name,sizeof(name),"*%d",i);inlineModels[i]=(qhandle_t)SystemCall(CG_R_REGISTERMODEL,name);}
++    memset(moverClip,0,sizeof(moverClip)); /* audit 0.38.1: mover clip cache, per map */
+     bombModel=(qhandle_t)SystemCall(CG_R_REGISTERMODEL,"models/multiplayer/dynamite/dynamite.md3");
+     flagModels[1]=(qhandle_t)SystemCall(CG_R_REGISTERMODEL,"models/multiplayer/ctf/backpack_dropped_red.md3");flagModels[2]=(qhandle_t)SystemCall(CG_R_REGISTERMODEL,"models/multiplayer/ctf/backpack_dropped_blue.md3");
+     memset(&hudFont,0,sizeof(hudFont));SystemCall(CG_R_REGISTERFONT,"courbd",21,&hudFont,qfalse);

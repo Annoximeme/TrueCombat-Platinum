@@ -1,0 +1,32 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 4df6287..1216555 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -1828,7 +1828,6 @@ static void frame(int time,int demo){
+         break;
+     }
+     drawFollowLines(&p);
+-    drawStun(snap.serverTime);
+     drawPopups(time);
+     bombCgDraw(&p,time); /* 0.38.0 "Bomb planted at <location>" and the carrier notices */
+     ffHudScope=!phFollowingHud;
+@@ -1836,6 +1835,7 @@ static void frame(int time,int demo){
+     if(optCompass())drawCompass(hp,phase==TCP_ROUND_LIVE?captureMarker:NULL);
+     drawObjectivePanel(hp,objective[0]?objective:NULL);
+     ffHudScope=0;
++    drawStun(snap.serverTime); /* polish-02: the flash now also covers minimap, compass and objective card, as it did the vitals and the score */
+     qolHud(&p); /* TCP_QOL */
+     rangeDraw(&p); /* TCP_RANGE */
+     fpsDraw(); /* 0.37.1: cg_drawFPS */
+diff --git a/game_src/native/tcp_vux_cg.h b/game_src/native/tcp_vux_cg.h
+index 5022652..cd0d47a 100644
+--- a/game_src/native/tcp_vux_cg.h
++++ b/game_src/native/tcp_vux_cg.h
+@@ -216,6 +216,7 @@ static void vxTacLoad(void){
+ static int vxTacAllowed(void){char v[8]="";TCP_InfoValue(config(CS_SERVERINFO),"g_tacticalMap",v,sizeof(v));return !v[0]||atoi(v)!=0;}
+ static void vxTacDraw(const playerState_t *p,int now){
+     if(!vxTac.held&&!vxTac.toggled)return;
++    if(flashOn&&stunAmount(blindEnd,snap.serverTime)>.35f)return; /* polish-02: no tactical map while blinded by a flash */
+     vxTacLoad();
+     const int saved=hudAnchor;hudAnchor=HUD_CENTER;
+     if(!vxTacAllowed()||!vxTac.ok){

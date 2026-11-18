@@ -1,0 +1,81 @@
+diff --git a/game_src/native/tcp_bomb_cg.h b/game_src/native/tcp_bomb_cg.h
+index 501c44c..7335dc4 100644
+--- a/game_src/native/tcp_bomb_cg.h
++++ b/game_src/native/tcp_bomb_cg.h
+@@ -172,7 +172,11 @@ static float bombCgPanel(const playerState_t *p, float right, float y)
+         const char letter = bombCgSiteLetter(cgBomb.site);
+         const int left = bombCgSecondsLeft(snap.serverTime);
+         snprintf(title, sizeof(title), letter ? "BOMB PLANTED  SITE %c" : "BOMB PLANTED", letter);
+-        snprintf(body, sizeof(body), "%s", cgBomb.where[0] ? cgBomb.where : "Bomb site");
++        /* polish-01: without a real place name the second line repeated the site ("site A", "Bombsite A"); say what to do instead */
++        int siteWord = !cgBomb.where[0];
++        for (const char *w = cgBomb.where; *w && !siteWord; ++w) siteWord = (w[0] | 32) == 's' && (w[1] | 32) == 'i' && (w[2] | 32) == 't' && (w[3] | 32) == 'e';
++        if (!siteWord) snprintf(body, sizeof(body), "%s", cgBomb.where);
++        else snprintf(body, sizeof(body), "%s", p->teamNum == TCP_TEAM_BLUE ? "Defuse the charge" : p->teamNum == TCP_TEAM_RED ? "Defend the charge" : "Bomb site");
+         snprintf(value, sizeof(value), "%d:%02d", left / 60, left % 60);
+         accent = phAcc;
+         if (cgBomb.defuse > 0) fraction = (float)cgBomb.defuse / TCP_BOMB_DEFUSE_DONE;
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index ae630d2..4df6287 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -1803,14 +1803,21 @@ static void frame(int time,int demo){
+         char name[48]="";
+         const int teams=teamMatch(&p); /* polish-01: also for a spectator, who has no team */
+         if (teams && winner>TCP_TEAM_NONE && winner<=TCP_TEAM_BLUE)
+-            snprintf(name,sizeof(name),"%s team",winner==TCP_TEAM_RED?"Red":"Blue");
++            snprintf(name,sizeof(name),"%s",winner==TCP_TEAM_RED?"Terrorists":"SpecOps"); /* polish-01: was "Red team" / "Blue team" */
+         else if (!teams && winner>=0 && winner<MAX_CLIENTS)
+             TCP_InfoValue(config(CS_PLAYERS+winner),"n",name,sizeof(name));
+-        if (winner<0)
++        /* texts-01b: after the last round of the match (g_roundlimit) there is no next round; the map vote or the next map follows */
++        char lim[16]="";TCP_InfoValue(config(CS_SERVERINFO),"g_roundlimit",lim,sizeof(lim));
++        const int last=atoi(lim)>0&&phRoundsDone(&p)>=atoi(lim);
++        if (winner<0&&last)
++            snprintf(line,sizeof(line),"Round draw. Match over.");
++        else if (winner<0)
+             snprintf(line,sizeof(line),"Round draw. Next round in: %i",seconds);
++        else if (last)
++            snprintf(line,sizeof(line),"%s^7 %s the round. Match over.",name[0]?name:"Player",teams&&name[0]?"win":"wins");
+         else
+-            snprintf(line,sizeof(line),"%s^7 wins the round. Next round in: %i",name[0]?name:"Player",seconds);
+-        if(phOn())phBanner(120,line);else hudTextCenter(120,line);
++            snprintf(line,sizeof(line),"%s^7 %s the round. Next round in: %i",name[0]?name:"Player",teams&&name[0]?"win":"wins",seconds);
++        if(phOn()){if(!(dm.open&&cqbPerksShown()))phBanner(120,line);}else hudTextCenter(120,line); /* not through the CQB perks panel */
+         break;
+     }
+     default:
+diff --git a/game_src/native/tcp_hud_platinum_cg.h b/game_src/native/tcp_hud_platinum_cg.h
+index 0decf7d..9b431e9 100644
+--- a/game_src/native/tcp_hud_platinum_cg.h
++++ b/game_src/native/tcp_hud_platinum_cg.h
+@@ -31,6 +31,7 @@ static const float phLine[4]={1,1,1,TOK_A_HAIRLINE},phLine2[4]={1,1,1,TOK_A_HAIR
+ #define PH_CX 426.667f
+ enum {PH_LEFT,PH_MID,PH_RIGHT};
+ 
++static void mapVotePretty(const char *map, char *out, int size); /* tcp_mapvote_cg.h */
+ static void phUpper(char *s){for(;*s;s++)if(*s>='a'&&*s<='z')*s=(char)(*s-32);}
+ static int phOn(void){return phReady&&phStyle.integer!=0;}
+ static void paInit(void); /* kit-ammo (part C): tcp_hud_ammo_cg.h */
+@@ -252,6 +253,13 @@ static int phRoundNumber(const playerState_t *p){
+     if(phase==TCP_ROUND_COUNTDOWN&&phRndWarm)return 0;
+     return (won>phRndSeen?won:phRndSeen)+1;
+ }
++/* texts-01b: rounds completed in this match as far as this client saw (see phRoundNumber). The team scores of Team
++ * Deathmatch, Flag and CQB Rules are kills or captures, not rounds, so only the elimination modes and Bomb use them. */
++static int phRoundsDone(const playerState_t *p){
++    const int gm=p->holdable[TCP_HOLD_GAMEMODE],won=p->persistant[PERS_UNUSED_14]+p->persistant[PERS_UNUSED_15];
++    phRoundNumber(p);
++    return (gm==0||gm==6)&&won>phRndSeen?won:phRndSeen;
++}
+ static void phRoundClock(const playerState_t *player,int time){
+     const int saved=hudAnchor;hudAnchor=HUD_CENTER;
+     const int phase=player->stats[TCP_STAT_ROUND],seconds=player->stats[TCP_STAT_ROUND_SECONDS];
+@@ -567,6 +575,7 @@ static void phScoreboard(const playerState_t *player,const hudScore_t *scores,in
+     const float shade[4]={.035f,.043f,.055f,.55f};
+     hudFill(-200,0,PH_W+400,480,shade);
+     TCP_InfoValue(config(CS_SERVERINFO),"mapname",map,sizeof(map));TCP_InfoValue(config(CS_SERVERINFO),"sv_hostname",host,sizeof(host));
++    {char pretty[64];mapVotePretty(map,pretty,sizeof(pretty));snprintf(map,sizeof(map),"%s",pretty);} /* polish-01: "obj_village" reads "VILLAGE", as on the loading screen */
+     phUpper(map);
+     const float x=40,w=PH_W-80;
+     phTextT(&phBody,x,26,5,.9f,phAcc,"SCOREBOARD",PH_LEFT);
