@@ -83,7 +83,7 @@ sp = store.player(pid["Ana"])["season"]
 reset = S.soft_reset(store.db.execute("SELECT rating_before FROM match_players WHERE match='s-010' AND pid=?", (pid["Ana"],)).fetchone()[0])
 row = store.db.execute("SELECT rating FROM season_players WHERE pid=?", (pid["Ana"],)).fetchone()[0]
 check("season rating starts from the soft reset", reset < row < reset + 41, (reset, row))
-check("tier after one ranked match", sp["tier"] == S.tier_for(row, 1) and sp["name"] and sp["emblem"].startswith("rank"), sp)
+check("tier after one ranked match", sp["tier"] == S.tier_for(row, 1) and sp["tierName"] and sp["emblem"].startswith("rank") and sp["season"] == "s1", sp)
 mp = store.db.execute("SELECT xp FROM match_players WHERE match='s-010' AND pid=?", (pid["Ana"],)).fetchone()[0]
 base = tcp_stats.match_xp({"kills": 0, "headshots": 0, "roundsWon": 6, "objectives": 0, "won": True, "timePlayed": 900, "teamKills": 0}, 900)
 check("double XP in launch week", mp >= 2 * base, (mp, base))
@@ -136,7 +136,7 @@ check("recompute rebuilds contracts identically", csnap == [tuple(r) for r in st
 # season route
 ss = store.season()
 check("season route", ss["state"] == "live" and ss["season"]["id"] == "s1" and pid["Ana"] in [p["id"] for p in ss["players"][:2]]
-      and len(ss["tiers"]) == 8 and len(ss["week"]["contracts"]) == 3, json.dumps(ss)[:300])
+      and ss["players"][0]["tierName"] and ss["players"][0]["name"] in G and len(ss["tiers"]) == 8 and len(ss["week"]["contracts"]) == 3, json.dumps(ss)[:300])
 code, body = tcp_stats.handle_get(store, "/season.json", {})
 check("GET /season.json", code == 200 and body["schema"] == "tcp-season/1")
 code, body = tcp_stats.handle_get(store, "/contracts.json", {"id": [pid["Ben"]]})

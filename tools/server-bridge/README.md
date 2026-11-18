@@ -144,8 +144,9 @@ Routes:
   422 refused with the reason.
 - Staff (loopback + staff token): `POST /staff/solo/void` / `/staff/solo/unvoid` `{"id": "<run id>"}`; CLI
   `void-run` / `unvoid-run`.
-- Player JSON (`/player.json`, leaderboards, search) gains `season` (`tier`, `name`, `emblem`, `progress`, `rating`,
-  `peakTier`, `rankedMatches`, `xp`) once the player has season data.
+- Player JSON (`/player.json`, leaderboards, search) gains `season` (`season`, `seasonName`, `tier`, `tierName`,
+  `tierShort`, `emblem`, `progress`, `rating`, `peakTier`, `rankedMatches`, `xp`) once the player has season data;
+  `/player.json` also lists `seasonBadges` (`frontline`).
 
 `ranks.txt` for game servers (`serve --ranks-file <path>` refreshes it every minute, or `export-ranks <file>`):
 
