@@ -1,0 +1,55 @@
+sleep 34
+team r 0 10 39 0 0
+sleep 2
+closelimbomenu
+sleep 4
+cg_draw2D 0
+cg_tips 0
+cg_thirdPerson 1
+cg_thirdPersonRange 105
+cg_thirdPersonAngle 160
+sleep 2
+screenshotJPEG t_rifle
+sleep 1
+weaponbank 3
+sleep 3
+screenshotJPEG t_front
+sleep 1
+cg_thirdPersonAngle 205
+sleep 1.5
+screenshotJPEG t_front2
+sleep 1
+cg_thirdPersonAngle 110
+sleep 1.5
+screenshotJPEG t_side
+sleep 1
+cg_thirdPersonAngle 10
+sleep 1.5
+screenshotJPEG t_back
+sleep 1
+cg_thirdPersonAngle 170
+cg_thirdPersonRange 42
+sleep 1.5
+screenshotJPEG t_close
+sleep 1
+cg_thirdPersonAngle 170
+cg_thirdPersonRange 300
+sleep 1.5
+screenshotJPEG t_far
+sleep 1
+cg_thirdPersonRange 700
+sleep 1.5
+screenshotJPEG t_far2
+sleep 1
+cg_thirdPersonAngle 150
+cg_thirdPersonRange 105
++movedown
+sleep 1.5
+screenshotJPEG t_crouch
+sleep 1
+-movedown
++forward
+sleep 1.2
+screenshotJPEG t_run
+-forward
+sleep 2
