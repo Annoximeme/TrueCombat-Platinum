@@ -2346,3 +2346,45 @@ h1 .acct-tick { width: .6em; height: .6em; vertical-align: .08em; }
 .bn-how h2 { margin: 0 0 10px; font-size: 1.2rem; }
 .bn-how ul { margin: 0; padding-left: 1.2em; color: var(--muted); display: grid; gap: 6px; }
 @media (max-width: 640px) { .bn-code { padding: 14px; padding-top: 52px; } }
+
+/* ---------- official trailer: hero button, home band and lightbox ---------- */
+.btn-trailer { padding: 10px 22px 10px 10px; gap: 14px; border-color: rgba(232, 234, 239, .28); }
+.btn-trailer:hover { border-color: rgba(232, 234, 239, .6); background: rgba(13, 16, 22, .72); }
+.btn-trailer .bt-ico { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; border: 1px solid rgba(232, 234, 239, .5); transition: background-color .2s, border-color .2s; }
+.btn-trailer:hover .bt-ico { background: var(--red); border-color: var(--red); }
+.btn-trailer .stack { display: grid; gap: 4px; text-align: left; }
+.btn-trailer .big { font-size: 1.12rem; letter-spacing: .06em; }
+.btn-trailer .small { font: 500 .72rem/1 var(--f-body); letter-spacing: .02em; text-transform: none; color: var(--muted); }
+
+.trailer-band { position: relative; padding-block: clamp(56px, 8vw, 112px); background: radial-gradient(120% 70% at 50% 0%, rgba(214, 59, 59, .14), transparent 60%), #07090c; border-block: 1px solid var(--line); overflow: hidden; }
+.trailer-band .wrap { display: grid; gap: clamp(22px, 3vw, 36px); }
+.tb-head { display: grid; gap: 12px; justify-items: center; text-align: center; max-width: 760px; margin-inline: auto; }
+.tb-head h2 { margin: 0; font: 700 clamp(2rem, 5vw, 3.6rem)/1 var(--f-display); text-transform: uppercase; letter-spacing: .02em; }
+.tb-head .lede { margin: 0; }
+.yt-trailer { width: 100%; max-width: 1280px; margin-inline: auto; border-radius: 10px; border: 1px solid rgba(232, 234, 239, .14); box-shadow: 0 40px 100px -30px rgba(0, 0, 0, .9), 0 0 0 1px rgba(0, 0, 0, .6); isolation: isolate; }
+.yt-trailer picture, .yt-trailer picture img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.yt-trailer picture img { object-fit: cover; opacity: .8; transform: scale(1.02); transition: opacity .4s, transform 1.2s cubic-bezier(.2, .8, .2, 1); }
+.yt-trailer::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5, 6, 9, .2), rgba(5, 6, 9, .1) 40%, rgba(5, 6, 9, .75)); pointer-events: none; z-index: 1; }
+.yt-trailer:hover picture img { opacity: .92; transform: scale(1.05); }
+.yt-trailer .tb-logo { position: absolute; left: 50%; top: 40%; width: min(38%, 420px); height: auto; transform: translate(-50%, -50%); z-index: 2; filter: drop-shadow(0 10px 30px rgba(0, 0, 0, .8)); pointer-events: none; opacity: 1; }
+.yt-trailer button { z-index: 3; align-content: end; justify-items: center; gap: 12px; padding-bottom: clamp(20px, 6%, 56px); }
+.yt-trailer button span { width: clamp(64px, 9vw, 96px); height: clamp(64px, 9vw, 96px); }
+.yt-trailer button b { font: 600 clamp(.8rem, 1.2vw, 1rem)/1 var(--f-display); letter-spacing: .3em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(0, 0, 0, .9); }
+.yt-trailer .hud { z-index: 2; opacity: 1; animation: none; pointer-events: none; }
+.yt-trailer.playing .hud, .yt-trailer.playing::after { display: none; }
+.yt-trailer iframe { z-index: 4; }
+.tb-foot { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; justify-content: space-between; max-width: 1280px; width: 100%; margin-inline: auto; }
+.tb-foot .yt-note { margin: 0; flex: 1 1 280px; }
+.tb-foot .yt-note a { color: inherit; }
+@media (max-width: 600px) { .yt-trailer .tb-logo { top: 36%; width: 50%; } .yt-trailer button b { display: none; } .yt-trailer button { padding-bottom: 7%; } .yt-trailer button span { width: 56px; height: 56px; } }
+
+.trailer-lb { width: min(1280px, calc(100vw - 32px), calc((100vh - 110px) * 16 / 9)); max-width: none; max-height: none; padding: 0; border: 0; background: transparent; overflow: visible; }
+.trailer-lb::backdrop { background: rgba(5, 6, 9, .94); }
+.trailer-lb .tl-frame { position: relative; aspect-ratio: 16 / 9; width: 100%; background: #000; border-radius: 8px; overflow: hidden; box-shadow: 0 40px 120px -20px rgba(0, 0, 0, .9); }
+@supports (height: 100dvh) { .trailer-lb { width: min(1280px, calc(100vw - 32px), calc((100dvh - 110px) * 16 / 9)); } }
+.trailer-lb iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #000; }
+.trailer-lb .tl-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; color: var(--muted); font: 600 .82rem/1 var(--f-display); letter-spacing: .24em; text-transform: uppercase; }
+.trailer-lb .tl-close { background: rgba(20, 25, 34, .8); border: 1px solid var(--line); color: var(--fg); width: 44px; height: 44px; border-radius: 50%; font-size: 1.3rem; cursor: pointer; display: grid; place-items: center; flex: none; }
+.trailer-lb .tl-close:hover { border-color: var(--red-hi); }
+@media (prefers-reduced-motion: reduce) { .yt-trailer picture img { transition: none; transform: none; } }
+.tb-media { border-top: 0; }
