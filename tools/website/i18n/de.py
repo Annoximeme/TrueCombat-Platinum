@@ -1997,7 +1997,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  'Bots that learn routes and aim from real matches': 'Bots, die Laufwege und Zielen aus echten Matches lernen',
  'Optional, anonymous crash and hardware data from the launcher': 'Optionale, anonyme Absturz- und Hardwaredaten aus dem Launcher'}
 
-TABLES = {'LABELS': {'maps': 'Maps',
+TABLES = {'LABELS': {'banners': 'Server-Banner', 'maps': 'Maps',
             'weapons': 'Waffen',
             'guide': 'Guide',
             'servers': 'Server',
@@ -2069,7 +2069,20 @@ TABLES = {'LABELS': {'maps': 'Maps',
         'flag_specops': 'Flagge SpecOps',
         'site': 'Bombenplatz',
         'alt': 'Grundriss von {m}',
-        'nocallouts': 'Diese Map hat im Spiel keine Ortsnamen.'},
+        'nocallouts': 'Diese Map hat im Spiel keine Ortsnamen.',
+        'routes': 'Routen',
+        'first': 'Wer ist zuerst da',
+        'times': 'Laufzeiten ab Spawn',
+        'team_t': 'Terroristen',
+        'team_s': 'SpecOps',
+        'site_n': 'Platz {s}',
+        'enemy_flag': 'Gegnerische Flagge',
+        'onsite': 'Am Platz',
+        'sec': '{n} s',
+        'times_note': 'Sekunden ab einem frischen Spawn: mit voller Ausdauer sprinten, danach laufen, auf dem kürzesten Laufweg. Ohne Sprünge und Leitern.',
+        'first_t': 'Terroristen zuerst',
+        'first_s': 'SpecOps zuerst',
+        'first_both': 'Beide Teams gleichzeitig'},
  'DL': {'read': 'Artikel lesen (englisch)',
         'latest': 'Aktuell',
         'testing': 'Nächstes Update · im Test',
@@ -2404,7 +2417,7 @@ TABLES = {'LABELS': {'maps': 'Maps',
              'r_c': 'Sag Hallo auf dem <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. Veteranen und neue Spieler verabreden dort ihre Matches.',
              'r_note': '<b>Neu bei TC:E?</b> Der <a href="guide.html">Einsteiger-Guide</a> erklärt die Steuerung, die Spielmodi und die Gewohnheiten, die dich am Leben halten.'}}
 
-JS = {'eac': 'Anti-Cheat', 'eacTip': 'Geschützt durch Easy Anti-Cheat', 'eacReqTip': 'Geschützt durch Easy Anti-Cheat. Zum Beitreten erforderlich.', 'joinBtn': 'Beitreten', 'verified': 'Verifiziert', 'verifiedTip': 'Vom TrueCombat: Platinum-Team geprüft',
+JS = {'wkKillsV': '{n} Kills', 'wkWins': 'Meiste Siege', 'wkWinsV': '{n} Siege', 'wkEye': 'Highlights der Woche', 'wkTitle7': 'Diese Woche auf den Servern', 'wkTitle30': 'Dieser Monat auf den Servern', 'wkSub7': 'Letzte 7 Tage. Verifizierte Matches gegen echte Spieler.', 'wkSub30': 'Letzte 30 Tage. Verifizierte Matches gegen echte Spieler.', 'wkMatches': 'Matches', 'wkPlayers': 'Spieler', 'wkNew': 'Neue Spieler', 'wkKills': 'Kills', 'wkHs': 'Headshots', 'wkHours': 'Gespielte Stunden', 'wkPotw': 'Spieler der Woche', 'wkPotm': 'Spieler des Monats', 'wkXp': '{n} XP aus {m} Matches', 'wkProfile': 'Profil ansehen', 'wkBest': 'Topleistung', 'wkBestV': '{k} Kills auf {map}', 'wkReport': 'Matchbericht', 'wkMostKills': 'Meiste Kills', 'wkClimb': 'Größter Aufstieg', 'wkClimbV': '+{n} Wertung', 'wkKd': 'Beste K/D', 'wkActive': 'Am aktivsten', 'wkWeapon': 'Waffe der Woche', 'wkWeaponM': 'Waffe des Monats', 'wkWeaponV': '{k} Kills · {h} Headshots', 'wkMap': 'Meistgespielte Map', 'wkMatchesN': '{n} Matches', 'wkBoards': 'Alle Bestenlisten', 'eac': 'Anti-Cheat', 'eacTip': 'Geschützt durch Easy Anti-Cheat', 'eacReqTip': 'Geschützt durch Easy Anti-Cheat. Zum Beitreten erforderlich.', 'joinBtn': 'Beitreten', 'verified': 'Verifiziert', 'verifiedTip': 'Vom TrueCombat: Platinum-Team geprüft',
  'months': ['Jan.', 'Feb.', 'März', 'Apr.', 'Mai', 'Juni', 'Juli', 'Aug.', 'Sep.', 'Okt.', 'Nov.', 'Dez.'],
  'latest': 'Aktuell',
  'kindSetupLong': 'Windows-Installer',
@@ -2651,4 +2664,6 @@ TABLES['PRIVACY_T'].update({
 })
 
 # top menu: group names, item descriptions and panel footers (build.py MENU)
-TABLES['MENU'] = {'play': 'Spielen', 'game': 'Das Spiel', 'compete': 'Wettkampf', 'community': 'Community', 'close': 'Menü schließen', 'live': '{p} spielen · {s} Server', 'idle': '{s} Server online', 'live_h': 'Live-Server', 'all': 'Alle Server', 'ranked': 'Ranked', 'home': 'TrueCombat: Platinum Startseite', 'f_play': 'Kostenlos · Windows 10 und 11, 64 Bit', 'f_game': '{m} Maps · {w} Waffen', 'f_compete': 'Ranked auf den offiziellen Servern', 'f_community': 'Bisher {n} Devlog-Beiträge', 'd': {'download': 'Kostenloser Windows-Installer', 'guide': 'Steuerung, Modi und Taktik', 'servers': 'Live-Server, mit einem Klick beitreten', 'faq': 'Antworten auf häufige Fragen', 'truecombat-elite': 'Wo alles begann', 'maps': 'Jede Map, mit Plänen in 3D', 'weapons': 'Das ganze Arsenal im Vergleich', 'graphics': 'Low, High und Ultra im Vergleich', 'gallery': 'Screenshots aus dem Spiel', 'leaderboards': 'Wertungen, Ränge und Bestwerte', 'competitive': 'Ranked-Spiele und ihre Regeln', 'account': 'Dein Profil, Statistiken und Freunde', 'devlog': 'Wie das Spiel entsteht', 'news': 'Patchnotes zu jedem Release', 'media': 'Trailer, Screenshots und Wallpaper', 'discord': 'Match finden, mit dem Team reden', 'studio': 'Das Team hinter dem Spiel', 'press': 'Logos, Key Art und Fakten'}}
+TABLES['MENU'] = {'play': 'Spielen', 'game': 'Das Spiel', 'compete': 'Wettkampf', 'community': 'Community', 'close': 'Menü schließen', 'live': '{p} spielen · {s} Server', 'idle': '{s} Server online', 'live_h': 'Live-Server', 'all': 'Alle Server', 'ranked': 'Ranked', 'home': 'TrueCombat: Platinum Startseite', 'f_play': 'Kostenlos · Windows 10 und 11, 64 Bit', 'f_game': '{m} Maps · {w} Waffen', 'f_compete': 'Ranked auf den offiziellen Servern', 'f_community': 'Bisher {n} Devlog-Beiträge', 'd': {'download': 'Kostenloser Windows-Installer', 'guide': 'Steuerung, Modi und Taktik', 'servers': 'Live-Server, mit einem Klick beitreten', 'faq': 'Antworten auf häufige Fragen', 'truecombat-elite': 'Wo alles begann', 'maps': 'Jede Map, mit Plänen in 3D', 'weapons': 'Das ganze Arsenal im Vergleich', 'graphics': 'Low, High und Ultra im Vergleich', 'gallery': 'Screenshots aus dem Spiel', 'leaderboards': 'Wertungen, Ränge und Bestwerte', 'competitive': 'Ranked-Spiele und ihre Regeln', 'account': 'Dein Profil, Statistiken und Freunde', 'devlog': 'Wie das Spiel entsteht', 'news': 'Patchnotes zu jedem Release', 'media': 'Trailer, Screenshots und Wallpaper', 'discord': 'Match finden, mit dem Team reden', 'studio': 'Das Team hinter dem Spiel', 'press': 'Logos, Key Art und Fakten', 'banners': 'Live-Spielerzahlen für deine Seite'}}
+
+TABLES['BANNERS_T'] = {'title': 'Server-Banner für Foren und Discord · TrueCombat: Platinum', 'desc': 'Kostenlose Live-Banner, die zeigen, wer gerade TrueCombat: Platinum spielt. Kopiere den Code für eine Forensignatur, Discord, eine Clanseite oder eine GitHub-README.', 'og': 'Live-Spielerzahlen für dein Forum, Discord oder deine Clanseite', 'eyebrow': 'Server-Banner', 'h1': 'Bring die Server auf deine Seite', 'lede': 'Live-Banner, die zeigen, wer gerade spielt. Füge einen in eine Forensignatur, einen Discord-Kanal, eine Clanseite oder eine README ein, und er hält sich selbst aktuell.', 'b_all': 'Alle Server', 'b_all_p': 'Alle, die gerade ein Match spielen, über alle öffentlichen Server.', 'b_o1_p': 'Der Ranked-Server mit aktueller Map, Modus und Spielerzahl.', 'b_o2_p': 'Der Unranked-Server mit aktueller Map, Modus und Spielerzahl.', 'wide': 'Breit · 600 × 120', 'small': 'Kompakt · 468 × 60', 'code': 'Einbettungscode', 'copy': 'Kopieren', 'copied': 'Kopiert', 'fmt': 'Format', 'url': 'Bildlink', 'alt_all': 'TrueCombat: Platinum, Spieler gerade online', 'alt_o1': 'TrueCombat: Platinum Official #1, Live-Status', 'alt_o2': 'TrueCombat: Platinum Official #2, Live-Status', 'how_h': 'So funktionieren sie', 'how1': 'Jedes Banner wird neu gezeichnet, sobald sich die Serverliste ändert, höchstens einmal pro Minute. Auf deiner Seite läuft nichts: Es ist ein ganz normales Bild.', 'how2': 'Ein Banner zeigt Servername, Map, Modus und Spielerzahl. Eine Serveradresse steht nie darauf.', 'how3': 'Nutze sie überall, kostenlos. Lass den Link zu truecombat.eu stehen, damit neue Spieler das Spiel finden.'}
