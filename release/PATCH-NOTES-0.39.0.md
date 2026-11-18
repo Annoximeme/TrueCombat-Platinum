@@ -100,6 +100,9 @@ Ranked servers and clan matches keep sun shafts, glare, colour mood, lens frost 
 - Smoother movement along the glass fronts on Railhouse, and fewer small freezes the first time a sound or effect is used.
 - A "Connection interrupted" notice appears when the server stops answering.
 - Recorded demos play back without menus opening over them.
+- The M4 SOPMOD sight shows a single red dot at 1440p and 4K.
+- Bug reports (F12) at high resolutions no longer say the screenshot is too large to upload.
+- The Deployment menu closes when the match ends.
 - Replaced an unused system sound that shipped with the original game files.
 - We've tightened and expanded our security measures.
 ```
