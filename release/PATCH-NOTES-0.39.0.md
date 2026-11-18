@@ -26,7 +26,7 @@ Smarter opponents, four classic community maps, a rebuilt launcher and a deeper 
 - Several of their original sounds have been cleaned up and levelled to sit alongside our own ambience.
 - Stadtrand gets its second bomb site back: site A now works on every server, Ranked included.
 - Community maps have minimaps, tactical maps and loading screens with a map plan, picture and description.
-- Bots pick up the flag on Villa 2.1 and Shozen in Flag Capture.
+- Bots pick up the flag on Villa 2.1 in Flag Capture.
 - The site A crate on Villa 2.1 breaks when the bomb goes off.
 
 ## Interface and match screens
