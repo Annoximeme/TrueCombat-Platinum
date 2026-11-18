@@ -174,6 +174,12 @@ check("netstats over http", "servers" in get("/netstats.json"))
 rc = get("/recap.json?days=7")
 check("recap totals", rc["schema"] == "tcp-recap/1" and rc["matches"] >= 1 and rc["players"] >= 2
       and rc["maps"] and rc["mostKills"]["name"] and "biggestClimb" in rc, rc)
+check("recap weapon and best match", rc["topWeapon"]["weapon"] and rc["topWeapon"]["kills"] >= 1
+      and rc["bestMatch"]["kills"] >= rc["mostKills"]["value"] / max(1, rc["mostKills"]["matches"]) and rc["bestMatch"]["match"], rc)
+store.void("player", rc["mostKills"]["id"], "test")
+rv = get("/recap.json?days=7")
+check("recap skips voided players", rv["mostKills"]["id"] != rc["mostKills"]["id"] and rv["bestMatch"]["id"] != rc["mostKills"]["id"], rv)
+store.unvoid("player", rc["mostKills"]["id"])
 wide = get("/leaderboard.json?since=2000-01-01T00:00:00Z&until=2100-01-01T00:00:00Z&sort=season")
 none = get("/leaderboard.json?since=2100-01-01T00:00:00Z")
 xs = [p["periodXp"] for p in wide["players"]]

@@ -280,3 +280,14 @@ Install on the VPS: `sudo sh tools/server-bridge/deploy/install-insights.sh` (un
 `handle /insights/* { reverse_proxy 127.0.0.1:8094 }` to the api.truecombat.eu block. Short campaign links
 (`truecombat.eu/go/<name>`) come from `tools/website/golinks.json` and are written by `build.py`.
 Tests: `python3 test_insights.py`.
+
+## Live server banners
+
+`GET /banner/<which>-<size>.png` draws a PNG banner for forums, Discord and README files
+(`tcp_banner.py`, standard library only). `which` is `all` (players online across every public
+server), `official1` or `official2` (matched on the server name); `size` is `wide` (600 x 120) or
+`small` (468 x 60). The website lists them with copy-paste code on `banners.html`.
+
+The fixed parts (map art, wordmark, glyph atlases) live in `banner/` and are built by
+`python tools/website/banner_assets.py` (Pillow, fonttools, brotli). Deploy `banner/` together with
+the Python files. A banner is redrawn only when what it shows changes; it never shows an address.
