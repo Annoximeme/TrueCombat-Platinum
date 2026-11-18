@@ -379,7 +379,8 @@ MAX_RUN_BYTES = 64 * 1024
 def solo_week(key):
     """What this week's solo boards use: the Range Run weapon, the drill seed and the bot challenge."""
     i = _week_index(key)
-    seed = int(hashlib.sha256(("tcp-solo:" + key).encode()).hexdigest()[:8], 16)
+    # 28 bits: the game reads it as a signed 32-bit cvar
+    seed = int(hashlib.sha256(("tcp-solo:" + key).encode()).hexdigest()[:7], 16)
     return {"week": key, "rangeWeapon": RANGE_WEAPONS[i % len(RANGE_WEAPONS)], "seed": seed,
             "botChallenge": dict(BOT_CHALLENGES[i % len(BOT_CHALLENGES)])}
 
