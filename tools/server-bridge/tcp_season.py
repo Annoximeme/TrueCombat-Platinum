@@ -364,12 +364,13 @@ SOLO_BOARDS = {
     "bots": {"name": "Weekly Bot Challenge", "unit": "ms", "better": "low"},
 }
 RANGE_WEAPONS = ["M4", "AK-47", "MP5/10", "SG 552", "Glock 19", "Desert Eagle"]   # game display names
-# bots = bot clients in the match (5 v 5 with one human = 9); the game records map, mode (tcp_mode), bots and bot_skill
+# bots = bot clients in the match (5 v 5 with one human = 9); rounds = tcp_native_rounds the launcher starts the
+# match with (2 Team Elimination, 6 Bomb); the game records map, mode (tcp_mode), bots and bot_skill
 BOT_CHALLENGES = [
-    {"map": "obj_village", "mode": "bomb", "bots": 9, "minSkill": 4, "rule": "any", "text": "Village Bomb, 5 v 5 against hard bots"},
-    {"map": "obj_railhouse", "mode": "elimination", "bots": 9, "minSkill": 4, "rule": "any", "text": "Railhouse Elimination, 5 v 5 against hard bots"},
-    {"map": "obj_snow", "mode": "bomb", "bots": 7, "minSkill": 5, "rule": "any", "text": "Snow Bomb, 4 v 4 against the hardest bots"},
-    {"map": "obj_village", "mode": "elimination", "bots": 5, "minSkill": 5, "rule": "any", "text": "Village Elimination, 3 v 3 against the hardest bots"},
+    {"map": "obj_village", "mode": "bomb", "rounds": 6, "bots": 9, "minSkill": 4, "rule": "any", "text": "Village Bomb, 5 v 5 against hard bots"},
+    {"map": "obj_railhouse", "mode": "team elimination", "rounds": 2, "bots": 9, "minSkill": 4, "rule": "any", "text": "Railhouse Team Elimination, 5 v 5 against hard bots"},
+    {"map": "obj_snow", "mode": "bomb", "rounds": 6, "bots": 7, "minSkill": 5, "rule": "any", "text": "Snow Bomb, 4 v 4 against the hardest bots"},
+    {"map": "obj_village", "mode": "team elimination", "rounds": 2, "bots": 5, "minSkill": 5, "rule": "any", "text": "Village Team Elimination, 3 v 3 against the hardest bots"},
 ]
 MIN_HIT_GAP_MS = 120          # no human hits two separate pop-up targets faster than this, run after run
 MAX_RUN_BYTES = 64 * 1024
