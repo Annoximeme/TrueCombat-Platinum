@@ -246,6 +246,22 @@ Vanaf deze update draait Official #2 (Unranked) met experimentele content aan: d
 - Het Deployment-menu sluit wanneer de wedstrijd afloopt.
 - We hebben onze beveiligingsmaatregelen aangescherpt en uitgebreid.
 
+## Van het front
+
+Nog een paar momenten uit onze laatste testronde, allemaal in het spel vastgelegd op DirectX 12 Ultra.
+
+![Springlading tegen een auto op Delta](img/devlog/front-lines-blast-car.webp "Delta: een springlading ontploft tegen een geparkeerde auto, vuurbal en vonken verlichten het terrein.")
+
+![Springlading op een binnenplaats op Delta](img/devlog/front-lines-blast-courtyard.webp "De ontploffing werpt warm licht over de muren van de binnenplaats.")
+
+![Bom heroveren op Snowtown](img/devlog/front-lines-snowtown-retake.webp "Snowtown: twee aanvallers trekken samen op om de site te heroveren.")
+
+![Gangpad in het magazijn op Snow](img/devlog/front-lines-snow-warehouse.webp "Snow: het gangpad tussen de rekken vrijmaken.")
+
+![Schieten boven het water op Harbour](img/devlog/front-lines-harbour-water-fire.webp "Harbour: kruitdamp en hulzen boven open water, vanaf het containerdek.")
+
+![Tuin op Village bij daglicht](img/devlog/front-lines-village-daylight.webp "Village: de tuin en de daken in vol daglicht.")
+
 ## Hoe we het getest hebben
 
 Elke kandidaat-build van 0.39.0 ging door onze volledige regressietest: negentien geautomatiseerde scenario's met matches tegen bots, netwerkspel, serverinstellingen, herstarts en predictie, op zowel DirectX 12 als OpenGL. Daarbovenop hebben we het zelf gespeeld, de anti-cheat van begin tot eind gecontroleerd en de nieuwe launcher door een volledige update en herstelling vanaf 0.38.2 gehaald. Onderweg kwamen er een paar problemen boven, van een bomronde die dubbel telde tot deuren die de verkeerde kant op zwaaiden, en die zijn allemaal opgelost in de build die uitkomt.
@@ -254,4 +270,4 @@ Elke kandidaat-build van 0.39.0 ging door onze volledige regressietest: negentie
 
 0.39.0 is de laatste grote update voor 0.40, onze grootste mijlpaal tot nu toe. Een deel van wat eraan komt, lieten we al zien in [Opnieuw gemodelleerd, op weg naar 0.40](devlog-remodelled.html), en er is nog veel meer dat we nog niet getoond hebben.
 
-Terwijl je dit leest, gaat 0.39.0 door zijn laatste controles, en heel binnenkort komt hij binnen via de launcher. De volledige patch notes staan op de releasepagina zodra hij uitkomt. Start dan Snow op en luister. Tot aan het front.
+0.39.0 is nu uit via de launcher, en de volledige patch notes staan op de [releasepagina](../release-0-39-0). Start Snow op en luister. Tot aan het front.

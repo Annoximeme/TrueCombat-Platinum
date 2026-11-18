@@ -246,6 +246,22 @@ From this update, Official #2 (Unranked) runs with experimental content on: the 
 - The Deployment menu closes when the match ends.
 - We've tightened and expanded our security measures.
 
+## From the front line
+
+A few more moments from our last round of testing, all captured in game on DirectX 12 Ultra.
+
+![Breaching charge against a car on Delta](img/devlog/front-lines-blast-car.webp "Delta: a breaching charge goes off against a parked car, fireball and sparks lighting the yard.")
+
+![Breaching charge in a courtyard on Delta](img/devlog/front-lines-blast-courtyard.webp "The blast throws warm light across the courtyard walls.")
+
+![Bomb retake on Snowtown](img/devlog/front-lines-snowtown-retake.webp "Snowtown: two attackers move in together for the retake.")
+
+![Warehouse aisle on Snow](img/devlog/front-lines-snow-warehouse.webp "Snow: clearing the warehouse aisle between the racks.")
+
+![Firing over the water on Harbour](img/devlog/front-lines-harbour-water-fire.webp "Harbour: muzzle smoke and brass over open water from the container deck.")
+
+![Village garden in daylight](img/devlog/front-lines-village-daylight.webp "Village: the garden and rooftops in full daylight.")
+
 ## How we tested it
 
 Every candidate build of 0.39.0 went through our full regression: nineteen automated scenarios covering matches with bots, network play, server settings, restarts and prediction, on both DirectX 12 and OpenGL. On top of that we played it ourselves, checked the anti-cheat end to end and ran the new launcher through a full update and repair from 0.38.2. A few issues turned up along the way, from a bomb round scoring twice to doors swinging the wrong way, and all of them are fixed in the build that ships.
@@ -254,4 +270,4 @@ Every candidate build of 0.39.0 went through our full regression: nineteen autom
 
 0.39.0 is the last large update before 0.40, our biggest milestone so far. We have already shown some of what is coming in [Remodelled, on the road to 0.40](devlog-remodelled.html), and there is a lot more we have not shown yet.
 
-0.39.0 is in its final round of checks as you read this and arrives through the launcher very soon. The full patch notes go up on the release page the moment it ships. When it does, load up Snow and listen. See you on the front line.
+0.39.0 is out now through the launcher, and the full patch notes are on the [release page](release-0-39-0). Load up Snow and listen. See you on the front line.
