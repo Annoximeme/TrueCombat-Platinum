@@ -1,6 +1,6 @@
 <!-- discord
 chips: Fix update | Tracers | Chlite | Launcher 3.0.4
 summary: Combat | Tracer rounds on every gun, about one in five · Support hand stays on the rifle in third person
-summary: Maps | Chlite site B shutters open again
+summary: Movement and maps | Stairs and curbs work at every frame rate · Chlite site B shutters open again
 summary: Community | New Discord invite in the launcher, installer and error screen · Launcher 3.0.4
 -->
