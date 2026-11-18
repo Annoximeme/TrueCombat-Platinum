@@ -1,0 +1,38 @@
+name: Candidate virus scan
+
+# Scans the files of a hidden vt-<label> draft release with VirusTotal and attaches the result
+# (vt-candidate.json) to that draft. Started by tools/release/candidate_scan.py on the PC the evening a
+# release candidate is built, so antivirus false positives are found before publish day.
+# Never touches the website, scans.json or any published release. Logs show counts only.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Hidden draft to scan (vt-<label>)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: virustotal
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 170
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: tools/release
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Scan the candidate
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
+          TAG: ${{ inputs.tag }}
+        run: python tools/release/candidate_scan.py ci --tag "$TAG"
