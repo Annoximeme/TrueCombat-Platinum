@@ -1,0 +1,12 @@
+<!-- discord
+chips: Smarter bots | Community maps | Atmosphere | Launcher 3.0
+headline: Smarter bots | Bots now listen for footsteps and gunfire, agree on a plan in Bomb mode and choose when to hold, push or fall back. They get stuck far less and no longer freeze in front of your scope. | 1.webp
+headline: Four community maps return | Villa 2.1, Shozen, Snowtown and Chlite are back on Unranked servers with minimaps, tactical maps and loading screens, and Stadtrand gets its second bomb site back. | 2.webp
+headline: A deeper layer of atmosphere | Swaying trees and grass, sun shafts, wet ground that reflects the world, real depth on brick and stone, richer fire and smoke, and a colour mood for every map. | 3.webp
+headline: Launcher 3.0 | Live server cards, a new server browser, Friends with one-click join and invite, a downloads panel and new accessibility settings. | 4.webp
+summary: Combat feel | Focus zoom while aiming · Gear and magazine sounds · A heartbeat at low health · Catching your breath · Bodies settle naturally
+summary: Player models | Sidearm, knife and grenades on your gear · Support hand on the handguard · Spectated weapons move with the player
+summary: Interface | Clearer match screens and objective cards · Capture Point on the maps · Range panel and FPS counter off the minimap · Flash blinds the HUD
+summary: CQB (experimental) | CQB spawns only in CQB Rules · Harbour joins Official #2 · Regeneration and perks hold up under fire
+summary: Fixes | High sample rate audio · Bomb scoring and blast damage · Doors, slopes and grenade pins · Railhouse glass and first-use hitches · Northport ambience is back
+-->
