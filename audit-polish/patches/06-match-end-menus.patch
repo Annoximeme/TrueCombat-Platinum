@@ -1,0 +1,33 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 1d2f710..bd4bb64 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -1580,7 +1580,7 @@ static void netStallFrame(int time,int fresh,int demo){
+ }
+ static void netStallDraw(void){
+     const int gap=(int)SystemCall(CG_MILLISECONDS)-netStallSnapAt;
+-    if(gap<1500||vxCamActive())return;
++    if(gap<1500||vxCamActive()||mapVoteShowing())return; /* audit-06: the server is silent while it loads the voted map; the card says LOADING already */
+     char sub[64];snprintf(sub,sizeof(sub),"No answer from the server for %i s",gap/1000);
+     if(!phOn()){hudTextCenter(176,"CONNECTION INTERRUPTED");hudTextCenter(190,sub);return;}
+     const int saved=hudAnchor;hudAnchor=HUD_CENTER;
+diff --git a/game_src/native/tcp_deploy_menu.h b/game_src/native/tcp_deploy_menu.h
+index ecfb1c9..8c045f9 100644
+--- a/game_src/native/tcp_deploy_menu.h
++++ b/game_src/native/tcp_deploy_menu.h
+@@ -231,6 +231,7 @@ static int dmLastChoice(int f[4]){
+ }
+ static void dmOpen(void){
+     if(demoPlaying)return; /* polish-01: the menu opened over a playing demo (join pop-up) and stayed there */
++    if(mapVoteShowing())return; /* audit-06: nothing to deploy into once the match is over */
+     int own=snap.ps.clientNum,team=ready?playerTeam(own):0,last[4];
+     if(!dm.initialized){dm.identity=0;dm.special=0;dm.initialized=1;}
+     dm.team=team==TCP_TEAM_BLUE?0:1;
+@@ -506,6 +507,7 @@ static void dmDrawPlatinum(void){
+     hudPic(dm.cursorX,dm.cursorY,32,32,dmCursor);
+ }
+ static void dmDraw(void){
++    if(dm.open&&mapVoteShowing())dmClose(); /* audit-06: the menu stayed open over the podium and the map vote */
+     if(!dm.open)return;
+     if(phOn()){dmDrawPlatinum();return;}
+     static const float shadow[4]={0,0,0,1},hoverTeam[4]={1,1,1,.4f},portrait[4]={.05f,.05f,.05f,1},
