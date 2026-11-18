@@ -12,6 +12,7 @@ Smarter opponents, four classic community maps, a rebuilt launcher and a deeper 
 - Bots choose when to hold, push or fall back, and vary their peeks instead of rushing in one line.
 - Teams learn which round plans work on each map and adapt over a session.
 - The end of a round no longer causes a brief hitch on servers with bots.
+- Bots with sniper rifles now use the scope on every difficulty.
 - Bots no longer freeze in front of you while you aim down a scope. If they can't get out of your line of fire, they crouch and keep moving.
 - Bots no longer climb the same ledge over and over, and the bomb carrier no longer keeps switching between sites.
 - Bots that got stuck at the start of their route, or somewhere with no route (a roof, a pit by a ladder), now find their way out.
