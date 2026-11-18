@@ -1,0 +1,87 @@
+diff --git a/game_src/native/tcp_player_models.h b/game_src/native/tcp_player_models.h
+index fef1ebe..07b5409 100644
+--- a/game_src/native/tcp_player_models.h
++++ b/game_src/native/tcp_player_models.h
+@@ -56,5 +56,5 @@ static int pmClimbUp,pmClimbDown;
+ static int pmSwim1h,pmSwim2h;
+ 
+-typedef struct {int anim;float phase;int blendFrom,blendStart,blendTime;int frame,oldframe;float backlerp;qhandle_t model,oldModel,blendModel;} pmLerp_t;
++typedef struct {int anim;float phase;int blendFrom,blendStart,blendTime;int frame,oldframe;float backlerp;qhandle_t model,oldModel,blendModel;int eased;} pmLerp_t;
+ typedef struct {
+     int valid,lastTime,snapTime,teleport,resetReason;
+@@ -63,5 +63,11 @@ typedef struct {
+     float legsYaw,torsoYaw,torsoPitch;int legsSwing,torsoSwing,pitchSwing;
+     int alive,shotSeq,fireTime,reloadEnd,torsoAnim,torsoUntil,jumping,airborne,brassAt,groundAt; /* groundAt: 0.37.0 slope hold */
++    int stanceWas,stanceAt,stanceProne; /* 0.39.1: last stance change, for the stance blend */
+ } pmState_t;
++/* 0.39.1: blend length (ms) for the rows a stance change starts this frame, 0 = the row's own one-frame blend.
++ * Visual only; kept short so the body never trails the server's hit boxes by much. */
++#define PM_STANCE_BLEND 150
++#define PM_STANCE_BLEND_PRONE 200
++static int pmStanceBlend;
+ static pmState_t pmStates[MAX_GENTITIES];
+ /* Gear worn on the body (TC:E 0.49b CG_Player): the holstered primary and the carried bomb ride
+@@ -288,4 +294,5 @@ static void pmRunLerp(pmLerp_t *lf,int anim,int time,int frametime,float scale,i
+         if(!restart&&lf->anim>=0&&pmAnims[lf->anim].moveSpeed&&a->moveSpeed)phase=fmodf(lf->phase+1,(float)a->count);
+         lf->blendFrom=lf->anim>=0?lf->frame:a->first;lf->blendModel=lf->anim>=0?lf->model:a->mdx;lf->blendStart=time;lf->blendTime=(int)a->lerp;
++        lf->eased=pmStanceBlend>0&&!restart&&lf->anim>=0;if(lf->eased)lf->blendTime=pmStanceBlend; /* 0.39.1 stance change */
+         lf->anim=anim;lf->phase=phase;
+     }else lf->phase+=frametime/a->lerp*scale;
+@@ -299,5 +306,5 @@ static void pmRunLerp(pmLerp_t *lf,int anim,int time,int frametime,float scale,i
+     if(a->reversed){f=a->count-1-f;next=a->count-1-next;}
+     if(time-lf->blendStart<lf->blendTime){
+-        lf->oldframe=lf->blendFrom;lf->frame=a->first+f;lf->backlerp=1-(float)(time-lf->blendStart)/lf->blendTime;lf->oldModel=lf->blendModel;lf->model=a->mdx;
++        lf->oldframe=lf->blendFrom;lf->frame=a->first+f;lf->backlerp=1-(float)(time-lf->blendStart)/lf->blendTime;if(lf->eased){const float u=1-lf->backlerp;lf->backlerp=1-u*u*(3-2*u);}lf->oldModel=lf->blendModel;lf->model=a->mdx;
+     }else{
+         lf->oldframe=a->first+f;lf->frame=a->first+next;lf->backlerp=1-(phase-f);lf->oldModel=lf->model=a->mdx;
+@@ -465,4 +472,6 @@ static void pmAddPlayer(int number,const vec3_t netOrigin,const vec3_t netAngles
+     if(st->alive&&!alive){restartLegs=restartTorso=1;}
+     const int crouch=in->stance==1,prone=in->stance==2;
++    /* 0.39.1: stand, crouch and prone changes blend over 150 ms (200 ms to or from prone), eased, instead of one frame. */
++    if(in->stance!=st->stanceWas){st->stanceAt=alive&&st->alive?time:0;st->stanceProne=prone||st->stanceWas==2;st->stanceWas=in->stance;}
+     /* Gear category 0 (pistols) and 2 (MAC-10s) are one-handed, 1 is akimbo. */
+     const tcp_gear_weapon *gear=TCP_GearWeapon(in->weapon);
+@@ -587,7 +596,9 @@ static void pmAddPlayer(int number,const vec3_t netOrigin,const vec3_t netAngles
+     VectorCopy(origin,body.origin);VectorCopy(origin,body.oldorigin);VectorCopy(origin,body.lightingOrigin);
+     body.renderfx=(pmStudioLight?0:RF_LIGHTING_ORIGIN)|(self&&!pmThirdPerson.integer?RF_THIRD_PERSON:0); /* polish-01: see pmStudioLight */
++    pmStanceBlend=alive&&st->stanceAt&&time-st->stanceAt<100?(st->stanceProne?PM_STANCE_BLEND_PRONE:PM_STANCE_BLEND):0;
+     pmRunLerp(&st->legs,legsAnim,time,frametime,climbing?climbScale:moving?pmSpeedScale(legsAnim,speed):1,restartLegs);
+     if(aimHold&&st->torso.anim==torsoAnim)st->torso.phase=0;
+     pmRunLerp(&st->torso,torsoAnim,time,frametime,climbing?climbScale:(torsoAnim==legsAnim&&moving)?pmSpeedScale(torsoAnim,speed):1,restartTorso);
++    pmStanceBlend=0;
+     body.frame=st->legs.frame;body.oldframe=st->legs.oldframe;body.backlerp=st->legs.backlerp;
+     body.torsoFrame=st->torso.frame;body.oldTorsoFrame=st->torso.oldframe;body.torsoBacklerp=st->torso.backlerp;
+diff --git a/game_src/native/tcp_viewfx.h b/game_src/native/tcp_viewfx.h
+index 195dee1..3762067 100644
+--- a/game_src/native/tcp_viewfx.h
++++ b/game_src/native/tcp_viewfx.h
+@@ -116,4 +116,10 @@ static float vfxLandDip(float delta){
+ /* Called with the predicted player state before the refdef axes are built. Moves the eye and
+  * tilts the view angles; marks the state used by vfxGun. followed: spectating a teammate. */
++/* 0.39.1: share of the stance height change still to go, eased (1 at the start, 0 at the end). */
++static float vfxDuckLeft(int time){
++    if(vfx.duckLength<=0||time-vfx.duckTime>=vfx.duckLength)return 0;
++    float r=(vfx.duckLength-(time-vfx.duckTime))/(float)vfx.duckLength;if(r>1)r=1;
++    return r*r*(3-2*r);
++}
+ static void vfxView(const playerState_t *p,int followed,int time,vec3_t origin,vec3_t angles){
+     SystemCall(CG_CVAR_UPDATE,&vfxBobCvar);
+@@ -141,8 +147,9 @@ static void vfxView(const playerState_t *p,int followed,int time,vec3_t origin,v
+         vfx.ground=1;vfx.fallSpeed=0;
+     }
+-    /* Stance height changes: the eye glides instead of snapping. */
++    /* Stance height changes: the eye glides instead of snapping. 0.39.1: eased in and out (smoothstep) instead of a
++     * constant speed that started and stopped with a jolt; same lengths, so the eye arrives exactly when it did. */
+     if(p->viewheight!=vfx.lastViewheight){
+         const int length=(prone||vfx.lastViewheight==TCP_PRONE_VIEWHEIGHT||p->viewheight==TCP_PRONE_VIEWHEIGHT)?750:250;
+-        float remain=0;if(time-vfx.duckTime<vfx.duckLength)remain=vfx.duckChange*(vfx.duckLength-(time-vfx.duckTime))/(float)vfx.duckLength;
++        const float remain=vfx.duckChange*vfxDuckLeft(time);
+         vfx.duckChange=(float)(p->viewheight-vfx.lastViewheight)+remain;vfx.duckTime=time;vfx.duckLength=length;vfx.lastViewheight=p->viewheight;}
+     /* Steps: a vertical jump on the ground that neither the velocity nor a 45 degree ramp explains. */
+@@ -184,5 +191,5 @@ static void vfxView(const playerState_t *p,int followed,int time,vec3_t origin,v
+      if(vb>0){const float e=vb*vb*(3-2*vb);angles[0]+=6.f*e*bob+2.f*e;angles[2]+=2.f*e*bob;}}
+     /* Stance glide. */
+-    if(time-vfx.duckTime<vfx.duckLength)origin[2]-=vfx.duckChange*(vfx.duckLength-(time-vfx.duckTime))/(float)vfx.duckLength;
++    origin[2]-=vfx.duckChange*vfxDuckLeft(time);
+     /* Origin bob. */
+     {float amp,factor;const float speed=vfx.xyspeed;
