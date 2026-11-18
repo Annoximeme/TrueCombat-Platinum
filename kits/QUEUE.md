@@ -1,0 +1,12 @@
+# 0.39.2 queue (base: 0.39.1 source once published; re-gate kits on it)
+
+BASE: published 0.39.1 source zip (sha256 65f45c7063c94df2...): /mnt/project-files/integ039/base/TrueCombat-Platinum-0.39.1-sandbox38-source.zip (copy in /mnt/project-files/integ0391/base/). Re-gate every 0.39.2 kit on it.
+
+| kit | owner thread | where | notes |
+|---|---|---|---|
+| light-contrast | Make map lighting darker with real light and shadow | integ0392/kits/light-contrast/ | RE-GATED 20:32Z on 0.39.1 (54137da0); waits for Gianni pick after Ultra before/after shots |
+| Railhouse wall rectangles | same engine thread | - | needs PC look to find the caster |
+| grip-hands | Improve player and weapon animations | integ0392/kits/grip-hands/ | Gianni 18:45Z third-person hands; new zz_platinum_grip.pk3 (599439406 -> 1270617611) + acReleasePaks row; gated 19:31Z on 0.39.0 and RE-GATED 20:32Z on the 0.39.1 source (data v0.39.1-sandbox38), kit checksum 28b8dbe9, all green. READY. PC look: third-person strafe / crouch-walk / walk back with bots (checklist in grip-hands.md) |
+| tracers | Improve the game's particle effects | integ0392/kits/tracers/ | Gianni 19:12Z, "Do for .2" 19:20Z, tweaks 19:52Z + 20:11Z: one round in five of EVERY gun is a tracer (same on every client, no option), ignition past the muzzle, occasional ricochets, soft dynamic-light glow on surfaces. cgame + NEW client pak zz_platinum_tracer.pk3 (-1987474557) + acReleasePaks row (after zz_platinum_immersion); GATE PASSED 20:32Z on the 0.39.1 source (65f45c70, kit c5d76d82; also passed 20:25Z on 0.39.0). READY. PC: DX12 look with bots |
+| discord-invite | Replace the expired Discord invite link | integ0392/kits/discord-invite/ | Gianni 19:18Z new invite discord.gg/7Dg4yhhvGF. Launcher news card + installer/shortcut HelpLink + launcher 3.0.3 -> 3.0.4 (patch 01 caba6c2c); ui-patches/02 error screen "Report on Discord" (PC UI pak rebuild). GATE PASSED 20:33Z on 0.39.1 (1d059217). PC look: error screen button, launcher community card |
+| chlite-shutters | Make bots smarter in matches | integ0392/kits/chlite-shutters/ | Chlite site B roll-up shutters (func_door sliding doors) were fixed walls for everyone; now real doors (tcp_game.c only, server qagame, cvar g_slidedoors 1). Patch 1b9fb0ad; GATE PASSED 20:34Z on the 0.39.1 source (a811fae4), all green. READY. PC look: open the site B shutters on Chlite (checklist in chlite-shutters.md). Chlite Bomb with bots stays weak until the 0.40 bot kit |

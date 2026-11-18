@@ -1,0 +1,33 @@
+name: Release fill
+
+# Completes a draft release after tools/release/fast_publish.py has uploaded
+# only the files that changed. Unchanged files are copied from the previous
+# release and the full zips are rebuilt from small patches, all inside GitHub,
+# then every asset is checked against the signed feed. Never publishes.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Draft release tag to complete (e.g. v0.36.0-sandbox28)"
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-fill-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Fill and verify the draft
+        run: python3 tools/release/fill_release.py --repo "$GITHUB_REPOSITORY" --tag "$TAG"

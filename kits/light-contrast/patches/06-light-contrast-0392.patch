@@ -1,0 +1,210 @@
+diff --git a/reference/etlegacy/src/renderer/tr_bsp.c b/reference/etlegacy/src/renderer/tr_bsp.c
+--- a/reference/etlegacy/src/renderer/tr_bsp.c
++++ b/reference/etlegacy/src/renderer/tr_bsp.c
+@@ -37,6 +37,7 @@
+ 
+ #include "tr_local.h"
+ #include "../renderercommon/tcp_lightmap_smooth.h"
++#include "../renderercommon/tcp_light_contrast.h"
+ 
+ /* 0.39.0 smoother lightmaps: called by R_FindImageFile (tr_image.c) for lightmap images */
+ byte *R_LightmapSmooth(const char *name, const byte *pic, int *width, int *height)
+@@ -125,6 +126,7 @@
+ 		r = in[0] << shift;
+ 		g = in[1] << shift;
+ 		b = in[2] << shift;
++		TCP_LightContrast(&r, &g, &b); // 0.39.2: dim light falls off, full light stays (tcp_light_contrast.h)
+ 
+ 		// normalize by color instead of saturating to white
+ 		if ((r | g | b) > 255)
+@@ -142,6 +144,7 @@
+ 		r = in[0] >> -shift;
+ 		g = in[1] >> -shift;
+ 		b = in[2] >> -shift;
++		TCP_LightContrast(&r, &g, &b); // 0.39.2
+ 	}
+ 
+ 	out[0] = (byte)r;
+@@ -2475,8 +2478,14 @@
+ 	// deal with overbright bits
+ 	for (i = 0 ; i < numGridPoints ; i++)
+ 	{
++		float k, lightFloor;
++
++		// 0.39.2 light contrast: a gentle curve on the ambient part, directed light untouched (tcp_light_contrast.h)
++		TCP_LightContrastAmbient(&k, &lightFloor);
+ 		R_ColorShiftLightingBytes(&w->lightGridData[i * 8], &w->lightGridData[i * 8]);
++		TCP_LightContrastRestore(0.0f, lightFloor);
+ 		R_ColorShiftLightingBytes(&w->lightGridData[i * 8 + 3], &w->lightGridData[i * 8 + 3]);
++		TCP_LightContrastRestore(k, lightFloor);
+ 	}
+ }
+ 
+@@ -2687,6 +2696,7 @@
+ 	Ren_UpdateScreen();
+ 	R_LoadShaders(&header->lumps[LUMP_SHADERS]);
+ 	Ren_UpdateScreen();
++	TCP_LightContrastBegin(); // 0.39.2: lightmaps, vertex light and the light grid below
+ 	R_LoadLightmaps(&header->lumps[LUMP_LIGHTMAPS]);
+ 	Ren_UpdateScreen();
+ 	R_LoadPlanes(&header->lumps[LUMP_PLANES]);
+@@ -2713,6 +2723,7 @@
+ 	R_LoadEntities(&header->lumps[LUMP_ENTITIES]);
+ 	Ren_UpdateScreen();
+ 	R_LoadLightGrid(&header->lumps[LUMP_LIGHTGRID]);
++	TCP_LightContrastEnd();
+ 	Ren_UpdateScreen();
+ 
+ 	s_worldData.dataSize = (byte *)ri.Hunk_Alloc(0, h_low) - startMarker;
+diff --git a/reference/etlegacy/src/renderer_vk/tr_bsp.c b/reference/etlegacy/src/renderer_vk/tr_bsp.c
+--- a/reference/etlegacy/src/renderer_vk/tr_bsp.c
++++ b/reference/etlegacy/src/renderer_vk/tr_bsp.c
+@@ -37,6 +37,7 @@
+ 
+ #include "tr_local.h"
+ #include "../renderercommon/tcp_lightmap_smooth.h"
++#include "../renderercommon/tcp_light_contrast.h"
+ 
+ /* 0.39.0 smoother lightmaps: called by R_FindImageFile (tr_image.c) for lightmap images */
+ byte *R_LightmapSmooth(const char *name, const byte *pic, int *width, int *height)
+@@ -125,6 +126,7 @@
+ 		r = in[0] << shift;
+ 		g = in[1] << shift;
+ 		b = in[2] << shift;
++		TCP_LightContrast(&r, &g, &b); // 0.39.2: dim light falls off, full light stays (tcp_light_contrast.h)
+ 
+ 		// normalize by color instead of saturating to white
+ 		if ((r | g | b) > 255)
+@@ -142,6 +144,7 @@
+ 		r = in[0] >> -shift;
+ 		g = in[1] >> -shift;
+ 		b = in[2] >> -shift;
++		TCP_LightContrast(&r, &g, &b); // 0.39.2
+ 	}
+ 
+ 	out[0] = (byte)r;
+@@ -2616,8 +2619,14 @@
+ 	// deal with overbright bits
+ 	for (i = 0 ; i < numGridPoints ; i++)
+ 	{
++		float k, lightFloor;
++
++		// 0.39.2 light contrast: a gentle curve on the ambient part, directed light untouched (tcp_light_contrast.h)
++		TCP_LightContrastAmbient(&k, &lightFloor);
+ 		R_ColorShiftLightingBytes(&w->lightGridData[i * 8], &w->lightGridData[i * 8]);
++		TCP_LightContrastRestore(0.0f, lightFloor);
+ 		R_ColorShiftLightingBytes(&w->lightGridData[i * 8 + 3], &w->lightGridData[i * 8 + 3]);
++		TCP_LightContrastRestore(k, lightFloor);
+ 	}
+ }
+ 
+@@ -2829,6 +2838,7 @@
+ 	Ren_UpdateScreen();
+ 	R_LoadShaders(&header->lumps[LUMP_SHADERS]);
+ 	Ren_UpdateScreen();
++	TCP_LightContrastBegin(); // 0.39.2: lightmaps, vertex light and the light grid below
+ 	R_LoadLightmaps(&header->lumps[LUMP_LIGHTMAPS]);
+ 	Ren_UpdateScreen();
+ 	R_LoadPlanes(&header->lumps[LUMP_PLANES]);
+@@ -2857,6 +2867,7 @@
+ 	R_LoadEntities(&header->lumps[LUMP_ENTITIES]);
+ 	Ren_UpdateScreen();
+ 	R_LoadLightGrid(&header->lumps[LUMP_LIGHTGRID]);
++	TCP_LightContrastEnd();
+ 	Ren_UpdateScreen();
+ 
+ 	s_worldData.dataSize = (byte *)ri.Hunk_Alloc(0, h_low) - startMarker;
+diff --git a/reference/etlegacy/src/renderercommon/tcp_light_contrast.h b/reference/etlegacy/src/renderercommon/tcp_light_contrast.h
+new file mode 100644
+--- /dev/null
++++ b/reference/etlegacy/src/renderercommon/tcp_light_contrast.h
+@@ -0,0 +1,89 @@
++/*
++ * TrueCombat: Platinum - light contrast (0.39.2).
++ *
++ * The TC:E maps were baked with hidden fill lights and a minimum light level: on Railhouse and Stadtrand no
++ * lightmap texel is below about 24 of 255, and with the x4 overbright shift that floor is still 37 % of full
++ * light, while everything sunlit clips at 100 %. Corners never get dark and lit areas barely stand out.
++ *
++ * At map load, light below full brightness (after the overbright shift, before the clip) falls off with
++ * L' = L * L^k, never below `floor` x L. Full light and brighter is unchanged, so lit areas stay exactly as
++ * bright and dim areas get darker: dark is dark, lit is lit. One curve for lightmaps and vertex light, so
++ * lightmapped and vertex-lit surfaces stay matched. The light grid (players, weapons, props) gets a much
++ * gentler curve on its ambient part only, and its directed light is untouched: players keep at least 75 % of
++ * their light in the darkest spots, so a player in a dark corner still reads clearly (fair play).
++ *
++ * r_lightContrast (latched, cheat protected so everyone on a server sees the same light): 0 off, 1 default.
++ * Both renderers (DX12 and OpenGL) include this header. Cost: load time only.
++ */
++#ifndef TCP_LIGHT_CONTRAST_H
++#define TCP_LIGHT_CONTRAST_H
++
++#include <math.h>
++
++static cvar_t *r_lightContrast;
++static float  tcpLightK, tcpLightFloor; // the active curve; k 0 = off
++
++/* RE_LoadWorldMap, before the lightmaps load */
++static void TCP_LightContrastBegin(void)
++{
++	float s;
++
++	if (!r_lightContrast)
++	{
++		r_lightContrast = ri.Cvar_Get("r_lightContrast", "1", CVAR_CHEAT | CVAR_LATCH);
++	}
++	s             = r_lightContrast->value < 0.0f ? 0.0f : (r_lightContrast->value > 1.5f ? 1.5f : r_lightContrast->value);
++	tcpLightK     = 0.8f * s;
++	tcpLightFloor = 1.0f - 0.55f * s;
++	if (tcpLightFloor < 0.2f)
++	{
++		tcpLightFloor = 0.2f;
++	}
++}
++
++/* the light grid's ambient light: a gentle curve, at least 75 % kept */
++static void TCP_LightContrastAmbient(float *k, float *lightFloor)
++{
++	*k          = tcpLightK;
++	*lightFloor = tcpLightFloor;
++	tcpLightK     *= 0.35f;
++	tcpLightFloor  = 0.75f;
++}
++
++static void TCP_LightContrastRestore(float k, float lightFloor)
++{
++	tcpLightK     = k;
++	tcpLightFloor = lightFloor;
++}
++
++/* after RE_LoadWorldMap: anything shifted later (none today) is left alone */
++static void TCP_LightContrastEnd(void)
++{
++	tcpLightK = 0.0f;
++}
++
++/* r, g, b: light after the overbright shift, before it is clipped to 255 */
++static void TCP_LightContrast(int *r, int *g, int *b)
++{
++	float l, f;
++
++	if (tcpLightK <= 0.0f)
++	{
++		return;
++	}
++	l = (0.2126f * (float)*r + 0.7152f * (float)*g + 0.0722f * (float)*b) / 255.0f;
++	if (l <= 0.0f || l >= 1.0f)
++	{
++		return;
++	}
++	f = powf(l, tcpLightK);
++	if (f < tcpLightFloor)
++	{
++		f = tcpLightFloor;
++	}
++	*r = (int)((float)*r * f + 0.5f);
++	*g = (int)((float)*g * f + 0.5f);
++	*b = (int)((float)*b * f + 0.5f);
++}
++
++#endif // TCP_LIGHT_CONTRAST_H

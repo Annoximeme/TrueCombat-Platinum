@@ -1,0 +1,36 @@
+diff -ru a/analysis_scripts/platinum_errors.py b/analysis_scripts/platinum_errors.py
+--- a/analysis_scripts/platinum_errors.py	2026-11-18 19:30:25.653674202 +0000
++++ b/analysis_scripts/platinum_errors.py	2026-11-18 19:30:25.654335561 +0000
+@@ -34,7 +34,7 @@
+     ('graphics', 'Switch to OpenGL', 'uiScript clearError ; exec "set cl_renderer opengl1 ; vid_restart"'),
+     ('banned', 'Find another server', FIND), ('kicked', 'Find another server', FIND), ('ping', 'Find another server', FIND),
+     ('timeout', 'Reconnect', RECONNECT), ('timeout', 'Find another server', FIND),
+-    ('other', 'Reconnect', RECONNECT), ('other', 'Report on Discord', 'uiScript validate_openURL "https://discord.gg/8kcHdg2Hch"'),
++    ('other', 'Reconnect', RECONNECT), ('other', 'Report on Discord', 'uiScript validate_openURL "https://discord.gg/7Dg4yhhvGF"'),
+ ]
+ 
+ 
+diff -ru a/release_src/platinum_ui/ui/popup_errormessage.menu b/release_src/platinum_ui/ui/popup_errormessage.menu
+--- a/release_src/platinum_ui/ui/popup_errormessage.menu	2026-11-18 19:30:25.664039138 +0000
++++ b/release_src/platinum_ui/ui/popup_errormessage.menu	2026-11-18 19:30:25.665444464 +0000
+@@ -76,7 +76,7 @@
+  itemDef { name "fix_other_1" rect 406 320 130 26 type ITEM_TYPE_BUTTON text "REPORT ON DISCORD" textfont UI_FONT_ARIBLK_27 textscale 0.2 textalign ITEM_ALIGN_CENTER textalignx 65 textaligny 17.68 style WINDOW_STYLE_FILLED backcolor .051 .067 .086 0.7 border WINDOW_BORDER_FULL bordercolor 1 1 1 .24 forecolor .933 .945 .953 1 visible 1 cvarTest "ui_errorKind" showCVar { "other" }
+   mouseEnter { setitemcolor "fix_other_1" backcolor .824 .231 .251 0.16 ; setitemcolor "fix_other_1" bordercolor .824 .231 .251 1 }
+   mouseExit { setitemcolor "fix_other_1" backcolor .051 .067 .086 0.7 ; setitemcolor "fix_other_1" bordercolor 1 1 1 .24 } onFocus { setitemcolor "fix_other_1" backcolor .824 .231 .251 0.16 ; setitemcolor "fix_other_1" bordercolor .824 .231 .251 1 } leaveFocus { setitemcolor "fix_other_1" backcolor .051 .067 .086 0.7 ; setitemcolor "fix_other_1" bordercolor 1 1 1 .24 }
+-  action { play "sound/menu/select.wav" ; uiScript validate_openURL "https://discord.gg/8kcHdg2Hch" } }
++  action { play "sound/menu/select.wav" ; uiScript validate_openURL "https://discord.gg/7Dg4yhhvGF" } }
+  itemDef { name "bttn_pbenable" rect 376 320 150 26 type ITEM_TYPE_BUTTON text "ENABLE PUNKBUSTER" textfont UI_FONT_ARIBLK_27 textscale 0.2 textalign ITEM_ALIGN_CENTER textalignx 75 textaligny 17.68 style WINDOW_STYLE_FILLED backcolor .051 .067 .086 0.7 border WINDOW_BORDER_FULL bordercolor 1 1 1 .24 forecolor .933 .945 .953 1 visible 1
+   mouseEnter { setitemcolor "bttn_pbenable" backcolor .824 .231 .251 0.16 ; setitemcolor "bttn_pbenable" bordercolor .824 .231 .251 1 }
+   mouseExit { setitemcolor "bttn_pbenable" backcolor .051 .067 .086 0.7 ; setitemcolor "bttn_pbenable" bordercolor 1 1 1 .24 } onFocus { setitemcolor "bttn_pbenable" backcolor .824 .231 .251 0.16 ; setitemcolor "bttn_pbenable" bordercolor .824 .231 .251 1 } leaveFocus { setitemcolor "bttn_pbenable" backcolor .051 .067 .086 0.7 ; setitemcolor "bttn_pbenable" bordercolor 1 1 1 .24 }
+diff -ru a/release_src/platinum_ui/ui/popup_errormessage_pb.menu b/release_src/platinum_ui/ui/popup_errormessage_pb.menu
+--- a/release_src/platinum_ui/ui/popup_errormessage_pb.menu	2026-11-18 19:30:25.670481051 +0000
++++ b/release_src/platinum_ui/ui/popup_errormessage_pb.menu	2026-11-18 19:30:25.672200374 +0000
+@@ -76,7 +76,7 @@
+  itemDef { name "fix_other_1" rect 406 320 130 26 type ITEM_TYPE_BUTTON text "REPORT ON DISCORD" textfont UI_FONT_ARIBLK_27 textscale 0.2 textalign ITEM_ALIGN_CENTER textalignx 65 textaligny 17.68 style WINDOW_STYLE_FILLED backcolor .051 .067 .086 0.7 border WINDOW_BORDER_FULL bordercolor 1 1 1 .24 forecolor .933 .945 .953 1 visible 1 cvarTest "ui_errorKind" showCVar { "other" }
+   mouseEnter { setitemcolor "fix_other_1" backcolor .824 .231 .251 0.16 ; setitemcolor "fix_other_1" bordercolor .824 .231 .251 1 }
+   mouseExit { setitemcolor "fix_other_1" backcolor .051 .067 .086 0.7 ; setitemcolor "fix_other_1" bordercolor 1 1 1 .24 } onFocus { setitemcolor "fix_other_1" backcolor .824 .231 .251 0.16 ; setitemcolor "fix_other_1" bordercolor .824 .231 .251 1 } leaveFocus { setitemcolor "fix_other_1" backcolor .051 .067 .086 0.7 ; setitemcolor "fix_other_1" bordercolor 1 1 1 .24 }
+-  action { play "sound/menu/select.wav" ; uiScript validate_openURL "https://discord.gg/8kcHdg2Hch" } }
++  action { play "sound/menu/select.wav" ; uiScript validate_openURL "https://discord.gg/7Dg4yhhvGF" } }
+  itemDef { name "back" rect 534 320 100 26 type ITEM_TYPE_BUTTON text "BACK" textfont UI_FONT_ARIBLK_27 textscale 0.2 textalign ITEM_ALIGN_CENTER textalignx 50 textaligny 17.68 style WINDOW_STYLE_FILLED backcolor .051 .067 .086 0.7 border WINDOW_BORDER_FULL bordercolor 1 1 1 .24 forecolor .933 .945 .953 1 visible 1
+   mouseEnter { setitemcolor "back" backcolor .824 .231 .251 0.16 ; setitemcolor "back" bordercolor .824 .231 .251 1 }
+   mouseExit { setitemcolor "back" backcolor .051 .067 .086 0.7 ; setitemcolor "back" bordercolor 1 1 1 .24 } onFocus { setitemcolor "back" backcolor .824 .231 .251 0.16 ; setitemcolor "back" bordercolor .824 .231 .251 1 } leaveFocus { setitemcolor "back" backcolor .051 .067 .086 0.7 ; setitemcolor "back" bordercolor 1 1 1 .24 }

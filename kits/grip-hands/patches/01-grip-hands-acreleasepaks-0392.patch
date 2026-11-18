@@ -1,0 +1,13 @@
+diff --git a/reference/etlegacy/src/server/sv_anticheat.c b/reference/etlegacy/src/server/sv_anticheat.c
+index c6b58df..80eca4d 100644
+--- a/reference/etlegacy/src/server/sv_anticheat.c
++++ b/reference/etlegacy/src/server/sv_anticheat.c
+@@ -364,7 +364,7 @@ static const struct
+ 	{ "tcetest/zzzz_platinum_cqbguns",   "570685537"    }, /* 0.38.0 CQB first-person guns */
+ 	{ "tcetest/zzzz_platinum_cqbguns_hd", "-120980766"   }, /* 0.38.0 CQB gun textures at 1024 */
+ 	{ "tcetest/zzzz_platinum_cqbgear",   "845447830"   }, /* 0.38.0 CQB player gear + female body */
+-	{ "tcetest/zz_platinum_grip",        "599439406"   }, /* 0.39.0 third-person weapon grip (body.mdx left-arm fix) */
++	{ "tcetest/zz_platinum_grip",        "1270617611"  }, /* 0.39.2 third-person weapon grip (body.mdx left arm on the handguard, engine bone math) */
+ 	{ "tcetest/obj_villa2_1", "1824290600" }, /* 0.39.0 community map pack: Villa 2.1 (TC:E community) */
+ 	{ "tcetest/obj_shozen", "1147916996" }, /* 0.39.0 community map pack: Shozen (TC:E community) */
+ 	{ "tcetest/obj_snowtown", "-297667319" }, /* 0.39.0 community map pack: Snowtown by Yakitori & Goemon */
