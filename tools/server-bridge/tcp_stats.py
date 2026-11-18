@@ -907,11 +907,12 @@ class StatsStore:
                        (detail[i].get("xp", 0), m["ended"], sid, pid))
 
     def _season_row_json(self, season, r):
-        out = {"id": season["id"], "name": season["name"], "matches": r["matches"] or 0, "rankedMatches": r["rated"] or 0,
-               "xp": r["xp"] or 0}
+        out = {"season": season["id"], "seasonName": season["name"], "matches": r["matches"] or 0,
+               "rankedMatches": r["rated"] or 0, "xp": r["xp"] or 0}
         if r["tier"]:
-            out.update(tcp_season.tier_json(r["tier"]))
-            out.update({"rating": int(round(r["rating"])), "progress": tcp_season.tier_progress(r["rating"], r["tier"]),
+            t = tcp_season.tier_json(r["tier"])
+            out.update({"tier": t["tier"], "tierName": t["name"], "tierShort": t["short"], "emblem": t["emblem"],
+                        "rating": int(round(r["rating"])), "progress": tcp_season.tier_progress(r["rating"], r["tier"]),
                         "peakTier": r["peak_tier"], "wins": r["wins"] or 0})
         return out
 
@@ -966,7 +967,7 @@ class StatsStore:
                 (season["id"], max(1, min(500, _int(limit, 1, 500))))).fetchall()
         for i, r in enumerate(rows):
             p = self._season_row_json(season, r)
-            p.update({"id": r["pid"], "name": r["name"], "position": i + 1, "season": season["id"]})
+            p.update({"id": r["pid"], "name": r["name"], "position": i + 1})
             out["players"].append(p)
         return out
 
