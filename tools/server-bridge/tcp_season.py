@@ -51,7 +51,7 @@ DEFAULT_SEASONS = [
      # launch week: double XP and the Frontline badge (one match on an official server)
      "xpMultiplier": [{"start": "2027-02-05T17:00:00Z", "end": "2027-02-14T23:00:00Z", "factor": 2}],
      "badges": [{"id": "frontline", "name": "Frontline", "start": "2027-02-05T17:00:00Z", "end": "2027-02-14T23:00:00Z",
-                 "rule": "one finished match on an official server"}]},
+                 "rule": "one counted match (two or more real players)"}]},
 ]
 
 CONTRACT_XP = 150
