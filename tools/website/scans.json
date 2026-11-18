@@ -1659,8 +1659,8 @@
  },
  "releases": {
   "v0.39.0-sandbox37": {
-   "published": "",
-   "draft": true,
+   "published": "2026-11-18T17:15:53Z",
+   "draft": false,
    "setup": "a4051859c8c722c1f6788eec5b70685d9f91dc4a0afcacbd561a3eb6e283b8da",
    "files": {
     "TrueCombat-Platinum-Setup.exe": "a4051859c8c722c1f6788eec5b70685d9f91dc4a0afcacbd561a3eb6e283b8da",
