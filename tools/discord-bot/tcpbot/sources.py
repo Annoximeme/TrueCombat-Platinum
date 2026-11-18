@@ -143,6 +143,11 @@ class StatsAPI:
     async def recent(self, fresh=False):
         return await self._get("/recent.json", ttl=0 if fresh else None)
 
+    async def season(self, fresh=False, season: str = ""):
+        """tcp-season/1 (Season 1 onwards): the season, its tiers, contracts and the season rating board;
+        None on an older stats service."""
+        return await self._get("/season.json", {"season": season} if season else None, ttl=0 if fresh else 60)
+
     async def week(self, pid: str):
         """A player's last seven days against the seven before (tcp-week/1); None on an older stats service."""
         return await self._get("/week.json", {"id": pid}, ttl=0)

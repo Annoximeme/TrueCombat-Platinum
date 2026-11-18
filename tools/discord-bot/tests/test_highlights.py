@@ -174,3 +174,56 @@ def test_season_on_old_service(stats):
     with pytest.raises(Exception) as e:
         run(cog.season_standings(cog.season()))
     assert "next update" in str(e.value)
+
+
+# ------------------------------------------------------------ Season 1 (stats service seasons, game 0.40.0)
+SEASON = {"schema": "tcp-season/1", "state": "live",
+          "season": {"id": "s1", "number": 1, "name": "Season 1", "start": "2027-02-05T17:00:00Z", "end": "2027-05-07T16:00:00Z"},
+          "week": {"id": "2027-W06", "contracts": [{"id": "e-play3", "text": "Play 3 matches"}, {"id": "m-hs5", "text": "Get 5 headshot kills"},
+                                                   {"id": "h-long40", "text": "Get a kill from 40 m or more"}]},
+          "players": [{"id": "a" * 16, "name": "Ana", "position": 1, "tier": 5, "tierName": "Elite", "rating": 1180, "wins": 7},
+                      {"id": "b" * 16, "name": "Ben", "position": 2, "tier": 3, "tierName": "Operator", "rating": 990, "wins": 2}]}
+
+
+class SeasonStats(LocalStats):
+    def __init__(self, store, data):
+        super().__init__(store)
+        self.data = data
+
+    async def season(self, fresh=False, season=""):
+        return self.data
+
+
+def test_official_season_replaces_calendar_seasons(stats):
+    cog, bot, ch = make(stats)
+    feb = dt.datetime(2027, 2, 1, 12, 0, tzinfo=dt.timezone.utc)
+    run(cog.check_season(feb))                                 # older service: calendar month
+    assert bot.store.get("season")["key"] == "2027-02"
+    bot.stats = SeasonStats(stats, dict(SEASON))
+    run(cog.check_season(feb + dt.timedelta(days=5)))          # Season 1 goes live: February's board closes
+    assert bot.store.get("season")["key"] == "s1" and bot.store.get("season")["official"]
+    e = embeds.season_tiers(cog.cfg, SEASON, bot.store.get("season"))
+    check_embed(e)
+    assert "Elite" in e.description and "Ana" in e.description
+    assert any(f.name == "This week's contracts" and "headshot" in f.value for f in e.fields)
+    sent = len(bot.channels[20].sent)
+    run(cog.check_season(feb + dt.timedelta(days=6)))          # same season: nothing new
+    assert len(bot.channels[20].sent) == sent
+    bot.stats.data = dict(SEASON, state="ended")
+    run(cog.check_season(dt.datetime(2027, 5, 8, tzinfo=dt.timezone.utc)))
+    assert bot.store.get("season")["key"] == "s1-ended"
+    final = bot.channels[20].sent[-1].kwargs["embed"]
+    check_embed(final)
+    assert "Season 1 · final standings" == final.title
+    assert A.SEASON_KEY in bot.store.achievements("a" * 16)
+    closed = [d for d in bot.store.docs("season") if d["key"] == "s1"]
+    assert closed and closed[0]["top"][0]["tier"] == "Elite"
+    n = len(bot.channels[20].sent)
+    run(cog.check_season(dt.datetime(2027, 5, 9, tzinfo=dt.timezone.utc)))
+    assert len(bot.channels[20].sent) == n                     # closed once
+
+
+def test_official_season_upcoming_keeps_calendar(stats):
+    cog, bot, ch = make(stats)
+    bot.stats = SeasonStats(stats, dict(SEASON, state="upcoming"))
+    assert run(cog.current(dt.datetime(2026, 12, 3, tzinfo=dt.timezone.utc)))["key"] == "2026-12"

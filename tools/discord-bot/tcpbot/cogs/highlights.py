@@ -186,6 +186,28 @@ class Highlights(commands.Cog):
     def season(self, now: dt.datetime | None = None) -> dict:
         return season_window(now or dt.datetime.now(dt.timezone.utc), self.cfg["seasons"]["length"], self.cfg["timezone"])
 
+    async def official(self, fresh=False) -> dict | None:
+        """The stats service's own season (Season 1, from game 0.40.0) as a window, or None: an older service,
+        or no season live or finished yet (the calendar seasons above carry on until then)."""
+        get = getattr(self.bot.stats, "season", None)
+        data = await get(fresh=fresh) if get else None
+        if not data or not data.get("season") or data.get("state") not in ("live", "ended"):
+            return None
+        s = data["season"]
+        end = dt.datetime.fromisoformat(s["end"].replace("Z", "+00:00"))
+        return {"key": s["id"] if data["state"] == "live" else s["id"] + "-ended", "id": s["id"], "name": s["name"],
+                "since": s["start"], "until": s["end"], "end_ts": int(end.timestamp()), "official": True,
+                "state": data["state"]}
+
+    async def current(self, now: dt.datetime | None = None, fresh=False) -> dict:
+        return await self.official(fresh) or self.season(now)
+
+    async def official_standings(self, season: dict, fresh=False) -> dict:
+        data = await self.bot.stats.season(fresh=fresh, season=season["id"])
+        if not data:
+            raise UserFacingError("Season standings are not available right now.")
+        return data
+
     async def season_standings(self, season: dict, fresh=False) -> dict:
         board = await self.bot.stats.leaderboard("season", "all", int(self.cfg["seasons"]["top"]), fresh=fresh,
                                                  since=season["since"], until=season["until"])
@@ -197,11 +219,14 @@ class Highlights(commands.Cog):
     async def check_season(self, now: dt.datetime):
         if not self.cfg["seasons"]["enabled"]:
             return
-        cur = self.season(now)
+        cur = await self.current(now, fresh=True)
         prev = self.bot.store.get("season")
         if prev is None or prev["key"] == cur["key"]:
             if prev is None:
                 self.bot.store.set("season", cur)
+            return
+        if prev.get("official"):
+            await self.close_official(prev, cur)
             return
         try:
             board = await self.season_standings(prev, fresh=True)
@@ -224,6 +249,27 @@ class Highlights(commands.Cog):
         if ch and players:
             await ch.send(embed=embeds.season_board(self.cfg, board, prev, final=True, champion=champion))
 
+    async def close_official(self, prev: dict, cur: dict):
+        """Season 1 onwards: final standings by season rating; the top player is crowned."""
+        self.bot.store.set("season", cur)
+        if prev["key"].endswith("-ended"):
+            return                                     # already closed when it ended
+        data = await self.official_standings(prev, fresh=True)
+        players = data.get("players") or []
+        champion = None
+        if players:
+            top = players[0]
+            self.bot.store.unlock(top["id"], [A.SEASON_KEY])
+            link = self.bot.store.linked_member(top["id"])
+            champion = link["discord_id"] if link else None
+            await self.crown(champion)
+        self.bot.store.doc_add("season", {"key": prev["id"], "name": prev["name"], "top": [
+            {"id": p["id"], "name": p["name"], "tier": p.get("tierName"), "rating": p.get("rating"), "wins": p.get("wins", 0)}
+            for p in players[:10]]}, state="closed")
+        ch = self.bot.text_channel(self.cfg.channel("announcements", "matches")) or self.channel()
+        if ch and players:
+            await ch.send(embed=embeds.season_tiers(self.cfg, data, prev, final=True, champion=champion))
+
     async def crown(self, member_id: int | None):
         """The Season champion role moves to the new winner."""
         role, guild = self.bot.role("champion"), self.bot.guild
@@ -244,7 +290,11 @@ class Highlights(commands.Cog):
     @app_commands.checks.cooldown(3, 15.0)
     async def cmd_season(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
-        season = self.season()
+        season = await self.current()
+        if season.get("official"):
+            data = await self.official_standings(season)
+            await interaction.followup.send(embed=embeds.season_tiers(self.cfg, data, season, final=season["state"] == "ended"))
+            return
         board = await self.season_standings(season)
         await interaction.followup.send(embed=embeds.season_board(self.cfg, board, season))
 
