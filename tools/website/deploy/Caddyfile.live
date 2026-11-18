@@ -8,6 +8,8 @@
 #   security-headers.caddy  ->  /etc/caddy/security-headers.caddy
 #   clean-urls.caddy        ->  /etc/caddy/clean-urls.caddy
 #   cloudflare-ips.caddy    ->  written on the VPS by install-cloudflare.sh (fallback list: cloudflare-ips.txt)
+#   cloudflare-only.caddy   ->  written on the VPS by install-cloudflare.sh; imported by the website blocks since
+#                               --lock-origin (2026-11-18): the website serves only Cloudflare and the box itself
 
 {
 	# admin API on a private unix socket (full audit 2026-11-13), not 127.0.0.1:2019.
@@ -67,6 +69,7 @@ api.truecombat.eu {
 }
 
 truecombat.eu {
+	import /etc/caddy/cloudflare-only.caddy
 	# Player accounts (tools/accounts). Goes INSIDE the truecombat.eu site block, before the file server,
 	# so the session cookie is first-party. install.sh caddy adds it (backup + caddy validate + reload).
 	handle /api/account/* {
@@ -114,6 +117,7 @@ truecombat.eu {
 }
 
 www.truecombat.eu {
+	import /etc/caddy/cloudflare-only.caddy
 	header -Server
 	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 	redir https://truecombat.eu{uri} permanent
