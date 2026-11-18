@@ -1,0 +1,53 @@
+--- a/analysis_scripts/platinum_quick.py
++++ b/analysis_scripts/platinum_quick.py
+@@ -103,26 +103,33 @@
+     out+=text('raw',36,418,700,'The game always reads raw mouse input, without Windows pointer acceleration.','.16')+'}'+chr(10)
+     # 0.36.0 voice chat settings (engine cl_voip*, cgame cg_voipHud; keys +voip / +voiplocal).
+     out+=base('platinum_voice','VOICE')
++    # 0.39.1: microphone and output pickers (voip_nextDevice / s_alNextDevice), a live level meter (cl_voipMeter, while the
++    # mic test or voice activation runs) and a lower activation range: the old 0.08 level was above normal speech.
+     out+=text('voice',36,134,360,'VOICE CHAT','.24')+text('mic',454,134,362,'MICROPHONE & KEYS','.24')
+     out+=''' YESNO(36, 170, 360, 18, "Voice chat:", .22, 14, "cl_voip", "Hear and use voice chat on servers that allow it")
+- SLIDER(36, 202, 360, 18, "Voice volume:", .22, 14, "cl_voipVolume" 1 0 2, "Loudness of other players' voices")
+- YESNO(36, 234, 360, 18, "Radio effect:", .22, 14, "cl_voipRadio", "Team voice sounds like a radio (local voice never does)")
+- YESNO(36, 266, 360, 18, "Mute the other team:", .20, 14, "cl_voipMuteEnemies", "Never hear enemy players' local voice")
+- YESNO(36, 298, 360, 18, "Show who is talking:", .20, 14, "cg_voipHud", "List of players talking at the left of the screen")
+- BUTTON(36, 334, 360, 26, "MUTE SINGLE PLAYERS...", .20, 18, close platinum_voice ; exec "mutemenu")
+- BUTTON(36, 364, 176, 22, "VOICE OFF", .18, 16, exec "set cl_voip 0")
+- BUTTON(220, 364, 176, 22, "VOICE ON", .18, 16, exec "set cl_voip 1")
+- SLIDER(454, 170, 362, 18, "Microphone gain:", .20, 14, "cl_voipMicGain" 1 0.25 4, "Microphone loudness before sending")
+- EDITFIELD(454, 196, 362, 18, "Input device:", .20, 14, "cl_voipCaptureDevice", 40, 40, "Microphone name; empty = Windows default (console: voip_devices)")
+- MULTI(454, 222, 362, 18, "Transmit:", .22, 14, "cl_voipUseVAD", cvarFloatList { "Push to talk" 0 "Voice activation" 1 }, "Hold a key to talk, or send whenever you speak")
+- SLIDER(454, 248, 362, 18, "Activation level:", .20, 14, "cl_voipVADThreshold" 0.08 0.01 0.5, "Voice activation: how loud before sending")
+- BIND(454, 276, 362, 18, "Team radio key:", .20, 14, "+voip", "Hold to talk to your team")
+- BIND(454, 300, 362, 18, "Local voice key:", .20, 14, "+voiplocal", "Hold to talk out loud: everyone nearby hears you, enemies too")
+- BUTTON(454, 330, 176, 26, "MIC TEST ON", .20, 18, exec "set cl_voipMicTest 1")
+- BUTTON(640, 330, 176, 26, "MIC TEST OFF", .20, 18, exec "set cl_voipMicTest 0")
+- itemDef { name "mictestOn" rect 454 360 362 20 text "Mic test running: you hear yourself, nothing is sent." textfont UI_FONT_COURBD_21 textscale .17 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "cl_voipMicTest" showCvar { "1" } }
++ SLIDER(36, 196, 360, 18, "Voice volume:", .22, 14, "cl_voipVolume" 1 0 2, "Loudness of other players' voices")
++ YESNO(36, 222, 360, 18, "Radio effect:", .22, 14, "cl_voipRadio", "Team voice sounds like a radio (local voice never does)")
++ YESNO(36, 248, 360, 18, "Mute the other team:", .20, 14, "cl_voipMuteEnemies", "Never hear enemy players' local voice")
++ YESNO(36, 274, 360, 18, "Show who is talking:", .20, 14, "cg_voipHud", "List of players talking at the left of the screen")
++ itemDef { name "voiceOutLabel" rect 36 300 90 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
++ itemDef { name "voiceOutName" rect 122 300 274 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .16 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
++ BUTTON(36, 324, 176, 22, "NEXT OUTPUT", .18, 16, exec "s_alNextDevice")
++ BUTTON(220, 324, 176, 22, "APPLY OUTPUT", .18, 16, exec "snd_restart")
++ BUTTON(36, 354, 360, 24, "MUTE SINGLE PLAYERS...", .20, 18, close platinum_voice ; exec "mutemenu")
++ itemDef { name "voiceMicLabel" rect 454 166 110 22 text "Microphone:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
++ itemDef { name "voiceMicName" rect 566 166 250 22 cvar "ui_voipDevice" textfont UI_FONT_COURBD_21 textscale .16 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
++ BUTTON(454, 190, 176, 22, "NEXT MICROPHONE", .18, 16, exec "voip_nextDevice")
++ BUTTON(640, 190, 176, 22, "WINDOWS DEFAULT", .18, 16, exec "voip_nextDevice default")
++ SLIDER(454, 220, 362, 18, "Microphone gain:", .20, 14, "cl_voipMicGain" 1 0.25 4, "Microphone loudness before sending")
++ MULTI(454, 244, 362, 18, "Transmit:", .22, 14, "cl_voipUseVAD", cvarFloatList { "Push to talk" 0 "Voice activation" 1 }, "Hold a key to talk, or send whenever you speak (the keys always work)")
++ SLIDER(454, 268, 362, 18, "Activation level:", .20, 14, "cl_voipVADThreshold" 0.02 0.003 0.2, "Voice activation: how loud before sending (the | on the meter)")
++ BIND(454, 292, 362, 18, "Team radio key:", .20, 14, "+voip", "Hold to talk to your team")
++ BIND(454, 314, 362, 18, "Local voice key:", .20, 14, "+voiplocal", "Hold to talk out loud: everyone nearby hears you, enemies too")
++ BUTTON(454, 338, 176, 22, "MIC TEST ON", .18, 16, exec "set cl_voipMicTest 1")
++ BUTTON(640, 338, 176, 22, "MIC TEST OFF", .18, 16, exec "set cl_voipMicTest 0")
++ itemDef { name "voiceMeter" rect 454 364 362 20 cvar "cl_voipMeter" textfont UI_FONT_COURBD_21 textscale .17 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration }
+ '''
+-    out+=text('note',36,392,780,'Voice works on servers with voice on. Muting a player also mutes their chat.','.18')
++    out+=text('note',36,392,780,'Mic test: you hear yourself and the meter moves; nothing is sent. Muting a player also mutes their chat.','.17')
+     out+=text('keys',36,418,780,'Default keys: H team radio, N local voice. B stays the radio menu.','.16')+'}'+chr(10)
+     out+=base('platinum_guide','PLAY GUIDE')
+     for i,line in enumerate(['JOINING A MATCH','Enter a server address in the Windows launcher.','Select Play, then choose Deployment in the game.','Pick your team and loadout, then wait for the round.','After a server restart, use Rejoin Last Server.','HOSTING','Choose a starting map and rotation in the launcher.','Start the host, then join the local address.','Internet players need the selected UDP port forwarded.']):out+=text('guide'+str(i),36,136+i*28,780,line,'.19')

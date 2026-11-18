@@ -1,0 +1,292 @@
+--- a/reference/etlegacy/src/client/cl_voip.c	2026-11-18 18:20:47.347172715 +0000
++++ b/reference/etlegacy/src/client/cl_voip.c	2026-11-18 18:20:47.353793324 +0000
+@@ -17,13 +17,18 @@
+  *   cl_voipVolume 1          voice playback volume (0 .. 2)
+  *   cl_voipMicGain 1         microphone gain (0.25 .. 4)
+  *   cl_voipUseVAD 0          1 = open microphone: send whenever you speak (no key needed)
+- *   cl_voipVADThreshold 0.08 open microphone level (0 .. 1)
+- *   cl_voipCaptureDevice ""  microphone name ("" = system default); voip_devices lists them
++ *   cl_voipVADThreshold 0.02 open microphone level (frame rms, 0 .. 1; 0.39.1: was 0.08, which real
++ *                            microphones never reach, so voice activation never sent anything)
++ *   cl_voipCaptureDevice ""  microphone name ("" = system default); voip_devices lists them,
++ *                            voip_nextDevice steps through them (Options > Voice)
+  *   cl_voipRadio 1           radio sound on team voice (0 = clean)
+  *   cl_voipMuteEnemies 0     1 = never hear the other team, not even in warmup (userinfo)
+  * Test aids (not archived): cl_voipTestTone 1 sends a 440 Hz tone instead of the microphone,
+  *   cl_voipDebug 1 prints every transmission start and received frame counts (TCP_NATIVE_VOIP lines).
+- * Commands: +voip / -voip (team radio), +voiplocal / -voiplocal (local voice), voip_devices.
++ * Read-only, for Options > Voice (0.39.1): ui_voipDevice (the microphone in use, readable name),
++ *   cl_voipMeter (live microphone level bar while the microphone runs, or why it is silent).
++ * Commands: +voip / -voip (team radio), +voiplocal / -voiplocal (local voice), voip_devices, voip_nextDevice.
++ * The push-to-talk keys always transmit, also with voice activation on (0.39.1).
+  * Muting single players goes through the game's mute list (mute / unmute / mute menu).
+  *
+  * Without TCP_VOIP (no libopus in the build) everything here is a no-op and the client never
+@@ -49,6 +54,13 @@
+ static cvar_t *cl_voipTestTone;
+ static cvar_t *cl_voipDebug;
+ static cvar_t *cl_voipMicTest;                   ///< 0.36.0: hear your own microphone (Options > Voice)
++static cvar_t *cl_voipMeter;                     ///< 0.39.1: live level bar for Options > Voice (read-only)
++static cvar_t *ui_voipDevice;                    ///< 0.39.1: microphone name for Options > Voice (read-only)
++static int    voipMeterAt;                       ///< realtime of the last meter update
++static int    voipMeterLevel;                    ///< loudest level since the last meter update, 0..100
++static int    voipMeterHeardAt;                  ///< realtime of the last captured frame
++static int    voipSilentFrames;                  ///< captured frames in a row that were pure digital silence
++static qboolean voipSilentWarned;
+ static voipRadio_t voipTestRadio;
+ static qboolean    voipTestWasOn;
+ static int    voipToneAt;                        ///< test tone: realtime covered so far
+@@ -169,6 +181,8 @@
+ 		return qfalse;
+ 	}
+ 	Com_Printf("Voice chat: microphone ready (%s).\n", device ? device : "system default");
++	voipSilentFrames = 0;
++	voipSilentWarned = qfalse;
+ 	return qtrue;
+ }
+ 
+@@ -246,7 +260,7 @@
+ 	const float gain = Com_Clamp(0.25f, 4.f, cl_voipMicGain->value);
+ 	double      sum  = 0;
+ 	float       rms;
+-	int         i;
++	int         i, peak = 0;
+ 
+ 	for (i = 0; i < TCP_VOIP_FRAME_SAMPLES; i++)
+ 	{
+@@ -255,12 +269,27 @@
+ 		v      = v > 32767 ? 32767 : v < -32768 ? -32768 : v;
+ 		pcm[i] = (short)v;
+ 		sum   += (double)v * v;
++		if (v > peak || -v > peak)
++		{
++			peak = v < 0 ? -v : v;
++		}
++	}
++	rms = (float)sqrt(sum / TCP_VOIP_FRAME_SAMPLES) / 32768.f;
++	// 0.39.1: level on a decibel scale, -60 dBFS .. 0 dBFS = 0 .. 100 (real speech sits around -40 .. -15 dBFS)
++	voipLevel = rms > 0.001f ? (int)((20.f * log10f(rms) + 60.f) * (100.f / 60.f)) : 0;
++	voipLevel = voipLevel < 0 ? 0 : voipLevel > 100 ? 100 : voipLevel;
++	if (voipLevel > voipMeterLevel)
++	{
++		voipMeterLevel = voipLevel;
+ 	}
+-	rms       = (float)sqrt(sum / TCP_VOIP_FRAME_SAMPLES) / 32768.f;
+-	voipLevel = (int)(rms * 400.f);  // speech sits around 0.05 .. 0.25 rms
+-	if (voipLevel > 100)
++	voipMeterHeardAt = cls.realtime;
++	// Windows hands out pure digital silence when desktop apps may not use the microphone
++	voipSilentFrames = peak ? 0 : voipSilentFrames + 1;
++	if (voipSilentFrames >= 150 && !voipSilentWarned)
+ 	{
+-		voipLevel = 100;
++		voipSilentWarned = qtrue;
++		Com_Printf(S_COLOR_YELLOW "Voice chat: the microphone sends only silence. Check that it is not muted, pick it in Options > Voice, "
++		           "and allow desktop apps under Windows Settings > Privacy > Microphone.\n");
+ 	}
+ 	return rms;
+ }
+@@ -296,6 +325,63 @@
+ }
+ 
+ /**
++ * @brief CL_VoipUpdateMeter refreshes cl_voipMeter (Options > Voice) about ten times a second.
++ * The bar is the loudest frame since the last update on the decibel scale of CL_VoipGain;
++ * '|' marks the voice activation level.
++ */
++static void CL_VoipUpdateMeter(void)
++{
++	char text[64];
++	int  i, mark, fill;
++	float thr;
++
++	if (cls.realtime - voipMeterAt < 100 && cls.realtime >= voipMeterAt)
++	{
++		return;
++	}
++	voipMeterAt = cls.realtime;
++	if (voipMicFailed)
++	{
++		Q_strncpyz(text, "No microphone found", sizeof(text));
++	}
++	else if (!voipMic || cls.realtime - voipMeterHeardAt > 500)
++	{
++		Q_strncpyz(text, cl_voipMicTest->integer ? "Waiting for the microphone..." : "Microphone idle: start the mic test", sizeof(text));
++	}
++	else if (voipSilentFrames >= 150)
++	{
++		Q_strncpyz(text, "Silence only: muted or blocked by Windows", sizeof(text));
++	}
++	else
++	{
++		thr  = Com_Clamp(0.001f, 1.f, cl_voipVADThreshold->value);
++		mark = (int)((20.f * log10f(thr) + 60.f) * (24.f / 60.f));
++		mark = mark < 0 ? 0 : mark > 23 ? 23 : mark;
++		fill = (voipMeterLevel * 24 + 50) / 100;
++		text[0] = '[';
++		for (i = 0; i < 24; i++)
++		{
++			text[1 + i] = (cl_voipUseVAD->integer && i == mark) ? '|' : i < fill ? '#' : '.';
++		}
++		Com_sprintf(text + 25, sizeof(text) - 25, "] %d%%%s", voipMeterLevel,
++		            cl_voipUseVAD->integer ? (voipMeterLevel > mark * 100 / 24 ? "  sending" : "") : "");
++	}
++	voipMeterLevel = 0;
++	if (strcmp(cl_voipMeter->string, text))
++	{
++		Cvar_Set("cl_voipMeter", text);
++	}
++}
++
++/**
++ * @brief CL_VoipDeviceLabel keeps ui_voipDevice (the microphone shown in Options > Voice) in step.
++ */
++static void CL_VoipDeviceLabel(void)
++{
++	Cvar_Set("ui_voipDevice", cl_voipCaptureDevice->string[0] ? cl_voipCaptureDevice->string : "Windows default microphone");
++}
++
++/**
+  * @brief CL_VoipFrame runs the microphone. Called every client frame before CL_SendCmd.
+  */
+ void CL_VoipFrame(void)
+@@ -308,11 +394,13 @@
+ 		return;
+ 	}
+ 	CL_VoipSpeakersFrame();
++	CL_VoipUpdateMeter();
+ 	if (cl_voipCaptureDevice->modified)
+ 	{
+ 		cl_voipCaptureDevice->modified = qfalse;
+ 		CL_VoipStopSending();
+ 		CL_VoipCloseMic();
++		CL_VoipDeviceLabel();
+ 		voipMicFailed = qfalse;
+ 	}
+ 	// 0.36.0 microphone test: play the microphone back to this player only; nothing is sent
+@@ -372,17 +460,24 @@
+ 	if (cl_voipUseVAD->integer)
+ 	{
+ 		// open microphone: keep capturing, transmit while the level is above the threshold
++		// 0.39.1: a held push-to-talk key always transmits (radio, or local voice for its own key)
++		const qboolean held = voipKeyDown || voipLocalKeyDown;
++
+ 		if (!CL_VoipOpenMic())
+ 		{
+ 			return;
+ 		}
+ 		SDL_PauseAudioDevice(voipMic, 0);
++		if (voipSending && held && voipSendLocal != (voipLocalKeyDown && !voipKeyDown))
++		{
++			CL_VoipStopSending();  // switched between radio and local voice: start a new transmission
++		}
+ 		while (SDL_GetQueuedAudioSize(voipMic) >= sizeof(pcm))
+ 		{
+ 			qboolean loud;
+ 
+ 			SDL_DequeueAudio(voipMic, pcm, sizeof(pcm));
+-			loud = CL_VoipGain(pcm) >= cl_voipVADThreshold->value ? qtrue : qfalse;
++			loud = (CL_VoipGain(pcm) >= cl_voipVADThreshold->value || held) ? qtrue : qfalse;
+ 			if (!voipSending)
+ 			{
+ 				if (!loud)
+@@ -777,6 +872,56 @@
+ }
+ 
+ /**
++ * @brief CL_VoipNextDevice_f picks the next microphone SDL can see (after the last one: the Windows default).
++ * Options > Voice: NEXT MICROPHONE; "voip_nextDevice default" (WINDOWS DEFAULT) goes back to the default.
++ * The microphone reopens on its next use.
++ */
++static void CL_VoipNextDevice_f(void)
++{
++	const char *current = cl_voipCaptureDevice->string;
++	const char *next    = "";
++	int        i, count, at = -1;
++
++	if (!SDL_WasInit(SDL_INIT_AUDIO) && SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)
++	{
++		Com_Printf("No audio: %s\n", SDL_GetError());
++		return;
++	}
++	if (Cmd_Argc() > 1 && !Q_stricmp(Cmd_Argv(1), "default"))
++	{
++		current = "";
++		count   = 0;          // "voip_nextDevice default": back to the Windows default microphone
++	}
++	else
++	{
++		count = SDL_GetNumAudioDevices(1);
++	}
++	for (i = 0; i < count && current[0]; i++)
++	{
++		const char *name = SDL_GetAudioDeviceName(i, 1);
++
++		if (name && !Q_stricmp(name, current))
++		{
++			at = i;
++			break;
++		}
++	}
++	if (current[0] && at < 0)
++	{
++		at = count;           // the saved microphone is gone: go back to the default
++	}
++	if (at + 1 < count)
++	{
++		const char *name = SDL_GetAudioDeviceName(at + 1, 1);
++
++		next = name ? name : "";
++	}
++	Cvar_Set("cl_voipCaptureDevice", next);
++	CL_VoipDeviceLabel();
++	Com_Printf("Microphone: %s\n", ui_voipDevice->string);
++}
++
++/**
+  * @brief CL_VoipReset forgets all speakers (disconnect, map change).
+  */
+ void CL_VoipReset(void)
+@@ -803,19 +948,33 @@
+ 	cl_voipVolume        = Cvar_Get("cl_voipVolume", "1", CVAR_ARCHIVE);
+ 	cl_voipMicGain       = Cvar_Get("cl_voipMicGain", "1", CVAR_ARCHIVE);
+ 	cl_voipUseVAD        = Cvar_Get("cl_voipUseVAD", "0", CVAR_ARCHIVE);
+-	cl_voipVADThreshold  = Cvar_Get("cl_voipVADThreshold", "0.08", CVAR_ARCHIVE);
++	cl_voipVADThreshold  = Cvar_Get("cl_voipVADThreshold", "0.02", CVAR_ARCHIVE);
++	// 0.39.1: the old 0.08 default was above normal speech, so voice activation never sent; move saved profiles once
++	if (!Cvar_VariableIntegerValue("cl_voipVADLevel2"))
++	{
++		if (!Q_stricmp(cl_voipVADThreshold->string, "0.08"))
++		{
++			Cvar_Set("cl_voipVADThreshold", "0.02");
++		}
++		Cvar_Get("cl_voipVADLevel2", "1", CVAR_ARCHIVE);
++		Cvar_Set("cl_voipVADLevel2", "1");
++	}
+ 	cl_voipCaptureDevice = Cvar_Get("cl_voipCaptureDevice", "", CVAR_ARCHIVE);
+ 	Cvar_Get("cl_voipMuteEnemies", "0", CVAR_ARCHIVE | CVAR_USERINFO); // read by the server from the userinfo
+ 	cl_voipRadio         = Cvar_Get("cl_voipRadio", "1", CVAR_ARCHIVE);
+ 	cl_voipTestTone      = Cvar_Get("cl_voipTestTone", "0", CVAR_TEMP);
+ 	cl_voipDebug         = Cvar_Get("cl_voipDebug", "0", CVAR_TEMP);
+ 	cl_voipMicTest       = Cvar_Get("cl_voipMicTest", "0", CVAR_TEMP);
++	cl_voipMeter         = Cvar_Get("cl_voipMeter", "", CVAR_ROM | CVAR_TEMP);
++	ui_voipDevice        = Cvar_Get("ui_voipDevice", "", CVAR_ROM | CVAR_TEMP);
++	CL_VoipDeviceLabel();
+ 	cl_voipCaptureDevice->modified = qfalse;
+ 	Cmd_AddCommand("+voip", CL_VoipDown_f, "Push to talk (voice chat).");
+ 	Cmd_AddCommand("-voip", CL_VoipUp_f, "Push to talk (voice chat).");
+ 	Cmd_AddCommand("+voiplocal", CL_VoipLocalDown_f, "Talk out loud: everyone nearby hears you, enemies too.");
+ 	Cmd_AddCommand("-voiplocal", CL_VoipLocalUp_f, "Talk out loud: everyone nearby hears you, enemies too.");
+ 	Cmd_AddCommand("voip_devices", CL_VoipDevices_f, "Lists the microphones voice chat can use.");
++	Cmd_AddCommand("voip_nextDevice", CL_VoipNextDevice_f, "Selects the next microphone for voice chat.");
+ 	CL_VoipReset();
+ }
+ 
+@@ -846,6 +1005,7 @@
+ 	Cmd_RemoveCommand("+voiplocal");
+ 	Cmd_RemoveCommand("-voiplocal");
+ 	Cmd_RemoveCommand("voip_devices");
++	Cmd_RemoveCommand("voip_nextDevice");
+ }
+ 
+ #else // !TCP_VOIP: no codec in this build
