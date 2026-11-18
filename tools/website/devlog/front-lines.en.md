@@ -62,6 +62,10 @@ For riflemen, a new focus zoom: while aiming, hold the right mouse button to ste
 
 The launcher has been rebuilt from the ground up. The Play page shows live servers with their map and players, the server browser gains favourites, recent servers and search, and news opens as full articles. Friends lets you add each other by code, see who is playing and join in one click. It is optional and stays off until you turn it on. Downloads can be paused and resumed, and new accessibility settings cover high contrast, larger text, colour-blind friendly markers and reduced motion. The launcher is now also available in Dutch.
 
+![The new Play page in Launcher 3.0](img/devlog/front-lines-launcher-play.webp "The new Play page: live servers, news and quick play in one place.")
+
+![Friends in Launcher 3.0](img/devlog/front-lines-launcher-friends.webp "Friends: add each other by code, see who is playing, join in one click.")
+
 ## Also in this update
 
 - Northport's harbour ambience plays again. It had been silent since the original release.
