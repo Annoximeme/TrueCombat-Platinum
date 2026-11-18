@@ -176,6 +176,8 @@ var TCP_API = 'https://api.truecombat.eu';
       ssEmpty: 'Nog geen ranked potjes dit seizoen.', ssOffline: 'De seizoensstand is tijdelijk niet beschikbaar. Kom over een paar minuten terug.',
       ctEasy: 'Makkelijk', ctMedium: 'Gemiddeld', ctHard: 'Moeilijk', ctWeek: 'Week {w}', ctNext: 'Volgende week', ctBonus: 'Haal ze alle drie voor +{x} XP',
       soloWeek: 'Week {w} · Wapen voor de Range Run: {g} · Botuitdaging: {c}', soloEmpty: 'Nog geen runs deze week. Wees de eerste.', soloRuns: 'runs', soloPts: 'punten',
+      "ct_e-play3": "Speel 3 potjes", "ct_e-rounds5": "Win 5 rondes", "ct_e-kills10": "Maak 10 kills", "ct_e-obj1": "Plaats of ontmantel een bom", "ct_e-assists5": "Haal 5 assists", "ct_e-play2r": "Speel 2 ranked potjes", "ct_e-aimed8": "Maak 8 kills terwijl je richt", "ct_e-damage1500": "Doe 1.500 schade", "ct_m-bombrounds3": "Win 3 bomrondes", "ct_m-hs5": "Maak 5 headshotkills", "ct_m-trades3": "Maak 3 trades", "ct_m-open3": "Maak 3 openingskills", "ct_m-wins2": "Win 2 potjes", "ct_m-low10": "Maak 10 kills gehurkt of liggend", "ct_m-double3": "Maak 3 double kills", "ct_m-mvp3": "Word 3 keer MVP van de ronde", "ct_h-long40": "Maak een kill van 40 m of meer", "ct_h-clutch2": "Win een 1-tegen-2-clutch", "ct_h-knife2": "Maak 2 meskills", "ct_h-triple1": "Maak een triple kill", "ct_h-obj3": "Plaats of ontmantel 3 bommen", "ct_h-rwins3": "Win 3 ranked potjes", "ct_h-streak5": "Maak 5 kills zonder te sterven", "ct_h-revenge3": "Neem 3 keer wraak",
+      "bc_Village Bomb, 5 v 5 against hard bots": "Village Bom, 5 tegen 5 tegen sterke bots", "bc_Railhouse Team Elimination, 5 v 5 against hard bots": "Railhouse Team Elimination, 5 tegen 5 tegen sterke bots", "bc_Snow Bomb, 4 v 4 against the hardest bots": "Snow Bom, 4 tegen 4 tegen de sterkste bots", "bc_Village Team Elimination, 3 v 3 against the hardest bots": "Village Team Elimination, 3 tegen 3 tegen de sterkste bots",
       cmErr400: 'Controleer je reactie: minstens 2 en hoogstens 1.000 tekens.', cmErr403: 'Dat kan nu niet met jouw account.', cmErr409: 'Dat kan niet meer. Vernieuw de pagina en probeer opnieuw.', cmErr429: 'Even rustig aan. Probeer het zo meteen opnieuw.'
     }
   };
@@ -811,7 +813,7 @@ var TCP_API = 'https://api.truecombat.eu';
       var lvl = { easy: L.ctEasy, medium: L.ctMedium, hard: L.ctHard }, bonus = (d.rules || {}).contractBonusXp || 250;
       root.innerHTML = '<p class="muted">' + esc(L.ctWeek.replace('{w}', weekNo(wk.id))) + ' · ' + esc(L.ctBonus.replace('{x}', bonus)) + '</p><ol class="contracts">' +
         wk.contracts.map(function (c) {
-          return '<li class="ct ct-' + esc(c.difficulty) + '"><span class="ct-lvl">' + esc(lvl[c.difficulty] || c.difficulty) + '</span><b>' + esc(c.text) + '</b><span class="ct-xp">+' + num(c.xp) + ' XP</span></li>';
+          return '<li class="ct ct-' + esc(c.difficulty) + '"><span class="ct-lvl">' + esc(lvl[c.difficulty] || c.difficulty) + '</span><b>' + esc(L['ct_' + c.id] || c.text) + '</b><span class="ct-xp">+' + num(c.xp) + ' XP</span></li>';
         }).join('') + '</ol>';
     }, function () {});
   });
@@ -824,7 +826,7 @@ var TCP_API = 'https://api.truecombat.eu';
     }
     function draw(b) {
       var st = b.setup || {}, ch = st.botChallenge || {};
-      info.textContent = L.soloWeek.replace('{w}', weekNo(st.week)).replace('{g}', st.rangeWeapon || '–').replace('{c}', ch.text || '–');
+      info.textContent = L.soloWeek.replace('{w}', weekNo(st.week)).replace('{g}', st.rangeWeapon || '–').replace('{c}', L['bc_' + ch.text] || ch.text || '–');
       setPill(root, true, b.name || '');
       var rows = b.players || [];
       if (!rows.length) { empty.textContent = L.soloEmpty; empty.hidden = false; tbody.innerHTML = ''; return; }
