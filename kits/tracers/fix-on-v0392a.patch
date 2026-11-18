@@ -1,0 +1,51 @@
+--- a/game_src/native/tcp_tracer_cg.h
++++ b/game_src/native/tcp_tracer_cg.h
+@@ -25,13 +25,19 @@
+ #define TR_LIGHT_RADIUS 100.f
+ typedef struct {int start,shooter,retarget,seq,flesh;vec3_t from,to,dir,rdir;float len,rlen,speed;} trRound_t;
+ static trRound_t trRounds[TR_MAX];static int trNext,trReady,trCount;
+-static qhandle_t trShader;static polyBuffer_t trBuf[2];static int trFrame;
++static qhandle_t trShader;static polyBuffer_t trBuf[2];static int trFrame,trPremul,trLastVerts;
+ static vec3_t trImpactAt[MAX_CLIENTS];static int trImpactTime[MAX_CLIENTS],trImpactFlesh[MAX_CLIENTS];
+ static vec3_t trViewOrg,trViewAxis[3];static int trLastTime;
+ 
+ static void trInit(void){
+     memset(trRounds,0,sizeof(trRounds));memset(trImpactTime,0,sizeof(trImpactTime));trNext=0;
+-    trShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"gfx/platinum/tracer");trReady=1;
++    trShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"gfx/platinum/tracer");trPremul=0;
++    /* A client ignores a pak the server does not have on a pure server (sv_pure 1, FS_PakIsPure), and the renderer
++     * then returns 0 for our shader: fall back to the stock additive flare in pak0 (on every server), with the fade
++     * baked into the vertex colour since that shader has no alphaGen vertex. */
++    if(!trShader){trShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"flareShader");trPremul=1;}
++    {char m[96];snprintf(m,sizeof(m),"TCP_TRACER shader %d%s\n",(int)trShader,trPremul?" (stock flare, tracer pak not loaded)":"");SystemCall(CG_PRINT,m);}
++    trReady=1;
+ }
+ /* every firearm in the gear table */
+ static int trWeapon(int weapon,int suppressed){(void)suppressed;return TCP_GearWeapon(weapon)!=NULL;}
+@@ -112,7 +118,7 @@
+     const int v=b->numVerts;static const float st[4][2]={{0,0},{1,0},{1,1},{0,1}};
+     for(int i=0;i<4;i++){const float *p=(i==0||i==3)?a:c;const float s=(i>=2)?wide:-wide;
+         for(int k=0;k<3;k++)b->xyz[v+i][k]=p[k]+side[k]*s;b->xyz[v+i][3]=1.f;
+-        b->st[v+i][0]=st[i][0];b->st[v+i][1]=st[i][1];memcpy(b->color[v+i],(i==0||i==3)?cola:colc,4);}
++        b->st[v+i][0]=st[i][0];b->st[v+i][1]=st[i][1];{const byte *cl=(i==0||i==3)?cola:colc;if(trPremul){for(int k=0;k<3;k++)b->color[v+i][k]=(byte)((cl[k]*cl[3]+127)/255);b->color[v+i][3]=255;}else memcpy(b->color[v+i],cl,4);}}
+     const int n=b->numIndicies;b->indicies[n]=v;b->indicies[n+1]=v+1;b->indicies[n+2]=v+2;b->indicies[n+3]=v;b->indicies[n+4]=v+2;b->indicies[n+5]=v+3;
+     b->numVerts+=4;b->numIndicies+=6;
+ }
+@@ -159,7 +165,7 @@
+                 trQuad(b,hb,hf,side,core*2.2f,hz,hc);}
+         }
+     }
+-    if(b->numVerts)SystemCall(CG_R_ADDPOLYBUFFERTOSCENE,b);
++    trLastVerts=b->numVerts;if(b->numVerts)SystemCall(CG_R_ADDPOLYBUFFERTOSCENE,b);
+     for(int q=0;q<nl;q++)SystemCall(CG_R_ADDLIGHTTOSCENE,lAt[q],TCP_Float(TR_LIGHT_RADIUS*(.75f+.25f*lK[q])),TCP_Float(.6f*lK[q]),TCP_Float(1.f),TCP_Float(.42f),TCP_Float(.14f),0,0);
+ }
+ /* developer preview: "trTest [n] [d] [slow] [ground]" fires n tracers (default 3) across the view, d units ahead (default
+@@ -181,7 +187,7 @@
+         VectorSubtract(to,from,dir);{const float l=sqrtf(DotProduct(dir,dir));if(l<1.f)continue;VectorScale(dir,1.f/l,dir);}
+         trSpawn(-1,i*5+ground,from,from,dir,trLastTime-i*15);trRounds[(trNext+TR_MAX-1)%TR_MAX].speed*=slow;
+         if(ground){char m[80];snprintf(m,sizeof(m),"TCP_TRACER ground %d len %.0f ricochet %.0f\n",i,trRounds[(trNext+TR_MAX-1)%TR_MAX].len,trRounds[(trNext+TR_MAX-1)%TR_MAX].rlen);SystemCall(CG_PRINT,m);}}
+-    char m[96];{const trRound_t *r=&trRounds[(trNext+TR_MAX-1)%TR_MAX];snprintf(m,sizeof(m),"TCP_TRACER test %d at %.0f (total %d) last len %.0f ricochet %.0f\n",n,dd,trCount,r->len,r->rlen);}SystemCall(CG_PRINT,m);
++    char m[160];{const trRound_t *r=&trRounds[(trNext+TR_MAX-1)%TR_MAX];snprintf(m,sizeof(m),"TCP_TRACER test %d at %.0f (total %d) last len %.0f ricochet %.0f shader %d%s verts %d\n",n,dd,trCount,r->len,r->rlen,(int)trShader,trPremul?" stock":"",trLastVerts);}SystemCall(CG_PRINT,m);
+     return 1;
+ }
+ #endif
