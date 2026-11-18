@@ -1,0 +1,6 @@
+--- a/reference/etlegacy/src/server/sv_anticheat.c
++++ b/reference/etlegacy/src/server/sv_anticheat.c
+@@ -354,2 +354,3 @@
+ 	{ "tcetest/zz_platinum_assets",    "369648192"   },
++	{ "tcetest/zz_community_mapdata",  "-872564553"  }, /* community maps: loading screen, minimap and tactical map plans, callouts (Villa 2.1, Shozen, Snowtown, Chlite) */
+ 	{ "tcetest/zz_platinum_audio",     "1669797338"  }, /* 0.37.1 audio pak (686bf7ae, audio-pass assets-0371); was -539784884 since 0.36.0. 0.36.0 audio pass: loudness-matched originals + crack/whizz/thump/tinnitus; tools/audio_master.py */

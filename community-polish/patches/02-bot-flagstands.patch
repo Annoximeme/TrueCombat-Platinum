@@ -1,0 +1,71 @@
+--- a/game_src/native/tcp_bots.h
++++ b/game_src/native/tcp_bots.h
+@@ -388,6 +388,38 @@
+     if (tr.startsolid || tr.allsolid || tr.fraction >= 1.f) return 0;
+     memcpy(out, tr.endpos, sizeof(vec3_t)); return 1;
+ }
++/* 0.39.x: a flag or capture point on a small stand or table (community maps Villa 2.1, Shozen) has no
++   floor under it for a player box, and the 64-unit lattice rarely lands within the 36 units that take a
++   flag (tickFlags). After the graph is built, add floor spots 32 units around it and link each both ways
++   to the lattice nodes a player can walk to in a straight line. The lattice itself is unchanged.
++   Returns how many spots got linked both ways. */
++static int navAttachNear(const float *p)
++{
++    static const float ring[9][2] = {{0,0},{32,0},{-32,0},{0,32},{0,-32},{23,23},{-23,23},{23,-23},{-23,-23}};
++    int linked = 0;
++    for (int k = 0; k < 9 && botNodeCount < TCP_BOT_NODES; k++) {
++        float q[3] = {p[0] + ring[k][0], p[1] + ring[k][1], p[2]}, g[3];
++        if (!navGround(q, g) || fabsf(g[2] - p[2]) > 64.f || navFind(g, 12, 30) >= 0) continue;
++        const int n = navAdd(g); if (n < 0) break;
++        int in = 0;
++        const int cx = botCell(g[0]), cy = botCell(g[1]);
++        for (int dx = -2; dx <= 2; dx++) for (int dy = -2; dy <= 2; dy++)
++            for (int i = botHash[botHashOf(cx + dx, cy + dy)]; i >= 0; i = botNodes[i].next) {
++                if (i == n || botDist(botNodes[i].pos, g) > 112.f || fabsf(botNodes[i].pos[2] - g[2]) > 20.f) continue;
++                float e[3];
++                for (int st = 0; st < 2; st++) {
++                    if (navStep(g, botNodes[i].pos[0] - g[0], botNodes[i].pos[1] - g[1], e, st) && botDist(e, botNodes[i].pos) < 16.f &&
++                        navStep(botNodes[i].pos, g[0] - botNodes[i].pos[0], g[1] - botNodes[i].pos[1], e, st) && botDist(e, g) < 16.f) {
++                        int had = botNodes[i].count; navLink(n, i, st); navLink(i, n, st); if (botNodes[i].count > had) in++;
++                        break;
++                    }
++                }
++            }
++        if (!in) { botHash[botHashOf(cx, cy)] = botNodes[n].next; botNodeCount--; continue; }   /* nothing leads in: take the spot out again (it is the newest node) */
++        linked++;
++    }
++    return linked;
++}
+ /* Nav cache: the graph depends only on the map, its spawn/flag seeds and this build of the
+  * code, so it is saved after the first build and loaded on later map loads (bot_navCache 1).
+  * File: <homepath>/tcetest/navcache/<map>.nav. Runtime learning (blocked edges, water
+@@ -554,6 +586,9 @@
+         }
+         if (botNodeCount > before) { expandFrom = before; goto expand; }
+     }
++    /* 0.39.x: flag stands and capture points (navAttachNear) */
++    for (int t = 1; t <= 2; t++) if (flags[t].present) navAttachNear(flags[t].home);
++    for (int z = 0; z < flagZoneCount; z++) { float m[3]; for (int k = 0; k < 3; k++) m[k] = (flagZones[z].mins[k] + flagZones[z].maxs[k]) * .5f; navAttachNear(m); }
+     botNavLinkHints();   /* BOT_NAV: tcp_nav_link */
+     for (int i = 0; i < doorCount; i++) SystemCall(G_LINKENTITY, &ents[doors[i].ent]);
+     botNavBuilt = 1; botNavMs = (int)(GetTickCount() - started);
+@@ -567,6 +602,9 @@
+ {
+     int best = -1; float bestD = 1e30f;
+     int cx = botCell(p[0]), cy = botCell(p[1]);
++    /* 0.39.x: a point inside a stand or table (a flag resting on it) blocks every line test; then the
++       nearest linked node within 48 units counts without one (navAttachNear puts nodes there) */
++    trace_t in; { vec3_t a; memcpy(a, p, sizeof(a)); a[2] += 8; navTrace(&in, a, a); }
+     for (int r = 0; r <= 3 && best < 0; r++)
+         for (int dx = -r; dx <= r; dx++)
+             for (int dy = -r; dy <= r; dy++) {
+@@ -575,7 +613,8 @@
+                     float d = botDist(p, botNodes[i].pos);
+                     if (d >= bestD || fabsf(botNodes[i].pos[2] - p[2]) > 90) continue;
+                     trace_t tr; vec3_t a, b; memcpy(a, p, sizeof(a)); memcpy(b, botNodes[i].pos, sizeof(b)); a[2] += 8; b[2] += 8;
+-                    navTrace(&tr, a, b); if (tr.fraction < 1.f) continue;
++                    navTrace(&tr, a, b);
++                    if (tr.fraction < 1.f && !(in.startsolid && botNodes[i].count && hypotf(botNodes[i].pos[0] - p[0], botNodes[i].pos[1] - p[1]) <= 48.f)) continue;
+                     bestD = d; best = i;
+                 }
+             }
