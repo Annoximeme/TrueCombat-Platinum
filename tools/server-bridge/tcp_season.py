@@ -364,11 +364,12 @@ SOLO_BOARDS = {
     "bots": {"name": "Weekly Bot Challenge", "unit": "ms", "better": "low"},
 }
 RANGE_WEAPONS = ["M4", "AK-47", "MP5/10", "SG 552", "Glock 19", "Desert Eagle"]   # game display names
+# bots = bot clients in the match (5 v 5 with one human = 9); the game records map, mode (tcp_mode), bots and bot_skill
 BOT_CHALLENGES = [
-    {"map": "obj_village", "mode": "bomb", "bots": 5, "skill": "hard", "rule": "pistols", "text": "Village Bomb, 5 v 5, pistols only"},
-    {"map": "obj_railhouse", "mode": "elimination", "bots": 5, "skill": "hard", "rule": "rifles", "text": "Railhouse Elimination, 5 v 5, rifles"},
-    {"map": "obj_harbour", "mode": "elimination", "bots": 4, "skill": "hard", "rule": "smg", "text": "Harbour Elimination, 4 v 4, SMGs only"},
-    {"map": "obj_snow", "mode": "bomb", "bots": 5, "skill": "hard", "rule": "any", "text": "Snow Bomb, 5 v 5, any weapon"},
+    {"map": "obj_village", "mode": "bomb", "bots": 9, "minSkill": 4, "rule": "any", "text": "Village Bomb, 5 v 5 against hard bots"},
+    {"map": "obj_railhouse", "mode": "elimination", "bots": 9, "minSkill": 4, "rule": "any", "text": "Railhouse Elimination, 5 v 5 against hard bots"},
+    {"map": "obj_snow", "mode": "bomb", "bots": 7, "minSkill": 5, "rule": "any", "text": "Snow Bomb, 4 v 4 against the hardest bots"},
+    {"map": "obj_village", "mode": "elimination", "bots": 5, "minSkill": 5, "rule": "any", "text": "Village Elimination, 3 v 3 against the hardest bots"},
 ]
 MIN_HIT_GAP_MS = 120          # no human hits two separate pop-up targets faster than this, run after run
 MAX_RUN_BYTES = 64 * 1024
@@ -433,8 +434,10 @@ def check_run(run, week):
         return sum(2 if h[2] == 1 else 1 for h in hits), None
     # bots
     ch = week["botChallenge"]
-    if run.get("map") != ch["map"] or run.get("rule") != ch["rule"] or run.get("bots") != ch["bots"]:
+    if run.get("map") != ch["map"] or run.get("bots") != ch["bots"] or ch["mode"] not in str(run.get("mode", "")).lower():
         return None, "not this week's challenge"
+    if not isinstance(run.get("skill"), int) or run["skill"] < ch["minSkill"]:
+        return None, "bots too easy for this week's challenge"
     if not run.get("won"):
         return None, "challenge not won"
     ms = run.get("timeMs")

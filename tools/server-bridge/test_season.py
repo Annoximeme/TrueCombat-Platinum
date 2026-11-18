@@ -223,6 +223,17 @@ check("range board", board["practice"] and board["players"][0]["id"] == tcp_stat
       and board["players"][0]["score"] == 6500, board)
 store.void_run(info["id"])
 check("voided run leaves the board", store.solo("range")["players"] == [])
+ch = setup["botChallenge"]
+store.clock = lambda: NOW + dt.timedelta(minutes=5)
+bot_run = run(board="bots", map=ch["map"], mode=ch["mode"].title(), bots=ch["bots"], skill=ch["minSkill"], won=True, timeMs=600000)
+status, info = store.solo_submit(bot_run)
+check("bot challenge win stored", status == "stored" and info["score"] == 600000, info)
+store.clock = lambda: NOW + dt.timedelta(minutes=7)
+try:
+    store.solo_submit(run(board="bots", map=ch["map"], mode=ch["mode"], bots=ch["bots"], skill=1, won=True, timeMs=500000))
+    check("easy bots refused", False)
+except tcp_stats.Rejected as exc:
+    check("easy bots refused", "too easy" in str(exc), exc)
 code, body = tcp_stats.handle_post(store, "/api/v1/solo", {}, b"{}")
 check("POST /api/v1/solo refuses an unsigned run", code == 422, body)
 
