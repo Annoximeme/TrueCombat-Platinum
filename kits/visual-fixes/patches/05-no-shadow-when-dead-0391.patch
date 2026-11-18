@@ -1,0 +1,23 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -1722,3 +1722,3 @@
+             asNet[e->number]=(asNet_t){target?0:e->frame,target?0:e->density}; /* TCP_ANIM_AUDIT */
+-            pmAddPlayer(e->number,e->pos.trBase,e->apos.trBase,e->pos.trDelta,&in,snap.serverTime,time,followed==e,rd.vieworg);
++            pmAddPlayer(e->number,e->pos.trBase,e->apos.trBase,e->pos.trDelta,&in,snap.serverTime,time,followed==e?2:0,rd.vieworg); /* 0.39.1: no shadow under a spectator's camera */
+             continue;
+@@ -1736,3 +1736,3 @@
+         if(p.pm_type!=PM_SPECTATOR)ffBody(p.clientNum,p.stats[STAT_HEALTH]<=0&&p.pm_type==PM_DEAD,p.origin,time); /* 0.38.0 blood pool */
+-        if(p.pm_type!=PM_SPECTATOR&&!replay)pmAddPlayer(p.clientNum,p.origin,angles,p.velocity,&in,snap.serverTime,time,followed||vxCamActive()?0:1,rd.vieworg);
++        if(p.pm_type!=PM_SPECTATOR&&!replay)pmAddPlayer(p.clientNum,p.origin,angles,p.velocity,&in,snap.serverTime,time,followed||vxCamActive()?0:p.stats[STAT_HEALTH]>0&&p.pm_type!=PM_DEAD?1:2,rd.vieworg); /* 0.39.1: dead = no own shadow */
+     }
+diff --git a/game_src/native/tcp_player_models.h b/game_src/native/tcp_player_models.h
+--- a/game_src/native/tcp_player_models.h
++++ b/game_src/native/tcp_player_models.h
+@@ -595,4 +595,5 @@
+     bsBody(number,alive,&body,netVelocity,time,legsAnim); /* TCP_BONEPOSE: momentum, slopes, limbs */
++    if(self==2&&!pmThirdPerson.integer)body.renderfx|=RF_FIRST_PERSON; /* 0.39.1: self 2 (dead, or a followed teammate): hidden like self 1, no sun shadow either */
+     SystemCall(CG_R_ADDREFENTITYTOSCENE,&body);
+-    if(alive)pmShadow(&body,origin,yaw,view);
++    if(alive&&self!=2)pmShadow(&body,origin,yaw,view);
+     float grime[2]={0,0}; /* 0.38.0 immersion: blood and dirt overlays */
