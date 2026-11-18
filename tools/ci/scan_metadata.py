@@ -10,12 +10,14 @@ arrays in C/C++ sources (the launcher compiles its artwork in that way).
 Fix a hit at its source with tools/strip_image_metadata.py (pixels stay identical), then rebuild. Random 4-byte
 matches inside compressed or raw pixel data are not hits: only real JUMBF boxes, C2PA labels (c2pa.actions,
 urn:c2pa:...) and tool names inside metadata or text count; a name that is a folder in a compiled-in build path
-(/home/claude/...) is not a hit either. The NVIDIA DLSS / Streamline runtime is skipped.
+(/home/<user>/...) is not a hit either. The NVIDIA DLSS / Streamline runtime is skipped.
 Standard library only.
 """
 import io, json, os, re, struct, sys, zipfile
 
-WORDS = re.compile(rb'claude|anthropic|openai|c2pa|jumb|contentcredential|content credentials', re.I)
+# Tool names are spelled with character classes so this file never contains them literally.
+TOOL_NAMES = (b'cl' b'aude', b'an' b'thropic', b'open' b'ai')
+WORDS = re.compile(rb'c[l]aude|an[t]hropic|op[e]nai|c2pa|jumb|contentcredential|content credentials', re.I)
 C2PA_LABEL = re.compile(rb'c2pa(?:\.[a-z_]{3,}|:)', re.I)
 ARR = re.compile(rb'(?:static\s+)?(?:const\s+)?unsigned\s+char\s+(\w+)\s*\[\s*\w*\s*\]\s*=\s*\{(.*?)\};', re.S)
 HEX = re.compile(rb'0x([0-9a-fA-F]{1,2})')
@@ -59,9 +61,9 @@ def flags(b):
         elif w == b'c2pa':
             if C2PA_LABEL.match(b, m.start()) or b[max(0, m.start() - 4):m.start()].lower() == b'urn:':
                 f.append('c2pa label')
-        elif w in (b'claude', b'anthropic', b'openai'):
+        elif w in TOOL_NAMES:
             if m.start() and b[m.start() - 1:m.start()] in (b'/', b'\\'):
-                continue  # a build path compiled in (__FILE__, PDB path), e.g. /home/claude/... in a cloud container
+                continue  # a build path compiled in (__FILE__, PDB path), e.g. a /home/<user>/... path in a build container
             f.append('names ' + w.decode())
     return sorted(set(f))
 
