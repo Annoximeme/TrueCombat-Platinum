@@ -29,7 +29,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:38:17Z",
-   "checked": "2026-11-18T11:48:34Z",
+   "checked": "2026-11-18T12:24:33Z",
    "settle": false,
    "flagged_by": []
   },
@@ -149,7 +149,7 @@
    "suspicious": 0,
    "engines": 66,
    "analysed": "2026-11-16T05:40:45Z",
-   "checked": "2026-11-18T11:47:14Z",
+   "checked": "2026-11-18T12:23:14Z",
    "settle": false,
    "flagged_by": []
   },
@@ -182,7 +182,7 @@
    "engines": 71,
    "analysed": "2026-11-18T07:57:14Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:49:38Z",
+   "checked": "2026-11-18T12:25:38Z",
    "settle": true
   },
   "1de6be5c36a123a35d8fb8012db654d1f4d7846b359d918d515b74d53a852e06": {
@@ -202,7 +202,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:34:48Z",
-   "checked": "2026-11-18T11:45:22Z",
+   "checked": "2026-11-18T12:21:22Z",
    "settle": false,
    "flagged_by": []
   },
@@ -234,7 +234,7 @@
    "engines": 70,
    "analysed": "2026-11-17T22:59:46Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:51:46Z",
+   "checked": "2026-11-18T12:27:45Z",
    "settle": false
   },
   "28b03b0fe603a9bf8cf2570e518f79587459fe3987632bd4efa972a89689f312": {
@@ -277,7 +277,7 @@
    "engines": 71,
    "analysed": "2026-11-18T03:23:57Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:52:50Z",
+   "checked": "2026-11-18T12:28:50Z",
    "settle": false
   },
   "2bf16cb2e29a4b9c356b1dbc4002c7093e9941d3c5a06ce5116f6ffe77b44770": {
@@ -364,7 +364,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:51:18Z",
-   "checked": "2026-11-18T11:46:57Z",
+   "checked": "2026-11-18T12:22:57Z",
    "settle": false,
    "flagged_by": []
   },
@@ -395,7 +395,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T21:01:49Z",
-   "checked": "2026-11-18T11:45:54Z",
+   "checked": "2026-11-18T12:21:53Z",
    "settle": false,
    "flagged_by": []
   },
@@ -406,7 +406,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:51:56Z",
-   "checked": "2026-11-18T11:47:30Z",
+   "checked": "2026-11-18T12:23:29Z",
    "settle": false,
    "flagged_by": []
   },
@@ -417,7 +417,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:41:17Z",
-   "checked": "2026-11-18T11:49:22Z",
+   "checked": "2026-11-18T12:25:21Z",
    "settle": false,
    "flagged_by": []
   },
@@ -429,7 +429,7 @@
    "engines": 71,
    "analysed": "2026-11-18T07:57:45Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:49:54Z",
+   "checked": "2026-11-18T12:25:53Z",
    "settle": true
   },
   "4353811500cde0829ddb70e1ab5d6180ebaf498559105f0644c1a029584eecae": {
@@ -440,7 +440,7 @@
    "engines": 71,
    "analysed": "2026-11-18T03:22:21Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:52:02Z",
+   "checked": "2026-11-18T12:28:01Z",
    "settle": false
   },
   "437cb36a15ab04efbcf5c323caa0fdb0d37fcdac91f63892d7be0c36664663bd": {
@@ -461,7 +461,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:55:04Z",
-   "checked": "2026-11-18T11:48:18Z",
+   "checked": "2026-11-18T12:24:17Z",
    "settle": false,
    "flagged_by": []
   },
@@ -473,7 +473,7 @@
    "engines": 71,
    "analysed": "2026-11-18T08:00:25Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:51:14Z",
+   "checked": "2026-11-18T12:27:13Z",
    "settle": true
   },
   "4554ae35d85d6073a6fa2ef5da99e5d84adf37b268a46f6fe29f0e56af293ad3": {
@@ -506,7 +506,7 @@
    "suspicious": 0,
    "engines": 60,
    "analysed": "2026-11-11T18:50:35Z",
-   "checked": "2026-11-18T11:44:02Z",
+   "checked": "2026-11-18T12:20:02Z",
    "settle": false,
    "flagged_by": []
   },
@@ -610,7 +610,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-15T10:19:53Z",
-   "checked": "2026-11-18T11:44:50Z",
+   "checked": "2026-11-18T12:20:49Z",
    "settle": false,
    "flagged_by": []
   },
@@ -621,7 +621,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:54:13Z",
-   "checked": "2026-11-18T11:48:02Z",
+   "checked": "2026-11-18T12:24:01Z",
    "settle": false,
    "flagged_by": []
   },
@@ -644,7 +644,7 @@
    "engines": 71,
    "analysed": "2026-11-18T03:22:53Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:52:18Z",
+   "checked": "2026-11-18T12:28:18Z",
    "settle": false
   },
   "5c75d6196bcae554d0f4ef9a29487f6ada8ecf3d755d6b31327c0123bcb7ebb5": {
@@ -742,7 +742,7 @@
    "engines": 69,
    "analysed": "2026-11-18T03:25:33Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:53:38Z",
+   "checked": "2026-11-18T12:29:37Z",
    "settle": false
   },
   "633d29e2510e11a61658e545c5cb1acfe6a03c89fe408994601530f161241c57": {
@@ -787,7 +787,7 @@
     "Bkav: W32.Malware.A80D2986",
     "Elastic: malicious (high confidence)"
    ],
-   "checked": "2026-11-18T11:51:30Z",
+   "checked": "2026-11-18T12:27:29Z",
    "settle": false
   },
   "67fafa6f083eab07abc13b04170333d8e41cb5f5d22b550ebe44d5940815b23a": {
@@ -833,7 +833,7 @@
    "engines": 71,
    "analysed": "2026-11-18T07:58:49Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:50:26Z",
+   "checked": "2026-11-18T12:26:25Z",
    "settle": true
   },
   "71f0be245d312e9d7bd04e1b576755cb6799cdbdb24fbdedf547914d1ca4f16b": {
@@ -866,7 +866,7 @@
    "engines": 71,
    "analysed": "2026-11-18T07:58:17Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:50:10Z",
+   "checked": "2026-11-18T12:26:09Z",
    "settle": true
   },
   "74fda10b1c51640faec7c2272ea256580cec437cff8b9bfe96dfd5cfad004762": {
@@ -918,7 +918,7 @@
    "engines": 70,
    "analysed": "2026-11-18T07:59:21Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:50:42Z",
+   "checked": "2026-11-18T12:26:42Z",
    "settle": true
   },
   "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca": {
@@ -928,7 +928,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T21:01:44Z",
-   "checked": "2026-11-18T11:45:06Z",
+   "checked": "2026-11-18T12:21:05Z",
    "settle": false,
    "flagged_by": []
   },
@@ -984,7 +984,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-13T21:35:22Z",
-   "checked": "2026-11-18T11:46:10Z",
+   "checked": "2026-11-18T12:22:09Z",
    "settle": false,
    "flagged_by": []
   },
@@ -995,7 +995,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-10-22T00:24:16Z",
-   "checked": "2026-11-18T11:43:46Z",
+   "checked": "2026-11-18T12:19:45Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1006,7 +1006,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-17T03:50:17Z",
-   "checked": "2026-11-18T11:46:42Z",
+   "checked": "2026-11-18T12:22:41Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1097,7 +1097,7 @@
     "Bkav: W32.Malware.F1667149",
     "Elastic: malicious (high confidence)"
    ],
-   "checked": "2026-11-18T11:43:14Z",
+   "checked": "2026-11-18T12:19:14Z",
    "settle": true
   },
   "a596b28d6f841ec98ff4622a32e9fe9f2739b258c383e34d073c52eb9150ca94": {
@@ -1139,7 +1139,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-18T10:21:57Z",
-   "checked": "2026-11-18T11:49:06Z",
+   "checked": "2026-11-18T12:25:05Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1153,7 +1153,7 @@
    "flagged_by": [
     "Microsoft: Trojan:Win32/Wacatac.B!ml"
    ],
-   "checked": "2026-11-18T11:43:30Z",
+   "checked": "2026-11-18T12:19:30Z",
    "settle": true
   },
   "ab25af350c48856633d671a16e8469277f9acee39186d69fe5b2a26100d738e8": {
@@ -1163,7 +1163,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-10-15T06:19:37Z",
-   "checked": "2026-11-18T11:44:18Z",
+   "checked": "2026-11-18T12:20:18Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1185,7 +1185,7 @@
    "suspicious": 0,
    "engines": 69,
    "analysed": "2026-11-17T03:52:45Z",
-   "checked": "2026-11-18T11:47:46Z",
+   "checked": "2026-11-18T12:23:46Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1235,7 +1235,7 @@
    "engines": 71,
    "analysed": "2026-11-18T03:24:29Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:53:06Z",
+   "checked": "2026-11-18T12:29:05Z",
    "settle": false
   },
   "b4dac59944d24bd793fdee5d7cb440b41ed7d3c2dad50507e7d9d0f6dae37096": {
@@ -1289,7 +1289,7 @@
    "engines": 68,
    "analysed": "2026-11-18T07:59:53Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:50:58Z",
+   "checked": "2026-11-18T12:26:57Z",
    "settle": true
   },
   "be51db700302c301e5a18687a49169bc9e23105db967d5a238c48c75310a42b3": {
@@ -1320,7 +1320,7 @@
    "engines": 71,
    "analysed": "2026-11-18T03:23:25Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:52:34Z",
+   "checked": "2026-11-18T12:28:33Z",
    "settle": false
   },
   "c2a1fe9557ec8c461802b7732b03fbd73405be6da3b21f2da889cb6746cbf104": {
@@ -1392,7 +1392,7 @@
    "suspicious": 0,
    "engines": 69,
    "analysed": "2026-11-17T03:45:50Z",
-   "checked": "2026-11-18T11:46:26Z",
+   "checked": "2026-11-18T12:22:26Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1403,7 +1403,7 @@
    "suspicious": 0,
    "engines": 71,
    "analysed": "2026-11-18T10:21:41Z",
-   "checked": "2026-11-18T11:48:50Z",
+   "checked": "2026-11-18T12:24:50Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1435,7 +1435,7 @@
    "suspicious": 0,
    "engines": 70,
    "analysed": "2026-11-13T21:34:54Z",
-   "checked": "2026-11-18T11:45:38Z",
+   "checked": "2026-11-18T12:21:37Z",
    "settle": false,
    "flagged_by": []
   },
@@ -1492,7 +1492,7 @@
    "flagged_by": [
     "Skyhigh: BehavesLike.Win64.Dropper.cc"
    ],
-   "checked": "2026-11-18T11:44:34Z",
+   "checked": "2026-11-18T12:20:33Z",
    "settle": false
   },
   "e0e13d8e4350082a8ab1a2cf2873a07e25df1a89753cb8174a77b0d0e187491e": {
@@ -1514,7 +1514,7 @@
    "engines": 71,
    "analysed": "2026-11-18T03:25:01Z",
    "flagged_by": [],
-   "checked": "2026-11-18T11:53:23Z",
+   "checked": "2026-11-18T12:29:22Z",
    "settle": false
   },
   "eb6802fdbce7e35d9d252e8ec7ebf508dbd2056b26cea56d356df3216b48c343": {
