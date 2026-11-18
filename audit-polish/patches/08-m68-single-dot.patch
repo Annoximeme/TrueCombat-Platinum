@@ -1,0 +1,55 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index d4d053f..1de53fd 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -584,10 +584,40 @@ static void drawScopeOverlay(const playerState_t *p,int time){
+     hudAnchor=anchor;hudNoScale=0;
+ }
+ /* 0.36.0 C13: the M68 red dot (the model's reticle quad is sub-pixel); drawn at the sight axis = screen centre. */
++/* audit-08: at 1440p and 4K the model's quad is no longer sub-pixel, and it rides the gun, so a second dot wandered
++ * around the HUD dot whenever the weapon moved. The HUD dot gets its own shader (same stages as the model's reticle
++ * shader, defined here so no pak changes) and the model's reticle shader is remapped to one that draws nothing. If
++ * either shader cannot be made, nothing is remapped and both dots draw as before. */
++#define M68_DOT_SHADER "gfx/tcp/m68_dot"
++#define M68_HIDE_SHADER "gfx/tcp/m68_hidden"
++#define M68_MODEL_SHADER "models/weapons2/m4sopmod/m4sopmod_reticle"
++static qhandle_t m68DotShader,m68HideShader;static int m68RemapStamp,m68Hidden;
++static void m68DotInit(void){
++    m68DotShader=m68HideShader=0;m68RemapStamp=-1;m68Hidden=0;
++    /* the renderer drops these texts with its cache at every map change (RE_Shutdown), so they are given again per load */
++    SystemCall(CG_R_LOADDYNAMICSHADER,M68_DOT_SHADER,M68_DOT_SHADER"\n{\nnopicmip\nnomipmaps\nsort nearest\n"
++        "{\nmap "M68_MODEL_SHADER".tga\nblendFunc GL_SRC_ALPHA GL_ONE\nrgbGen identity\n}\n"
++        "{\nmap "M68_MODEL_SHADER".tga\nblendFunc GL_SRC_ALPHA GL_ONE\nrgbGen identity\n}\n}\n");
++    SystemCall(CG_R_LOADDYNAMICSHADER,M68_HIDE_SHADER,M68_HIDE_SHADER"\n{\n{\nmap $whiteimage\nblendFunc GL_ZERO GL_ONE\n}\n}\n");
++    m68DotShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADERNOMIP,M68_DOT_SHADER);
++    m68HideShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,M68_HIDE_SHADER);
++    SystemCall(CG_R_REMAP_SHADER,M68_MODEL_SHADER,M68_MODEL_SHADER,"0"); /* a remap from an earlier map must not outlive its HUD dot */
++    {char msg[96];snprintf(msg,sizeof(msg),"TCP_NATIVE_M68DOT dot=%d hide=%d\n",m68DotShader!=0,m68HideShader!=0);SystemCall(CG_PRINT,msg);}
++}
++/* Hidden only while the M4 SOPMOD is in hand (the AK-74M Spetsnaz mounts the same sight and has no HUD dot). The remap
++ * only reaches shaders that exist and the view model can be loaded later than init, so it is renewed per aim. */
++static void m68HideModelDot(int hide){
++    if(!m68DotShader||!m68HideShader)return;
++    if(!hide){if(m68Hidden){m68Hidden=0;SystemCall(CG_R_REMAP_SHADER,M68_MODEL_SHADER,M68_MODEL_SHADER,"0");}return;}
++    if(m68Hidden&&m68RemapStamp==pmView.aimChange)return;
++    m68Hidden=1;m68RemapStamp=pmView.aimChange;SystemCall(CG_R_REMAP_SHADER,M68_MODEL_SHADER,M68_HIDE_SHADER,"0");
++}
+ static void drawRedDot(const playerState_t *p,int time){
++    m68HideModelDot(p->weapon==50);
+     if(p->weapon!=50||!p->holdable[TCP_HOLD_AIMED]||p->stats[STAT_HEALTH]<=0||!pmView.aiming||time-pmView.aimChange<200)return;
+     {const qhandle_t cq=cqbOptic(0);if(cq){const int anchor=hudAnchor;hudAnchor=HUD_CENTER;hudNoScale=1;hudPic(853.333f*.5f-8.f,240.f-8.f,16.f,16.f,cq);hudNoScale=0;hudAnchor=anchor;return;}} /* 0.38.0: CQB M68 dot */
+-    static qhandle_t dotShader;if(!dotShader)dotShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADERNOMIP,"models/weapons2/m4sopmod/m4sopmod_reticle");
++    static qhandle_t stockDot;const int own=m68DotShader&&m68HideShader;if(!own&&!stockDot)stockDot=(qhandle_t)SystemCall(CG_R_REGISTERSHADERNOMIP,M68_MODEL_SHADER);
++    const qhandle_t dotShader=own?m68DotShader:stockDot;
+     if(!dotShader)return;
+     const int anchor=hudAnchor;hudAnchor=HUD_CENTER;hudNoScale=1;hudPic(853.333f*.5f-3.f,240.f-3.f,6.f,6.f,dotShader);hudNoScale=0;hudAnchor=anchor;
+ }
+@@ -1277,7 +1307,7 @@ static void init(int serverNum,int reliable){
+     compassTurns=compassSpeed=0;hudWeapon=-1;
+     loadLocations();registerZoneIcons();{char m[96];snprintf(m,sizeof(m),"TCP_NATIVE_PROPS models=%d ambient=%d\n",propCount,ambientCount);SystemCall(CG_PRINT,m);}loadObjectiveText(map,2);
+     rifleSound=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,"sound/weapons/m4/m4f1.wav",qfalse);reloadSound=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,"sound/weapons/m4/m4reload.wav",qfalse);taInit();
+-    SystemCall(CG_UPDATESCREEN);preloadWeaponMedia();SystemCall(CG_UPDATESCREEN); /* kit-scale2: loading screen */
++    SystemCall(CG_UPDATESCREEN);preloadWeaponMedia();m68DotInit();SystemCall(CG_UPDATESCREEN); /* kit-scale2: loading screen */
+     SystemCall(CG_ADDCOMMAND,"tcp_reload");SystemCall(CG_ADDCOMMAND,"tcp_reset");SystemCall(CG_ADDCOMMAND,"tcp_status");SystemCall(CG_ADDCOMMAND,"tcp_smoke");SystemCall(CG_ADDCOMMAND,"weaponbank");SystemCall(CG_ADDCOMMAND,"weapnext");SystemCall(CG_ADDCOMMAND,"weapprev");SystemCall(CG_ADDCOMMAND,"weapalt");SystemCall(CG_ADDCOMMAND,"+firemode");SystemCall(CG_ADDCOMMAND,"-firemode");SystemCall(CG_ADDCOMMAND,"tcp_loadout");SystemCall(CG_ADDCOMMAND,"tcp_firemode");
+     SystemCall(CG_ADDCOMMAND,"toggleobjectivedesc");SystemCall(CG_ADDCOMMAND,"+scores");SystemCall(CG_ADDCOMMAND,"-scores");chatRegister();brRegister();pgRegister();bmRegister();
+     SystemCall(CG_KEY_SETCATCHER,0);SystemCall(CG_PRINT,"TCP_NATIVE_CGAME initialized native x64 map renderer and predicted movement\n");
