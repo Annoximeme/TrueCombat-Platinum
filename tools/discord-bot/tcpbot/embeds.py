@@ -693,6 +693,31 @@ def season_board(cfg, board: dict, season: dict, final: bool = False, champion: 
     return _brand(e, "Season points are the XP you earn in ranked matches during the season", stamp=False)
 
 
+def season_tiers(cfg, data: dict, season: dict, final: bool = False, champion: int | None = None) -> discord.Embed:
+    """Season 1 onwards: the season rating board with each player's tier (Rookie to Platinum)."""
+    title = ("%s · final standings" if final else "%s · standings") % season["name"]
+    e = discord.Embed(title=title, url=cfg.site + "/leaderboards.html", colour=GOLD if final else RED)
+    players = data.get("players") or []
+    if not players:
+        e.description = ("No ranked matches have been played this season yet. One match puts you on the board."
+                         if not final else "No ranked matches were played this season.")
+    else:
+        rows = [("#", "Player", "Tier", "Rating", "Wins")] + [
+            (str(p.get("position", i)), T.clean(p["name"], 16), T.clean(p.get("tierName") or "", 10),
+             T.num(p.get("rating", 0)), str(p.get("wins", 0)))
+            for i, p in enumerate(players[:15], 1)]
+        e.description = "```\n%s\n```" % T.table(rows, "rllrr")
+        top = players[0]
+        who = "<@%d>" % champion if champion else "[%s](%s)" % (T.md(top["name"]), profile_url(cfg.site, top["id"]))
+        e.add_field(name="Season champion" if final else "In the lead", value=who, inline=True)
+    if not final:
+        e.add_field(name="Season ends", value="<t:%d:R>" % season["end_ts"], inline=True)
+    week = data.get("week") or {}
+    if week.get("contracts") and not final:
+        e.add_field(name="This week's contracts", value="\n".join("· " + c["text"] for c in week["contracts"]), inline=False)
+    return _brand(e, "Tiers follow your season rating, earned in Ranked matches", stamp=False)
+
+
 def achievements_card(cfg, p: dict, unlocked: dict[str, int]) -> discord.Embed:
     e = discord.Embed(title="%s · achievements" % T.md(T.clean(p["name"])), url=profile_url(cfg.site, p["id"]),
                       colour=GOLD)
