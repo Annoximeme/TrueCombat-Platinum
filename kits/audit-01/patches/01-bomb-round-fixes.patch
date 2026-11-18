@@ -1,0 +1,167 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index e0e227a..a45c3d7 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -913,9 +913,10 @@ static void obituary(int victim,int killer,int weapon,int local,int time){
+     if(label[0])snprintf(weaponText,sizeof(weaponText),"(%s)",label);
+     if(killer<0||killer>=MAX_CLIENTS||killer==victim){
+         if(victim!=local){
+-            snprintf(line,sizeof(line),"%s %s.",target,killer==victim?"killed himself":"fell to his death");
++            /* audit 0.38.1: deaths without a killer by cause (0 /kill, 15 the bomb, 31 water, 36 a fall); all read "fell to his death" */
++            snprintf(line,sizeof(line),"%s %s.",target,killer==victim||weapon==0?"killed himself":weapon==15?"was killed by the bomb":weapon==31?"drowned":"fell to his death");
+             addPopup(line,hudDeath,time);
+-        }else if(!obitCardShows())addBigPopup("You killed yourself",hudDeath,time); /* 0.37.2: else the death card */
++        }else if(!obitCardShows())addBigPopup(killer==victim||weapon==0?"You killed yourself":weapon==15?"The bomb killed you":weapon==31?"You drowned":"You fell to your death",hudDeath,time); /* 0.37.2: else the death card */
+         return;
+     }
+     teamName(killer,attacker,sizeof(attacker));
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index f941731..0d31e6e 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -78,6 +78,7 @@ static flag_t flags[3];
+  * Inferred, not decoded: planting at the carrier's feet instead of a thrown
+  * charge, +activate as the defuse tool, no team-elimination win. */
+ static int bombMode,bombCarrier,bombState,bombSite,bombAt,bombDefuse,bombSecured; /* state 0 carried,1 dropped,2 planted,3 done */
++static int bombBlast,bombPlanter=-1; /* audit 0.38.1: the detonation is resolving (kills must not decide the round a second time); who set the charge */
+ static vec3_t bombPos;static int bombBase,bombSmoke=-1;
+ typedef struct {vec3_t mins,maxs;int owner;char target[32];int crate;char letter;} bombsite_t; /* letter: 0.38.0, from the map's "track" ("Main Storage [A]") */
+ static bombsite_t bombSites[4];static int bombSiteCount;
+@@ -532,7 +533,7 @@ static void linkPlayer(int n){
+ }
+ static void syncStats(int n){
+     client_t *c=&clients[n];playerState_t *p=&c->ps;
+-    if(c->selected==TCP_DYNAMITE_ID&&!(bombMode&&bombState==0&&bombCarrier==n))c->selected=GUN(c)->weapon;
++    if(c->selected==TCP_DYNAMITE_ID&&!(bombMode&&bombState==0&&bombCarrier==n&&c->team==TCP_TEAM_RED))c->selected=GUN(c)->weapon; /* audit 0.38.1: SpecOps who secured the bomb cannot arm it */
+     if(c->selected!=TCP_DYNAMITE_ID&&c->selected!=TCP_KNIFE_WEAPON&&((c->selected!=TCP_SMOKE_WEAPON&&c->selected!=TCP_FRAG_WEAPON&&c->selected!=TCP_STUN_WEAPON)||*grenadeCount(c,c->selected)<=0))c->selected=GUN(c)->weapon;
+     p->weapon=c->selected;p->weapons[0]=p->weapons[1]=0;p->weaponstate=c->health.health>0&&levelTime<c->defuseUntil?TCP_WS_DEFUSING:0;
+     /* Both equipped weapons ride in ammo/ammoclip by their recovered slots (akimbo
+@@ -543,7 +544,7 @@ static void syncStats(int n){
+     /* M83 count rides in its own clip slot; the bit marks it as carried. */
+     p->ammoclip[TCP_SMOKE_WEAPON]=c->smokeGrenades>0?c->smokeGrenades:0;
+     if(c->smokeGrenades>0)p->weapons[TCP_SMOKE_WEAPON/32]|=1u<<(TCP_SMOKE_WEAPON%32);
+-    p->ammoclip[TCP_FRAG_WEAPON]=c->frags;p->ammoclip[TCP_STUN_WEAPON]=c->stuns;p->weapons[0]|=1u<<TCP_KNIFE_WEAPON;if(bombMode&&bombState==0&&bombCarrier==n){p->weapons[0]|=1u<<TCP_DYNAMITE_ID;p->ammoclip[TCP_DYNAMITE_ID]=1;}else p->ammoclip[TCP_DYNAMITE_ID]=0;
++    p->ammoclip[TCP_FRAG_WEAPON]=c->frags;p->ammoclip[TCP_STUN_WEAPON]=c->stuns;p->weapons[0]|=1u<<TCP_KNIFE_WEAPON;if(bombMode&&bombState==0&&bombCarrier==n&&c->team==TCP_TEAM_RED){p->weapons[0]|=1u<<TCP_DYNAMITE_ID;p->ammoclip[TCP_DYNAMITE_ID]=1;}else p->ammoclip[TCP_DYNAMITE_ID]=0;
+     if(c->frags>0)p->weapons[0]|=1u<<TCP_FRAG_WEAPON;if(c->stuns>0)p->weapons[0]|=1u<<TCP_STUN_WEAPON;
+     {tcp_native_gun *gun=GUN(c);int paired=tcp_weapon_is_paired(gun->weapon);
+      int pump=(gun->modes&TCP_MODE_PUMP)!=0,m=gun->modes;
+@@ -957,7 +958,7 @@ static int bombZoneAt(const playerState_t *p){
+ static void assignBomb(void){
+     if(!bombMode)return;int start=rand()%(maxClients>0?maxClients:1),pick=-1;
+     for(int a=0;a<maxClients;a++){int i=(start+a)%maxClients;client_t *c=&clients[i];if(c->begun&&c->inRound&&c->team==TCP_TEAM_RED&&c->health.health>49)pick=i;}
+-    bombCarrier=pick;bombState=pick>=0?0:3;bombDefuse=0;bombSite=-1;bombSecured=0;
++    bombCarrier=pick;bombState=pick>=0?0:3;bombDefuse=0;bombSite=-1;bombSecured=0;bombPlanter=-1;
+     if(pick>=0)bombEvent("carrier",pick);linkBomb();
+ }
+ static void dropBomb(int slot){
+@@ -968,7 +969,7 @@ static void dropBomb(int slot){
+ }
+ /* Carrier fires the dynamite: plant when standing in an enemy bomb site. */
+ static void plantBomb(int n){
+-    if(!bombMode||bombState!=0||bombCarrier!=n)return;int z=bombZoneAt(&clients[n].ps);
++    if(!bombMode||bombState!=0||bombCarrier!=n||clients[n].team!=TCP_TEAM_RED)return;int z=bombZoneAt(&clients[n].ps);
+     if(z<0){if(!(ents[n].shared.r.svFlags&SVF_BOT)){char m[40];snprintf(m,sizeof(m),"tcp_bomb nozone %d",n);SystemCall(G_SEND_SERVER_COMMAND,n,m);}return;} /* 0.38.0: say why nothing happened */
+     /* The charge is set down as a short throw (FUN_2009ea00 path, case 0xf): the site test
+      * happens where it leaves the hand, then it settles under the grenade physics. */
+@@ -978,7 +979,7 @@ static void plantBomb(int n){
+         float l=sqrtf(DotProduct(f,f));for(int k=0;k<3;k++)f[k]/=l;memcpy(eye,c->ps.origin,sizeof(eye));eye[2]+=c->ps.viewheight;
+         smoke_t *g=&smokes[bombSmoke];memset(g,0,sizeof(*g));g->active=1;g->owner=n;g->weapon=TCP_DYNAMITE_ID;g->thrownAt=levelTime;g->lastTime=levelTime-50;
+         for(int k=0;k<3;k++){g->origin[k]=eye[k]+8*f[k];g->velocity[k]=f[k]*300;}}
+-    bombState=2;bombSite=z;bombAt=levelTime+45000;bombDefuse=0;bombCarrier=-1;
++    bombState=2;bombSite=z;bombAt=levelTime+45000;bombDefuse=0;bombCarrier=-1;bombPlanter=n;
+     clients[n].selected=GUN(&clients[n])->weapon;bombEvent("planted",n);linkBomb();
+ }
+ /* Returns the winning team when the bomb decides the round. */
+@@ -999,7 +1000,9 @@ static int tickBomb(void){
+             /* State first: the blast can kill players, and a kill re-enters tickRound()
+              * (and so this function) before we return, which used to detonate again. */
+             bombState=3;
+-            smoke_t g;memset(&g,0,sizeof(g));g.weapon=TCP_DYNAMITE_ID;g.owner=0;memcpy(g.origin,bombPos,sizeof(vec3_t));explode(&g);
++            /* audit 0.38.1: a kill by the blast re-enters tickRound(); with bombBlast set it does nothing, so the
++             * detonation alone decides this round (it used to be scored twice, once for the wrong side). */
++            smoke_t g;memset(&g,0,sizeof(g));g.weapon=TCP_DYNAMITE_ID;g.owner=bombPlanter;memcpy(g.origin,bombPos,sizeof(vec3_t));bombBlast=1;explode(&g);bombBlast=0;
+             if(bombSite>=0&&bombSites[bombSite].crate>=0){sharedEntity_t *e=&ents[bombSites[bombSite].crate].shared;
+                 for(int i=0;i<breakableCount;i++)if(breakables[i].ent==bombSites[bombSite].crate)breakFx(&breakables[i]);
+                 SystemCall(G_UNLINKENTITY,e);e->r.contents=0;}
+@@ -1014,7 +1017,7 @@ static int tickBomb(void){
+ #include "tcp_ping.h" /* 0.36.0 team pings */
+ static void tickRound(void)
+ {
+-    if (roundPhase == TCP_ROUND_OFF)
++    if (roundPhase == TCP_ROUND_OFF || bombBlast)
+         return;
+ 
+     int ready = 0, alive = 0, survivor = -1;
+@@ -1571,12 +1574,16 @@ static void explode(const smoke_t *g){
+     char msg[200];
+     if(blastDry&&SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"tcp_testblast_live"))blastDry=0; /* audio check (sv_cheats tcp_testblast): a real blast clients see and hear */
+     if(!blastDry){snprintf(msg,sizeof(msg),"TCP_NATIVE_EXPLODE weapon=%d by=%d at=%.1f,%.1f,%.1f\n",g->weapon,g->owner,g->origin[0],g->origin[1],g->origin[2]);print(msg);
+-    hearEvent(TCP_HEAR_EXPLOSION,g->origin,g->owner,1.f); /* 0.36.0 */
++    hearEvent(TCP_HEAR_EXPLOSION,g->origin,g->owner>=0?g->owner:ENTITYNUM_WORLD,1.f); /* 0.36.0 */
+     {char c[96];snprintf(c,sizeof(c),"tcp_explode %d %.1f %.1f %.1f",g->weapon,g->origin[0],g->origin[1],g->origin[2]);SystemCall(G_SEND_SERVER_COMMAND,-1,c);}}
+     qolSetSource(g->origin); /* TCP_QOL: damage direction points at the blast */
+     for(int v=0;v<maxClients;v++){
+         client_t *vc=&clients[v];if(!vc->begun||vc->health.health<=0||levelTime<vc->protectUntil)continue;
+-        if(teamMode&&v!=g->owner&&clients[g->owner].team==vc->team&&!tcpFriendlyFire())continue;
++        /* audit 0.38.1: the bomb spares nobody; its planter is credited for enemies only, everybody else dies by the bomb itself
++         * (it used to count as client 0's grenade: kills, team kills and immunity for whoever sat in slot 0). */
++        const int bomb=g->weapon==TCP_DYNAMITE_ID;
++        const int by=!bomb?g->owner:(g->owner>=0&&g->owner<maxClients&&g->owner!=v&&clients[g->owner].begun&&teamMode&&clients[g->owner].team!=vc->team)?g->owner:-1;
++        if(!bomb&&teamMode&&v!=g->owner&&clients[g->owner].team==vc->team&&!tcpFriendlyFire())continue;
+         vec3_t mins,maxs,d;TCP_StanceBounds(&vc->ps,mins,maxs);
+         for(int k=0;k<3;k++){float lo=vc->ps.origin[k]+mins[k],hi=vc->ps.origin[k]+maxs[k];d[k]=g->origin[k]<lo?lo-g->origin[k]:g->origin[k]>hi?g->origin[k]-hi:0;}
+         float dist=sqrtf(DotProduct(d,d));if(dist>=radius)continue;
+@@ -1588,9 +1595,9 @@ static void explode(const smoke_t *g){
+         int points=(int)((1.f-dist/radius)*damage);if(points<=0)continue;
+         const int healthBefore=vc->health.health;
+         TCP_BodyDamage(&vc->health,points);
+-        recordDamage(g->owner,v,healthBefore-vc->health.health);
++        recordDamage(by,v,healthBefore-vc->health.health);
+         snprintf(msg,sizeof(msg),"TCP_NATIVE_SPLASH victim=%d points=%d hp=%d\n",v,points,vc->health.health);print(msg);
+-        if(vc->health.health<=0){if(v!=g->owner){if(tcpTeamKill(g->owner,v))clients[g->owner].teamKills++;else ++clients[g->owner].kills;playerConfig(g->owner);}else vc->suicides++;obituary(v,g->owner,g->weapon);eliminate(v);tickRound();}
++        if(vc->health.health<=0){if(by>=0&&v!=by){if(tcpTeamKill(by,v))clients[by].teamKills++;else ++clients[by].kills;playerConfig(by);}else if(!bomb)vc->suicides++;obituary(v,by,g->weapon);eliminate(v);tickRound();}
+         syncStats(v);linkPlayer(v);
+     }
+     qolSetSource(NULL);
+@@ -1604,7 +1611,7 @@ static void explode(const smoke_t *g){
+         trace_t tr;SystemCall(G_TRACE,&tr,g->origin,zero,zero,e->r.currentOrigin,ENTITYNUM_NONE,MASK_SOLID);if(tr.fraction<1.f)continue;
+         int points=(int)((1.f-dist/radius)*damage);TCP_BodyDamage(&tg->health,points);e->s.dmgFlags=tg->health.health>0?tg->health.health:0;
+         snprintf(msg,sizeof(msg),"TCP_NATIVE_SPLASH target=%d points=%d hp=%d\n",t,points,tg->health.health);print(msg);
+-        if(tg->health.health<=0){clients[g->owner].targetKills++;tg->resetAt=levelTime+2000;e->r.contents=0;}SystemCall(G_LINKENTITY,e);}
++        if(tg->health.health<=0){if(g->owner>=0)clients[g->owner].targetKills++;tg->resetAt=levelTime+2000;e->r.contents=0;}SystemCall(G_LINKENTITY,e);}
+ }
+ /* Knife, qagame 0.49b FUN_20097d70: 48-unit trace (mask 0x06000081) from the muzzle,
+  * damage G_GetWeaponDamage(1) = 50 + rand() % 5, or 100 from behind (both facing
+@@ -2020,8 +2027,8 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+         if(tdmMode&&!bombMode&&roundPhase==TCP_ROUND_LIVE)clients[n].inRound=1; /* 0.37.0: a Bomb joiner waits for the next round */
+         TCP_StatsBind(n);spawn(n);if(sessionSpec[n]){sessionSpec[n]=0;specEnter(n,"session");}TCP_MapVoteJoin(n);qolJoin(n);TCP_MatchJoin(n);TCP_XpWelcome(n);SystemCall(G_SEND_SERVER_COMMAND,n,"print \"Welcome to TrueCombat: Platinum.\\n\"");return 0;
+     case GAME_CLIENT_USERINFO_CHANGED:userinfo(n);TCP_VoipUserinfo(n);if(clients[n].begun)TCP_StatsBind(n);return 0;
+-    case GAME_CLIENT_DISCONNECT:botStandinTake(n,"left");botStandinDrop(n);botMemoryDisconnect(n);   /* BOT_STANDIN, BOT_MEMORY */TCP_NetqLeave(n);voipMuteEnemies[n]=0;bodyChoice[n]=0;TCP_BackfillLeave(n);casterSession[n]=0;TCP_StaffMuteSlotLeave(n);TCP_VoipSlotLeave(n);qolDrop(n);TCP_StaffClear(n);rangeDrop(n);TCP_MapVoteDrop(n);TCP_MatchDrop(n);TCP_StatsLeave(n);if(!bots[n].active)botLastFill=levelTime-1000;botDisconnect(n);if(ctfMode)dropFlags(n);if(bombMode)dropBomb(n);SystemCall(G_UNLINKENTITY,&ents[n]);if(targets[n].active)SystemCall(G_UNLINKENTITY,&ents[targetBase+n]);memset(&targets[n],0,sizeof(targets[n]));memset(&clients[n],0,sizeof(clients[n]));lagClear(n);if(lagTest.on&&(lagTest.target==n||lagTest.shooter==n))lagTest.on=0;SystemCall(G_SET_CONFIGSTRING,CS_PLAYERS+n,"");disconnects++;return 0;
+-    case GAME_CLIENT_COMMAND:{char cmd[64];SystemCall(G_ARGV,0,cmd,sizeof(cmd));if(TCP_StaffCommand(n,cmd))return 0;if(TCP_StaffMuteFilter(n,cmd))return 0;if(qolClientCommand(n,cmd))return 0;if(rangeClientCommand(n,cmd))return 0;if(cqbClientCommand(n,cmd))return 0;if(!strcmp(cmd,"tcp_ping")){pingCommand(n);return 0;}if(!strcmp(cmd,"mapvote")){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));TCP_MapVoteCast(n,arg);return 0;}if(TCP_MatchClientCommand(n,cmd))return 0;if(!strcmp(cmd,"score")){sendScores(n);return 0;}if(botClientCommand(n,cmd))return 0;if(voCommand(n,cmd))return 0;if(!strcmp(cmd,"say")||!strcmp(cmd,"say_team")){if(clients[n].begun)say(n,cmd[3]=='_');return 0;}if(!roundPhase&&!strcmp(cmd,"tcp_reset")&&clients[n].begun&&clients[n].health.health>0)spawn(n);else if(!strcmp(cmd,"tcp_reload")&&canFight(&clients[n])&&clients[n].begun&&clients[n].health.health>0){int started=TCP_GunReload(GUN(&clients[n]),levelTime);char msg[160];snprintf(msg,sizeof(msg),"TCP_NATIVE_RELOAD slot=%d started=%d now=%d end=%d\n",n,started,levelTime,GUN(&clients[n])->reload_end);print(msg);}else if(!strcmp(cmd,"tcp_select")&&clients[n].begun){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));int w=atoi(arg);int was=clients[n].selected;if(clients[n].cookUntil)return 0; /* C2: no switch with a primed grenade */if(w==TCP_DYNAMITE_ID&&bombMode&&bombState==0&&bombCarrier==n){clients[n].selected=w;clients[n].attackHeld=1;clients[n].aim.aimed=0;}else if(w==TCP_KNIFE_WEAPON){clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;clients[n].aim.aimed=0;}else if((w==TCP_SMOKE_WEAPON||w==TCP_FRAG_WEAPON||w==TCP_STUN_WEAPON)&&*grenadeCount(&clients[n],w)>0){clients[n].aim.aimed=0;clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;}else selectWeapon(n,w);
++    case GAME_CLIENT_DISCONNECT:botStandinTake(n,"left");botStandinDrop(n);botMemoryDisconnect(n);   /* BOT_STANDIN, BOT_MEMORY */TCP_NetqLeave(n);voipMuteEnemies[n]=0;bodyChoice[n]=0;TCP_BackfillLeave(n);casterSession[n]=0;TCP_StaffMuteSlotLeave(n);TCP_VoipSlotLeave(n);qolDrop(n);TCP_StaffClear(n);rangeDrop(n);TCP_MapVoteDrop(n);TCP_MatchDrop(n);TCP_StatsLeave(n);if(!bots[n].active)botLastFill=levelTime-1000;botDisconnect(n);if(ctfMode)dropFlags(n);if(bombMode)dropBomb(n);if(bombPlanter==n)bombPlanter=-1;SystemCall(G_UNLINKENTITY,&ents[n]);if(targets[n].active)SystemCall(G_UNLINKENTITY,&ents[targetBase+n]);memset(&targets[n],0,sizeof(targets[n]));memset(&clients[n],0,sizeof(clients[n]));lagClear(n);if(lagTest.on&&(lagTest.target==n||lagTest.shooter==n))lagTest.on=0;SystemCall(G_SET_CONFIGSTRING,CS_PLAYERS+n,"");disconnects++;return 0;
++    case GAME_CLIENT_COMMAND:{char cmd[64];SystemCall(G_ARGV,0,cmd,sizeof(cmd));if(TCP_StaffCommand(n,cmd))return 0;if(TCP_StaffMuteFilter(n,cmd))return 0;if(qolClientCommand(n,cmd))return 0;if(rangeClientCommand(n,cmd))return 0;if(cqbClientCommand(n,cmd))return 0;if(!strcmp(cmd,"tcp_ping")){pingCommand(n);return 0;}if(!strcmp(cmd,"mapvote")){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));TCP_MapVoteCast(n,arg);return 0;}if(TCP_MatchClientCommand(n,cmd))return 0;if(!strcmp(cmd,"score")){sendScores(n);return 0;}if(botClientCommand(n,cmd))return 0;if(voCommand(n,cmd))return 0;if(!strcmp(cmd,"say")||!strcmp(cmd,"say_team")){if(clients[n].begun)say(n,cmd[3]=='_');return 0;}if(!roundPhase&&!strcmp(cmd,"tcp_reset")&&clients[n].begun&&clients[n].health.health>0)spawn(n);else if(!strcmp(cmd,"tcp_reload")&&canFight(&clients[n])&&clients[n].begun&&clients[n].health.health>0){int started=TCP_GunReload(GUN(&clients[n]),levelTime);char msg[160];snprintf(msg,sizeof(msg),"TCP_NATIVE_RELOAD slot=%d started=%d now=%d end=%d\n",n,started,levelTime,GUN(&clients[n])->reload_end);print(msg);}else if(!strcmp(cmd,"tcp_select")&&clients[n].begun){char arg[16];SystemCall(G_ARGV,1,arg,sizeof(arg));int w=atoi(arg);int was=clients[n].selected;if(clients[n].cookUntil)return 0; /* C2: no switch with a primed grenade */if(w==TCP_DYNAMITE_ID&&bombMode&&bombState==0&&bombCarrier==n&&clients[n].team==TCP_TEAM_RED){clients[n].selected=w;clients[n].attackHeld=1;clients[n].aim.aimed=0;}else if(w==TCP_KNIFE_WEAPON){clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;clients[n].aim.aimed=0;}else if((w==TCP_SMOKE_WEAPON||w==TCP_FRAG_WEAPON||w==TCP_STUN_WEAPON)&&*grenadeCount(&clients[n],w)>0){clients[n].aim.aimed=0;clients[n].selected=w;clients[n].attackHeld=1;clients[n].underhand=0;}else selectWeapon(n,w);
+             /* PM_BeginWeaponChange (cgame 0x30008e90) +250 ms drop, PM_FinishWeaponChange (0x30012bd0) +250 ms raise. */
+             if(clients[n].selected!=was){clients[n].switchUntil=levelTime+500;char m[96];snprintf(m,sizeof(m),"TCP_NATIVE_SWITCH slot=%d from=%d to=%d ready=%d\n",n,was,clients[n].selected,clients[n].switchUntil);print(m);}
+             syncStats(n);}
+diff --git a/game_src/native/tcp_qol_cg.h b/game_src/native/tcp_qol_cg.h
+index 073f2b8..c988461 100644
+--- a/game_src/native/tcp_qol_cg.h
++++ b/game_src/native/tcp_qol_cg.h
+@@ -304,7 +304,7 @@ static void qolDrawKillCard(const playerState_t *p){
+         phPanel(x,y,width,height,pa*1.2f);hudFill(x,y,2,height,ac);
+         if(qolCard.killer<0){
+             phTextT(&phBody,x+12,y+8,4.5f,.9f,ac,"YOU DIED",PH_LEFT);
+-            phTextT(&phDisplay,x+12,y+19,9,.4f,c1,qolCard.weapon==31?"DROWNED":qolCard.weapon==0?"FELL TO YOUR DEATH":"KILLED BY YOUR OWN BLAST",PH_LEFT);
++            phTextT(&phDisplay,x+12,y+19,9,.4f,c1,qolCard.weapon==31?"DROWNED":qolCard.weapon==36?"FELL TO YOUR DEATH":qolCard.weapon==15?"KILLED BY THE BOMB":qolCard.weapon==0?"YOU KILLED YOURSELF":"KILLED BY YOUR OWN BLAST" /* audit 0.38.1: 36 is the fall (0 is /kill), 15 the bomb */,PH_LEFT);
+         }else{
+             teamName(qolCard.killer,name,sizeof(name));
+             phTextT(&phBody,x+12,y+6,4.5f,.9f,ac,"KILLED BY",PH_LEFT);
+@@ -322,7 +322,7 @@ static void qolDrawKillCard(const playerState_t *p){
+     hudFill(x,y,width,height,b);{float a[4]={accent[0],accent[1],accent[2],alpha};hudFill(x,y,3,height,a);}
+     if(qolCard.killer<0){
+         hudText(x+12,y+16,.16f,g,"YOU DIED",0);
+-        hudText(x+12,y+36,.26f,w,qolCard.weapon==31?"Drowned":qolCard.weapon==0?"Fell to your death":"Killed by your own blast",1);
++        hudText(x+12,y+36,.26f,w,qolCard.weapon==31?"Drowned":qolCard.weapon==36?"Fell to your death":qolCard.weapon==15?"Killed by the bomb":qolCard.weapon==0?"You killed yourself":"Killed by your own blast",1);
+     }else{
+         teamName(qolCard.killer,name,sizeof(name));
+         hudText(x+12,y+16,.16f,g,"KILLED BY",0);
