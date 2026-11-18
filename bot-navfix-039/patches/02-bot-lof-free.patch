@@ -1,0 +1,63 @@
+diff --git a/game_src/native/tcp_bot_tactics.h b/game_src/native/tcp_bot_tactics.h
+index 3ddebd2..63fe325 100644
+--- a/game_src/native/tcp_bot_tactics.h
++++ b/game_src/native/tcp_bot_tactics.h
+@@ -78,6 +78,7 @@ static void botTacInit(void)
+     botMetCostTicks = botMetCostMaxTicks = 0; botMetFrames = botMetBotFrames = 0;
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_tactics", "31", CVAR_ARCHIVE);
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_seed", "0", 0);
++    SystemCall(G_CVAR_REGISTER, NULL, "bot_lof_free", "1", CVAR_ARCHIVE);   /* 0.39.1: no freezing in a human's aim cone */
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_lof", "2", CVAR_ARCHIVE);   /* line of fire: 4 = v4, 3 = v3 (0.38 tests), 2 = v2, 1 = 0.37.0, 0 = off */
+     { int seed = (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_seed"); if (seed) srand((unsigned)seed); }
+     botTacMask = (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_tactics");
+@@ -777,6 +778,12 @@ static float botLofConeCost(int node)
+     return 1.f;
+ }
+ static int botLofMode(void) { return (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_lof"); }
++/* bot_lof_free 1 (0.39.1): a bot that cannot leave a human's aim cone (a corridor) crouches and keeps going instead of
++ * freezing; after an 8 s episode it ignores that human's aim for 10 s (4 s after a normal one). Before, a teammate scoped in down a corridor
++ * froze the bots in front of him until he unscoped (one 8 s episode after another). 0 = the 0.38 behaviour. */
++static int botLofFreeOn(void) { return (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_lof_free") != 0; }
++static int botLofCoolUntil[TCP_MAX_PLAYERS], botLofCoolHuman[TCP_MAX_PLAYERS];
++static unsigned botLofTimeouts, botLofBoxedWalks;
+ static void botLofRaysFor(int n)
+ {
+     botLofRayN = 0; if (botLofMode() < 2 || !teamMode) return;
+@@ -1200,7 +1207,7 @@ static void botTacCourtesy(int n, usercmd_t *cmd, int moving)
+             const int below = lofMode >= 4 && ((c->ps.pm_flags & PMF_DUCKED) || (c->ps.eFlags & EF_PRONE)) && he[2] - (c->ps.origin[2] + ents[n].shared.r.maxs[2]) >= 8.f;   /* v4: under the ray */
+             int inLane = aiming && along > 16.f && fabsf(side) < halfHere && fabsf(up) < 72.f && !below;
+             if (aiming) t->lofLastSeenAim = levelTime;
+-            if (inLane && (!t->lofActive || t->lofHuman != i)) {   /* a new episode */
++            if (inLane && (!t->lofActive || t->lofHuman != i) && !(levelTime < botLofCoolUntil[n] && botLofCoolHuman[n] == i && botLofFreeOn())) {   /* a new episode (0.39.1: not right after a timed-out one) */
+                 t->lofActive = 1; t->lofHuman = i; t->lofTrigAt = levelTime; t->lofClearAt = 0; t->lofReMs = 0; t->lofPickAt = 0; t->lofMinSide = 1e9f; t->lofCrouch = 0; t->lofSprint = 0; t->lofCramped = 0;
+                 if (lofMode >= 2 && levelTime - t->lofAt > 1000) botMetLineOfFire++;
+             }
+@@ -1259,11 +1266,15 @@ static void botTacCourtesy(int n, usercmd_t *cmd, int moving)
+                     static const char *const dn[8] = {"forward", "fwd-right", "right", "back-right", "back", "back-left", "left", "fwd-left"};
+                     botPrint("TCP_BOT_LOFEP slot=%d human=%d dir=%s clear_ms=%d reentry_ms=%d min_margin=%.0f crouch=%d sprint=%d v=%d\n", n, i, lofMode == 1 ? "old" : t->lofDirIdx >= 0 ? dn[t->lofDirIdx] : "none",
+                              t->lofClearAt ? t->lofClearAt - t->lofTrigAt : -1, t->lofReMs, t->lofMinSide < 1e8f ? t->lofMinSide : -1.f, t->lofCrouch, t->lofSprint, lofMode);
++                    if (botLofFreeOn()) {   /* 0.39.1: a pause before the next episode for this human: 10 s after a timed-out one, 4 s otherwise */
++                        int timedOut = levelTime - t->lofTrigAt > 8000; botLofCoolUntil[n] = levelTime + (timedOut ? 10000 : 4000); botLofCoolHuman[n] = i; if (timedOut) botLofTimeouts++;
++                    }
+                     t->lofActive = 0; t->lofHoldUntil = 0;
+                 } else if (lofMode >= 2) {
+                     float vy = SHORT2ANGLE((b->lastAngles[1] + c->ps.delta_angles[1]) & 65535);
+                     float margin = below ? 64.f : fabsf(side) - (lofMode >= 4 ? botLofNeedV4(along > 16.f ? along : 16.f, t->lofCramped) : botLofNeed(along > 16.f ? along : 16.f));
+                     if (inLane || (aiming && along > 16.f && margin < 24.f)) {   /* move out, or keep a margin while held */
++                        if (t->lofCrouch && botLofFreeOn()) { cmd->upmove = -127; t->lofAt = levelTime; botLofBoxedWalks++; continue; }   /* 0.39.1: boxed in: crouch below the ray and keep going */
+                         if (t->lofCrouch) { cmd->forwardmove = cmd->rightmove = 0; cmd->upmove = -127; }
+                         else {
+                             float out[3] = {c->ps.origin[0] + t->lofDir[0] * 96.f, c->ps.origin[1] + t->lofDir[1] * 96.f, c->ps.origin[2]};
+@@ -1384,9 +1395,9 @@ static void botTacMove(int n, usercmd_t *cmd, float *desiredYaw, float *desiredP
+ }
+ static void botTacExtraStatus(int who)
+ {
+-    char line[360]; int spots = 0, waits = 0; for (int i = 0; i < maxClients; i++) { spots += botTac[i].cornerSpots; waits += botTac[i].narrowNear; }
+-    snprintf(line, sizeof(line), "TCP_BOT_TACSTAT corners=%d corner_spots=%d door_waits=%d notice_by_damage=%u give_way=%u line_of_fire=%u camp_moves=%u camp_hold_s=%.0f corner_walk_pct=%.1f lane_escapes=%u peeks=%u engages=%u\n",
+-             botCornerCount, spots, waits, botMetNoticeDamage, botMetGiveWay, botMetLineOfFire, botMetCampMoves, botMetCampMs / 1000., botMetAliveMs > 0 ? 100. * botMetCornerMs / botMetAliveMs : 0., botMetLaneEscapes, botMetPeeks, botMetEngages);
++    char line[420]; int spots = 0, waits = 0; for (int i = 0; i < maxClients; i++) { spots += botTac[i].cornerSpots; waits += botTac[i].narrowNear; }
++    snprintf(line, sizeof(line), "TCP_BOT_TACSTAT corners=%d corner_spots=%d door_waits=%d notice_by_damage=%u give_way=%u line_of_fire=%u camp_moves=%u camp_hold_s=%.0f corner_walk_pct=%.1f lane_escapes=%u peeks=%u engages=%u lof_timeouts=%u lof_boxed_walks=%u\n",
++             botCornerCount, spots, waits, botMetNoticeDamage, botMetGiveWay, botMetLineOfFire, botMetCampMoves, botMetCampMs / 1000., botMetAliveMs > 0 ? 100. * botMetCornerMs / botMetAliveMs : 0., botMetLaneEscapes, botMetPeeks, botMetEngages, botLofTimeouts, botLofBoxedWalks);
+     botReply(who, line);
+ }
+ static void botTacLaneStatus(int who)

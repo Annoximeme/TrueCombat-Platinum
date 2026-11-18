@@ -1,0 +1,316 @@
+diff --git a/game_src/native/tcp_bot_nav.h b/game_src/native/tcp_bot_nav.h
+index 3cc3eab..0605acf 100644
+--- a/game_src/native/tcp_bot_nav.h
++++ b/game_src/native/tcp_bot_nav.h
+@@ -194,7 +194,7 @@ static int botNavEdgeBlocked(int node, int k)
+     if (levelTime >= botEdgeTmpUntil[node]) { botEdgeTmpMask[node] = 0; return 0; }
+     return (botEdgeTmpMask[node] >> k) & 1;
+ }
+-static unsigned botNavTmpBlocks;
++static unsigned botNavTmpBlocks, botNavStartAvoids;   /* BOT_NAVFIX */
+ static void botNavBlockEdge(int from, int to, int ms)
+ {
+     if (from < 0 || to < 0) return;
+@@ -353,6 +353,7 @@ static int botNavStuck(int n, usercmd_t *cmd, int moving, int segStance, int pro
+     if (v->stuckMs > 2500 * scale) {
+         /* Block the edge for 30 s and re-plan to the same goal; three re-plans in 15 s give the goal up. */
+         if (b->pathPos > 0 && b->pathPos < b->pathLen) botNavBlockEdge(b->path[b->pathPos - 1], b->path[b->pathPos], 30000);
++        else if (b->pathPos == 0 && b->pathLen > 0) { botStartAvoid[n] = b->path[0] + 1; botStartAvoidUntil[n] = levelTime + 15000; botNavStartAvoids++; }   /* BOT_NAVFIX: the first leg has no edge to block: start from another node */
+         if (levelTime - v->replanAt > 15000) v->replans = 0;
+         v->replanAt = levelTime; v->replans++; botNavReplans++;
+         if (v->replans >= 3 || b->goal < 0) { botNewGoal(n); v->replans = 0; botNavGiveUps++; }
+@@ -369,10 +370,10 @@ static int botNavDebug, botNavDebugAt;
+ static void botNavStatus(int who)
+ {
+     char line[400];
+-    snprintf(line, sizeof(line), "TCP_BOT_NAVSTAT nav=%d stuck_s=%.1f alive_s=%.0f stuck_per_botmin=%.2f path_ratio=%.3f paths=%u searches=%u visits_mean=%.0f visits_max=%u search_us=%.1f wall=%u replans=%u giveups=%u yields=%u backoffs=%u tmpblocks=%u smooth_skips=%u clear_ms=%d\n",
++    snprintf(line, sizeof(line), "TCP_BOT_NAVSTAT nav=%d stuck_s=%.1f alive_s=%.0f stuck_per_botmin=%.2f path_ratio=%.3f paths=%u searches=%u visits_mean=%.0f visits_max=%u search_us=%.1f wall=%u replans=%u giveups=%u yields=%u backoffs=%u tmpblocks=%u start_avoids=%u loose_starts=%u climb_loops=%u plan_direct=%d wedges=%u unwedged=%u step_asides=%u smooth_skips=%u clear_ms=%d\n",
+              botNavMask, botNavStuckSec, botNavAliveSec, botNavAliveSec > 0 ? botNavStuckSec / (botNavAliveSec / 60.) : 0., botNavRatioN ? botNavRatioSum / botNavRatioN : 0., botNavRatioN,
+              botNavSearches, botNavSearches ? (double)botNavVisits / botNavSearches : 0., botNavVisitsMax, botNavSearches ? botNavSearchUs / botNavSearches : 0., botNavWall, botNavReplans,
+-             botNavGiveUps, botNavYields, botNavBackoffs, botNavTmpBlocks, botNavSmoothSkips, botNavClearMs);
++             botNavGiveUps, botNavYields, botNavBackoffs, botNavTmpBlocks, botNavStartAvoids, botNavLooseStarts, botNavClimbLoops, botPlanDeferred, botNavWedges, botNavUnwedged, botNavStepAsides, botNavSmoothSkips, botNavClearMs);
+     botReply(who, line);
+ }
+ /* Once a second each human gets his nearest node, its clearance and links, and the next waypoints of the nearest bot. */
+diff --git a/game_src/native/tcp_bot_obj.h b/game_src/native/tcp_bot_obj.h
+index 54df527..4a1921b 100644
+--- a/game_src/native/tcp_bot_obj.h
++++ b/game_src/native/tcp_bot_obj.h
+@@ -172,6 +172,17 @@ static int botKeepOrClosest(const int *list, int nl, const int *taken, const flo
+     for (int k = 0; k < nl; k++) if (!taken[k] && bots[list[k]].role == role) return k;
+     return botClosest(list, nl, taken, at);
+ }
++/* BOT_NAVFIX: like botKeepOrClosest, but the holder only hands the role over to a bot at least `margin` units
++ * closer (defuse and fetch roles swapped between two bots every 1-3 s on Snow while both looped on a climb). */
++static int botKeepNear(const int *list, int nl, const int *taken, const float *at, int role, float margin)
++{
++    int best = botClosest(list, nl, taken, at); if (!botNavFix || best < 0) return best;
++    for (int k = 0; k < nl; k++) if (!taken[k] && bots[list[k]].role == role) {
++        if (botDist(clients[list[k]].ps.origin, at) - botDist(clients[list[best]].ps.origin, at) < margin) return k;
++        break;
++    }
++    return best;
++}
+ static void botPickSite(void)
+ {
+     int usable[4], nu = 0;
+@@ -213,14 +224,14 @@ static void botAssignRoles(void)
+                         int escorts = nl >= 6 ? 2 : nl >= 2 ? 1 : 0;
+                         for (int j = 0; j < escorts; j++) BOT_GIVE(botKeepOrClosest(list, nl, taken, clients[carrier].ps.origin, BOT_ROLE_ESCORT), BOT_ROLE_ESCORT, 0);
+                     } else if (bombState == 1) {
+-                        BOT_GIVE(botClosest(list, nl, taken, bombPos), BOT_ROLE_FETCH, 0);
++                        BOT_GIVE(botKeepNear(list, nl, taken, bombPos, BOT_ROLE_FETCH, 300.f), BOT_ROLE_FETCH, 0);
+                         if (nl >= 5) BOT_GIVE(botClosest(list, nl, taken, bombPos), BOT_ROLE_FETCH, 0);
+                     }
+                     for (k = 0; k < nl; k++) if (!taken[k]) BOT_GIVE(k, BOT_ROLE_ATTACK, site);
+                 }
+             } else {
+                 if (bombState == 2) {
+-                    BOT_GIVE(botClosest(list, nl, taken, bombPos), BOT_ROLE_DEFUSE, 0);
++                    BOT_GIVE(botKeepNear(list, nl, taken, bombPos, BOT_ROLE_DEFUSE, 400.f), BOT_ROLE_DEFUSE, 0);
+                     for (k = 0; k < nl; k++) if (!taken[k]) BOT_GIVE(k, BOT_ROLE_DEFEND, -1);   /* retake around the charge */
+                 } else {
+                     /* Hold the sites, split between them; one forward player with four or more. */
+diff --git a/game_src/native/tcp_bot_smart.h b/game_src/native/tcp_bot_smart.h
+index 8ead0cb..da04acc 100644
+--- a/game_src/native/tcp_bot_smart.h
++++ b/game_src/native/tcp_bot_smart.h
+@@ -51,16 +51,17 @@ typedef struct {
+ static botsmart_t botSmart[TCP_MAX_PLAYERS];
+ static int botSmartMask, botSmartDebug, botSmartPhase = -1, botSmartRound;
+ static int botSmartRoundAt;   /* round start, for plan timeouts */
++static int botSmartQuietOn;
+ static int botSmartRetake, botSmartRetakeSince, botSmartRetakeLogged;   /* SpecOps retake: 1 = go */
+ static int botSmartTeamNades[3], botSmartTeamSmokes[3], botSmartTeamNadeAt[3];
+ static float botSmartFlank[3]; static int botSmartFlankFor = -2, botSmartFlankOk;
+ static unsigned botSmartC[32];
+ enum { SC_HEAR_FRAMES, SC_RETAKES, SC_RETAKE_WAIT, SC_DEFUSE_PUSH, SC_FOCUS, SC_NADE_ENTRY, SC_SMOKE_ENTRY, SC_NADE_DEFUSER, SC_NADE_RETAKE,
+        SC_SMOKE_RETAKE, SC_NADE_INTEL, SC_FIGHT_PUSH, SC_FIGHT_HOLD, SC_FIGHT_FALL, SC_MIND0, SC_MIND_END = SC_MIND0 + SMART_MIND_COUNT - 1,
+-       SC_HABIT_CHECKS, SC_HABIT_SWEEPS, SC_PLANS, SC_PLAN_WINS, SC_OVERLAY, SC_COUNT };
++       SC_HABIT_CHECKS, SC_HABIT_SWEEPS, SC_PLANS, SC_PLAN_WINS, SC_OVERLAY, SC_QUIET_S, SC_COUNT };
+ static const char *const botSmartCName[SC_COUNT] = {"hear_frames", "retakes", "retake_wait_s", "defuse_push", "focus", "nade_entry", "smoke_entry",
+     "nade_defuser", "nade_retake", "smoke_retake", "nade_intel", "fight_push", "fight_hold", "fight_fall", "mind_classic", "mind_jiggle",
+-    "mind_wait", "mind_fake", "mind_wide", "mind_bait", "habit_checks", "habit_sweeps", "plans", "plan_wins", "overlay"};
++    "mind_wait", "mind_fake", "mind_wide", "mind_bait", "habit_checks", "habit_sweeps", "plans", "plan_wins", "overlay", "quiet_s"};
+ 
+ static int botSmartOn(int bit) { return (botSmartMask & bit) != 0; }
+ static int botSmartModeNum(void) { return !teamMode ? 0 : bombMode ? 6 : ctfMode ? 5 : tdmMode ? 4 : captureMode ? 3 : 2; }
+@@ -196,6 +197,8 @@ static void botSmartFrame(void)
+ {
+     botSmartMask = (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_smart");
+     botSmartDebug = (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_smart_debug");
++    botSmartQuietOn = (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_smart_quiet");
++    botNavFix = (int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE, "bot_navfix");
+     if (roundPhase != botSmartPhase) {
+         if (roundPhase == TCP_ROUND_LIVE) botSmartRoundStart();
+         else if (roundPhase == TCP_ROUND_RESULT && botSmartPhase == TCP_ROUND_LIVE) botSmartPlansResult(roundWinner);
+@@ -650,6 +653,26 @@ static void botSmartMindFrame(void)
+ }
+ 
+ /* ===================== status / init ===================== */
++/* ===================== quiet movement (bot_smart_quiet, after 0.39.0) ===================== */
++/* Footsteps carry (tcp_hearing.h): a bot that knows an enemy is close walks instead of running, so it is not heard
++ * coming. Never while fighting, retreating, carrying or defusing, rushing, or with a planted bomb (time matters). Not in TDM (it slowed the pace by 15% in the cloud bench). */
++static int botSmartQuiet(int n, usercmd_t *cmd, int engaging, int retreating)
++{
++    if (!botSmartQuietOn || !teamMode || tdmMode || engaging || retreating || !(cmd->forwardmove || cmd->rightmove)) return 0;
++    bot_t *b = &bots[n]; client_t *c = &clients[n]; int t = c->team;
++    if (t < 1 || t > 2 || botSkillClamp(b->skill) < 3 || b->objRush || b->role == BOT_ROLE_CARRY || b->role == BOT_ROLE_DEFUSE) return 0;
++    if ((bombMode && bombState == 2) || (b->enemy >= 0 && levelTime - b->lastSeen < 3000)) return 0;
++    int closeBy = levelTime < b->investigateUntil && botDist(b->investigatePos, c->ps.origin) < 1000.f;
++    for (int e = 0; e < maxClients && !closeBy; e++) {
++        const botintel_t *in = &botIntel[t][e];
++        if (in->at && levelTime - in->at < 5000 && clients[e].team != t && botSmartAlive(e) && botDist(in->pos, c->ps.origin) < 900.f) closeBy = 1;
++    }
++    if (!closeBy) return 0;
++    cmd->buttons |= BUTTON_WALKING; cmd->buttons &= ~BUTTON_SPRINT;
++    static int ms[TCP_MAX_PLAYERS], last[TCP_MAX_PLAYERS]; int dt = levelTime - last[n]; last[n] = levelTime;
++    if (dt > 0 && dt < 200 && (ms[n] += dt) >= 1000) { ms[n] -= 1000; botSmartC[SC_QUIET_S]++; }
++    return 1;
++}
+ static void botSmartStatus(int who)
+ {
+     char line[900]; int o = snprintf(line, sizeof(line), "TCP_BOT_SMART mask=%d", botSmartMask);
+@@ -663,6 +686,8 @@ static void botSmartInit(void)
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_smart", "255", CVAR_ARCHIVE);   /* all picked 0.39.0 features on; 0 = 0.38.0 behaviour */
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_smart_hear_modes", "4", CVAR_ARCHIVE);   /* 1<<2 elimination (TDM 1<<4 off: slower pace; CTF 1<<5 off: runners stalled) */
+     SystemCall(G_CVAR_REGISTER, NULL, "bot_smart_debug", "0", 0);
++    SystemCall(G_CVAR_REGISTER, NULL, "bot_smart_quiet", "1", CVAR_ARCHIVE);
++    SystemCall(G_CVAR_REGISTER, NULL, "bot_navfix", "1", CVAR_ARCHIVE);   /* stuck and climb-loop fixes; 0 = 0.39.0 behaviour */   /* walk (silent) when an enemy is known to be close */
+     memset(botSmart, 0, sizeof(botSmart)); memset(botSmartC, 0, sizeof(botSmartC));
+     botSmartPhase = -1; botSmartRetake = 0; botSmartPlanLive = 0; botSmartPlansLoaded = 0; botSmartPlansDirty = 0; botSmartMap[0] = 0; botSmartFlankFor = -2; botSmartMindAt = 0;
+ }
+diff --git a/game_src/native/tcp_bot_vary.h b/game_src/native/tcp_bot_vary.h
+index 95c8ead..5863ca8 100644
+--- a/game_src/native/tcp_bot_vary.h
++++ b/game_src/native/tcp_bot_vary.h
+@@ -117,7 +117,7 @@ static int botVaryPath(int n, int start, int goal, short *out, int cap, int dire
+     botTacPathEnd(); botPathSeed = 0;   /* the alternatives replace the lane and route-seed preferences */
+     bot_t *b = &bots[n]; int team = clients[n].team, objMode = bombMode || ctfMode;
+     int timeShort = roundPhase == TCP_ROUND_LIVE && roundDeadline && roundDeadline - levelTime < 45000;
+-    if (direct || timeShort || (bombMode && bombState == 2)) direct = 1;
++    if (direct || timeShort || (bombMode && bombState == 2) || botPlanBusy()) direct = 1;   /* BOT_NAVFIX: busy frame = one search */
+     if (ctfMode && (b->role == BOT_ROLE_ESCORT || b->role == BOT_ROLE_CARRY || b->role == BOT_ROLE_FETCH)) direct = 1;   /* 0.38: flag runs stay direct */
+     for (int i = 0; i < botNodeCount; i++) botVaryPen[i] = 1.f;
+     int kept = 0; float base = 0.f;
+diff --git a/game_src/native/tcp_bots.h b/game_src/native/tcp_bots.h
+index 93e22be..47caed4 100644
+--- a/game_src/native/tcp_bots.h
++++ b/game_src/native/tcp_bots.h
+@@ -85,8 +85,8 @@ static void botNavReset(int n); static int botStandinOf(int botSlot); static int
+ static int botSmartOn(int bit); static int botSmartBrainBits(void); static int botSmartNade(int n, int engaging); static int botSmartFight(int n);
+ static int botSmartDuck(int n, usercmd_t *cmd, float *desiredYaw, float *desiredPitch, const float *view, int peekLimit); static int botSmartHabitDanger(int n, float *at, float facingYaw);
+ static int botSmartDefSite(const int *usable, int nu, int idx); static int botSmartForwardCount(int nl); static int botSmartCtfDefenders(int t, int nl, int want);
+-static int botSmartHabitHold(int n, float *yaw, float *pitch); static float botSmartYaw(const float *from, const float *to); static int TCP_BotMindWanted(int n);
+-static void botNavLearnApply(void); static float botVaryCost(int node); static int botVaryPath(int n, int start, int goal, short *out, int cap, int direct); static int botVaryExploreGoal(int n); static void botVaryOnPath(int n); static void botMoodReset(int n); static void botMemoryAdd(int human, float w); static void botMemorySighting(int n, int h); static void botMoodDeath(int victim, int killer); static float botNavLearnCost(int node); static void botNavPathStart(int n); static void botNavPathDone(int n); static int botNavSmooth(int n, int pos); static int botNavOn(int bit);
++static int botSmartQuiet(int n, usercmd_t *cmd, int engaging, int retreating); static int botSmartHabitHold(int n, float *yaw, float *pitch); static float botSmartYaw(const float *from, const float *to); static int TCP_BotMindWanted(int n);
++static void botNavLearnApply(void); static void botNavBlockEdge(int from, int to, int ms); static float botVaryCost(int node); static int botVaryPath(int n, int start, int goal, short *out, int cap, int direct); static int botVaryExploreGoal(int n); static void botVaryOnPath(int n); static void botMoodReset(int n); static void botMemoryAdd(int human, float w); static void botMemorySighting(int n, int h); static void botMoodDeath(int victim, int killer); static float botNavLearnCost(int node); static void botNavPathStart(int n); static void botNavPathDone(int n); static int botNavSmooth(int n, int pos); static int botNavOn(int bit);
+ /* BOT_BRAIN: tcp_bot_brain.h (included after tcp_bot_tactics.h) */
+ enum { SIT_CONTACT_ONE, SIT_CONTACT_MANY, SIT_ENEMY_HEARD, SIT_NEED_HELP, SIT_TEAMMATE_DOWN, SIT_DEAD_INFO, SIT_KILL_CONFIRM,
+        SIT_BOMB_PICKUP, SIT_BOMB_PLANTING, SIT_BOMB_PLANTED, SIT_BOMB_DEFUSING, SIT_BOMB_DROPPED, SIT_ENEMY_BOMB_PLANTED, SIT_ENEMY_BOMB_CARRIER,
+@@ -603,6 +603,15 @@ expand:
+     botPrint("TCP_BOT_NAV nodes=%d edges=%d crouch=%d prone=%d jump=%d climb=%d doorways=%d ladders=%d ms=%d full=%d cached=0\n", botNodeCount, botNavEdges, botNavCrouch, botNavProne, botNavJump, botNavClimb, botNavDoorways, botLadderCount, botNavMs, botNodeCount >= TCP_BOT_NODES);
+ }
+ /* Nearest node the player box can reach in a straight line. */
++static int navStartStance;   /* BOT_NAVFIX: the bot's own stance for start lookups (a prone bot in a crawl space: a standing box test fails for every node around it) */
++static int navAvoidNode = -1;   /* BOT_NAVFIX: a start node this bot could not reach (set around start lookups only) */
++static int botNavFix = 1;   /* bot_navfix: 0 = 0.39.0 node choice and arrival rules */
++static int botPlanAt = -1, botPlanN, botPlanDeferred;   /* BOT_NAVFIX: route plans this server frame; past 4, extra plans take the direct route only (1 search instead of up to 4), so a round start's 12+ re-plans do not stack 40-50 searches in one frame */
++static int botPlanBusy(void) { if (!botNavFix) return 0; if (levelTime != botPlanAt) { botPlanAt = levelTime; botPlanN = 0; } if (++botPlanN <= 4) return 0; botPlanDeferred++; return 1; }
++static int botWedgeMs[TCP_MAX_PLAYERS]; static vec3_t botWedgePos[TCP_MAX_PLAYERS]; static unsigned botNavWedges, botNavUnwedged, botNavStepAsides;   /* BOT_NAVFIX: stuck in the air */
++static int botStartAvoid[TCP_MAX_PLAYERS], botStartAvoidUntil[TCP_MAX_PLAYERS];   /* node + 1, 0 = none */
++static int botStartStance(const client_t *c) { return !botNavFix ? 0 : (c->ps.eFlags & EF_PRONE) ? 2 : (c->ps.pm_flags & PMF_DUCKED) ? 1 : 0; }
++static int botStartAvoidNode(int n) { return botNavFix && levelTime < botStartAvoidUntil[n] ? botStartAvoid[n] - 1 : -1; }
+ static int navNearest(const float *p)
+ {
+     int best = -1; float bestD = 1e30f;
+@@ -615,16 +624,40 @@ static int navNearest(const float *p)
+             for (int dy = -r; dy <= r; dy++) {
+                 if (abs(dx) != r && abs(dy) != r) continue;
+                 for (int i = botHash[botHashOf(cx + dx, cy + dy)]; i >= 0; i = botNodes[i].next) {
+-                    float d = botDist(p, botNodes[i].pos);
+-                    if (d >= bestD || fabsf(botNodes[i].pos[2] - p[2]) > 90) continue;
++                    float d = botDist(p, botNodes[i].pos), up = botNodes[i].pos[2] - p[2];
++                    if (up > 18.f && botNavFix) d += (up - 18.f) * 3.f;   /* BOT_NAVFIX: prefer a node on our own floor over a ledge above (climb loops) */
++                    if (d >= bestD || fabsf(up) > 90 || i == navAvoidNode) continue;
+                     trace_t tr; vec3_t a, b; memcpy(a, p, sizeof(a)); memcpy(b, botNodes[i].pos, sizeof(b)); a[2] += 8; b[2] += 8;
+-                    navTrace(&tr, a, b);
++                    navTraceS(&tr, a, b, navStartStance);
+                     if (tr.fraction < 1.f && !(in.startsolid && botNodes[i].count && hypotf(botNodes[i].pos[0] - p[0], botNodes[i].pos[1] - p[1]) <= 48.f)) continue;
+                     bestD = d; best = i;
+                 }
+             }
+     return best;
+ }
++/* BOT_NAVFIX: a bot off the nav graph (a roof or ledge it fell or jumped onto) got no route at all and stood there
++ * for minutes. Fallback start: the nearest node without the line-of-sight test, up to 64 units up or 320 down. */
++static int navNearestLoose(const float *p)
++{
++    int best = -1; float bestD = 600.f * 600.f;
++    for (int i = 0; i < botNodeCount; i++) {
++        float dx = botNodes[i].pos[0] - p[0], dy = botNodes[i].pos[1] - p[1], dz = botNodes[i].pos[2] - p[2], d = dx * dx + dy * dy;
++        if (d < bestD && dz < 64.f && dz > -320.f && i != navAvoidNode) { bestD = d; best = i; }
++    }
++    return best;
++}
++static unsigned botNavLooseStarts, botNavClimbLoops;
++/* BOT_NAVFIX: a bot that climbs the same ledge three times in 30 s keeps falling back off it (a thin or sloped top):
++ * block that climb for everyone for 60 s, so routes go around. */
++static int botClimbNode[TCP_MAX_PLAYERS], botClimbCount[TCP_MAX_PLAYERS], botClimbFirst[TCP_MAX_PLAYERS];
++static void botClimbLoop(int n, int from, int to, const float *p)
++{
++    if (!botNavFix) return;
++    if (botClimbNode[n] != to + 1 || levelTime - botClimbFirst[n] > 30000) { botClimbNode[n] = to + 1; botClimbCount[n] = 0; botClimbFirst[n] = levelTime; }
++    if (++botClimbCount[n] < 3) return;
++    botNavBlockEdge(from, to, 60000); botClimbCount[n] = 0; botNavClimbLoops++; bots[n].repathAt = 0; bots[n].objRepathAt = 0;
++    botPrint("TCP_BOT_CLIMBLOOP slot=%d at=%.0f,%.0f,%.0f from=%d to=%d\n", n, p[0], p[1], p[2], from, to);
++}
+ /* Per-bot route preference: while botPathSeed is set, every 384-unit area of the map
+  * costs that bot up to 45% more or less to cross, so teammates spread over different
+  * corridors instead of all taking the single shortest one. Never below the real
+@@ -958,7 +991,8 @@ static void botNewGoal(int n)
+         if (botDist(botNodes[g].pos, c->ps.origin) > 600.f || tries > 8) goal = g;
+     }
+     b->goal = goal;
+-    int start = navNearest(c->ps.origin);
++    navAvoidNode = botStartAvoidNode(n); navStartStance = botStartStance(c); int start = navNearest(c->ps.origin); navAvoidNode = -1; navStartStance = 0;   /* BOT_NAVFIX */
++    if (start < 0 && botNavFix) { navAvoidNode = botStartAvoidNode(n); start = navNearestLoose(c->ps.origin); navAvoidNode = -1; if (start >= 0) botNavLooseStarts++; }
+     botPathSeed = b->routeSeed; botTacPathBegin(n, goal);   /* BOT_TACTICS: lanes */
+     b->pathLen = start >= 0 ? botVaryPath(n, start, goal, b->path, TCP_BOT_PATH, 0) : 0; botNavPathStart(n);   /* BOT_NAV, BOT_VARY: bot_navvary 0 = plain navPath */
+     botPathSeed = 0; botTacPathEnd();
+@@ -967,7 +1001,8 @@ static void botNewGoal(int n)
+ static void botPathTo(int n, const float *where)
+ {
+     bot_t *b = &bots[n]; client_t *c = &clients[n];
+-    int goal = navNearest(where), start = navNearest(c->ps.origin);
++    int goal = navNearest(where); navAvoidNode = botStartAvoidNode(n); navStartStance = botStartStance(c); int start = navNearest(c->ps.origin); navAvoidNode = -1; navStartStance = 0;   /* BOT_NAVFIX */
++    if (start < 0 && botNavFix) { navAvoidNode = botStartAvoidNode(n); start = navNearestLoose(c->ps.origin); navAvoidNode = -1; if (start >= 0) botNavLooseStarts++; }
+     if (goal < 0 || start < 0) { b->pathLen = 0; return; }
+     /* Time-critical objective runs take the plain shortest route. */
+     botPathSeed = (botRouteDirect(b->role) || (b->role && botObjMode())) ? 0 : b->routeSeed;   /* objective routes stay direct (stall watchdog) */
+@@ -984,9 +1019,9 @@ static int botFollow(int n, float *to, int *edge)
+     if (b->pathPos >= b->pathLen) return 0;
+     int in = b->pathPos > 0 ? navEdgeFlag(b->path[b->pathPos - 1], b->path[b->pathPos]) : 0;
+     float *p = botNodes[b->path[b->pathPos]].pos;
+-    if (botDist2D(p, c->ps.origin) < 28.f && fabsf(p[2] - c->ps.origin[2]) < 48.f) {
++    if (botDist2D(p, c->ps.origin) < 28.f && fabsf(p[2] - c->ps.origin[2]) < 48.f && (!botNavFix || p[2] - c->ps.origin[2] < 18.f)) {   /* BOT_NAVFIX: under a ledge is not on it */
+         if (in & BOT_EDGE_LADDER) { b->jumps++; botPrint("TCP_BOT_LADDERED slot=%d at=%.0f,%.0f,%.0f\n", n, p[0], p[1], p[2]); }
+-        else if (in & BOT_EDGE_CLIMB) { b->jumps++; botPrint("TCP_BOT_CLIMBED slot=%d at=%.0f,%.0f,%.0f\n", n, p[0], p[1], p[2]); }
++        else if (in & BOT_EDGE_CLIMB) { b->jumps++; botPrint("TCP_BOT_CLIMBED slot=%d at=%.0f,%.0f,%.0f\n", n, p[0], p[1], p[2]); botClimbLoop(n, b->path[b->pathPos - 1], b->path[b->pathPos], p); }
+         else if (in & BOT_EDGE_JUMP) { b->jumps++; botPrint("TCP_BOT_JUMPED slot=%d at=%.0f,%.0f,%.0f\n", n, p[0], p[1], p[2]); }
+         else if (in & BOT_EDGE_STANCE) { b->crawls++; botPrint("TCP_BOT_CRAWL slot=%d stance=%d at=%.0f,%.0f,%.0f\n", n, in & BOT_EDGE_STANCE, p[0], p[1], p[2]); }
+         if (++b->pathPos >= b->pathLen) { botNavPathDone(n); return 0; }   /* BOT_NAV: path-length ratio */
+@@ -1318,6 +1353,7 @@ static void botThink(int n)
+         }
+     }
+     if (levelTime < b->holdUntil) { cmd.forwardmove = cmd.rightmove = 0; cmd.buttons &= ~BUTTON_SPRINT; moving = 0; }
++    botSmartQuiet(n, &cmd, engaging, retreating);   /* BOT_SMART: quiet movement near known enemies */
+     /* Reloading in a fight: get out of the enemy's sight first (not while carrying or holding an objective). */
+     if (gun->reload_end && b->enemy >= 0 && levelTime - b->lastSeen < 1500 && !b->objRush && !b->objAnchor && !b->nadeStage && !retreating && !botObjRunner(n)) { botReloadCover(n, &cmd, view[1]); moving = 0; }
+     else b->coverUntil = 0;
+@@ -1431,6 +1467,45 @@ static void botThink(int n)
+         if (wantProne) b->prones++;
+     }
+     if (wantProne || prone) { if (cmd.upmove < 0 || !wantProne) cmd.upmove = 0; }
++    /* BOT_NAVFIX: wedged in the air (no ground, not moving: fell off a ladder into a gap on Railhouse). Prone and
++     * crouch never work without ground and the bot stood there for minutes: after 1 s, jump and push out. */
++    if (botNavFix && c->ps.groundEntityNum == ENTITYNUM_NONE && !(c->ps.pm_flags & PMF_LADDER) && botDist(c->ps.origin, botWedgePos[n]) < 2.f && !navInWater(c->ps.origin)) {
++        botWedgeMs[n] += 50;
++        if (botWedgeMs[n] >= 1000) {
++            if (botWedgeMs[n] == 1000) { trace_t ws; navTrace(&ws, c->ps.origin, c->ps.origin); botNavWedges++; botPrint("TCP_BOT_WEDGED slot=%d at=%.0f,%.0f,%.0f solid=%d\n", n, c->ps.origin[0], c->ps.origin[1], c->ps.origin[2], ws.startsolid != 0); }
++            if (botWedgeMs[n] >= 3000) {   /* still stuck (inside a clip brush): put the bot on the nearest free node, like a respawn nudge */
++                int best = -1; float bd = 300.f * 300.f;
++                for (int i = 0; i < botNodeCount; i++) {
++                    float dx = botNodes[i].pos[0] - c->ps.origin[0], dy = botNodes[i].pos[1] - c->ps.origin[1], dz = botNodes[i].pos[2] - c->ps.origin[2], d = dx * dx + dy * dy + dz * dz;
++                    if (d >= bd || d < 16.f * 16.f || !botNodes[i].count) continue;
++                    trace_t ft; vec3_t q; memcpy(q, botNodes[i].pos, sizeof(q)); q[2] += 1; navTrace(&ft, q, q); if (ft.startsolid || ft.allsolid) continue;
++                    bd = d; best = i;
++                }
++                if (best >= 0) {
++                    memcpy(c->ps.origin, botNodes[best].pos, sizeof(vec3_t)); c->ps.origin[2] += 1; memset(c->ps.velocity, 0, sizeof(vec3_t)); c->ps.eFlags ^= EF_TELEPORT_BIT; linkPlayer(n);
++                    b->pathLen = b->pathPos = 0; b->repathAt = 0; botNavUnwedged++;
++                    botPrint("TCP_BOT_UNWEDGED slot=%d to=%.0f,%.0f,%.0f node=%d\n", n, c->ps.origin[0], c->ps.origin[1], c->ps.origin[2], best);
++                }
++                botWedgeMs[n] = 0;
++            }
++            int ph = (botWedgeMs[n] / 500) & 3; cmd.upmove = 127; cmd.forwardmove = ph & 1 ? -127 : 127; cmd.rightmove = ph & 2 ? 127 : -127; cmd.wbuttons &= ~WBUTTON_PRONE;
++        }
++    } else botWedgeMs[n] = 0;
++    memcpy(botWedgePos[n], c->ps.origin, sizeof(vec3_t));
++    /* BOT_NAVFIX: players do not collide, so a bot that stops on a teammate's spot (the flag a human just took, an
++     * escort spot) stands inside him and fills his view. Standing still within 36 units of a human teammate: step away
++     * (bots inside bots stay: nobody sees it, and moving them changed the TDM pace on the bench). */
++    if (botNavFix && !cmd.forwardmove && !cmd.rightmove && !prone && !b->objPlant && !b->objUse && c->ps.groundEntityNum != ENTITYNUM_NONE) {
++        for (int i = 0; i < maxClients; i++) {
++            if (i == n || !clients[i].begun || clients[i].health.health <= 0 || clients[i].team != c->team || bots[i].active) continue;
++            float dx = c->ps.origin[0] - clients[i].ps.origin[0], dy = c->ps.origin[1] - clients[i].ps.origin[1];
++            if (dx * dx + dy * dy > 36.f * 36.f || fabsf(c->ps.origin[2] - clients[i].ps.origin[2]) > 60.f) continue;
++            if (dx * dx + dy * dy < 1.f) { dx = (n & 1) ? 1.f : -1.f; dy = (n & 2) ? 1.f : -1.f; }
++            float y = atan2f(dy, dx) - view[1] * .01745329252f;
++            cmd.forwardmove = (signed char)(cosf(y) * 127.f); cmd.rightmove = (signed char)(-sinf(y) * 127.f); cmd.buttons |= BUTTON_WALKING; botNavStepAsides++;
++            break;
++        }
++    }
+     /* Stuck: jump, then open doors, then pick a new route. */
+     botNavFrame(n, moving);   /* BOT_NAV: metrics */
+     if (botTacHeldStill(n) || botNavStuck(n, &cmd, moving, segStance, prone, view[1])) { }   /* BOT_NAV: stuck recovery v2 (bot_nav 2); 0.38: tactics waits */
