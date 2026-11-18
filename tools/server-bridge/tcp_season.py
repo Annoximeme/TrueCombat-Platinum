@@ -382,10 +382,9 @@ def solo_week(key):
             "botChallenge": dict(BOT_CHALLENGES[i % len(BOT_CHALLENGES)])}
 
 
-def run_message(run):
-    """The bytes a run is signed over: canonical JSON of everything but the signature."""
-    body = {k: v for k, v in run.items() if k not in ("sig",)}
-    return ("tcp-solo/1\n" + json.dumps(body, sort_keys=True, separators=(",", ":"))).encode("utf-8")
+def run_message(raw):
+    """The bytes a run is signed over: the run's own JSON text exactly as uploaded, after a fixed prefix."""
+    return b"tcp-solo/1\n" + (raw.encode("utf-8") if isinstance(raw, str) else raw)
 
 
 def check_run(run, week):
