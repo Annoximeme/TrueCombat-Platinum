@@ -1,0 +1,131 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 90d5df0..b9feace 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -1146,6 +1146,7 @@ static void drawScoreboard(const playerState_t *player){
+     }else drawTeamPanel(20,TCP_TEAM_NONE,"PLAYERS",scores,count,0,player);
+     hudAnchor=HUD_AUTO;
+ }
++static int matchCgRound(void),matchCgRounds(void);static const char *matchCgStage(char *out,size_t size); /* audit-11, tcp_match_cg.h */
+ #include "tcp_hud_platinum_cg.h" /* Platinum HUD (Direction A) */
+ #include "tcp_mapvote_cg.h"
+ #include "tcp_match_cg.h"
+@@ -1875,7 +1876,10 @@ static void frame(int time,int demo){
+     }
+     case TCP_ROUND_COUNTDOWN:
+         {const int gm=p.holdable[TCP_HOLD_GAMEMODE],rn=phRoundNumber(&p); /* polish-01: the 3 s before a round are not a warm-up; the mode value is 0 in the elimination modes and Capture Point, 6 in Bomb */
+-        if((gm==0||gm==6)&&rn>0)snprintf(line,sizeof(line),"Round %i begins in: %i",rn,seconds);
++        const int mr=matchCgRound(); /* audit-11: a competitive match numbers its own rounds (the knife round is not round 1) */
++        if(mr<0)snprintf(line,sizeof(line),"Knife round begins in: %i",seconds);
++        else if(mr>0)snprintf(line,sizeof(line),"Round %i of %i begins in: %i",mr,matchCgRounds(),seconds);
++        else if((gm==0||gm==6)&&rn>0)snprintf(line,sizeof(line),"Round %i begins in: %i",rn,seconds);
+         else snprintf(line,sizeof(line),"(WARMUP) Match begins in: %i",seconds);}
+         if(phOn()){if(!(dm.open&&cqbPerksShown()))phBanner(120,line);}else hudTextCenter(120,line); /* polish-01: not through the CQB perks panel */
+         break;
+@@ -1899,7 +1903,14 @@ static void frame(int time,int demo){
+         /* texts-01b: after the last round of the match (g_roundlimit) there is no next round; the map vote or the next map follows */
+         char lim[16]="";TCP_InfoValue(config(CS_SERVERINFO),"g_roundlimit",lim,sizeof(lim));
+         const int last=atoi(lim)>0&&phRoundsDone(&p)>=atoi(lim);
+-        if (winner<0&&last)
++        const int mr=matchCgRound(); /* audit-11: in a competitive match the half-time and final cards follow; no "Next round in" */
++        if (mr<0)
++            snprintf(line,sizeof(line),winner<0?"Knife round draw.":"%s^7 win the knife round.",name[0]?name:"Player");
++        else if (mr>0&&winner<0)
++            snprintf(line,sizeof(line),"Round %i of %i: draw.",mr,matchCgRounds());
++        else if (mr>0)
++            snprintf(line,sizeof(line),"%s^7 win round %i of %i.",name[0]?name:"Player",mr,matchCgRounds());
++        else if (winner<0&&last)
+             snprintf(line,sizeof(line),"Round draw. Match over.");
+         else if (winner<0)
+             snprintf(line,sizeof(line),"Round draw. Next round in: %i",seconds);
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index 1256567..deb377a 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -793,10 +793,12 @@ static void playerConfig(int slot)
+     SystemCall(G_SET_CONFIGSTRING,CS_PLAYERS+slot,config);
+ }
+ static void botStandinJoined(int n);   /* BOT_STANDIN */
++static int teamSwapQuiet; /* audit-11: set while a competitive match swaps every player's side */
+ static void announceTeam(int slot)
+ {
+     playerConfig(slot);
+     botStandinJoined(slot);   /* BOT_STANDIN: a human took a team place back */
++    if(teamSwapQuiet)return;  /* audit-11: one "has joined" line per player flooded the feed; the swap card says it once */
+     char command[48];
+     snprintf(command,sizeof(command),"tcp_join %d %d",slot,clients[slot].team);
+     SystemCall(G_SEND_SERVER_COMMAND,-1,command);
+diff --git a/game_src/native/tcp_hud_platinum_cg.h b/game_src/native/tcp_hud_platinum_cg.h
+index 9b431e9..7473378 100644
+--- a/game_src/native/tcp_hud_platinum_cg.h
++++ b/game_src/native/tcp_hud_platinum_cg.h
+@@ -273,7 +273,10 @@ static void phRoundClock(const playerState_t *player,int time){
+     }else if(phase==TCP_ROUND_RESULT)phTextT(&phDisplay,PH_CX,12,8,1,phT2,"ROUND END",PH_MID);
+     else{float c[4];phAlpha(phAmber,.45f+.55f*fabsf(sinf(time*.002f)),c);
+         const int gm=player->holdable[TCP_HOLD_GAMEMODE];char chip[16]="WARMUP";
+-        if(phase==TCP_ROUND_COUNTDOWN&&(gm==0||gm==6)&&roundNo>0)snprintf(chip,sizeof(chip),"ROUND %d",roundNo); /* polish-01 */
++        const int mr=matchCgRound(); /* audit-11: competitive match rounds */
++        if(phase==TCP_ROUND_COUNTDOWN&&mr<0)snprintf(chip,sizeof(chip),"KNIFE");
++        else if(phase==TCP_ROUND_COUNTDOWN&&mr>0)snprintf(chip,sizeof(chip),"ROUND %d",mr);
++        else if(phase==TCP_ROUND_COUNTDOWN&&(gm==0||gm==6)&&roundNo>0)snprintf(chip,sizeof(chip),"ROUND %d",roundNo); /* polish-01 */
+         phTextT(&phDisplay,PH_CX,12,8,1,c,chip,PH_MID);}
+     }
+     if(teamMatch(player)){ /* polish-01: also for a spectator */
+@@ -582,10 +585,11 @@ static void phScoreboard(const playerState_t *player,const hudScore_t *scores,in
+     phTextT(&phDisplay,x,36,14,.4f,phT1,map[0]?map:"MATCH",PH_LEFT);
+     if(host[0])phText(&phBody,x,56,5.5f,phT3,host,PH_LEFT);
+     if(phase==TCP_ROUND_LIVE)snprintf(line,sizeof(line),"%d:%d%d",seconds/60,seconds%60/10,seconds%10);
+-    else snprintf(line,sizeof(line),"%s",phase==TCP_ROUND_RESULT?"ROUND END":"WARMUP");
++    else snprintf(line,sizeof(line),"%s",phase==TCP_ROUND_RESULT?"ROUND END":(phase==TCP_ROUND_COUNTDOWN&&matchCgRound())?"STARTING":"WARMUP"); /* audit-11: the countdown inside a match is not its warm-up */
+     phText(&phMono,x+w,38,10,phase==TCP_ROUND_LIVE?phT1:phAmber,line,PH_RIGHT);
+     if(teamMatch(player)){ /* polish-01: also for a spectator */
+-        if(player->holdable[TCP_HOLD_GAMEMODE]==0||player->holdable[TCP_HOLD_GAMEMODE]==6){const int rn=phRoundNumber(player);snprintf(line,sizeof(line),"ROUND %d",rn>0?rn:1);phTextT(&phBody,x+w,26,5,.9f,phT3,line,PH_RIGHT);} /* polish-01: Team Deathmatch, Flag and CQB Rules (mode value 4 or 5) have no rounds; the label counted the score there */
++        char stage[32];if(matchCgStage(stage,sizeof(stage)))phTextT(&phBody,x+w,26,5,.9f,phT3,stage,PH_RIGHT); /* audit-11: the match's own stage and round */
++        else if(player->holdable[TCP_HOLD_GAMEMODE]==0||player->holdable[TCP_HOLD_GAMEMODE]==6){const int rn=phRoundNumber(player);snprintf(line,sizeof(line),"ROUND %d",rn>0?rn:1);phTextT(&phBody,x+w,26,5,.9f,phT3,line,PH_RIGHT);} /* polish-01: Team Deathmatch, Flag and CQB Rules (mode value 4 or 5) have no rounds; the label counted the score there */
+         float rc[4],bc[4];phTeamColor(TCP_TEAM_RED,rc);phTeamColor(TCP_TEAM_BLUE,bc);
+         char a[16],b[16];snprintf(a,sizeof(a),"%d",red);snprintf(b,sizeof(b),"%d",blue);
+         phText(&phDisplay,PH_CX-10,30,22,rc,a,PH_RIGHT);phText(&phDisplay,PH_CX,34,14,phT3,":",PH_MID);phText(&phDisplay,PH_CX+10,30,22,bc,b,PH_LEFT);
+diff --git a/game_src/native/tcp_match.h b/game_src/native/tcp_match.h
+index c9ece17..cf27d12 100644
+--- a/game_src/native/tcp_match.h
++++ b/game_src/native/tcp_match.h
+@@ -209,7 +209,7 @@ static void matchSwapSides(void)
+         if (!c->connected || (c->team != TCP_TEAM_RED && c->team != TCP_TEAM_BLUE)) continue;
+         c->team = 3 - c->team;
+         c->pendingTeam = 0;
+-        announceTeam(i);
++        teamSwapQuiet = 1; announceTeam(i); teamSwapQuiet = 0; /* audit-11: no "has joined" line per player */
+     }
+     /* Show everyone at the new side's spawns; they stay frozen until the next round. */
+     for (int i = 0; i < maxClients; ++i) {
+diff --git a/game_src/native/tcp_match_cg.h b/game_src/native/tcp_match_cg.h
+index d17a24d..57b9a1e 100644
+--- a/game_src/native/tcp_match_cg.h
++++ b/game_src/native/tcp_match_cg.h
+@@ -43,10 +43,25 @@ static const char *matchCgTeam(int team)
+     return cgMatch.name[team][0] ? cgMatch.name[team] : team == TCP_TEAM_RED ? "Terrorists" : "SpecOps";
+ }
+ 
++/* audit-11 (0.39.1): the stock round countdown, round result and scoreboard counted every round played on the map, so
++ * the knife round was "Round 1", the first match round "Round 2", and the scoreboard said WARMUP in the countdown of a
++ * live match. -1 = knife round, 1.. = match round, 0 = no match running (stock texts). */
++static int matchCgRound(void) { return !cgMatch.active || cgMatch.state < 2 || cgMatch.state == 6 ? 0 : cgMatch.state == 2 ? -1 : cgMatch.round > 0 ? cgMatch.round : 1; }
++static int matchCgRounds(void) { return cgMatch.rounds > 0 ? cgMatch.rounds : 1; }
++static const char *matchCgStage(char *out, size_t size)
++{
++    if (!cgMatch.active || cgMatch.state < 2) return NULL;
++    if (cgMatch.state == 2) snprintf(out, size, "KNIFE ROUND");
++    else if (cgMatch.state == 6) snprintf(out, size, "FINAL");
++    else if (cgMatch.state == 5) snprintf(out, size, "HALF-TIME");
++    else snprintf(out, size, "ROUND %d / %d", cgMatch.round, cgMatch.rounds);
++    return out;
++}
++
+ static void matchCgDraw(const playerState_t *p, int time)
+ {
+     static const float strip[4] = {0, 0, 0, .55f}, red[4] = {.55f, .08f, .08f, .6f}, blue[4] = {.1f, .2f, .55f, .6f};
+-    if (!cgMatch.active) return;
++    if (!cgMatch.active || showScores) return; /* audit-11: the scoreboard shows the stage itself; the strip and the card drew across its table */
+     char line[200], sub[200];
+     int seconds = cgMatch.endTime ? (cgMatch.endTime - time + 999) / 1000 : -1, team = p->teamNum;
+     if (seconds < 0 && cgMatch.endTime) seconds = 0;

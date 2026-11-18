@@ -1,0 +1,336 @@
+diff --git a/reference/etlegacy/src/renderer_dx12/dx12_core.cpp b/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
+index f396170..7a67038 100755
+--- a/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
++++ b/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
+@@ -94,6 +94,7 @@ struct Frame
+ 	uint8_t *ringMapped = nullptr;
+ 	D3D12_GPU_VIRTUAL_ADDRESS ringGpu = 0;
+ 	UINT64 ringOffset = 0;
++	UINT64 ringSize = 0; // 0.39.1: grows when a frame needs more (kRingBytes at start)
+ 	UINT64 fence = 0;
+ };
+ 
+@@ -318,6 +319,74 @@ void Log(int fatal, const char *fmt, ...)
+ 	}
+ }
+ 
++/* 0.39.1: after a GPU crash (device removed), say what the GPU was doing: the last finished operation of each
++ * command list (Windows' auto-breadcrumbs, DRED) and, after a page fault, the address and the resources around it.
++ * Enabled before the device is made (r_dx12CrashReport, default 1; Windows 10 1903 or newer). Goes to the console
++ * log, which the crash report already carries. */
++const char *DredOpName(D3D12_AUTO_BREADCRUMB_OP op)
++{
++	static const char *names[] = { "SetMarker", "BeginEvent", "EndEvent", "DrawInstanced", "DrawIndexedInstanced",
++		"ExecuteIndirect", "Dispatch", "CopyBufferRegion", "CopyTextureRegion", "CopyResource", "CopyTiles",
++		"ResolveSubresource", "ClearRenderTargetView", "ClearUnorderedAccessView", "ClearDepthStencilView",
++		"ResourceBarrier", "ExecuteBundle", "Present", "ResolveQueryData", "BeginSubmission", "EndSubmission" };
++	return (unsigned)op < sizeof(names) / sizeof(names[0]) ? names[op] : "other";
++}
++
++void DredReport()
++{
++	static bool reported = false;
++	ComPtr<ID3D12DeviceRemovedExtendedData> dred;
++
++	if (reported || !dx.device || FAILED(dx.device.As(&dred)))
++	{
++		return;
++	}
++	reported = true;
++	D3D12_DRED_AUTO_BREADCRUMBS_OUTPUT crumbs = {};
++	if (SUCCEEDED(dred->GetAutoBreadcrumbsOutput(&crumbs)))
++	{
++		int lists = 0;
++		for (const D3D12_AUTO_BREADCRUMB_NODE *node = crumbs.pHeadAutoBreadcrumbNode; node && lists < 8; node = node->pNext)
++		{
++			UINT32 done = node->pLastBreadcrumbValue ? *node->pLastBreadcrumbValue : 0;
++			if (!node->pCommandHistory || done >= node->BreadcrumbCount)
++			{
++				continue; // this list finished: not where the GPU stopped
++			}
++			lists++;
++			char name[64] = "?";
++			if (node->pCommandListDebugNameA)
++				snprintf(name, sizeof(name), "%s", node->pCommandListDebugNameA);
++			else if (node->pCommandListDebugNameW)
++				snprintf(name, sizeof(name), "%ls", node->pCommandListDebugNameW);
++			Log(0, "DX12 crash: list '%s' stopped after %u of %u operations:\n", name, done, node->BreadcrumbCount);
++			for (UINT32 k = done > 6 ? done - 6 : 0; k < node->BreadcrumbCount && k < done + 3; k++)
++			{
++				Log(0, "DX12 crash:   %s %u %s\n", k < done ? "done" : k == done ? "FAULT?" : "next", k, DredOpName(node->pCommandHistory[k]));
++			}
++		}
++		if (!lists)
++		{
++			Log(0, "DX12 crash: every recorded command list had finished\n");
++		}
++	}
++	D3D12_DRED_PAGE_FAULT_OUTPUT fault = {};
++	if (SUCCEEDED(dred->GetPageFaultAllocationOutput(&fault)) && fault.PageFaultVA)
++	{
++		Log(0, "DX12 crash: page fault at GPU address 0x%llx\n", (unsigned long long)fault.PageFaultVA);
++		int n = 0;
++		for (const D3D12_DRED_ALLOCATION_NODE *a = fault.pHeadExistingAllocationNode; a && n < 6; a = a->pNext, n++)
++		{
++			Log(0, "DX12 crash:   live there: %s (type %d)\n", a->ObjectNameA ? a->ObjectNameA : "unnamed", (int)a->AllocationType);
++		}
++		n = 0;
++		for (const D3D12_DRED_ALLOCATION_NODE *a = fault.pHeadRecentFreedAllocationNode; a && n < 6; a = a->pNext, n++)
++		{
++			Log(0, "DX12 crash:   freed there: %s (type %d)\n", a->ObjectNameA ? a->ObjectNameA : "unnamed", (int)a->AllocationType);
++		}
++	}
++}
++
+ bool Check(HRESULT hr, const char *what)
+ {
+ 	if (SUCCEEDED(hr))
+@@ -326,6 +395,7 @@ bool Check(HRESULT hr, const char *what)
+ 	}
+ 	if (dx.device && (hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET))
+ 	{
++		DredReport(); // before the fatal error below ends the renderer
+ 		Log(1, "DX12: %s failed, device removed (0x%08lx, reason 0x%08lx)\n", what, (unsigned long)hr,
+ 		    (unsigned long)dx.device->GetDeviceRemovedReason());
+ 		return false;
+@@ -2091,9 +2161,13 @@ ID3D12PipelineState *CreatePipelineFor(const dxPipelineDesc_t &d, int samples, b
+ 		desc.RTVFormats[0]         = DXGI_FORMAT_UNKNOWN;
+ 		blend.BlendEnable          = FALSE;
+ 		blend.RenderTargetWriteMask = 0;
++		/* 0.39.1: the clamp was 0.01 of the light's depth range, up to 71 units on the cascades. A player's sides
++		 * face the sun at a grazing angle, so their slope bias hit that clamp and pushed the body's shadow up to a
++		 * player height away from the feet (worse with a low sun and in the far cascades, so "only sometimes").
++		 * Now at most 0.0006 (about 4 units on the cascades); the receivers' normal offset keeps acne away. */
+ 		desc.RasterizerState.DepthBias            = 64;
+-		desc.RasterizerState.SlopeScaledDepthBias = 2.0f;
+-		desc.RasterizerState.DepthBiasClamp       = 0.01f;
++		desc.RasterizerState.SlopeScaledDepthBias = 1.5f;
++		desc.RasterizerState.DepthBiasClamp       = 0.0006f;
+ 		desc.DepthStencilState.StencilEnable      = FALSE;
+ 	}
+ 
+@@ -2760,19 +2834,58 @@ void ProcessPendingFrees(bool all)
+ 	dx.pendingFrees.resize(kept);
+ }
+ 
+-// Allocates from this frame's upload ring; nullptr when exhausted.
++// 0.39.1: a full ring used to drop every remaining draw of the frame (geometry and HUD vanished for a frame: flicker).
++// It now moves this frame to a ring twice the size: the draws recorded so far keep the old one, which is freed once
++// the GPU has finished this frame. Up to kRingMaxBytes; past that the old behaviour (drop and warn once).
++constexpr UINT64 kRingMaxBytes = 768ull << 20;
++ComPtr<ID3D12Resource> CreateUploadBuffer(UINT64 bytes, bool readbackHeap);
++
++bool RingGrow(Frame &frame, UINT64 need)
++{
++	UINT64 size = frame.ringSize ? frame.ringSize : kRingBytes;
++	while (size < need && size < kRingMaxBytes)
++	{
++		size *= 2;
++	}
++	size = size * 2 > kRingMaxBytes ? kRingMaxBytes : size * 2;
++	if (need > size)
++	{
++		return false;
++	}
++	ComPtr<ID3D12Resource> ring = CreateUploadBuffer(size, false);
++	uint8_t               *mapped = nullptr;
++	D3D12_RANGE            none = { 0, 0 };
++	if (!ring || FAILED(ring->Map(0, &none, (void **)&mapped)))
++	{
++		return false;
++	}
++	dx.pendingFrees.push_back({ RetireFence(), 0, frame.ring }); // the draws recorded so far still read it
++	frame.ring       = ring;
++	frame.ringMapped = mapped;
++	frame.ringGpu    = ring->GetGPUVirtualAddress();
++	frame.ringOffset = 0;
++	frame.ringSize   = size;
++	Log(0, "DX12: frame upload ring grown to %u MB\n", (unsigned)(size >> 20));
++	return true;
++}
++
++// Allocates from this frame's upload ring (growing it when full); nullptr only when it cannot grow.
+ uint8_t *RingAlloc(UINT64 bytes, UINT64 alignment, D3D12_GPU_VIRTUAL_ADDRESS *gpu, UINT64 *offset)
+ {
+ 	Frame &frame = dx.frames[dx.frameIndex];
+ 	UINT64 start = (frame.ringOffset + alignment - 1) & ~(alignment - 1);
+-	if (start + bytes > kRingBytes)
++	if (start + bytes > (frame.ringSize ? frame.ringSize : kRingBytes))
+ 	{
+-		if (!dx.warnedRing)
++		if (!dx.inFrame || !RingGrow(frame, bytes + alignment))
+ 		{
+-			Log(0, "DX12: frame upload ring exhausted, dropping remaining draws this frame\n");
+-			dx.warnedRing = true;
++			if (!dx.warnedRing)
++			{
++				Log(0, "DX12: frame upload ring exhausted, dropping remaining draws this frame\n");
++				dx.warnedRing = true;
++			}
++			return nullptr;
+ 		}
+-		return nullptr;
++		start = 0;
+ 	}
+ 	frame.ringOffset = start + bytes;
+ 	if (gpu)
+@@ -3807,7 +3920,16 @@ int DX_Init(void *hwnd, int sceneWidth, int sceneHeight, int swapInterval, int d
+ 		return 0;
+ 	}
+ 
+-	if (debug)
++	if (debug & 0x100) // 0.39.1: r_dx12CrashReport (DRED); must be set before the device exists
++	{
++		ComPtr<ID3D12DeviceRemovedExtendedDataSettings> dredSettings;
++		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&dredSettings))))
++		{
++			dredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
++			dredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
++		}
++	}
++	if (debug & 0xff)
+ 	{
+ 		ComPtr<ID3D12Debug> debugController;
+ 		if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController))))
+@@ -3933,7 +4055,8 @@ int DX_Init(void *hwnd, int sceneWidth, int sceneHeight, int swapInterval, int d
+ 	for (Frame &frame : dx.frames)
+ 	{
+ 		D3D12_RANGE none = { 0, 0 };
+-		frame.ring = CreateUploadBuffer(kRingBytes);
++		frame.ring     = CreateUploadBuffer(kRingBytes);
++		frame.ringSize = kRingBytes;
+ 		if (!frame.ring ||
+ 		    !Check(dx.device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frame.allocator)), "CreateCommandAllocator") ||
+ 		    !Check(frame.ring->Map(0, &none, (void **)&frame.ringMapped), "Map(ring)"))
+@@ -3952,6 +4075,8 @@ int DX_Init(void *hwnd, int sceneWidth, int sceneHeight, int swapInterval, int d
+ 	}
+ 	dx.uploadList->Close();
+ 	dx.list->Close();
++	dx.list->SetName(L"frame");       // names for the crash report
++	dx.uploadList->SetName(L"uploads");
+ 	dx.list.As(&dx.list1); // ResolveSubresourceRegion for partial world views; optional
+ 
+ 	// graphics upgrades: scene format and the highest supported MSAA count up to the request
+@@ -5914,8 +6039,15 @@ float ContactVis(float3 P, float3 sunEye, float2 pixel)
+ 		float diff = qd - sd;
+ 		if (sd > 0.0 && diff > 0.6 && diff < 18.0)
+ 		{
+-			vis = 0.0;
+-			break;
++			// 0.39.1: a blade of grass or a fence wire one pixel wide is there in one frame and gone in the next
++			// (alpha test under the TAA jitter); only an occluder with a neighbour at its depth counts
++			float sn = EyeDist(depthTex.Load(int3(ClampRect(sq + int2(1, 0)), 0)));
++			float sm = EyeDist(depthTex.Load(int3(ClampRect(sq - int2(1, 0)), 0)));
++			if (min(abs(sn - sd), abs(sm - sd)) < 0.03 * sd + 1.5)
++			{
++				vis = 0.0;
++				break;
++			}
+ 		}
+ 	}
+ 	return vis;
+@@ -5976,7 +6108,7 @@ float4 PSShadowApply(float4 svpos : SV_Position) : SV_Target
+ 		return float4(1, 1, 1, 1); // sky
+ 	float3 w, nw, P;
+ 	float  dist;
+-	bool   weapon = depth < 0.3;
++	bool   weapon = depth < 0.3, thin = false;
+ 	if (weapon)
+ 	{
+ 		// the first-person weapon (hacked depth range) takes the shadow at the viewer's chest, sampled just outside
+@@ -6001,18 +6133,26 @@ float4 PSShadowApply(float4 svpos : SV_Position) : SV_Target
+ 			n = -n;
+ 		nw = ToWorldDir(n);
+ 		w  = ToWorld(P);
++		// 0.39.1: grass blades, fence wires and leaf edges are only a pixel or two wide, so a neighbour on the same
++		// surface may not exist and the normal above comes from whatever lies behind; with the TAA jitter it flips
++		// every frame, and with it the facing test and the shadow offsets (shadows flickered on grass and fences).
++		// Such pixels take the sun direction as their normal: lit like a thin leaf, stable from frame to frame.
++		float gap = 0.03 * dist + 1.5;
++		thin = abs(dx.z) > gap || abs(dy.z) > gap; // no neighbour on the same surface across or down
++		if (thin)
++			nw = cb[7].xyz;
+ 	}
+ 	float flash = weapon ? 1.0 : 1.0 - FlashShade(P, w, nw, pixel); // 0.38.0 muzzle-flash shadow (a multiplier)
+ 	if (dist > cb[5].w)
+ 		return float4(flash.xxx, 1);
+-	float ndl = dot(nw, cb[7].xyz);
++	float ndl = thin ? 0.6 : dot(nw, cb[7].xyz);
+ 	if (ndl <= 0.02)
+ 		return float4(flash.xxx, 1); // facing away: the baked light has no sun here anyway
+ 	float sv = saturate(StaticVis(w + nw * 8.0) * 1.5 - 0.25); // larger texels than the cascades: a wider offset
+ 	if (sv <= 0.01)
+ 		return float4(flash.xxx, 1); // already in the map's own (baked) shadow
+ 	float vis = DynamicVis(w, dist, nw);
+-	if (cb[2].w > 0.0 && !weapon)
++	if (cb[2].w > 0.0 && !weapon && !thin) // thin pixels: the depth march through their own sliver only gives noise
+ 	{
+ 		float3 sunEye = float3(-dot(cb[7].xyz, cb[5].xyz), dot(cb[7].xyz, cb[6].xyz), -dot(cb[7].xyz, cb[4].xyz));
+ 		vis = min(vis, lerp(1.0, ContactVis(P + float3(0, 0, 0.5), sunEye, pixel), cb[2].w));
+diff --git a/reference/etlegacy/src/renderer_dx12/dx12_vk.c b/reference/etlegacy/src/renderer_dx12/dx12_vk.c
+index 647af11..be0bd6e 100755
+--- a/reference/etlegacy/src/renderer_dx12/dx12_vk.c
++++ b/reference/etlegacy/src/renderer_dx12/dx12_vk.c
+@@ -2177,6 +2177,7 @@ void DX_MaterialProbeViews(void)
+ #define DX_SHADOW_D 3072.0f      /* light camera distance from a cascade's centre, towards the sun */
+ #define DX_SHADOW_FAR (DX_SHADOW_D + 4096.0f)
+ #define DX_SHADOW_NEAR 16.0f
++#define DX_SHADOW_VIEW_TAG 0x40000 /* viewportX of a shadow view: tag + its target (cascade index or DX_SHADOW_STATIC) */
+ 
+ static struct
+ {
+@@ -2315,7 +2316,7 @@ static void DX_ShadowView(int target, const vec3_t center, float half, qboolean
+ 	viewParms_t parms;
+ 
+ 	Com_Memset(&parms, 0, sizeof(parms));
+-	parms.viewportX      = 0;
++	parms.viewportX      = DX_SHADOW_VIEW_TAG + target; // 0.39.1: the view carries its own target (see DX_ShadowViewport)
+ 	parms.viewportY      = 0;
+ 	parms.viewportWidth  = 256; // the projection is set by DX_ShadowProjection; the backend uses the map's size
+ 	parms.viewportHeight = 256;
+@@ -2571,6 +2572,14 @@ static qboolean DX_ShadowViewport(void)
+ 			target = dxsh.queue[dxsh.queueHead % 16];
+ 			dxsh.queueHead++;
+ 		}
++		/* 0.39.1: take the target the view itself carries. With the queue alone, one shadow view that never
++		 * reached the backend (a dropped render command) would put it out of step for good: each cascade drawn into
++		 * the next one's map, with another scale and centre, and player shadows far from the player. */
++		if (backEnd.viewParms.viewportX >= DX_SHADOW_VIEW_TAG && backEnd.viewParms.viewportX <= DX_SHADOW_VIEW_TAG + DX_SHADOW_STATIC)
++		{
++			target = backEnd.viewParms.viewportX - DX_SHADOW_VIEW_TAG;
++			dxsh.queueHead = dxsh.queueTail; // the queue is no longer needed to know it
++		}
+ 		DX_EndShadowView();
+ 		dxsh.inShadow = qtrue;
+ 		dxsh.discard  = (target < 0 || !DX_ShadowBegin(target)) ? qtrue : qfalse;
+@@ -3048,7 +3057,7 @@ qboolean VK_Init(int width, int height)
+ 	DX_SetTaa(r_dx12Taa->integer);
+ 	DX_SetMaterialOptions(r_dx12Materials->integer);
+ 
+-	if (!DX_Init(NULL, width, height, ri.Cvar_VariableIntegerValue("r_swapInterval"), r_dx12Debug->integer, DX_Log))
++	if (!DX_Init(NULL, width, height, ri.Cvar_VariableIntegerValue("r_swapInterval"), (r_dx12Debug->integer & 0xff) | (DX_Cvar("r_dx12CrashReport", "1", CVAR_ARCHIVE | CVAR_LATCH, "After a GPU crash, write what the GPU was doing to the console log (Windows DRED; vid_restart)")->integer ? 0x100 : 0), DX_Log))
+ 	{
+ 		return qfalse;
+ 	}
+diff --git a/reference/etlegacy/src/renderer_vk/tr_flares.c b/reference/etlegacy/src/renderer_vk/tr_flares.c
+index 6aea4f7..e6e1f8f 100644
+--- a/reference/etlegacy/src/renderer_vk/tr_flares.c
++++ b/reference/etlegacy/src/renderer_vk/tr_flares.c
+@@ -133,7 +133,7 @@ void RB_AddFlare(void *surface, int fogNum, vec3_t point, vec3_t color, float sc
+ 	vec4_t  eye, clip, normalized, window;
+ 
+ #ifdef RENDERER_BACKEND_DX12
+-	if (backEnd.refdef.rdflags & (1 << 14)) // RDF_DX12PROBE: reflection probe faces have no flares
++	if (backEnd.refdef.rdflags & ((1 << 14) | (1 << 13))) // RDF_DX12PROBE, RDF_DX12SHADOW (0.39.1): probe faces and sun shadow maps have no flares
+ 	{
+ 		return;
+ 	}
+@@ -491,7 +491,7 @@ void RB_RenderFlares(void)
+ 	qboolean draw;
+ 
+ #ifdef RENDERER_BACKEND_DX12
+-	if (backEnd.refdef.rdflags & (1 << 14)) // RDF_DX12PROBE
++	if (backEnd.refdef.rdflags & ((1 << 14) | (1 << 13))) // RDF_DX12PROBE, RDF_DX12SHADOW
+ 	{
+ 		return;
+ 	}

@@ -1,0 +1,148 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 1de53fd..13da2ad 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -615,6 +615,9 @@ static void m68HideModelDot(int hide){
+ static void drawRedDot(const playerState_t *p,int time){
+     m68HideModelDot(p->weapon==50);
+     if(p->weapon!=50||!p->holdable[TCP_HOLD_AIMED]||p->stats[STAT_HEALTH]<=0||!pmView.aiming||time-pmView.aimChange<200)return;
++    /* audit-09: at a wall the gun is pulled back off the eye (0.38.0 vfxImm.wall, x.35 while aimed, 22 degrees of pitch at full weight)
++     * and the dot stayed behind in mid-air. Hidden once the sight has turned about 2 degrees away: the centre is leaving its tube. */
++    {const float w=vfxImm.wall;if(w*w*(3.f-2.f*w)*.35f>.1f)return;}
+     {const qhandle_t cq=cqbOptic(0);if(cq){const int anchor=hudAnchor;hudAnchor=HUD_CENTER;hudNoScale=1;hudPic(853.333f*.5f-8.f,240.f-8.f,16.f,16.f,cq);hudNoScale=0;hudAnchor=anchor;return;}} /* 0.38.0: CQB M68 dot */
+     static qhandle_t stockDot;const int own=m68DotShader&&m68HideShader;if(!own&&!stockDot)stockDot=(qhandle_t)SystemCall(CG_R_REGISTERSHADERNOMIP,M68_MODEL_SHADER);
+     const qhandle_t dotShader=own?m68DotShader:stockDot;
+@@ -1638,7 +1641,7 @@ static void frame(int time,int demo){
+         char msg[180];snprintf(msg,sizeof(msg),"TCP_NATIVE_PREDICTION %s ack=%d teleport=%d max=%.3f\n",
+             correction>0?"correction":"cut",snap.ps.commandTime,(snap.ps.eFlags&EF_TELEPORT_BIT)!=0,prediction.maxError);SystemCall(CG_PRINT,msg);
+     }
+-    playerState_t p=snap.ps;
++    playerState_t p=snap.ps;TCP_SprintRestore(&p); /* audit-09: sprintExertTime is not sent; the stance bits carry it */
+     if(!demo){lagPredBegin(&p);int current=(int)SystemCall(CG_GETCURRENTCMDNUMBER);for(int i=current-CMD_BACKUP+1;i<=current;i++){if(i<0)continue;usercmd_t cmd;if(SystemCall(CG_GETUSERCMD,i,&cmd)&&cmd.serverTime>p.commandTime&&cmd.serverTime<=time){int before=p.commandTime;TCP_Move(&p,&cmd,trace);lagPredStep(&p,&cmd,before,i);TCP_PredRecord(&prediction,i,p.commandTime,p.origin);predicted++;}}lagPredEnd(&p);}
+     /* identClient carries the remote-player view delay for server antilag (tcp_lagcomp.h). */
+     SystemCall(CG_SETUSERCMDVALUE,demo?TCP_RIFLE_ID:netgraphUserCmdValue(),0,TCP_Float(qolSensitivity(&p)*aimSensZoomScale(&p)),demo?0:lagViewDelay); /* TCP_QOL: cg_adsSensitivity / cg_scopeSensitivity; 0.38.0: predicted aim state (was snap.ps, a round trip late), cg_aimSensMode */
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index e5b4fc4..1256567 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -524,7 +524,7 @@ static void linkPlayer(int n){
+     e->s.constantLight=(p->stats[STAT_HEALTH]>0&&((p->pm_flags&PMF_LADDER)||((p->pm_flags&TCP_PMF_VAULT)&&!(p->movementDir&128))))?TCP_ES_LADDER:0;
+     if(p->stats[STAT_HEALTH]>0&&(p->pm_flags&(8192|TCP_PMF_VAULT)))e->s.constantLight|=TCP_ES_MANTLE;
+     if(p->stats[STAT_HEALTH]>0&&clients[n].aim.aimed)e->s.constantLight|=TCP_ES_AIMED; /* third-person aim pose */
+-    if(p->stats[STAT_HEALTH]>0&&p->sprintExertTime)e->s.constantLight|=TCP_ES_SPRINT; /* 0.39.0 follow view: sprint pose */
++    if(p->stats[STAT_HEALTH]>0&&p->sprintExertTime==1)e->s.constantLight|=TCP_ES_SPRINT; /* 0.39.0 follow view: sprint pose */
+     if(p->stats[STAT_HEALTH]>0&&cqbSuppressed(n))e->s.constantLight|=TCP_ES_SUPPRESSED; /* 0.38.0 */
+     if(p->stats[STAT_HEALTH]>0&&levelTime<clients[n].defuseUntil)e->s.weapon=TCP_PLIERS_WEAPON;
+     /* Gear on the body: the primary rides the back while another weapon is in hand (TC:E CG_Player). */
+diff --git a/game_src/native/tcp_immersion2_cg.h b/game_src/native/tcp_immersion2_cg.h
+index 30d9019..7588395 100644
+--- a/game_src/native/tcp_immersion2_cg.h
++++ b/game_src/native/tcp_immersion2_cg.h
+@@ -78,7 +78,7 @@ static int im2BreathAt,im2BreathStep,im2SprintAt;static float im2BreathForce=-1.
+ static void im2Breath(const playerState_t *p,int time){
+     const int own=!(p->pm_flags&PMF_FOLLOW)&&p->pm_type==PM_NORMAL&&p->stats[STAT_HEALTH]>0;
+     const float speed=sqrtf(p->velocity[0]*p->velocity[0]+p->velocity[1]*p->velocity[1]);
+-    if(own&&p->sprintExertTime&&speed>150.f)im2SprintAt=time?time:1;
++    if(own&&p->sprintExertTime==1&&speed>150.f)im2SprintAt=time?time:1; /* audit-09: only a real sprint restarts the breathing */
+     const float stamina=fminf(1.f,fmaxf(0.f,p->stats[TCP_STAT_STAMINA]*5e-5f));
+     float want=own&&im2SprintAt&&time-im2SprintAt<9000&&time>=im2SprintAt?fminf(1.f,fmaxf(0.f,(.75f-stamina)/.6f)):0.f;
+     if(im2BreathForce>=0)want=im2BreathForce;
+diff --git a/game_src/native/tcp_move.c b/game_src/native/tcp_move.c
+index 2222317..759fd40 100644
+--- a/game_src/native/tcp_move.c
++++ b/game_src/native/tcp_move.c
+@@ -265,6 +265,9 @@ static int checkJump(playerState_t *p,usercmd_t *cmd,int ground){
+ }
+ /* FUN_3000beb0. TC:E's adrenaline/no-fatigue powerups and the forced drain
+  * flag (stats[9] & 0x80) have no source in the sandbox. */
++void TCP_SprintRestore(playerState_t *p){const int st=p->stats[TCP_STAT_STANCE];p->sprintExertTime=(st&TCP_STANCE_WINDED)?2:(st&TCP_STANCE_SPRINTING)?1:0;}
++static void sprintBits(playerState_t *p){int *st=&p->stats[TCP_STAT_STANCE];*st&=~(TCP_STANCE_WINDED|TCP_STANCE_SPRINTING);
++    if(p->sprintExertTime==2)*st|=TCP_STANCE_WINDED;else if(p->sprintExertTime==1)*st|=TCP_STANCE_SPRINTING;}
+ static void sprint(playerState_t *p,const usercmd_t *cmd,float dt){
+     int *t=&p->stats[TCP_STAT_STAMINA];
+     int moving=cmd->forwardmove||cmd->rightmove;
+@@ -278,7 +281,7 @@ static void sprint(playerState_t *p,const usercmd_t *cmd,float dt){
+         float ca=cost[a<0||a>5?0:a],cb=cost[b<0||b>5?0:b];if(cb>ca)ca+=(cb-ca)*.33f;
+         *t=(int)(*t-dt*ca*.5f);if(*t<0)*t=0;
+         if(!p->sprintExertTime)p->sprintExertTime=1;
+-        return;
++        sprintBits(p);return;
+     }
+     float speed=sqrtf(p->velocity[0]*p->velocity[0]+p->velocity[1]*p->velocity[1]);
+     /* 0.49b compares 120 u/s with its g_movespeed-scaled speeds (run 97.7: running recovers). Platinum's
+@@ -287,6 +290,7 @@ static void sprint(playerState_t *p,const usercmd_t *cmd,float dt){
+     if(speed<=(staminaRunRecover?120.f*127.f/76.f:120.f)||!moving||(p->pm_flags&PMF_DUCKED)||(p->eFlags&EF_PRONE)){*t=(int)(750*dt+*t);if(*t>5000)*t=(int)(750*dt+*t);}
+     if(*t>TCP_SPRINT_MAX)*t=TCP_SPRINT_MAX;
+     if(p->sprintExertTime!=2)p->sprintExertTime=0;
++    sprintBits(p);
+ }
+ /* 0.38.0: stamina on the fixed 8 ms grid of the command clock (see TCP_Move). */
+ static void staminaTick(playerState_t *p,const usercmd_t *c,int ms){if(p->commandTime/8!=(p->commandTime-ms)/8)sprint(p,c,.008f);}
+diff --git a/game_src/native/tcp_native.h b/game_src/native/tcp_native.h
+index 0424e8e..e6b0e79 100644
+--- a/game_src/native/tcp_native.h
++++ b/game_src/native/tcp_native.h
+@@ -88,6 +88,12 @@ enum { TCP_STAT_STAMINA=1, TCP_STAT_STANCE=2, TCP_STAT_PRIMARY_CLASS=3 };
+ #define TCP_STANCE_WALK_LATCH 0x4000
+ /* 0.38.0 CQB merge (experimental): this player may ledge grab (Commando perk); set by the server every think. */
+ #define TCP_STANCE_LEDGEGRAB 0x8
++/* audit-09 (0.39.1): the sprint state for the client. ps.sprintExertTime is not sent, so every frame's prediction
++ * started from 0: out of breath with the sprint key held, the client predicted a sprint the server did not run
++ * (gun in the sprint pose, position ahead of the server's). sprint() in tcp_move.c keeps the two bits; the client
++ * calls TCP_SprintRestore on the snapshot's state before it predicts. Older servers never set them. */
++#define TCP_STANCE_WINDED 0x10
++#define TCP_STANCE_SPRINTING 0x20
+ /* 0.38.0 CQB merge movement rules (serverinfo tcp_xp + the item table): corner sliding (CQB 0.223 AABB slide)
+  * and ledge grab for players with TCP_STANCE_LEDGEGRAB. Both modules set them the same way before TCP_Move. */
+ void TCP_SetCqbMoveRules(int cornerSlide,int ledgeGrab,int cqbTuning); /* cqbTuning: CQB Rules run +10 %, bulk +-7.5 %, gravity 880 */
+@@ -133,6 +139,7 @@ void TCP_SetVaultBlocklist(const char *text);
+ /* 0.37.1 sprint rules (serverinfo g_adsBlocksSprint, g_sprintNeedsStamina; 0 0 = TC:E 0.49b). */
+ void TCP_SetSprintRules(int adsBlocks,int needsStamina);
+ int TCP_SprintAllowed(const playerState_t *p);
++void TCP_SprintRestore(playerState_t *p);
+ int TCP_AdsBlocksSprint(void);
+ int TCP_WeaponClass(int weapon);
+ static inline int TCP_Float(float f){int i;memcpy(&i,&f,4);return i;}
+diff --git a/game_src/native/tcp_viewfx.h b/game_src/native/tcp_viewfx.h
+index 195dee1..4c293bb 100644
+--- a/game_src/native/tcp_viewfx.h
++++ b/game_src/native/tcp_viewfx.h
+@@ -129,7 +129,7 @@ static void vfxView(const playerState_t *p,int followed,int time,vec3_t origin,v
+     const int ground=p->groundEntityNum!=ENTITYNUM_NONE,ladder=(p->pm_flags&PMF_LADDER)!=0,
+               prone=(p->eFlags&(EF_PRONE|EF_PRONE_MOVING))!=0,ducked=(p->pm_flags&PMF_DUCKED)!=0;
+     const float xyspeed=sqrtf(p->velocity[0]*p->velocity[0]+p->velocity[1]*p->velocity[1]);
+-    const int sprinting=p->sprintExertTime&&ground&&xyspeed>5;
++    const int sprinting=p->sprintExertTime==1&&ground&&xyspeed>5; /* audit-09: 2 = out of breath (tcp_move.c), not a sprint: the gun stayed in the sprint pose while walking it off */
+     const int wasGround=vfx.ground;
+     /* Landing: the fall speed peaks just before touchdown. */
+     if(!ground&&!ladder){vfx.ground=0;if(-p->velocity[2]>vfx.fallSpeed)vfx.fallSpeed=-p->velocity[2];}
+diff --git a/game_src/tests/native_move_probe.c b/game_src/tests/native_move_probe.c
+index f4087f9..7d2574a 100644
+--- a/game_src/tests/native_move_probe.c
++++ b/game_src/tests/native_move_probe.c
+@@ -75,5 +75,24 @@ int main(void){
+      c.upmove=127;run(&p,&c,1);assert(p.velocity[2]>120&&p.velocity[2]<170);}
+     /* A non-default g_movespeed still scales proportionally (n/76). */
+     TCP_SetMoveSpeed(38);p=player();p.origin[0]=-5000;memset(&c,0,sizeof(c));c.forwardmove=127;run(&p,&c,125);assert(fabsf(p.velocity[0]-81.6f)<1);TCP_SetMoveSpeed(76);
+-    puts("PASS: stances, speeds, stamina, jump cost,  wall/floor bounds, repeated jump gate, landing recovery, stale command, bounded backlog, diagonal speed and view axes");return 0;
++    /* audit-09: ps.sprintExertTime is not sent, so the sprint state travels in two stance bits. Out of breath with the
++     * key held the server runs; a client that starts from the snapshot must take the same step (TCP_SprintRestore),
++     * where it used to predict a sprint. */
++    {TCP_SetSprintRules(1,1);playerState_t s=player();s.origin[0]=-9000;memset(&c,0,sizeof(c));c.forwardmove=127;c.buttons=BUTTON_SPRINT;
++     run(&s,&c,125);assert(s.sprintExertTime==1&&(s.stats[TCP_STAT_STANCE]&(TCP_STANCE_SPRINTING|TCP_STANCE_WINDED))==TCP_STANCE_SPRINTING);
++     {playerState_t snap=s;snap.sprintExertTime=0;TCP_SprintRestore(&snap);assert(snap.sprintExertTime==1);}
++     int n=0;while(s.sprintExertTime!=2&&n<4000){run(&s,&c,1);n++;}
++     assert(s.sprintExertTime==2&&(s.stats[TCP_STAT_STANCE]&(TCP_STANCE_SPRINTING|TCP_STANCE_WINDED))==TCP_STANCE_WINDED);
++     run(&s,&c,125);assert(fabsf(s.velocity[0]-163.2f)<1&&s.sprintExertTime==2&&s.stats[TCP_STAT_STAMINA]>0&&s.stats[TCP_STAT_STAMINA]<4000);
++     playerState_t srv=s,now=s,was=s;now.sprintExertTime=was.sprintExertTime=0;TCP_SprintRestore(&now);assert(now.sprintExertTime==2);
++     run(&srv,&c,5);run(&now,&c,5);run(&was,&c,5);
++     assert(fabsf(now.origin[0]-srv.origin[0])<.001f&&now.stats[TCP_STAT_STAMINA]==srv.stats[TCP_STAT_STAMINA]&&now.stats[TCP_STAT_STANCE]==srv.stats[TCP_STAT_STANCE]);
++     assert(was.origin[0]-srv.origin[0]>.5f); /* the old prediction sprints ahead of the server */
++     c.buttons=0;n=0;while(s.sprintExertTime==2&&n<4000){run(&s,&c,1);n++;}
++     assert(s.sprintExertTime==0&&!(s.stats[TCP_STAT_STANCE]&(TCP_STANCE_SPRINTING|TCP_STANCE_WINDED)));
++     TCP_SetSprintRules(1,0);s=player();s.origin[0]=-9000;s.stats[TCP_STAT_STAMINA]=0;c.buttons=BUTTON_SPRINT;run(&s,&c,20);
++     assert(s.sprintExertTime==1&&!(s.stats[TCP_STAT_STANCE]&TCP_STANCE_WINDED)); /* stamina rule off: nobody is out of breath */
++     s=player();TCP_SprintRestore(&s);assert(s.sprintExertTime==0); /* an older server never sets the bits */
++     TCP_SetSprintRules(0,0);memset(&c,0,sizeof(c));}
++    puts("PASS: stances, speeds, stamina, jump cost,  wall/floor bounds, repeated jump gate, landing recovery, stale command, bounded backlog, diagonal speed, view axes and the sprint state bits");return 0;
+ }

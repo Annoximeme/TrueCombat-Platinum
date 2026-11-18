@@ -1,0 +1,77 @@
+name: Virus scan
+
+# Checks every release with VirusTotal and records the SHA-256 of each download in
+# tools/website/scans.json, then rebuilds the site so the scan badge beside the
+# download buttons, the download page and the release pages show the result.
+# Runs when a release goes out, when fast_publish.py asks for a draft to be
+# checked before publishing, and once a day (late detections, unfinished scans).
+# Needs the repository secret VT_API_KEY (a free VirusTotal API key); without it
+# only the checksums are recorded.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Also scan this release, even as a draft (e.g. v0.38.0-sandbox34)"
+        required: false
+        default: ""
+      refresh:
+        description: "Re-read the newest release's results now"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "41 6 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: website
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          filter: blob:none
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Scan with VirusTotal
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
+          TAG: ${{ inputs.tag || github.event.release.tag_name }}
+          REFRESH: ${{ inputs.refresh && '--refresh' || '' }}
+        run: |
+          if [ -n "$TAG" ]; then
+            python tools/release/virusscan.py $REFRESH --tag "$TAG" --summary scan-result.json
+            { echo '### Virus scan'; echo '```json'; cat scan-result.json; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          else
+            python tools/release/virusscan.py $REFRESH
+          fi
+      - name: Rebuild the site
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python tools/website/release_sync.py
+          python tools/website/build.py
+          python tools/website/check_site.py
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- docs tools/website/scans.json; then
+            echo "Scan results unchanged."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs tools/website/scans.json
+          git commit -m "Website: update virus scan results"
+          for i in 1 2 3; do git push origin HEAD:main && exit 0; git pull --rebase origin main; done
+          exit 1
