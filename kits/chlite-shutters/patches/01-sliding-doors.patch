@@ -1,0 +1,92 @@
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index bb65c40..0d69657 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -111,7 +111,7 @@ static vec3_t captureOrigin;
+  * instead of trapping them. Scripted locks are not reconstructed. */
+ #define TCP_MAX_DOORS 64
+ typedef struct {int ent,flags,duration,wait,state,startTime,closeAt;float degrees,dir,current,from,to;int axis;vec3_t closedMins,closedMaxs;
+-    float angle,rot;int sndType,sndHave,soft;} door_t; /* angle: ET ent->angle (sign flips to open away); rot: REVERSE -1 */
++    float angle,rot;int sndType,sndHave,soft;int slide;vec3_t movedir,base;} door_t; /* angle: ET ent->angle (sign flips to open away); rot: REVERSE -1 */
+ #define DOOR_DURATION(d) ((d)->duration*((d)->soft?2:1)) /* FL_SOFTACTIVATE: half speed */
+ static const char *doorSndSuffix[8]={"open","endo","close","endc","openq","endoq","closeq","endcq"};
+ static door_t doors[TCP_MAX_DOORS];static int doorCount;
+@@ -219,11 +219,12 @@ static void loadScriptRemovals(void){
+ }
+ static int scriptRemoves(const char *scriptname){for(int i=0;i<scriptRemovedCount;i++)if(!_stricmp(scriptRemoved[i],scriptname))return 1;return 0;}
+ static void parseMap(void){
+-    char tok[MAX_TOKEN_CHARS],key[MAX_TOKEN_CHARS],cls[128],model[64];vec3_t origin;float yaw,degrees,speed,wait,height,phase,rnd,mass,size;int spawnflags,health,hasHealth;char track[64],btype[12],target[32],targetname[32],noise[64],scriptname[48];
++    char tok[MAX_TOKEN_CHARS],key[MAX_TOKEN_CHARS],cls[128],model[64];vec3_t origin;float yaw,degrees,speed,wait,height,phase,rnd,mass,size,lip;int spawnflags,health,hasHealth,lockKey;char track[64],btype[12],target[32],targetname[32],noise[64],scriptname[48];
+     int hasOrigin;
++    SystemCall(G_CVAR_REGISTER,NULL,"g_slidedoors","1",CVAR_ARCHIVE|CVAR_LATCH); /* 0.40: sliding func_door (0 = fixed walls, as before) */
+     while(token(tok,sizeof(tok))){
+         if(strcmp(tok,"{")){SystemCall(G_ERROR,"Native sandbox: malformed entity start");return;}
+-        cls[0]=model[0]=0;memset(origin,0,sizeof(origin));yaw=0;hasOrigin=0;degrees=speed=wait=0;spawnflags=0;health=0;hasHealth=0;snprintf(btype,sizeof(btype),"wood");target[0]=targetname[0]=noise[0]=scriptname[0]=track[0]=0;height=phase=rnd=0;mass=75;size=1;
++        cls[0]=model[0]=0;memset(origin,0,sizeof(origin));yaw=0;hasOrigin=0;degrees=speed=wait=0;lip=8;lockKey=0;spawnflags=0;health=0;hasHealth=0;snprintf(btype,sizeof(btype),"wood");target[0]=targetname[0]=noise[0]=scriptname[0]=track[0]=0;height=phase=rnd=0;mass=75;size=1;
+         for(;;){
+             if(!token(key,sizeof(key))){SystemCall(G_ERROR,"Native sandbox: truncated entities");return;}
+             if(!strcmp(key,"}"))break;
+@@ -237,6 +238,7 @@ static void parseMap(void){
+                           isfinite(origin[0]) && isfinite(origin[1]) && isfinite(origin[2]);
+             }
+             else if(!strcmp(key,"angle"))yaw=strtof(tok,NULL);
++            else if(!strcmp(key,"lip"))lip=strtof(tok,NULL);else if(!strcmp(key,"key"))lockKey=atoi(tok);
+             else if(!strcmp(key,"degrees"))degrees=strtof(tok,NULL);else if(!strcmp(key,"speed"))speed=strtof(tok,NULL);
+             else if(!strcmp(key,"wait"))wait=strtof(tok,NULL);else if(!strcmp(key,"spawnflags"))spawnflags=atoi(tok);
+             else if(!strcmp(key,"health")){health=atoi(tok);hasHealth=1;}else if(!strcmp(key,"type"))snprintf(btype,sizeof(btype),"%s",tok);
+@@ -291,7 +293,28 @@ static void parseMap(void){
+             d->axis=(spawnflags&4)?ROLL:(spawnflags&8)?PITCH:YAW;d->duration=speed>0?(int)speed:1000;d->wait=(int)((wait!=0?wait:2)*1000);
+             SystemCall(G_SET_BRUSH_MODEL,e,model);memcpy(d->closedMins,e->r.mins,sizeof(vec3_t));memcpy(d->closedMaxs,e->r.maxs,sizeof(vec3_t));e->r.contents=CONTENTS_SOLID;e->r.svFlags=SVF_BROADCAST;locate();SystemCall(G_LINKENTITY,e);brushes++;
+         }
+-        if(model[0]=='*'&&(!strcmp(cls,"func_static")||!strcmp(cls,"func_explosive")||!strcmp(cls,"func_door")||!strcmp(cls,"func_rotating"))){
++        /* 0.40: sliding func_door (ET g_mover.c SP_func_door): "angle" direction (-1 up, -2 down), moves its size along it
++         * less "lip" (default 8) at "speed" units/s (default 400), "wait" seconds open (default 2; TOGGLE 2 stays open).
++         * Used like a rotating door. Doors with a targetname or a "key" lock are opened by map scripts, which are not
++         * reconstructed, so they stay shut (static) as before. Before 0.40 every func_door was a fixed wall: Chlite's
++         * bomb site B shutters could never open. */
++        const int slider=model[0]=='*'&&!strcmp(cls,"func_door")&&!targetname[0]&&lockKey>=0&&doorCount<TCP_MAX_DOORS&&SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_slidedoors");
++        if(slider){
++            if(numEnts>=ENTITYNUM_WORLD){SystemCall(G_ERROR,"Native sandbox: too many brush entities");return;}
++            sharedEntity_t *e=&ents[numEnts].shared;door_t *d=&doors[doorCount++];memset(d,0,sizeof(*d));d->ent=numEnts;e->s.number=numEnts++;e->s.eType=ET_MOVER;
++            memcpy(e->r.currentOrigin,origin,sizeof(origin));memcpy(e->s.pos.trBase,origin,sizeof(origin));memcpy(d->base,origin,sizeof(origin));e->s.pos.trType=TR_STATIONARY;e->s.apos.trType=TR_STATIONARY;
++            SystemCall(G_SET_BRUSH_MODEL,e,model);memcpy(d->closedMins,e->r.mins,sizeof(vec3_t));memcpy(d->closedMaxs,e->r.maxs,sizeof(vec3_t));
++            if(yaw==-1){d->movedir[2]=1;}else if(yaw==-2){d->movedir[2]=-1;}else{d->movedir[0]=cosf(yaw*.01745329252f);d->movedir[1]=sinf(yaw*.01745329252f);}
++            float span=0;for(int k=0;k<3;k++)span+=fabsf(d->movedir[k]*(e->r.maxs[k]-e->r.mins[k]));span-=lip;if(span<8)span=8;
++            d->slide=1;d->flags=spawnflags&2;d->angle=span;d->rot=1.f;d->degrees=span;d->axis=YAW;
++            d->sndType=atoi(btype);
++            if(d->sndType>0)for(int k=0;k<8;k++){char path[80];fileHandle_t f=0;snprintf(path,sizeof(path),"sound/movers/doors/door%d_%s.wav",d->sndType,doorSndSuffix[k]);
++                if((int)SystemCall(G_FS_FOPEN_FILE,path,&f,FS_READ)>0)d->sndHave|=1<<k;if(f)SystemCall(G_FS_FCLOSE_FILE,f);}
++            d->duration=(int)(span/(speed>0?speed:400.f)*1000.f);if(d->duration<100)d->duration=100;d->wait=(int)((wait!=0?wait:2)*1000);if(wait<0)d->flags|=2;
++            e->r.contents=CONTENTS_SOLID;e->r.svFlags=SVF_BROADCAST;locate();SystemCall(G_LINKENTITY,e);brushes++;
++            char m[160];snprintf(m,sizeof(m),"TCP_NATIVE_SLIDEDOOR ent=%d dir=%.0f,%.0f,%.0f dist=%.0f ms=%d toggle=%d\n",d->ent,d->movedir[0],d->movedir[1],d->movedir[2],span,d->duration,(d->flags&2)!=0);print(m);
++        }
++        if(!slider&&model[0]=='*'&&(!strcmp(cls,"func_static")||!strcmp(cls,"func_explosive")||!strcmp(cls,"func_door")||!strcmp(cls,"func_rotating"))){
+             if(numEnts>=ENTITYNUM_WORLD){SystemCall(G_ERROR,"Native sandbox: too many brush entities");return;}
+             sharedEntity_t *e=&ents[numEnts].shared;e->s.number=numEnts++;e->s.eType=ET_MOVER;
+             memcpy(e->r.currentOrigin,origin,sizeof(origin));memcpy(e->s.pos.trBase,origin,sizeof(origin));e->s.pos.trType=TR_STATIONARY;
+@@ -309,6 +332,7 @@ static void parseMap(void){
+ }
+ static void doorApply(door_t *d,float angle){
+     sharedEntity_t *e=&ents[d->ent].shared;d->current=angle;
++    if(d->slide){for(int k=0;k<3;k++)e->r.currentOrigin[k]=e->s.pos.trBase[k]=d->base[k]+d->movedir[k]*angle;SystemCall(G_LINKENTITY,e);return;} /* 0.40 sliding door: current = distance moved */
+     memset(e->s.apos.trBase,0,sizeof(vec3_t));e->s.apos.trBase[d->axis]=angle;memcpy(e->r.currentAngles,e->s.apos.trBase,sizeof(vec3_t));
+     SystemCall(G_LINKENTITY,e);
+ }
+@@ -358,7 +382,7 @@ static void doorUse(door_t *d,int n,int soft){
+     d->soft=soft;
+     if(d->state==0){
+         /* IsBinaryMoverBlocked: the door's middle turned by +angle about the hinge; a player on that side flips it. */
+-        if(n>=0&&!(d->flags&32)&&d->axis==YAW){sharedEntity_t *e=&ents[d->ent].shared;vec3_t pos;
++        if(n>=0&&!d->slide&&!(d->flags&32)&&d->axis==YAW){sharedEntity_t *e=&ents[d->ent].shared;vec3_t pos;
+             for(int k=0;k<3;k++)pos[k]=(e->r.absmin[k]+e->r.absmax[k])*.5f;
+             const float yaw=atan2f(pos[1]-e->r.currentOrigin[1],pos[0]-e->r.currentOrigin[0])+d->angle*.01745329252f;
+             if(cosf(yaw)*(clients[n].ps.origin[0]-pos[0])+sinf(yaw)*(clients[n].ps.origin[1]-pos[1])>=0)d->angle=-d->angle;}
+@@ -2221,7 +2245,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+             if(use&&nonce[0]){if(!strcmp(nonce,lastNonce))use=0;else snprintf(lastNonce,sizeof(lastNonce),"%s",nonce);}
+             for(int i=0;i<doorCount;i++){door_t *d=&doors[i];sharedEntity_t *e=&ents[d->ent].shared;if(use)doorUse(d,-1,0);
+                 /* Probe the door's closed-position middle: solid while shut, open once swung. */
+-                vec3_t mid,zero={0,0,0},lo={-1,-1,-1},hi={1,1,1};for(int k=0;k<3;k++)mid[k]=e->r.currentOrigin[k]+(d->closedMins[k]+d->closedMaxs[k])*.5f;
++                vec3_t mid,zero={0,0,0},lo={-1,-1,-1},hi={1,1,1};for(int k=0;k<3;k++)mid[k]=(d->slide?d->base[k]:e->r.currentOrigin[k])+(d->closedMins[k]+d->closedMaxs[k])*.5f;
+                 trace_t tr;SystemCall(G_TRACE,&tr,mid,lo,hi,mid,ENTITYNUM_NONE,CONTENTS_SOLID);(void)zero;
+                 char m[200];snprintf(m,sizeof(m),"TCP_NATIVE_DOORINFO ent=%d state=%d angle=%.1f degrees=%.0f flags=%d blocked_mid=%d\n",d->ent,d->state,d->current,d->degrees,d->flags,(tr.startsolid||tr.allsolid)&&tr.entityNum==d->ent);print(m);}
+             return 1;}return 0;}

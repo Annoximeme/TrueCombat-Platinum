@@ -1,0 +1,48 @@
+diff -ru a/release_src/platinum_launcher_version.h b/release_src/platinum_launcher_version.h
+--- a/release_src/platinum_launcher_version.h	2026-11-18 20:22:57.413267534 +0000
++++ b/release_src/platinum_launcher_version.h	2026-11-18 20:22:57.414698068 +0000
+@@ -8,7 +8,7 @@
+ #define PLATINUM_LAUNCHER_MAJOR 3
+ #define PLATINUM_LAUNCHER_MINOR 0
+ #define PLATINUM_LAUNCHER_PATCH 3
+-#define PLATINUM_LAUNCHER_VERSION_TEXT "3.0.3"
++#define PLATINUM_LAUNCHER_VERSION_TEXT "3.0.4"
+ #define PLATINUM_LAUNCHER_VERSION L"" PLATINUM_LAUNCHER_VERSION_TEXT
+ /* Embedded as UTF-16 so tooling and the self-updater can confirm which launcher an EXE is. */
+ #define PLATINUM_LAUNCHER_MARKER L"TrueCombatPlatinumLauncher/" PLATINUM_LAUNCHER_VERSION_TEXT
+diff -ru a/release_src/platinum_main.h b/release_src/platinum_main.h
+--- a/release_src/platinum_main.h	2026-11-18 20:22:57.397944014 +0000
++++ b/release_src/platinum_main.h	2026-11-18 20:22:57.399466856 +0000
+@@ -269,7 +269,7 @@
+     wcscpy(s->label1,L"Read patch notes");wcscpy(s->label2,L"Watch the trailer");wcscpy(s->url2,UI_TRAILER);
+     uiNewsCount=3;
+     wcscpy(uiNews[0].tag,L"Patch notes");wcscpy(uiNews[0].title,L"What changed in this version");wcscpy(uiNews[0].text,L"Every fix and feature of the latest release.");uiNews[0].kind=0;uiNews[0].fallback=1;uiNews[0].map=2;
+-    wcscpy(uiNews[1].tag,L"Community");wcscpy(uiNews[1].title,L"Find a match on Discord");wcscpy(uiNews[1].text,L"Players, match nights and the developers.");wcscpy(uiNews[1].url,L"https://discord.gg/8kcHdg2Hch");uiNews[1].kind=2;uiNews[1].map=4;
++    wcscpy(uiNews[1].tag,L"Community");wcscpy(uiNews[1].title,L"Find a match on Discord");wcscpy(uiNews[1].text,L"Players, match nights and the developers.");wcscpy(uiNews[1].url,L"https://discord.gg/7Dg4yhhvGF");uiNews[1].kind=2;uiNews[1].map=4;
+     wcscpy(uiNews[2].tag,L"Support");wcscpy(uiNews[2].title,L"Keep the servers running");wcscpy(uiNews[2].text,L"TrueCombat: Platinum is free. See where support goes.");wcscpy(uiNews[2].url,SHELL_SUPPORT_URL);uiNews[2].kind=2;uiNews[2].map=1;
+ }
+ static void ui_feed_field(wchar_t *out,int capacity,const char *value){
+diff -ru a/release_src/platinum_setup.c b/release_src/platinum_setup.c
+--- a/release_src/platinum_setup.c	2026-11-18 20:22:57.389753735 +0000
++++ b/release_src/platinum_setup.c	2026-11-18 20:22:57.391948875 +0000
+@@ -659,7 +659,7 @@
+         wchar_t command[MAX_PATH+80];swprintf(command,MAX_PATH+80,L"\"%ls\" --uninstall",uninstaller);
+         reg_string(key,L"DisplayName",PRODUCT);reg_string(key,L"Publisher",L"Team Terminus");reg_string(key,L"DisplayIcon",exe);
+         reg_string(key,L"InstallLocation",gameDir);reg_string(key,L"UninstallString",command);reg_string(key,L"URLInfoAbout",L"https://truecombat.eu/");
+-        reg_string(key,L"HelpLink",L"https://discord.gg/8kcHdg2Hch");
++        reg_string(key,L"HelpLink",L"https://discord.gg/7Dg4yhhvGF");
+         reg_dword(key,L"NoModify",1);reg_dword(key,L"NoRepair",1);reg_dword(key,L"EstimatedSize",(DWORD)(GAME_BYTES/1024));
+         RegCloseKey(key);
+     }
+diff -ru a/release_src/platinum_shortcut.h b/release_src/platinum_shortcut.h
+--- a/release_src/platinum_shortcut.h	2026-11-18 20:22:57.405956910 +0000
++++ b/release_src/platinum_shortcut.h	2026-11-18 20:22:57.407352785 +0000
+@@ -93,7 +93,7 @@
+     wchar_t command[2400];swprintf(command,2400,L"\"%ls\" --uninstall",uninstaller);
+     shortcut_set_text(key,L"DisplayName",L"TrueCombat: Platinum");shortcut_set_text(key,L"Publisher",L"Team Terminus");shortcut_set_text(key,L"DisplayIcon",exe);
+     shortcut_set_text(key,L"InstallLocation",game);shortcut_set_text(key,L"UninstallString",command);shortcut_set_text(key,L"URLInfoAbout",L"https://truecombat.eu/");
+-    shortcut_set_text(key,L"HelpLink",L"https://discord.gg/8kcHdg2Hch");
++    shortcut_set_text(key,L"HelpLink",L"https://discord.gg/7Dg4yhhvGF");
+     shortcut_set_dword(key,L"NoModify",1);shortcut_set_dword(key,L"NoRepair",1);shortcut_set_dword(key,L"EstimatedSize",(DWORD)(2300LL*1024));
+     RegCloseKey(key);shortcut_note(L"apps_entry",L"restored");
+ }

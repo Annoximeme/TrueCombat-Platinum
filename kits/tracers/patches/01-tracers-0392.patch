@@ -1,0 +1,281 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 1de53fd..cfc355a 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -53,6 +53,7 @@ static void ffImpactWater(int shooter,const vec3_t end,int kind,int time);
+ /* 0.39.0 graphics immersion (tcp_gfx039_cg.h) */
+ static void gfxServerInfo(void);
+ static void gfxRoundWipe(void);
++static void trImpact(int shooter,int kind,const vec3_t at,int time); /* 0.39.2 tracers (tcp_tracer_cg.h) */
+ static void gfxBulletRipple(const vec3_t at,int effects,int time);
+ static void ffSmokeDisturb(vec3_t at,float radius,float *alpha);
+ static float ffHudK=1.f;static int ffHudScope;
+@@ -1214,6 +1215,7 @@ static void waterEvent(int number,int level,const vec3_t at){
+ #include "tcp_firefight_cg.h" /* 0.38.0 firefight immersion */
+ #include "tcp_immersion_cg.h" /* 0.38.0 immersion: weather, magazines, footprints, flinch, glass, round replay */
+ #include "tcp_gfx039_cg.h" /* 0.39.0 graphics immersion: ADS focus, water ripples, lens frost and drops, Ranked look */
++#include "tcp_tracer_cg.h" /* 0.39.2 occasional tracer rounds */
+ #include "tcp_voice_cg.h"
+ #include "tcp_voip_cg.h" /* native voice chat */
+ #include "tcp_hud_platinum_net_cg.h" /* Platinum HUD: net graph, connection card, voice list */
+@@ -1430,7 +1432,7 @@ static void roundWipe(const char *reason){
+     bombCgRoundReset(); /* 0.38.0 */
+     SystemCall(CG_R_CLEARDECALS);
+     memset(imParticles,0,sizeof(imParticles));memset(dbFrags,0,sizeof(dbFrags));memset(brCasings,0,sizeof(brCasings));
+-    memset(blasts,0,sizeof(blasts));memset(exParts,0,sizeof(exParts));ffRoundWipe();imsRoundWipe();gpRoundWipe();gfxRoundWipe();
++    memset(blasts,0,sizeof(blasts));memset(exParts,0,sizeof(exParts));ffRoundWipe();imsRoundWipe();gpRoundWipe();gfxRoundWipe();trWipe();
+     char m[128];snprintf(m,sizeof(m),"TCP_NATIVE_ROUNDWIPE reason=%s marks_cleared=%d\n",reason,imMarkCount);SystemCall(CG_PRINT,m);
+     imMarkCount=0;
+ }
+@@ -1739,7 +1741,7 @@ static void frame(int time,int demo){
+     imsReplayDraw(rd.vieworg,time);
+     for(int i=0;i<snap.numEntities;i++){
+         entityState_t *e=&snap.entities[i];if(e->eType!=ET_PLAYER||e->number<0||e->number>=MAX_GENTITIES)continue;int id=e->number;
+-        if(e->effect1Time>shotSequence[id]){shotStamp[id]=time;if(id!=p.clientNum){if(!(followed&&id==followed->number))ffShot(id,e->weapon,time); /* 0.38.0 gun smoke */vec3_t muzzle={e->pos.trBase[0],e->pos.trBase[1],e->pos.trBase[2]+40};if(e->constantLight&TCP_ES_SUPPRESSED)cqbQuietFire(e->weapon,id,muzzle,e->effect1Time);else{taFire(e->weapon,id,muzzle,rd.vieworg,followed&&id==followed->number,e->effect1Time,rifleSound);cqbReverb(e->weapon,id,muzzle,time);}if(!followed)taSnapFire(id,e->weapon,time);
++        if(e->effect1Time>shotSequence[id]){shotStamp[id]=time;if(id!=p.clientNum&&!replay){if(followed&&id==followed->number)trViewShot(id,e->weapon,(e->constantLight&TCP_ES_SUPPRESSED)!=0,shotSequence[id],e->effect1Time,&rd,0,time);else trRemoteShot(e,shotSequence[id],time);} /* 0.39.2 tracers */if(id!=p.clientNum){if(!(followed&&id==followed->number))ffShot(id,e->weapon,time); /* 0.38.0 gun smoke */vec3_t muzzle={e->pos.trBase[0],e->pos.trBase[1],e->pos.trBase[2]+40};if(e->constantLight&TCP_ES_SUPPRESSED)cqbQuietFire(e->weapon,id,muzzle,e->effect1Time);else{taFire(e->weapon,id,muzzle,rd.vieworg,followed&&id==followed->number,e->effect1Time,rifleSound);cqbReverb(e->weapon,id,muzzle,time);}if(!followed)taSnapFire(id,e->weapon,time);
+             if(taDebug.integer){char m[128];snprintf(m,sizeof(m),"TCP_NATIVE_FIRE_SOUND shooter=%d followed=%d shots=%d\n",id,followed&&id==followed->number,e->effect1Time-shotSequence[id]);SystemCall(CG_PRINT,m);}}}shotSequence[id]=e->effect1Time; /* C11: followed = own sound */
+     }
+     lagClientShots(time,p.clientNum);
+@@ -1759,7 +1761,7 @@ static void frame(int time,int demo){
+     qolScene(&p,demo); /* TCP_QOL: auto demo, taskbar flash, grenade path */
+     imFrame(time);vcFrame(snap.serverTime,time,p.clientNum);
+     ffScene(&p,rd.vieworg,time); /* 0.38.0 firefight: smoke, haze, dust, breath */
+-    imsScene(&p,rd.vieworg,time);gfxScene(&p,time); /* 0.39.0 */ /* 0.38.0 immersion: weather, magazines, glass edges, birds, replay recording */
++    imsScene(&p,rd.vieworg,time);gfxScene(&p,time); /* 0.39.0 */trScene(rd.vieworg,rd.viewaxis,time); /* 0.39.2 tracers */ /* 0.38.0 immersion: weather, magazines, glass edges, birds, replay recording */
+     /* The renderer tints what the world leaves undrawn when the view is in water. */
+     if(cgContents(rd.vieworg,0)&TCP_MASK_WATER)rd.rdflags|=RDF_UNDERWATER;
+     vxScene(&rd,&p,demo,time); /* photo mode and camera paths */
+@@ -1767,6 +1769,7 @@ static void frame(int time,int demo){
+     if(!followed&&!vxCamActive()&&!replay){drawScopeOverlay(&p,time);drawRedDot(&p,time);}
+     vfxSounds(&p,followed!=NULL,pmScopeView(&p,time),time);
+     int shots=p.stats[TCP_STAT_SHOTS],hits=p.stats[TCP_STAT_HITS];
++    if(!followed&&!replay&&((shots-oldShots)&65535)>0&&((shots-oldShots)&65535)<32768)trViewShot(p.clientNum,p.weapon,0,oldShots,oldShots+((shots-oldShots)&65535),&rd,p.holdable[TCP_HOLD_AIMED]!=0,time); /* 0.39.2 tracers */
+     if(((shots-oldShots)&65535)>0&&((shots-oldShots)&65535)<32768&&lagAckSound((shots-oldShots)&65535)){taFire(p.weapon,p.clientNum,rd.vieworg,rd.vieworg,1,shots,rifleSound);cqbReverb(p.weapon,p.clientNum,rd.vieworg,time);
+         if(!followed&&!pmThirdPerson.integer)ffLocalShot(&p,&rd,p.holdable[TCP_HOLD_AIMED]!=0,time);} /* 0.38.0 gun smoke */
+     /* 0.37.1: shell-by-shell shotguns (M590 Compact 32, M3 48, SPAS-12 49). The native server reloads one shell at a
+@@ -1937,7 +1940,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+     case CG_MOUSE_EVENT:if(vxCam.on){vxPhotoMouse((int)a0,(int)a1);return 0;}hudAspectOverride=phOn()?16.f/9.f:0;dmMouse((int)a0,(int)a1);hudAspectOverride=0;return 0;
+     case CG_EVENT_HANDLING:if((int)a0==CGAME_EVENT_NONE){dmClose();brClose();vxClose();}return 0;
+     case CG_WANTSBINDKEYS:case CG_CHECKEXECKEY:return 0;
+-    case CG_CONSOLE_COMMAND:{char cmd[64];SystemCall(CG_ARGV,0,cmd,sizeof(cmd));if(optCommand(cmd)||hfxCommand(cmd)||ffCommand(cmd)||imsCommand(cmd)||gfxConsole(cmd)||vxCommand(cmd,hudNow)||dmCommand(cmd)||obCommand(cmd)||qolCommand(cmd)||chatCommand(cmd)||brCommand(cmd)||pgCommand(cmd,hudNow)||paCommand(cmd))return 1;if(!strcmp(cmd,"toggleobjectivedesc")){showObjective=!showObjective;return 1;}if(!strcmp(cmd,"+scores")){showScores=1;hudScoreRequest=hudNow;SystemCall(CG_SENDCLIENTCOMMAND,"score");return 1;}if(!strcmp(cmd,"-scores")){showScores=0;return 1;}if(mapVoteConsoleCommand(cmd))return 1;if(vcConsoleCommand(cmd))return 1;/* Stock binds 1..9 send weaponbank: bank 4 holds grenades (ET layout), the others the rifle. */
++    case CG_CONSOLE_COMMAND:{char cmd[64];SystemCall(CG_ARGV,0,cmd,sizeof(cmd));if(optCommand(cmd)||hfxCommand(cmd)||ffCommand(cmd)||trCommand(cmd)||imsCommand(cmd)||gfxConsole(cmd)||vxCommand(cmd,hudNow)||dmCommand(cmd)||obCommand(cmd)||qolCommand(cmd)||chatCommand(cmd)||brCommand(cmd)||pgCommand(cmd,hudNow)||paCommand(cmd))return 1;if(!strcmp(cmd,"toggleobjectivedesc")){showObjective=!showObjective;return 1;}if(!strcmp(cmd,"+scores")){showScores=1;hudScoreRequest=hudNow;SystemCall(CG_SENDCLIENTCOMMAND,"score");return 1;}if(!strcmp(cmd,"-scores")){showScores=0;return 1;}if(mapVoteConsoleCommand(cmd))return 1;if(vcConsoleCommand(cmd))return 1;/* Stock binds 1..9 send weaponbank: bank 4 holds grenades (ET layout), the others the rifle. */
+         /* 0.37.0 (Gianni): 1 primary, 2 secondary, 3 knife (was the ET layout 1 knife, 2 pistol, 3 primary); 4 grenades. */
+         if(!strcmp(cmd,"weaponbank")||!strcmp(cmd,"weapnext")||!strcmp(cmd,"weapprev")){
+             char arg[16]="";const int primary=snap.ps.holdable[TCP_HOLD_PRIMARY]?snap.ps.holdable[TCP_HOLD_PRIMARY]:TCP_RIFLE_ID,secondary=snap.ps.holdable[TCP_HOLD_SECONDARY];
+diff --git a/game_src/native/tcp_impacts.h b/game_src/native/tcp_impacts.h
+index a748442..cef4d21 100644
+--- a/game_src/native/tcp_impacts.h
++++ b/game_src/native/tcp_impacts.h
+@@ -165,6 +165,7 @@ static void imEntity(const entityState_t *e,int self,int time){
+     if(e->number<0||e->number>=MAX_GENTITIES||imSerial[e->number]==e->effect1Time)return;
+     imSerial[e->number]=e->effect1Time;
+     if(e->eventParm!=TCP_IMPACT_FLYBY)taSnapImpact(e->otherEntityNum,e->weapon,e->pos.trBase,time); /* near miss (tcp_audio.h) */
++    if(e->eventParm!=TCP_IMPACT_FLYBY)trImpact(e->otherEntityNum,e->eventParm,e->pos.trBase,time); /* 0.39.2 tracers end where the round hit */
+     if(asDebug.integer){char m[160];snprintf(m,sizeof(m),"TCP_NATIVE_IMPACT kind=%d mat=%u target=%d self=%d at=%.0f,%.0f,%.0f\n",e->eventParm,((unsigned)e->time2)>>24,e->otherEntityNum2,self,e->pos.trBase[0],e->pos.trBase[1],e->pos.trBase[2]);SystemCall(CG_PRINT,m);}
+     imEvent(e->eventParm,e->pos.trBase,e->origin2,e->time2,e->weapon,e->otherEntityNum2,self,time);
+     ffImpactWater(e->otherEntityNum,e->pos.trBase,e->eventParm,time); /* 0.38.0 firefight: splash where the bullet went into water */
+diff --git a/game_src/native/tcp_tracer_cg.h b/game_src/native/tcp_tracer_cg.h
+new file mode 100644
+index 0000000..6d6c6ed
+--- /dev/null
++++ b/game_src/native/tcp_tracer_cg.h
+@@ -0,0 +1,187 @@
++/* GPL-3.0-or-later. 0.39.2 occasional tracer rounds.
++ * Rifles load a tracer now and then: here every fifth round of each shooter, picked from the shooter's shot counter
++ * (the same number on every client), so every player sees the same rounds glow and nobody can turn it off or on.
++ * Every firearm the same (Gianni: "Making it for every weapon makes it fair for all"), suppressed ones too; a shotgun
++ * shot shows one tracer, not one per pellet. Knife and grenades have none.
++ * The round is a short orange-red comet (bright flickering head, fading tail) that lights up a little past the
++ * muzzle, as real tracer compound does, and runs to where the shot ends (the impact when one is reported, else the
++ * first wall on the aim line). A round that strikes a hard surface at a shallow angle sometimes ricochets and flies
++ * off dimmer; a round that hits a player stops. Ricochet and flicker come from the shot number, so every client
++ * draws the same. The burning head lights up the walls and floor it passes with a small orange dynamic light (the
++ * nearest 6 tracers each frame), and glows briefly where it ends. Its shader is in the always-loaded
++ * zz_platinum_tracer.pk3 (not a remaster pak), so it looks the same in Classic and Remastered, with no cvar.
++ * Drawn from its own pool and poly buffers: nothing else can evict it. Client-side drawing only. */
++#ifndef TCP_TRACER_CG_H
++#define TCP_TRACER_CG_H
++
++#define TR_MAX 64
++#define TR_EVERY 5           /* one round in five */
++#define TR_SPEED 13000.f     /* how fast the streak travels on screen, units/s */
++#define TR_LEN 300.f         /* streak length */
++#define TR_GLOW 70           /* afterglow at the end, ms */
++#define TR_IGNITE 70.f       /* dark for the first units past the muzzle, then lights up over TR_IGNITE_RAMP */
++#define TR_IGNITE_RAMP 260.f
++#define TR_LIGHTS 6           /* dynamic lights a frame, nearest heads first */
++#define TR_LIGHT_RADIUS 100.f
++typedef struct {int start,shooter,retarget,seq,flesh;vec3_t from,to,dir,rdir;float len,rlen,speed;} trRound_t;
++static trRound_t trRounds[TR_MAX];static int trNext,trReady,trCount;
++static qhandle_t trShader;static polyBuffer_t trBuf[2];static int trFrame;
++static vec3_t trImpactAt[MAX_CLIENTS];static int trImpactTime[MAX_CLIENTS],trImpactFlesh[MAX_CLIENTS];
++static vec3_t trViewOrg,trViewAxis[3];static int trLastTime;
++
++static void trInit(void){
++    memset(trRounds,0,sizeof(trRounds));memset(trImpactTime,0,sizeof(trImpactTime));trNext=0;
++    trShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"gfx/platinum/tracer");trReady=1;
++}
++/* every firearm in the gear table */
++static int trWeapon(int weapon,int suppressed){(void)suppressed;return TCP_GearWeapon(weapon)!=NULL;}
++/* the shot with this counter value is a tracer: one in five, the shooter's number shifts the phase */
++static int trPick(int shooter,int seq){seq&=65535;return seq>0&&((seq+shooter*3)%TR_EVERY)==0;} /* the own counter arrives as 16 bits */
++/* the tracer among the shots (old, now], 0 if none: catch-up after a gap looks at the last 8 only */
++static int trAny(int shooter,int old,int now){
++    if(old<=0||now<=old)return 0; /* first sight of a shooter: no catch-up */
++    if(now-old>8)old=now-8;
++    for(int s=old+1;s<=now;s++)if(trPick(shooter,s))return s;
++    return 0;
++}
++/* the same 0..1 numbers on every client for one round */
++static float trHash(int seq,int shooter,int k){unsigned h=(unsigned)(seq&65535)*2654435761u^(unsigned)(shooter+7)*40503u^(unsigned)k*2246822519u;
++    h^=h>>15;h*=2246822519u;h^=h>>13;return (float)(h&0xffffff)/16777216.f;}
++/* the round ends at to; off a hard surface at a shallow angle it may glance off (never off a player) */
++static void trSetEnd(trRound_t *r,const vec3_t to){
++    VectorCopy(to,r->to);VectorSubtract(r->to,r->from,r->dir);r->len=sqrtf(DotProduct(r->dir,r->dir));r->rlen=0;
++    if(r->len<1.f){r->len=0;return;}VectorScale(r->dir,1.f/r->len,r->dir);
++    if(r->flesh||r->len<200.f)return;
++    trace_t tr;static const vec3_t z={0,0,0};vec3_t a,b;VectorMA(to,-12.f,r->dir,a);VectorMA(to,12.f,r->dir,b);
++    SystemCall(CG_CM_BOXTRACE,&tr,a,b,z,z,0,CONTENTS_SOLID);
++    if(tr.fraction>=1.f||tr.allsolid||(tr.surfaceFlags&(SURF_SKY|SURF_NOIMPACT)))return;
++    const float c=-DotProduct(r->dir,tr.plane.normal); /* 1 = head on, 0 = grazing */
++    const float chance=c<.35f?.4f:c<.6f?.12f:0.f;if(trHash(r->seq,r->shooter,1)>=chance)return;
++    /* mirror off the surface, lose most of the normal speed, scatter, and kick up a little */
++    for(int k=0;k<3;k++)r->rdir[k]=r->dir[k]+tr.plane.normal[k]*c*(1.3f+.7f*trHash(r->seq,r->shooter,2));
++    r->rdir[0]+=(trHash(r->seq,r->shooter,3)-.5f)*.5f;r->rdir[1]+=(trHash(r->seq,r->shooter,4)-.5f)*.5f;r->rdir[2]+=.15f+.35f*trHash(r->seq,r->shooter,5);
++    const float l=sqrtf(DotProduct(r->rdir,r->rdir));if(l<1e-3f)return;VectorScale(r->rdir,1.f/l,r->rdir);
++    vec3_t e;VectorMA(to,2.f,tr.plane.normal,a);VectorMA(a,180.f+420.f*trHash(r->seq,r->shooter,6),r->rdir,e);
++    SystemCall(CG_CM_BOXTRACE,&tr,a,e,z,z,0,CONTENTS_SOLID);
++    if(!tr.allsolid){vec3_t d;VectorSubtract(tr.endpos,a,d);r->rlen=sqrtf(DotProduct(d,d));}
++}
++/* one tracer from the muzzle along the aim (pitch/yaw in angles) */
++static void trSpawn(int shooter,int seq,const vec3_t muzzle,const vec3_t eye,const vec3_t forward,int time){
++    if(!trReady)trInit();
++    vec3_t end;trace_t tr;static const vec3_t z={0,0,0};
++    VectorMA(eye,8192.f,forward,end);SystemCall(CG_CM_BOXTRACE,&tr,eye,end,z,z,0,CONTENTS_SOLID);
++    trRound_t *r=&trRounds[trNext];trNext=(trNext+1)%TR_MAX;memset(r,0,sizeof(*r));
++    r->start=time;r->shooter=shooter;r->seq=seq;r->speed=TR_SPEED;VectorCopy(muzzle,r->from);
++    /* the impact can arrive in the same snapshot before the shot: use it */
++    if(shooter>=0&&shooter<MAX_CLIENTS&&trImpactTime[shooter]&&time-trImpactTime[shooter]<=60){r->flesh=trImpactFlesh[shooter];trSetEnd(r,trImpactAt[shooter]);r->retarget=1;}
++    else trSetEnd(r,tr.endpos);
++    trCount++;
++}
++/* impact event (tcp_impacts.h): the round really ends here (spread, a player hit) */
++static void trImpact(int shooter,int kind,const vec3_t at,int time){
++    if(shooter<0||shooter>=MAX_CLIENTS||kind==TCP_IMPACT_EXIT)return; /* the entry point, not where a penetrating round came out */
++    VectorCopy(at,trImpactAt[shooter]);trImpactTime[shooter]=time;trImpactFlesh[shooter]=kind==TCP_IMPACT_FLESH;
++    if(!trReady)return;
++    for(int i=0;i<TR_MAX;i++){trRound_t *r=&trRounds[i];
++        if(r->len>0&&!r->retarget&&r->shooter==shooter&&time-r->start<=120){r->flesh=kind==TCP_IMPACT_FLESH;trSetEnd(r,at);r->retarget=1;}}
++}
++/* a remote shooter fired (tcp_cgame.c shot loop): the round leaves from the third-person muzzle */
++static void trRemoteShot(const entityState_t *e,int old,int time){
++    const int id=e->number;
++    int seq;if(!trWeapon(e->weapon,(e->constantLight&TCP_ES_SUPPRESSED)!=0)||!(seq=trAny(id,old,e->effect1Time)))return;
++    vec3_t eye,fwd,right,up;VectorCopy(e->pos.trBase,eye);
++    eye[2]+=(e->eFlags&EF_PRONE)?TCP_PRONE_VIEWHEIGHT:(e->eFlags&EF_CROUCHING)?TCP_CROUCH_VIEWHEIGHT:TCP_STAND_VIEWHEIGHT;
++    {const float p=e->apos.trBase[0]*.01745329252f,y=e->apos.trBase[1]*.01745329252f,sp=sinf(p),cp=cosf(p),sy=sinf(y),cy=cosf(y);
++     fwd[0]=cp*cy;fwd[1]=cp*sy;fwd[2]=-sp;right[0]=sy;right[1]=-cy;right[2]=0;up[0]=sp*cy;up[1]=sp*sy;up[2]=cp;}
++    vec3_t muzzle;for(int k=0;k<3;k++)muzzle[k]=eye[k]+fwd[k]*36.f+right[k]*6.f-up[k]*6.f;
++    trSpawn(id,seq,muzzle,eye,fwd,time);
++}
++/* the own or the followed player's shots: from the first-person muzzle */
++static void trViewShot(int id,int weapon,int suppressed,int old,int now,const refdef_t *rd,int aimed,int time){
++    int seq;if(!trWeapon(weapon,suppressed)||!(seq=trAny(id,old,now)))return;
++    vec3_t muzzle;for(int k=0;k<3;k++)muzzle[k]=rd->vieworg[k]+rd->viewaxis[0][k]*34.f-rd->viewaxis[1][k]*(aimed?0.f:7.f)-rd->viewaxis[2][k]*(aimed?3.f:7.f);
++    trSpawn(id,seq,muzzle,rd->vieworg,rd->viewaxis[0],time);
++}
++static void trWipe(void){if(trReady)memset(trRounds,0,sizeof(trRounds));memset(trImpactTime,0,sizeof(trImpactTime));}
++/* a point on the path: x along the shot, past its end along the ricochet */
++static void trAt(const trRound_t *r,float x,vec3_t o){if(x<=r->len)VectorMA(r->from,x,r->dir,o);else VectorMA(r->to,fminf(x-r->len,r->rlen),r->rdir,o);}
++static float trIgnite(float x){return fminf(1.f,fmaxf(0.f,(x-TR_IGNITE)/TR_IGNITE_RAMP));}
++
++static void trQuad(polyBuffer_t *b,const vec3_t a,const vec3_t c,const vec3_t side,float wide,const byte cola[4],const byte colc[4]){
++    if(b->numVerts+4>MAX_PB_VERTS)return;
++    const int v=b->numVerts;static const float st[4][2]={{0,0},{1,0},{1,1},{0,1}};
++    for(int i=0;i<4;i++){const float *p=(i==0||i==3)?a:c;const float s=(i>=2)?wide:-wide;
++        for(int k=0;k<3;k++)b->xyz[v+i][k]=p[k]+side[k]*s;b->xyz[v+i][3]=1.f;
++        b->st[v+i][0]=st[i][0];b->st[v+i][1]=st[i][1];memcpy(b->color[v+i],(i==0||i==3)?cola:colc,4);}
++    const int n=b->numIndicies;b->indicies[n]=v;b->indicies[n+1]=v+1;b->indicies[n+2]=v+2;b->indicies[n+3]=v;b->indicies[n+4]=v+2;b->indicies[n+5]=v+3;
++    b->numVerts+=4;b->numIndicies+=6;
++}
++/* once per rendered frame, after the other effects */
++static void trScene(const vec3_t vieworg,vec3_t viewaxis[3],int time){
++    VectorCopy(vieworg,trViewOrg);for(int k=0;k<3;k++)VectorCopy(viewaxis[k],trViewAxis[k]);trLastTime=time;
++    if(!trReady||!trShader)return;
++    polyBuffer_t *b=&trBuf[trFrame];trFrame^=1;b->numVerts=0;b->numIndicies=0;b->shader=trShader;
++    vec3_t lAt[TR_LIGHTS];float lK[TR_LIGHTS],lD[TR_LIGHTS];int nl=0; /* the nearest lit heads this frame */
++    for(int i=0;i<TR_MAX;i++){trRound_t *r=&trRounds[i];if(r->len<=0)continue;
++        const float age=(float)(time-r->start)*.001f;if(age<0){r->len=0;continue;}
++        const float total=r->len+r->rlen,head=age*r->speed,glow=(float)TR_GLOW*.001f*r->speed;
++        if(head>total+TR_LEN+glow){r->len=0;continue;}
++        /* head and tail along the path; at the end the head stops and the tail catches up, then a short glow */
++        const float h=fminf(head,total),t=fmaxf(0.f,fminf(head-TR_LEN,total));
++        float fade=1.f;if(head>total+TR_LEN)fade=1.f-(head-total-TR_LEN)/glow;
++        const float flick=.82f+.18f*sinf((float)time*.071f+(float)r->seq*1.7f); /* burning compound */
++        { /* light from the head while it flies, and a short glow on the surface where it ends */
++            vec3_t hp;trAt(r,h,hp);const float k=fade*trIgnite(h)*(h>r->len?.6f:1.f)*flick;
++            if(k>.05f){vec3_t dv;VectorSubtract(hp,vieworg,dv);const float dd=DotProduct(dv,dv);int slot=-1;
++                if(nl<TR_LIGHTS)slot=nl++;else{int far=0;for(int q=1;q<TR_LIGHTS;q++)if(lD[q]>lD[far])far=q;if(dd<lD[far])slot=far;}
++                if(slot>=0){VectorCopy(hp,lAt[slot]);lK[slot]=k;lD[slot]=dd;}}
++        }
++        /* split at the ricochet point so each piece is straight; the ricochet burns dimmer */
++        float cut[3]={t,h,h};int pieces=1;if(r->rlen>0&&t<r->len&&h>r->len){cut[1]=r->len;cut[2]=h;pieces=2;}
++        for(int pc=0;pc<pieces;pc++){const float x0=cut[pc],x1=fmaxf(cut[pc+1],x0+1.f);
++            vec3_t a,c,mid,d,side,pdir;trAt(r,x0,a);trAt(r,x1,c);
++            if(h-t<2.f){trAt(r,fmaxf(0.f,total-2.f),a);trAt(r,total,c);}
++            VectorSubtract(c,a,pdir);{const float l=sqrtf(DotProduct(pdir,pdir));if(l<1e-3f)continue;VectorScale(pdir,1.f/l,pdir);}
++            for(int k=0;k<3;k++)mid[k]=(a[k]+c[k])*.5f;
++            VectorSubtract(mid,vieworg,d);const float dist=sqrtf(DotProduct(d,d));if(dist<1.f)continue;VectorScale(d,1.f/dist,d);
++            side[0]=d[1]*pdir[2]-d[2]*pdir[1];side[1]=d[2]*pdir[0]-d[0]*pdir[2];side[2]=d[0]*pdir[1]-d[1]*pdir[0];
++            const float sl=sqrtf(DotProduct(side,side));if(sl<1e-3f)continue;VectorScale(side,1.f/sl,side);
++            /* never thinner than about a pixel and a half, so a far tracer still reads */
++            const float core=fmaxf(.8f,dist*.0014f),halo=core*3.4f;
++            /* alpha at each end: ignition near the muzzle, dimmer after a ricochet, tail fades toward the back */
++            const float ka=fade*trIgnite(x0)*(x0>r->len?.6f:1.f)*.35f,kc=fade*trIgnite(x1)*(x1>r->len?.6f:1.f)*(pc==pieces-1?flick:1.f);
++            const byte ga[4]={255,(byte)(60.f*ka),(byte)(18.f*ka),(byte)(140.f*ka)},gc[4]={255,(byte)(70.f*kc),(byte)(22.f*kc),(byte)(150.f*kc)};
++            const byte ca[4]={255,(byte)(120.f*ka+30.f),(byte)(60.f*ka+15.f),(byte)(255.f*ka)},cc[4]={255,(byte)(170.f*kc+30.f),(byte)(95.f*kc+20.f),(byte)(255.f*kc)};
++            trQuad(b,a,c,side,halo,ga,gc);trQuad(b,a,c,side,core,ca,cc);
++            /* the burning head: a short bright blob on the front of the last piece */
++            if(pc==pieces-1&&head<total+TR_LEN&&kc>.05f){vec3_t hb,hf;const float hl=fmaxf(6.f,core*8.f);VectorMA(c,-hl,pdir,hb);VectorMA(c,core*1.5f,pdir,hf);
++                const byte hc[4]={255,(byte)(200.f*kc+40.f),(byte)(140.f*kc+30.f),(byte)(255.f*kc)},hz[4]={255,120,60,0};
++                trQuad(b,hb,hf,side,core*2.2f,hz,hc);}
++        }
++    }
++    if(b->numVerts)SystemCall(CG_R_ADDPOLYBUFFERTOSCENE,b);
++    for(int q=0;q<nl;q++)SystemCall(CG_R_ADDLIGHTTOSCENE,lAt[q],TCP_Float(TR_LIGHT_RADIUS*(.75f+.25f*lK[q])),TCP_Float(.6f*lK[q]),TCP_Float(1.f),TCP_Float(.42f),TCP_Float(.14f),0,0);
++}
++/* developer preview: "trTest [n] [d] [slow] [ground]" fires n tracers (default 3) across the view, d units ahead (default
++ * 600); slow (0.01..1) slows them down for a screenshot; ground aims them at the floor ahead to show ricochets */
++static int trCommand(const char *cmd){
++    if(_stricmp(cmd,"trTest"))return 0;
++    char a[32];int n=3;float dd=600.f;
++    if(SystemCall(CG_ARGC)>1){SystemCall(CG_ARGV,1,a,sizeof(a));n=atoi(a);if(n<1)n=1;if(n>12)n=12;}
++    if(SystemCall(CG_ARGC)>2){SystemCall(CG_ARGV,2,a,sizeof(a));dd=(float)atof(a);}
++    float slow=1.f;if(SystemCall(CG_ARGC)>3){SystemCall(CG_ARGV,3,a,sizeof(a));slow=(float)atof(a);if(slow<.01f)slow=.01f;if(slow>1.f)slow=1.f;}
++    int ground=0;if(SystemCall(CG_ARGC)>4){SystemCall(CG_ARGV,4,a,sizeof(a));ground=!_stricmp(a,"ground");}
++    /* from a shooter beside and a little ahead of the camera, fanned across the view, dd = how far ahead they aim */
++    for(int i=0;i<n;i++){vec3_t from,to,dir;const float fan=(float)(i-(n-1)*.5f);
++        for(int j=0;j<3;j++){from[j]=trViewOrg[j]+trViewAxis[0][j]*60.f+trViewAxis[1][j]*70.f-trViewAxis[2][j]*12.f;
++            to[j]=trViewOrg[j]+trViewAxis[0][j]*dd-trViewAxis[1][j]*dd*(.25f+.12f*fan)+trViewAxis[2][j]*dd*.04f*fan;}
++        if(ground){vec3_t p,dn;trace_t ft;static const vec3_t z0={0,0,0}; /* crossing the view right to left, glancing off the floor ahead */
++            for(int j=0;j<3;j++){p[j]=trViewOrg[j]+trViewAxis[0][j]*(dd+30.f*fan)+trViewAxis[1][j]*60.f;from[j]=trViewOrg[j]+trViewAxis[0][j]*(dd*2.2f+30.f*fan)-trViewAxis[1][j]*160.f;}
++            VectorCopy(p,dn);dn[2]-=400.f;SystemCall(CG_CM_BOXTRACE,&ft,p,dn,z0,z0,0,CONTENTS_SOLID);VectorCopy(ft.endpos,to);from[2]=to[2]+40.f;}
++        VectorSubtract(to,from,dir);{const float l=sqrtf(DotProduct(dir,dir));if(l<1.f)continue;VectorScale(dir,1.f/l,dir);}
++        trSpawn(-1,i*5+ground,from,from,dir,trLastTime-i*15);trRounds[(trNext+TR_MAX-1)%TR_MAX].speed*=slow;
++        if(ground){char m[80];snprintf(m,sizeof(m),"TCP_TRACER ground %d len %.0f ricochet %.0f\n",i,trRounds[(trNext+TR_MAX-1)%TR_MAX].len,trRounds[(trNext+TR_MAX-1)%TR_MAX].rlen);SystemCall(CG_PRINT,m);}}
++    char m[96];{const trRound_t *r=&trRounds[(trNext+TR_MAX-1)%TR_MAX];snprintf(m,sizeof(m),"TCP_TRACER test %d at %.0f (total %d) last len %.0f ricochet %.0f\n",n,dd,trCount,r->len,r->rlen);}SystemCall(CG_PRINT,m);
++    return 1;
++}
++#endif
+diff --git a/reference/etlegacy/src/server/sv_anticheat.c b/reference/etlegacy/src/server/sv_anticheat.c
+index c6b58df..ea213ba 100644
+--- a/reference/etlegacy/src/server/sv_anticheat.c
++++ b/reference/etlegacy/src/server/sv_anticheat.c
+@@ -357,6 +357,7 @@ static const struct
+ 	{ "tcetest/zz_platinum_audio",     "1669797338"  }, /* 0.37.1 audio pak (686bf7ae, audio-pass assets-0371); was -539784884 since 0.36.0. 0.36.0 audio pass: loudness-matched originals + crack/whizz/thump/tinnitus; tools/audio_master.py */
+ 	{ "tcetest/zz_platinum_sound039",  "1771090620"  }, /* 0.39.0 sound fix: Northport harbour ambience (harboramb2.wav, missing since TC:E) + neutral replacement for windowsxp_logoff.wav */
+ 	{ "tcetest/zz_platinum_immersion",   "-1545498902"   }, /* 0.38.0 firefight immersion client pak (boot print, leaf, bird, body blood/dirt) */
++	{ "tcetest/zz_platinum_tracer",      "-1987474557" }, /* 0.39.2 occasional tracer rounds: tracer shader and texture (client only) */
+ 	{ "tcetest/zz_platinum_cqb",         "1868977007"   }, /* 0.38.0 CQB merge (optics, holes, radio, reverb); experimental */
+ 	{ "tcetest/cqb_map_harbour",         "-348981911"    }, /* 0.38.0 CQB map Harbour (experimental, g_experimental 1) */
+ 	{ "tcetest/zz_platinum_cqbweapons",  "302156147"    }, /* 0.38.0 CQB experimental weapons */
