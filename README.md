@@ -5,7 +5,7 @@ with an OpenGL Safe Start option and optional NVIDIA DLSS/DLAA.
 
 Developed by RaziC* — Team Terminus.
 
-**Website:** [truecombat.eu](https://truecombat.eu) · **Discord:** [discord.gg/8kcHdg2Hch](https://discord.gg/8kcHdg2Hch)
+**Website:** [truecombat.eu](https://truecombat.eu) · **Discord:** [discord.gg/7Dg4yhhvGF](https://discord.gg/7Dg4yhhvGF)
 
 ## Download
 

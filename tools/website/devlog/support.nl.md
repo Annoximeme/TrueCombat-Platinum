@@ -31,7 +31,7 @@ Voordat er ook maar één knop bij kwam, schreven we op wat steunen nooit zou do
 
 Je kunt een eenmalige bijdrage van elk bedrag geven, met kaart of PayPal, zonder een account aan te maken. Help je liever elke maand, dan is er een kleine maandelijkse optie die je kunt stopzetten wanneer je wilt. Ko-fi verwerkt de betaling, dus wij zien je kaartgegevens nooit.
 
-Als bedankje krijgen supporters de Supporter-rol op onze [Discord](https://discord.gg/8kcHdg2Hch). Het is een bedankje en niets meer. Het heeft geen effect in het spel, op de servers of bij het samenstellen van teams.
+Als bedankje krijgen supporters de Supporter-rol op onze [Discord](https://discord.gg/7Dg4yhhvGF). Het is een bedankje en niets meer. Het heeft geen effect in het spel, op de servers of bij het samenstellen van teams.
 
 ## Waarom Ko-fi
 

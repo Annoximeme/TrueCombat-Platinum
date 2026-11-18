@@ -146,4 +146,4 @@ Die staan gepland voor de volgende update, en ze verschijnen wanneer ze door dez
 
 Bijna alles in deze update begon bij een speler: een vraag naar ingebouwde voice, een klacht dat bots robotachtig aanvoelden, een vraag over een groeiende installatiemap. Bedankt om te spelen, te melden en geduldig te zijn terwijl we het goed kregen.
 
-Voelt er iets niet goed aan in 0.36.0, druk dan op F12 in de game of laat het ons weten op [Discord](https://discord.gg/8kcHdg2Hch). Tot op de servers.
+Voelt er iets niet goed aan in 0.36.0, druk dan op F12 in de game of laat het ons weten op [Discord](https://discord.gg/7Dg4yhhvGF). Tot op de servers.

@@ -64,4 +64,4 @@ Daarna volgen de grotere functies: 2D-replays van matches met automatische hoogt
 
 ## Bedankt
 
-Elk punt hierboven komt van spelers die de tijd namen om te spelen, op te letten en het ons te vertellen. Dat soort testen kunnen we niet alleen, en daarom bevat de volgende patch zoveel fixes. Zie je nog iets, of is een van deze problemen voor jou belangrijker dan de rest, laat het ons weten op [Discord](https://discord.gg/8kcHdg2Hch). De [roadmap](index.html#roadmap) toont wat er klaar is naarmate we vorderen.
+Elk punt hierboven komt van spelers die de tijd namen om te spelen, op te letten en het ons te vertellen. Dat soort testen kunnen we niet alleen, en daarom bevat de volgende patch zoveel fixes. Zie je nog iets, of is een van deze problemen voor jou belangrijker dan de rest, laat het ons weten op [Discord](https://discord.gg/7Dg4yhhvGF). De [roadmap](index.html#roadmap) toont wat er klaar is naarmate we vorderen.
