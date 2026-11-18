@@ -1,0 +1,54 @@
+--- a/game_src/native/tcp_tracer_cg.h
++++ b/game_src/native/tcp_tracer_cg.h
+@@ -31,12 +31,12 @@
+ 
+ static void trInit(void){
+     memset(trRounds,0,sizeof(trRounds));memset(trImpactTime,0,sizeof(trImpactTime));trNext=0;
+-    trShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"gfx/platinum/tracer");trPremul=0;
+-    /* A client ignores a pak the server does not have on a pure server (sv_pure 1, FS_PakIsPure), and the renderer
+-     * then returns 0 for our shader: fall back to the stock additive flare in pak0 (on every server), with the fade
+-     * baked into the vertex colour since that shader has no alphaGen vertex. */
+-    if(!trShader){trShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"flareShader");trPremul=1;}
+-    {char m[96];snprintf(m,sizeof(m),"TCP_TRACER shader %d%s\n",(int)trShader,trPremul?" (stock flare, tracer pak not loaded)":"");SystemCall(CG_PRINT,m);}
++    /* 0.39.2 fix3: the stock additive flare from pak0 (blendFunc GL_SRC_ALPHA GL_ONE, rgbGen vertex), the shader the
++     * explosion flare already uses on every PC, with the fade baked into the vertex colour. The tracer pak's own
++     * shader drew nothing on the Windows release client although the polys reached the renderer, so it is only used
++     * when asked for ("trTest n d slow mode gfx/platinum/tracer"). */
++    trShader=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"flareShader");trPremul=1;
++    {char m[96];snprintf(m,sizeof(m),"TCP_TRACER shader %d (stock flare)\n",(int)trShader);SystemCall(CG_PRINT,m);}
+     trReady=1;
+ }
+ /* every firearm in the gear table */
+@@ -155,7 +155,7 @@
+             /* never thinner than about a pixel and a half, so a far tracer still reads */
+             const float core=fmaxf(.8f,dist*.0014f),halo=core*3.4f;
+             /* alpha at each end: ignition near the muzzle, dimmer after a ricochet, tail fades toward the back */
+-            const float ka=fade*trIgnite(x0)*(x0>r->len?.6f:1.f)*.35f,kc=fade*trIgnite(x1)*(x1>r->len?.6f:1.f)*(pc==pieces-1?flick:1.f);
++            const float ka=fade*trIgnite(x0)*(x0>r->len?.6f:1.f)*.5f,kc=fade*trIgnite(x1)*(x1>r->len?.6f:1.f)*(pc==pieces-1?flick:1.f);
+             const byte ga[4]={255,(byte)(60.f*ka),(byte)(18.f*ka),(byte)(140.f*ka)},gc[4]={255,(byte)(70.f*kc),(byte)(22.f*kc),(byte)(150.f*kc)};
+             const byte ca[4]={255,(byte)(120.f*ka+30.f),(byte)(60.f*ka+15.f),(byte)(255.f*ka)},cc[4]={255,(byte)(170.f*kc+30.f),(byte)(95.f*kc+20.f),(byte)(255.f*kc)};
+             trQuad(b,a,c,side,halo,ga,gc);trQuad(b,a,c,side,core,ca,cc);
+@@ -173,10 +173,10 @@
+         SystemCall(CG_R_ADDPOLYTOSCENE,trShader,4,pv);}
+     /* for 10 s after trTest: once a second, what is alive and what was drawn */
+     if(time<trDbgUntil&&time-trDbgLast>=1000){trDbgLast=time;int alive=0,first=-1;for(int i=0;i<TR_MAX;i++)if(trRounds[i].len>0){alive++;if(first<0)first=i;}
+-        char m[240];if(first>=0){const trRound_t *r=&trRounds[first];const float age=(float)(time-r->start)*.001f,hd=age*r->speed,tot=r->len+r->rlen;
+-            snprintf(m,sizeof(m),"TCP_TRACER frame alive %d verts %d shader %d premul %d | age %.3f head %.0f total %.0f speed %.0f | v0 %d,%d,%d,%d v4 %d,%d,%d,%d\n",alive,b->numVerts,(int)trShader,trPremul,age,hd,tot,r->speed,
++        char m[300];if(first>=0){const trRound_t *r=&trRounds[first];const float age=(float)(time-r->start)*.001f,hd=age*r->speed,tot=r->len+r->rlen;
++            snprintf(m,sizeof(m),"TCP_TRACER frame alive %d verts %d shader %d premul %d | age %.3f head %.0f total %.0f speed %.0f | v0 %d,%d,%d,%d v4 %d,%d,%d,%d head %d,%d,%d,%d\n",alive,b->numVerts,(int)trShader,trPremul,age,hd,tot,r->speed,
+                 b->numVerts>0?b->color[0][0]:-1,b->numVerts>0?b->color[0][1]:-1,b->numVerts>0?b->color[0][2]:-1,b->numVerts>0?b->color[0][3]:-1,
+-                b->numVerts>4?b->color[4][0]:-1,b->numVerts>4?b->color[4][1]:-1,b->numVerts>4?b->color[4][2]:-1,b->numVerts>4?b->color[4][3]:-1);}
++                b->numVerts>4?b->color[4][0]:-1,b->numVerts>4?b->color[4][1]:-1,b->numVerts>4?b->color[4][2]:-1,b->numVerts>4?b->color[4][3]:-1,b->numVerts>1?b->color[b->numVerts-2][0]:-1,b->numVerts>1?b->color[b->numVerts-2][1]:-1,b->numVerts>1?b->color[b->numVerts-2][2]:-1,b->numVerts>1?b->color[b->numVerts-2][3]:-1);}
+         else snprintf(m,sizeof(m),"TCP_TRACER frame alive 0 verts %d time %d\n",b->numVerts,time);
+         SystemCall(CG_PRINT,m);}
+     for(int q=0;q<nl;q++)SystemCall(CG_R_ADDLIGHTTOSCENE,lAt[q],TCP_Float(TR_LIGHT_RADIUS*(.75f+.25f*lK[q])),TCP_Float(.6f*lK[q]),TCP_Float(1.f),TCP_Float(.42f),TCP_Float(.14f),0,0);
+@@ -191,6 +191,9 @@
+     if(SystemCall(CG_ARGC)>2){SystemCall(CG_ARGV,2,a,sizeof(a));dd=(float)atof(a);}
+     float slow=1.f;if(SystemCall(CG_ARGC)>3){SystemCall(CG_ARGV,3,a,sizeof(a));slow=(float)atof(a);if(slow<.01f)slow=.01f;if(slow>1.f)slow=1.f;}
+     int ground=0;if(SystemCall(CG_ARGC)>4){SystemCall(CG_ARGV,4,a,sizeof(a));ground=!_stricmp(a,"ground");}
++    if(SystemCall(CG_ARGC)>5){char sh[64];SystemCall(CG_ARGV,5,sh,sizeof(sh));if(!trReady)trInit(); /* diagnosis: draw with another shader */
++        const qhandle_t h=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,sh);if(h){trShader=h;trPremul=_stricmp(sh,"gfx/platinum/tracer")!=0;}
++        char m[128];snprintf(m,sizeof(m),"TCP_TRACER shader %s = %d premul %d\n",sh,(int)h,trPremul);SystemCall(CG_PRINT,m);}
+     /* from a shooter beside and a little ahead of the camera, fanned across the view, dd = how far ahead they aim */
+     for(int i=0;i<n;i++){vec3_t from,to,dir;const float fan=(float)(i-(n-1)*.5f);
+         for(int j=0;j<3;j++){from[j]=trViewOrg[j]+trViewAxis[0][j]*60.f+trViewAxis[1][j]*70.f-trViewAxis[2][j]*12.f;
