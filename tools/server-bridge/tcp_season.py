@@ -363,7 +363,7 @@ SOLO_BOARDS = {
     "drill": {"name": "Accuracy Drill", "unit": "points", "better": "high", "seconds": 60},
     "bots": {"name": "Weekly Bot Challenge", "unit": "ms", "better": "low"},
 }
-RANGE_WEAPONS = ["M4A1", "AK-47", "MP5", "SG552", "Glock", "M590"]
+RANGE_WEAPONS = ["M4", "AK-47", "MP5/10", "SG 552", "Glock 19", "Desert Eagle"]   # game display names
 BOT_CHALLENGES = [
     {"map": "obj_village", "mode": "bomb", "bots": 5, "skill": "hard", "rule": "pistols", "text": "Village Bomb, 5 v 5, pistols only"},
     {"map": "obj_railhouse", "mode": "elimination", "bots": 5, "skill": "hard", "rule": "rifles", "text": "Railhouse Elimination, 5 v 5, rifles"},
@@ -422,8 +422,6 @@ def check_run(run, week):
         if any(b - a < MIN_HIT_GAP_MS for a, b in zip(order, order[1:])) or (order and order[0] < MIN_HIT_GAP_MS):
             return None, "target hits closer together than a human can manage"
         misses = sum(1 for s in times if s[1] < 0)
-        if misses == 0 and len(times) == need and run.get("spread", 1) == 0:
-            return None, "no spread recorded"
         return order[-1] + misses * SOLO_BOARDS["range"]["missPenaltyMs"], None
     if board == "drill":
         if times and times[-1][0] > SOLO_BOARDS["drill"]["seconds"] * 1000 + 500:
