@@ -57,7 +57,17 @@ Villa 2.1, Shozen, Snowtown en Chlite hoorden bij de meest gespeelde community-m
 
 We lieten de maps precies zoals hun makers ze gemaakt hebben: dezelfde indeling, dezelfde texturen en dezelfde plekken die je je herinnert. Wat we wel veranderd hebben, is het geluid. Een aantal originele geluiden was in lage kwaliteit opgenomen of speelde veel te luid naast de eigen sfeergeluiden van Platinum. We hebben ze opgeschoond, op hetzelfde niveau gebracht als de rest van het spel en een paar weggelaten die we niet mochten meeleveren. Beide bomsites op Villa en Chlite werken nu zoals hun makers het bedoelden, en de krat bij site A op Villa 2.1 breekt nu wanneer de bom ontploft.
 
-De vier maps krijgen ook alles wat de kernmaps hebben: een minimap, een tactische kaart en een laadscherm met plattegrond, afbeelding en beschrijving. Op Villa 2.1 en Shozen rapen bots nu de vlag op in Flag Capture.
+De vier maps krijgen ook alles wat de kernmaps hebben: een minimap, een tactische kaart en een laadscherm met plattegrond, afbeelding en beschrijving. Op Villa 2.1 rapen bots nu de vlag op in Flag Capture.
+
+![Tactische kaart van Snowtown](img/devlog/front-lines-snowtown-tacmap.webp "De tactische kaart op Snowtown: de volledige plattegrond, beide bomsites en de eigen plaatsnamen van de map.")
+
+![Tactische kaart van Chlite](img/devlog/front-lines-chlite-tacmap.webp "Ook Chlite krijgt zijn plattegrond, sites en callouts.")
+
+![Minimap op Snowtown](img/devlog/front-lines-snowtown-minimap.webp "De minimap volgt je door Snowtown, en callouts zoals North St. tonen waar de bom gevallen is.")
+
+De plattegronden komen uit de maps zelf: we volgden elke vloer die een speler vanaf de spawns kan bereiken en tekenden het bovenaanzicht in dezelfde stijl als de kernmaps, zodat een callout op Snowtown voor iedereen in het team hetzelfde betekent.
+
+![Bom ontploft bij site A op Villa 2.1](img/devlog/front-lines-villa-site-a-blast.webp "Site A op Villa 2.1: de lading gaat af, de krat breekt en de ronde gaat naar de Terrorists.")
 
 ![Villa 2.1](img/devlog/front-lines-villa.webp "Villa 2.1 's avonds, Ultra-preset, DirectX 12.")
 
@@ -91,9 +101,27 @@ De gebakken belichting is gladder, met zachte randen waar schaduwen over muren e
 
 Bomen, struiken, gras en zeildoek wiegen nu zachtjes in de wind, terwijl stammen en muren stil blijven staan. Op DirectX 12 breekt zonlicht als zachte stralen door openingen in de omgeving, en kijken naar de zon geeft een lichte schittering. Natte plekken op de grond weerspiegelen de wereld rondom op de Ultra-preset, en baksteen, kasseien en puin krijgen van dichtbij echte diepte: voegen zakken weg in het oppervlak wanneer je langs een muur kijkt.
 
+![Bomen in de wind op Village](img/devlog/front-lines-wind-tree.webp "Village: takken en bladeren bewegen mee met de wind, de stam blijft staan.")
+
+![Gras en struiken in de wind op Village](img/devlog/front-lines-wind-grass.webp "Gras en struiken langs het tuinpad op Village wiegen zachtjes.")
+
 ![Natte grond weerspiegelt de haven op Harbour](img/devlog/front-lines-harbour-wet.webp "Natte plekken vangen weerspiegelingen op Harbour, DirectX 12 Ultra.")
 
+### Echte diepte op baksteen en steen
+
+De diepte op baksteen, kasseien, grind en rots verdient een eigen vermelding, want die hebben we laat in de tests opnieuw gebouwd. De eerste versie schatte hoe diep een oppervlak moest zijn op basis van hoe donker de textuur was, waardoor een vlek op een muur een gat werd en lange bakstenen muren in een gekartelde zaagtand braken wanneer je erlangs keek. Dat wilden we niet uitbrengen. Elk van deze oppervlakken heeft nu een echte hoogtekaart, gebouwd uit dezelfde normal maps die het belichten, zodat de diepte klopt met het licht: voegen en afgebrokkelde randen zakken weg, de bakstenen zelf blijven staan. Het effect verdwijnt onder scherpe hoeken en op oppervlakken die naar beneden kijken, pleister en plafonds krijgen het nooit, en op Ultra kost het ruim minder dan een milliseconde, zelfs wanneer een muur je hele scherm vult.
+
+![Bakstenen muur met hoogtekaarten op Railhouse](img/devlog/front-lines-brick-depth.webp "Railhouse, DirectX 12 Ultra: echte diepte op de baksteen, met verzonken voegen en strakke randen langs de hele muur.")
+
+![Bakstenen muur van dichtbij op Railhouse](img/devlog/front-lines-brick-depth-close.webp "Van dichtbij: elke baksteen steekt uit boven de voeg, en de randen blijven strak onder een kleine hoek.")
+
+### Een stemming per map
+
 Elke map krijgt ook een eigen subtiele kleurstemming. Snow is iets kouder, Delta iets warmer. Het is bewust ingetogen: het doel is een gevoel van plaats, geen filter.
+
+!compare(img/devlog/front-lines-mood-delta-off.webp | Zonder | img/devlog/front-lines-mood-delta.webp | Kleurstemming | Delta: de kleurstemming geeft het stoffige plein wat warmte zonder te veranderen wat je ziet.)
+
+!compare(img/devlog/front-lines-mood-snow-off.webp | Zonder | img/devlog/front-lines-mood-snow.webp | Kleurstemming | Snow: een iets koeler, helderder beeld.)
 
 ### Water, vuur en rook
 
@@ -104,6 +132,8 @@ Water rimpelt nu wanneer spelers erdoor waden en wanneer kogels het oppervlak ra
 Op Snow vormt zich langzaam rijp aan de randen van je beeld zolang je buiten bent, en die smelt weg wanneer je binnenstapt. Het blijft aan de randen van het scherm, nooit in het midden waar je mikt.
 
 ![Rijp aan de randen van het beeld op Snow](img/devlog/front-lines-lens-frost.webp "Buiten op Snow vormt zich rijp aan de randen van je beeld.")
+
+![Rijp in een steegje op Snow](img/devlog/front-lines-lens-frost-alley.webp "Rijp omlijst het beeld in een steegje op Snow en trekt weer weg zodra je naar binnen gaat.")
 
 ### Gelijke kansen op Ranked
 
@@ -151,6 +181,8 @@ Voor schutters komt er een nieuwe laag bij het mikken. Terwijl je door je vizier
 
 Focuszoom is puur een zoom: wapenzwaai, spreiding, terugslag en beweging blijven precies hetzelfde als zonder. Het werkt op elke server met 0.39.0, ook op Ranked.
 
+!compare(img/devlog/front-lines-focus-zoom-off.webp | Gericht | img/devlog/front-lines-focus-zoom.webp | Focuszoom | Village: het normale vizierbeeld, en hetzelfde beeld met focuszoom ingehouden.)
+
 ## Geluid dat standhoudt
 
 Op audioapparaten die op hoge samplefrequenties staan, 96 kHz en hoger, kon het geluid enkele seconden na de start van een match wegvallen of veranderen in doffe bonken. 0.39.0 levert een nieuwere versie van de audiobibliotheek die het spel gebruikt, en we hebben die getest op elke gangbare frequentie tot 384 kHz. Zette je je headset op 48 kHz om Platinum te kunnen spelen, dan mag hij terug.
@@ -183,11 +215,19 @@ We zijn elke spelmodus scherm per scherm doorgegaan en hebben weggewerkt wat in 
 
 Kleine dingen tellen ook: toeschouwers van teamwedstrijden krijgen het teamscorebord, het paneel van de schietbaan en de FPS-teller staan niet meer op de minimap, kleine UI-formaten houden alle tekst leesbaar, het podium op het einde van een wedstrijd is op elke map even goed belicht, en de killfeed, het chatvak, het stemmenu en de melding om een wapen op te rapen overlappen of knippen geen tekst meer af. Flitsgranaten verblinden nu ook de minimap, het kompas en de doelkaart, en de replaycamera van de laatste kill belandt niet meer in de schutter of achter een hek.
 
+![Doelkaart in Bomb](img/devlog/front-lines-hud-bomb-card.webp "Bomb op Railhouse: de doelkaart vertelt de bomdrager precies wat hij nu moet doen.")
+
+![Capture Point-kaart](img/devlog/front-lines-hud-capture-point.webp "Capture Point: de kaart toont wie er verovert en hoe ver, en het punt staat op de minimap.")
+
 ## Close quarters
 
 CQB blijft experimenteel terwijl we het op het niveau van het kernspel brengen. In 0.39.0 gelden de spawnregels van CQB alleen nog in de CQB Rules-playlist, zodat elke andere modus standaard-spawns houdt, ook met experimentele content aan. In CQB Rules worden gezondheidsherstel en de perks Protected en Tank niet meer ongedaan gemaakt door de volgende treffer.
 
 Vanaf deze update draait Official #2 (Unranked) met experimentele content aan: de nieuwe CQB-wapens zitten daar in elke match, en Harbour komt in de rotatie als Team Deathmatch.
+
+![CQB-steegje op Harbour](img/devlog/front-lines-harbour-cqb-alley.webp "Harbour na de regen: natte kasseien, nauwe steegjes en het CQB-arsenaal, DirectX 12 Ultra.")
+
+![CQB-binnenplaats op Harbour](img/devlog/front-lines-harbour-cqb-run.webp "Een bot dringt door de overwoekerde binnenplaats op Harbour.")
 
 ## Fixes
 

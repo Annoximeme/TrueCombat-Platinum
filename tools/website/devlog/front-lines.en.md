@@ -57,7 +57,17 @@ Villa 2.1, Shozen, Snowtown and Chlite were among the most played community maps
 
 We left the maps exactly as their authors made them: the same layouts, the same textures and the same spots you remember. What we did change is sound. Several of the original sounds were recorded at low quality or played far too loud next to Platinum's own ambience. We cleaned them up, levelled them to sit alongside the rest of the game and left out a few we had no right to ship. Both bomb sites on Villa and Chlite now work as their authors intended, and the site A crate on Villa 2.1 now breaks when the bomb goes off.
 
-The four maps also get everything the core maps have: a minimap, a tactical map and a loading screen with a map plan, picture and description. On Villa 2.1 and Shozen, bots now pick up the flag in Flag Capture.
+The four maps also get everything the core maps have: a minimap, a tactical map and a loading screen with a map plan, picture and description. On Villa 2.1, bots now pick up the flag in Flag Capture.
+
+![Snowtown tactical map](img/devlog/front-lines-snowtown-tacmap.webp "The tactical map on Snowtown: the full plan, both bomb sites and the map's own place names.")
+
+![Chlite tactical map](img/devlog/front-lines-chlite-tacmap.webp "Chlite gets its plan, sites and callouts too.")
+
+![Snowtown minimap](img/devlog/front-lines-snowtown-minimap.webp "The minimap follows you through Snowtown, and callouts like North St. show where the bomb was dropped.")
+
+The plans are drawn from the maps themselves: we traced every floor a player can reach from the spawns and drew the top-down view in the same style as the core maps, so a callout on Snowtown means the same thing to everyone on the team.
+
+![Bomb detonating at site A on Villa 2.1](img/devlog/front-lines-villa-site-a-blast.webp "Site A on Villa 2.1: the charge goes off, the crate breaks and the round goes to the Terrorists.")
 
 ![Villa 2.1](img/devlog/front-lines-villa.webp "Villa 2.1 in the evening, Ultra preset, DirectX 12.")
 
@@ -91,9 +101,27 @@ Baked lighting is smoother, with soft edges where shadows fall across walls and 
 
 Trees, bushes, grass and canvas tarps now sway gently in the wind, with trunks and walls staying still. On DirectX 12, sunlight breaks through gaps in the scenery as soft shafts, and looking toward the sun gives a gentle glare. Wet patches on the ground pick up reflections of the world around them on the Ultra preset, and brick, cobblestone and rubble gain real depth up close: mortar lines and joints sink into the surface when you look along a wall.
 
+![Trees in the wind on Village](img/devlog/front-lines-wind-tree.webp "Village: branches and leaves move with the wind while the trunk stays put.")
+
+![Grass and bushes in the wind on Village](img/devlog/front-lines-wind-grass.webp "Grass and shrubs along the garden path on Village sway gently.")
+
 ![Wet ground reflecting the harbour on Harbour](img/devlog/front-lines-harbour-wet.webp "Wet patches pick up reflections on Harbour, DirectX 12 Ultra.")
 
+### Real depth on brick and stone
+
+The depth on brick, cobblestone, gravel and rock deserves its own mention, because we rebuilt it late in testing. The first version guessed how deep a surface should be from how dark its texture was, so a stain on a wall became a hole and long brick walls broke up into a jagged sawtooth when you looked along them. We did not want to ship that. Every one of these surfaces now has a real height map, built from the same normal maps that light it, so the depth agrees with the lighting: mortar joints and chipped edges sink in, brick faces stay up. The effect fades out at grazing angles and on surfaces facing down, plaster and ceilings never get it, and on Ultra it costs well under a millisecond even when a wall fills the screen.
+
+![Brick wall with height maps on Railhouse](img/devlog/front-lines-brick-depth.webp "Railhouse, DirectX 12 Ultra: real depth on the brick, with sunken mortar and clean edges along the whole wall.")
+
+![Brick wall close up on Railhouse](img/devlog/front-lines-brick-depth-close.webp "Close up: each brick sits proud of the mortar, and the edges stay clean at a shallow angle.")
+
+### A mood for every map
+
 Each map also gets its own subtle colour mood. Snow is a little colder, Delta a little warmer. It is deliberately understated: the goal is a sense of place, not a filter.
+
+!compare(img/devlog/front-lines-mood-delta-off.webp | Without | img/devlog/front-lines-mood-delta.webp | Colour mood | Delta: the colour mood adds warmth to the dusty yard without changing what you can see.)
+
+!compare(img/devlog/front-lines-mood-snow-off.webp | Without | img/devlog/front-lines-mood-snow.webp | Colour mood | Snow: a slightly colder, clearer picture.)
 
 ### Water, fire and smoke
 
@@ -104,6 +132,8 @@ Water now ripples when players wade through it and when rounds hit the surface. 
 On Snow, frost slowly gathers at the edges of your view while you are outside and melts away when you step indoors. It stays at the edges of the screen, never in the middle where you aim.
 
 ![Frost at the edges of the view on Snow](img/devlog/front-lines-lens-frost.webp "Frost gathers at the edges of your view outdoors on Snow.")
+
+![Frost in a Snow alley](img/devlog/front-lines-lens-frost-alley.webp "Frost frames the view in a Snow alley and clears again once you head inside.")
 
 ### A level field on Ranked
 
@@ -151,6 +181,8 @@ For riflemen there is a new layer to aiming. While aiming down your sights, hold
 
 Focus zoom is purely a zoom: weapon sway, spread, recoil and movement are exactly the same as without it. It works on every server running 0.39.0, Ranked included.
 
+!compare(img/devlog/front-lines-focus-zoom-off.webp | Aimed | img/devlog/front-lines-focus-zoom.webp | Focus zoom | Village: the normal sight picture, and the same view with focus zoom held.)
+
 ## Sound that holds
 
 On audio devices set to high sample rates, 96 kHz and above, game sound could fade away or turn into dull thumps a few seconds into a match. 0.39.0 ships a newer version of the audio library the game uses, and we tested it on every common rate up to 384 kHz. If you had switched your headset to 48 kHz just to play Platinum, you can switch it back.
@@ -183,11 +215,19 @@ We went through every game mode screen by screen and fixed what got in the way. 
 
 Smaller things add up too: spectators of team matches get the team scoreboard, the firing range panel and the FPS counter no longer sit on the minimap, small UI sizes keep all text readable, the match end podium is lit the same on every map, and the kill feed, chat box, vote menu and weapon pickup prompt no longer overlap or cut off text. Flash grenades now also blind the minimap, compass and objective card, and the final-kill replay camera no longer ends up inside the shooter or behind a fence.
 
+![Bomb objective card](img/devlog/front-lines-hud-bomb-card.webp "Bomb mode on Railhouse: the objective card tells the carrier exactly what to do next.")
+
+![Capture Point card](img/devlog/front-lines-hud-capture-point.webp "Capture Point: the card shows who is capturing and how far, and the point is marked on the minimap.")
+
 ## Close quarters
 
 CQB remains experimental while we bring it up to the standard of the core game. In 0.39.0, CQB's spawn rules apply only in the CQB Rules playlist, so every other mode keeps standard spawns even with experimental content enabled. In CQB Rules, health regeneration and the Protected and Tank perks are no longer undone by the next hit.
 
 From this update, Official #2 (Unranked) runs with experimental content on: the new CQB weapons are in every match there, and Harbour joins the rotation as Team Deathmatch.
+
+![Harbour CQB alley](img/devlog/front-lines-harbour-cqb-alley.webp "Harbour after rain: wet cobbles, tight alleys and the CQB arsenal, DirectX 12 Ultra.")
+
+![Harbour CQB courtyard](img/devlog/front-lines-harbour-cqb-run.webp "A bot pushes through the overgrown courtyard on Harbour.")
 
 ## Fixes
 
