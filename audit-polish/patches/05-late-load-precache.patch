@@ -1,0 +1,43 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index b9d29f8..1d2f710 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -1189,6 +1189,29 @@ static void waterEvent(int number,int level,const vec3_t at){
+ #include "tcp_hud_platinum_net_cg.h" /* Platinum HUD: net graph, connection card, voice list */
+ #include "tcp_fps_cg.h" /* 0.37.1 options audit: cg_drawFPS readout */
+ #include "tcp_immersion2_cg.h" /* 0.39.0 immersion 2: gear sounds, low-health state, breathing after a sprint */
++/* audit 0.38.1 + 0.39: sounds and models that were loaded on first use, in the middle of a frame (1 to 5 ms each on the test
++ * machine): the HQ lines at a plant, defuse or round end, the climb sounds, the dry click, the bolt, the automatic radio
++ * callouts, the cheer lines and the magazine a reload drops. They load with the map now; the later lookups find them cached. */
++static void latePrecache(void){
++    static const char *const sounds[]={
++        "sound/vo/general/axis/hq_dynplanted_a.wav","sound/vo/general/axis/hq_dynplanted_b.wav",
++        "sound/vo/general/allies/hq_dyndefused_a.wav","sound/vo/general/allies/hq_dyndefused_b.wav",
++        "sound/vo/general/common/hq_specopswin_a.wav","sound/vo/general/common/hq_terroristswin_a.wav",
++        "sound/player/footsteps/climb_mount1.wav","sound/player/footsteps/climb_mount2.wav","sound/player/footsteps/climb_mount3.wav","sound/player/footsteps/climb_mount4.wav",
++        "sound/player/footsteps/climb_dismount1.wav","sound/player/footsteps/climb_dismount2.wav","sound/player/footsteps/climb_dismount3.wav","sound/player/footsteps/climb_dismount4.wav",
++        "sound/weapons/misc/fire_dry.wav","sound/weapons/r93/r93bolt.wav",
++        /* CQB radio and gunshot reverb sets (tcp_cqb_cg.h; used when the experimental gate is on) */
++        "sound/vo/general/specops/contact1.wav","sound/vo/general/specops/contact2.wav","sound/vo/general/specops/enemydown1.wav","sound/vo/general/specops/enemydown2.wav",
++        "sound/vo/general/specops/mandown1.wav","sound/vo/general/specops/mandown2.wav",
++        "sound/cqb/reverb/indoorbig_1.wav","sound/cqb/reverb/indoorbig_2.wav","sound/cqb/reverb/outdoor_1.wav","sound/cqb/reverb/outdoor_2.wav",
++        "sound/cqb/reverb/outdoorsnow_1.wav","sound/cqb/reverb/outdoorsnow_2.wav"};
++    for(int i=0;i<(int)(sizeof(sounds)/sizeof(sounds[0]));i++)SystemCall(CG_S_REGISTERSOUND,sounds[i],qfalse);
++    static const char *const ids[]={"Contact","EnemyDown","ManDown","CoverMe","FireInTheHole","TakingFire","Cheer"};
++    for(int team=0;team<2;team++)for(int c=0;c<vcCount[team];c++)for(int k=0;k<(int)(sizeof(ids)/sizeof(ids[0]));k++){
++        if(vcStricmp(vcChats[team][c].id,ids[k]))continue;
++        for(int l=0;l<vcChats[team][c].count;l++){vcLine_t *line=&vcChats[team][c].lines[l];if(!line->loaded){line->loaded=1;line->snd=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,line->wav,qfalse);}}}
++    for(int w=1;w<WM_MAX_WEAPONS;w++)if(TCP_GearWeapon(w))imsMagFor(w);
++}
+ static void init(int serverNum,int reliable){
+     snapNum=serverNum;sequence=reliable;ready=0;draws=snapshots=predicted=0;memset(&snap,0,sizeof(snap));memset(inlineModels,0,sizeof(inlineModels));
+     memset(shotSequence,0,sizeof(shotSequence));memset(shotStamp,0,sizeof(shotStamp));oldShots=oldHits=oldReload=showScores=0;localShotTime=-1;
+@@ -1223,7 +1246,7 @@ static void init(int serverNum,int reliable){
+     white=(qhandle_t)SystemCall(CG_R_REGISTERSHADERNOMIP,"white");
+     pmInit();
+     smokeInit();imInit();vcInit();voipCgInit();cqbAssetsInit();
+-    dbInit();brInit();vfxSoundInit();hfxInit();ffInit();imsInit();im2Init();
++    dbInit();brInit();vfxSoundInit();hfxInit();ffInit();imsInit();im2Init();latePrecache();
+     TCP_SetContents(cgContents);memset(waterPrev,0,sizeof(waterPrev));
+     sfxWaterIn=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,"sound/player/water_in.wav",qfalse);sfxWaterOut=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,"sound/player/water_out.wav",qfalse);
+     sfxWaterUn=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,"sound/player/water_un.wav",qfalse);sfxGasp=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,"sound/player/gasp.wav",qfalse);

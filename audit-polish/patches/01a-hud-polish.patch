@@ -1,0 +1,755 @@
+diff --git a/game_src/native/tcp_bugreport_cg.h b/game_src/native/tcp_bugreport_cg.h
+index 71958ff..85c1f19 100644
+--- a/game_src/native/tcp_bugreport_cg.h
++++ b/game_src/native/tcp_bugreport_cg.h
+@@ -139,10 +139,11 @@ static void brFrame(int now){
+     static int last;if(last&&now>last){brFrameMs[brFrameAt++&31]=now-last;}last=now;buFrame(now);
+     if(br.open&&br.autoSaveAt&&now>=br.autoSaveAt){br.autoSaveAt=0;brSave();} /* "bugreport <text>": after the screenshot */
+ }
++static int brHintCovered; /* polish-01: hudNow of the last frame a card sat on the hint's spot (What's new) */
+ static void brDraw(void){
+     SystemCall(CG_CVAR_UPDATE,&brHint);
+     if(!br.open){
+-        if(brHint.integer&&ready){if(phOn())phText(&phBody,PH_W-16,404,4.5f,phT3,"F12  Report a bug",PH_RIGHT);else hudText(560,14,.16f,(const float[4]){1,1,1,.55f},"^7F12: report a bug",1);}
++        if(brHint.integer&&ready&&!dm.open&&!showScores&&!(brHintCovered&&hudNow-brHintCovered<250)){if(phOn())phText(&phBody,PH_W-16,404,4.5f,phT3,"F12  Report a bug",PH_RIGHT);else hudText(560,14,.16f,(const float[4]){1,1,1,.55f},"^7F12: report a bug",1);}
+         return;}
+     static const float shade[4]={0,0,0,.8f},field[4]={.12f,.13f,.16f,1},white[4]={1,1,1,1},muted[4]={.7f,.72f,.76f,1};
+     const float x=170,y=130,w=300;
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index 3c99a0f..ae630d2 100644
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -12,6 +12,7 @@ static int cqbRulesOn; /* 0.38.0: serverinfo tcp_cqbrules (CQB Rules playlist ru
+ static intptr_t(QDECL *syscall)(intptr_t,...);
+ Q_EXPORT void dllEntry(intptr_t(QDECL *fn)(intptr_t,...)){syscall=fn;}
+ static qhandle_t flagModels[3],bombModel;
++static int cgFlagState[3],cgFlagWho[3],cgFlagSeen[3]; /* polish-01: where each flag is, for the objective card */
+ static gameState_t gs;static glconfig_t gl;static snapshot_t snap;static int snapNum,sequence,ready;
+ static qhandle_t inlineModels[MAX_MODELS],white;static fontInfo_t hudFont;static unsigned draws,snapshots,predicted;
+ static qhandle_t hudBody[4],hudStanding,hudCrouching,hudProne,hudMagazine,hudCompass,hudCompassBackground;
+@@ -188,6 +189,9 @@ static float hudUiK(void){
+     if(hudNoScale||!phOn()||hudScaleCvar.value<=0)return 1.f;
+     float k=hudScaleCvar.value<.5f?.5f:hudScaleCvar.value>1.5f?1.5f:hudScaleCvar.value;
+     if(k>1.f)k=hudVAnchor==0?1.f:fminf(k,hudUiMax());
++    /* polish-01: small text never goes under 8 px (phTextT), so below 100% the layout may only shrink while that text
++     * still fits its place: at most 15% oversize. 4K and 1440p reach 50%, 1080p 69%, 900p 82%, 720p stays at 100%. */
++    if(k<1.f){const float hs=hudScale(),lo=hs>0?8.f/(1.15f*4.5f*hs):1.f;if(k<lo)k=lo<1.f?lo:1.f;}
+     if(k<hudKFloor)k=hudKFloor; /* kit-hudprefs: fairness-relevant marks stay readable */
+     return k;
+ }
+@@ -844,6 +848,14 @@ static int playerTeam(int slot){
+     char value[8];TCP_InfoValue(config(CS_PLAYERS+slot),"t",value,sizeof(value));
+     int team=atoi(value);return team==TCP_TEAM_RED||team==TCP_TEAM_BLUE?team:TCP_TEAM_NONE;
+ }
++/* polish-01: a team match as seen by anyone. A free spectator (chosen, or moved there for being away) has no team of
++ * his own; the scoreboard, the team scores and the round result then went by the free-for-all rules and listed
++ * only the spectators. */
++static int teamMatch(const playerState_t *p){
++    if(p->teamNum)return 1;
++    for(int i=0;i<MAX_CLIENTS;i++)if(playerTeam(i))return 1;
++    return 0;
++}
+ /* Name with its team color: ^1 Terrorists (red), ^4 Specops (blue), ^7 others. */
+ static void teamName(int slot,char *out,size_t size){
+     char name[48]="";
+@@ -1072,12 +1084,14 @@ static void drawScoreboard(const playerState_t *player){
+     if(phase==TCP_ROUND_LIVE)snprintf(line,sizeof(line),"%s   %2.0f:%i%i","MISSION TIME:",(double)(seconds/60),seconds%60/10,seconds%10);
+     else snprintf(line,sizeof(line),"%s %s","MISSION TIME:","WARMUP");
+     hudText(20,23,.25f,grey,line,0);
+-    if(player->teamNum){
+-        snprintf(line,sizeof(line),"%s %i  %s [%i]:[%i]","ROUND",red+blue+1,"SCORE",red,blue);
++    if(teamMatch(player)){
++        const int gm=player->holdable[TCP_HOLD_GAMEMODE]; /* polish-01: a round number only where the score counts rounds */
++        if(gm==0||gm==6)snprintf(line,sizeof(line),"%s %i  %s [%i]:[%i]","ROUND",red+blue+1,"SCORE",red,blue);
++        else snprintf(line,sizeof(line),"%s [%i]:[%i]","SCORE",red,blue);
+         /* Centred on the title bar (15..837); the original 320 sat left of centre. */
+         hudText(426-hudTextWidth(line,.25f)*.5f,23,.25f,grey,line,0);
+     }
+-    if(player->teamNum){
++    if(teamMatch(player)){
+         drawTeamPanel(20,TCP_TEAM_RED,"TERRORISTS",scores,count,red,player);
+         drawTeamPanel(443,TCP_TEAM_BLUE,"SPECOPS",scores,count,blue,player);
+     }else drawTeamPanel(20,TCP_TEAM_NONE,"PLAYERS",scores,count,0,player);
+@@ -1099,6 +1113,7 @@ static void restartPresentation(void){
+     taReset();
+     SystemCall(CG_PRINT,"TCP_NATIVE_MAP_RESTART reset prediction=0 models=0 smoke=0 trails=0\n");
+ }
++static int demoPlaying; /* polish-01: set every frame; a recorded demo has no menus to answer */
+ #include "tcp_deploy_menu.h"
+ #include "tcp_cqb_perks_cg.h" /* 0.38.0 CQB Rules: EXPERIMENTAL perk section */
+ static int dmOpenNow(void){return dm.open;}
+@@ -1361,10 +1376,24 @@ static void drawStun(int now){
+      {const float lm=cgConcussionMuffle.integer?im2LowMuffle():0.f;if(lm>c)c=lm;} /* 0.39.0 low health */
+      if(fabsf(c-concSent)>=.01f||(c==0&&concSent!=0)){char v[16];snprintf(v,sizeof(v),"%.2f",c);SystemCall(CG_CVAR_SET,"s_alConcussion",v);concSent=c;}}
+ }
++/* polish-01: "<name> has joined the <team>!". The join command can reach the client before the player's name does
++ * (several bots joining with you): the line then read " has joined the Terrorists!". A join without a name waits up
++ * to two seconds for it and is dropped if it never comes. */
++static struct{int slot,team,until;} joinPend[8];static int joinPendNext;
++static int joinPopup(int slot,int team){
++    char name[48]="",line[160];TCP_InfoValue(config(CS_PLAYERS+slot),"n",name,sizeof(name));
++    if(!name[0])return 0;
++    snprintf(line,sizeof(line),"%s^7 has joined the %s^7!",name,team==TCP_TEAM_RED?"Terrorists":"SpecOps");
++    addPopup(line,hudVoiceChat,hudNow);return 1;
++}
++static void joinPendFrame(void){
++    for(int i=0;i<8;i++){if(!joinPend[i].until)continue;
++        if(joinPopup(joinPend[i].slot,joinPend[i].team)||hudNow>joinPend[i].until||hudNow+4000<joinPend[i].until)joinPend[i].until=0;}
++}
+ static void serverCommands(int last){
+     while(sequence<last){sequence++;if(!SystemCall(CG_GETSERVERCOMMAND,sequence))continue;char cmd[64],msg[MAX_STRING_CHARS];SystemCall(CG_ARGV,0,cmd,sizeof(cmd));if(qolServerCommand(cmd))continue; /* TCP_QOL */if(rangeServerCommand(cmd))continue; /* TCP_RANGE */
+         if(!strcmp(cmd,"map_restart")){restartPresentation();roundWipe("map_restart");memset(dbFrags,0,sizeof(dbFrags));SystemCall(CG_GETGAMESTATE,&gs);refreshMovementSettings();}
+-        else if(!strcmp(cmd,"print")){SystemCall(CG_ARGV,1,msg,sizeof(msg));SystemCall(CG_PRINT,msg);}
++        else if(!strcmp(cmd,"print")){SystemCall(CG_ARGV,1,msg,sizeof(msg));SystemCall(CG_PRINT,msg);qolVoteAnswer(msg);}
+         else if(!strcmp(cmd,"tcp_staffchal"))staffChallenge(); /* TCP_STAFF */
+         else if(!strcmp(cmd,"tcp_idchal"))acctChallenge(); /* 0.37.0 player accounts */
+         else if(!strcmp(cmd,"tcp_break"))dbBreakCommand(hudNow);
+@@ -1396,10 +1425,10 @@ static void serverCommands(int last){
+         else if(!strcmp(cmd,"tcp_join")&&SystemCall(CG_ARGC)==3){
+             char name[48]="",line[160];SystemCall(CG_ARGV,1,msg,sizeof(msg));int slot=atoi(msg);
+             SystemCall(CG_ARGV,2,msg,sizeof(msg));int team=atoi(msg);
+-            if(slot>=0&&slot<MAX_CLIENTS&&(team==TCP_TEAM_RED||team==TCP_TEAM_BLUE)){
+-                TCP_InfoValue(config(CS_PLAYERS+slot),"n",name,sizeof(name));
+-                snprintf(line,sizeof(line),"%s^7 has joined the %s^7!",name,team==TCP_TEAM_RED?"Terrorists":"Specops");
+-                addPopup(line,hudVoiceChat,hudNow);
++            (void)name;(void)line;
++            if(slot>=0&&slot<MAX_CLIENTS&&(team==TCP_TEAM_RED||team==TCP_TEAM_BLUE)&&!joinPopup(slot,team)){
++                /* polish-01: the name can arrive a moment after the join; hold the line until it does */
++                joinPend[joinPendNext].slot=slot;joinPend[joinPendNext].team=team;joinPend[joinPendNext].until=hudNow+2000;joinPendNext=(joinPendNext+1)%8;
+             }
+         }
+         else if(!strcmp(cmd,"tcp_shotfx")&&SystemCall(CG_ARGC)==8){
+@@ -1500,11 +1529,33 @@ static void drawFollowLines(const playerState_t *p){
+ #include "tcp_minimap_cg.h" /* 0.37.2: top-right minimap (uses the tactical map data) */
+ #include "tcp_onboarding_cg.h"
+ #include "tcp_weapon_pickup_cg.h" /* 0.38.0 weapon pickup */
++/* polish-01: the server stopped answering. Until now the picture just froze with no word (stock ET printed
++ * "Connection Interrupted"). Measured on the real clock since the newest snapshot: the game clock is no measure, it
++ * waits for a server that comes back behind it. A game clock that stands still is a paused game, not a lost one. */
++static int netStallSnapAt,netStallClock,netStallClockAt;
++static void netStallFrame(int time,int fresh,int demo){
++    const int real=(int)SystemCall(CG_MILLISECONDS);
++    if(time!=netStallClock){netStallClock=time;netStallClockAt=real;}
++    if(fresh||demo||real-netStallClockAt>250)netStallSnapAt=real;
++}
++static void netStallDraw(void){
++    const int gap=(int)SystemCall(CG_MILLISECONDS)-netStallSnapAt;
++    if(gap<1500||vxCamActive())return;
++    char sub[64];snprintf(sub,sizeof(sub),"No answer from the server for %i s",gap/1000);
++    if(!phOn()){hudTextCenter(176,"CONNECTION INTERRUPTED");hudTextCenter(190,sub);return;}
++    const int saved=hudAnchor;hudAnchor=HUD_CENTER;
++    const float lw=phWidthT(&phDisplay,7.5f,.5f,"CONNECTION INTERRUPTED"),sw=phWidth(&phBody,5.5f,sub);
++    const float w=(lw>sw?lw:sw)+40,h=34,x=PH_CX-w*.5f,y=170;
++    phPanel(x,y,w,h,1);phTicks(x,y,w,h,phLine2);hudFill(x,y,w,2,phAmber);
++    phTextT(&phDisplay,PH_CX,y+7,7.5f,.5f,phT1,"CONNECTION INTERRUPTED",PH_MID);phText(&phBody,PH_CX,y+20,5.5f,phT2,sub,PH_MID);
++    hudAnchor=saved;
++}
+ static void frame(int time,int demo){
+-    hudNow=time;gpNow=time; /* 0.39.0 */
++    hudNow=time;gpNow=time; /* 0.39.0 */demoPlaying=demo;
+     int latest,stamp;SystemCall(CG_GETCURRENTSNAPSHOTNUMBER,&latest,&stamp);
+     /* Never loop over unbounded stale snapshot numbers after a connection gap. */
+     int fresh=0;if(latest>snapNum){const int skipped=latest-snapNum-1;if(SystemCall(CG_GETSNAPSHOT,latest,&snap)){netgraphSnapshot(time,skipped);snapNum=latest;ready=1;snapshots++;fresh=1;dmFirstSnapshot();staffFirstSnapshot();serverCommands(snap.serverCommandSequence);reconcileModels();}}
++    netStallFrame(time,fresh,demo); /* polish-01 */
+     if(!ready)return;
+     lagClientFrame(time,fresh);
+     SystemCall(CG_CVAR_UPDATE,&errorDecay);SystemCall(CG_CVAR_UPDATE,&showMiss);SystemCall(CG_CVAR_UPDATE,&hudAspect);
+@@ -1557,7 +1608,8 @@ static void frame(int time,int demo){
+         if(e->eType==ET_PLAYER&&e->number>=0&&e->number<MAX_CLIENTS){pmGear[e->number].weapon=e->nextWeapon;pmGear[e->number].side=e->loopSound;pmGear[e->number].worn=e->powerups&15;} /* TCP_HOLSTER_GEAR */
+         else if(e->effect3Time==0x5454){bombCgSeen(e,snap.serverTime); /* 0.38.0 bomb card */
+             if(e->time==0&&e->otherEntityNum>=0&&e->otherEntityNum<MAX_CLIENTS)pmGear[e->otherEntityNum].bomb=1;}
+-        else if(e->effect3Time==0x5453&&e->time==1&&e->otherEntityNum>=0&&e->otherEntityNum<MAX_CLIENTS)pmGear[e->otherEntityNum].flag=e->modelindex2==2?2:1;}
++        else if(e->effect3Time==0x5453){const int ft=e->modelindex2==2?2:1;cgFlagState[ft]=e->time;cgFlagWho[ft]=e->otherEntityNum;cgFlagSeen[ft]=snap.serverTime;
++            if(e->time==1&&e->otherEntityNum>=0&&e->otherEntityNum<MAX_CLIENTS)pmGear[e->otherEntityNum].flag=ft;}}
+     if(p.clientNum>=0&&p.clientNum<MAX_CLIENTS){const int primary=p.holdable[TCP_HOLD_PRIMARY];pmGear[p.clientNum].weapon=primary>0&&primary<256&&p.weapon!=primary?primary:0;
+         const int side=p.holdable[TCP_HOLD_SECONDARY];pmGear[p.clientNum].side=side>0&&side<256&&p.weapon!=side?side:0;
+         pmGear[p.clientNum].worn=(p.weapon!=TCP_KNIFE_WEAPON?1:0)|(p.ammoclip[TCP_FRAG_WEAPON]>0&&p.weapon!=TCP_FRAG_WEAPON?2:0)|
+@@ -1580,7 +1632,7 @@ static void frame(int time,int demo){
+             memcpy(ref.origin,e->pos.trBase,sizeof(vec3_t));if(e->time==1)ref.origin[2]+=48;memcpy(ref.oldorigin,ref.origin,sizeof(vec3_t));
+             vec3_t ang={0,(float)((time/10)%360),0};TCP_Axes(e->time==1?ang:(vec3_t){0,0,0},ref.axis);SystemCall(CG_R_ADDREFENTITYTOSCENE,&ref);continue;}
+         else if(e->effect3Time==TCP_CAPTURE_MARKER){
+-            captureMarker=e;
++            captureMarker=e;vxCapPos[0]=e->pos.trBase[0];vxCapPos[1]=e->pos.trBase[1];vxCapSeen=hudNow; /* polish-01: also on the maps */
+             drawCaptureMarker(e->pos.trBase);
+             continue;
+         }
+@@ -1632,8 +1684,8 @@ static void frame(int time,int demo){
+          if(r&&!followReload&&followed->weapon!=32&&followed->weapon!=48&&followed->weapon!=49)taReload(followed->weapon,reloadSound); /* 0.37.1: not per shell */
+          followReload=r;} /* C11: the followed reload sound */
+         pmViewFollowing=1;pmViewFollowSeq=followed->density&63; /* pt31: the followed player's throw counter */
+-        if(!vxCamActive()&&!replay)pmAddViewWeapon(&rd,&f,time);
+-    }else{pmViewFollowing=0;if(!vxCamActive()&&!replay)pmAddViewWeapon(&rd,&p,time);}
++        if(!vxCamActive()&&!replay&&!mapVoteShowing())pmAddViewWeapon(&rd,&f,time); /* polish-01: no gun across the match end screen */
++    }else{pmViewFollowing=0;if(!vxCamActive()&&!replay&&!mapVoteShowing())pmAddViewWeapon(&rd,&p,time);}
+     qolScene(&p,demo); /* TCP_QOL: auto demo, taskbar flash, grenade path */
+     imFrame(time);vcFrame(snap.serverTime,time,p.clientNum);
+     ffScene(&p,rd.vieworg,time); /* 0.38.0 firefight: smoke, haze, dust, breath */
+@@ -1675,24 +1727,37 @@ static void frame(int time,int demo){
+     char line[180],objective[96];
+     /* Objective description slot under the compass, worded for the native modes. */
+     if (capture) {
+-        const char *state=capture==TCP_CAPTURE_RED ? "Red capturing" :
+-                          capture==TCP_CAPTURE_BLUE ? "Blue capturing" :
++        const char *state=capture==TCP_CAPTURE_RED ? "Terrorists capturing" : /* polish-01: was "Red" / "Blue" */
++                          capture==TCP_CAPTURE_BLUE ? "SpecOps capturing" :
+                           capture==TCP_CAPTURE_CONTESTED ? "Contested" : "Open";
+         snprintf(objective,sizeof(objective),"Capture the point (%s %d%%)",state,p.persistant[PERS_UNUSED_11]);
+     } else if (p.holdable[TCP_HOLD_GAMEMODE]==5) {
+         /* Flag capture: wm_objective_axis_desc / wm_objective_allied_desc 1 from this
+          * map's gt2 .objdata, for the player's team (FUN_300217d0). */
+-        snprintf(objective,sizeof(objective),"%s",team>=TCP_TEAM_RED&&team<=TCP_TEAM_BLUE&&hudObjectiveText[team][0]?hudObjectiveText[team]:"No Objective Supplied");
++        const char *job=NULL; /* polish-01: name the job while a flag is out */
++        if(team==TCP_TEAM_RED||team==TCP_TEAM_BLUE){
++            const int foe=team==TCP_TEAM_RED?TCP_TEAM_BLUE:TCP_TEAM_RED;
++            const int oursOut=cgFlagSeen[team]&&snap.serverTime-cgFlagSeen[team]<=1000&&cgFlagState[team]!=0;
++            const int theirsOut=cgFlagSeen[foe]&&snap.serverTime-cgFlagSeen[foe]<=1000&&cgFlagState[foe]==1;
++            if(theirsOut&&cgFlagWho[foe]==p.clientNum&&p.stats[0]>0)job=oursOut?"Hold the flag until yours is back home":"Bring the flag back to your base";
++            else if(oursOut)job=cgFlagState[team]==1?"Your flag is taken. Stop the carrier":"Your flag is down. Bring it back";
++            else if(theirsOut)job="Escort your flag carrier";
++        }
++        snprintf(objective,sizeof(objective),"%s",job?job:team>=TCP_TEAM_RED&&team<=TCP_TEAM_BLUE&&hudObjectiveText[team][0]?hudObjectiveText[team]:"No Objective Supplied");
+     } else if (p.holdable[TCP_HOLD_GAMEMODE]==4) {
+         /* Team deathmatch is TC:E gametype 7, which draws no objective lines. */
+         objective[0]=0;
++    } else if (phase && p.holdable[TCP_HOLD_GAMEMODE]==6 && (team==TCP_TEAM_RED||team==TCP_TEAM_BLUE)) {
++        /* polish-01: Bomb mode names the job, not the generic elimination line. */
++        const int planted=cgBomb.state==2&&cgBomb.seenAt&&snap.serverTime-cgBomb.seenAt<=1000;
++        snprintf(objective,sizeof(objective),"%s",team==TCP_TEAM_RED?(planted?"Guard the bomb until it explodes":"Plant the bomb at a bomb site"):(planted?"Defuse the bomb":"Defend the bomb sites"));
+     } else if (phase) {
+-        snprintf(objective,sizeof(objective),"%s",team?"Eliminate the enemy team":"Eliminate all opponents");
++        snprintf(objective,sizeof(objective),"%s",teamMatch(&p)?"Eliminate the enemy team":"Eliminate all opponents"); /* polish-01: a spectator of a team match read "all opponents" */
+     } else {
+-        snprintf(objective,sizeof(objective),"Knock down the green targets");
++        snprintf(objective,sizeof(objective),"Knock down the targets"); /* polish-01: the targets are soldier figures, nothing green */
+     }
+     /* FUN_30022a40: chat always, the rest of the HUD only without the scoreboard. */
+-    phFrame();fpsFrame();
++    phFrame();fpsFrame();joinPendFrame();
+     hfxFrame(&p,rd.vieworg); /* 0.37.2 hit and suppression feedback: blood, red flash, suppression edge (both HUD styles) */
+     ffScreen(time);imsScreen(time);gfxLensDraw(time);ffHudFrame(&p,hudNow); /* 0.38.0 firefight: dirt on the screen, death fade; optional HUD fade */
+     if(!(p.pm_flags&PMF_FOLLOW))pvCues(&p); /* kit-hudprefs (part D): near-death breathing + screen edge, both HUD styles */
+@@ -1715,24 +1780,31 @@ static void frame(int time,int demo){
+         for (int slot=0;slot<MAX_CLIENTS;slot++) if (config(CS_PLAYERS+slot)[0]) players++;
+         int needed=players<2?2-players:1;
+         snprintf(line,sizeof(line),"^3WARMUP:^7 Waiting on ^2%i^7 %s",needed,needed==1?"player":"players");
+-        if(phOn())phBanner(194,line);else hudTextCenter(194,line);
++        if(phOn()){if(!(dm.open&&cqbPerksShown()))phBanner(194,line);}else hudTextCenter(194,line);
+         break;
+     }
+     case TCP_ROUND_COUNTDOWN:
+-        snprintf(line,sizeof(line),"(WARMUP) Match begins in: %i",seconds);
+-        if(phOn())phBanner(120,line);else hudTextCenter(120,line);
++        {const int gm=p.holdable[TCP_HOLD_GAMEMODE],rn=phRoundNumber(&p); /* polish-01: the 3 s before a round are not a warm-up; the mode value is 0 in the elimination modes and Capture Point, 6 in Bomb */
++        if((gm==0||gm==6)&&rn>0)snprintf(line,sizeof(line),"Round %i begins in: %i",rn,seconds);
++        else snprintf(line,sizeof(line),"(WARMUP) Match begins in: %i",seconds);}
++        if(phOn()){if(!(dm.open&&cqbPerksShown()))phBanner(120,line);}else hudTextCenter(120,line); /* polish-01: not through the CQB perks panel */
+         break;
+     case TCP_ROUND_LIVE:
+-        if ((p.pm_type==PM_FREEZE || p.pm_type==PM_DEAD || p.stats[0]<=0) && !(followed && (p.pm_flags&PMF_LIMBO) && p.holdable[TCP_HOLD_GAMEMODE]==6))
+-{if(phOn())phStatus("NO MORE DEPLOYMENTS THIS ROUND");else hudText(8,118,.25f,hudWhite,"No more deployments this round",1);}
++        /* polish-01: not for a free spectator (chosen, or moved there for being away): the card then reads SPECTATING, not "no more deployments" */
++        if (p.pm_type!=PM_SPECTATOR && (p.pm_type==PM_FREEZE || p.pm_type==PM_DEAD || p.stats[0]<=0) && !(followed && (p.pm_flags&PMF_LIMBO) && p.holdable[TCP_HOLD_GAMEMODE]==6))
++{if(p.stats[TCP_STAT_RESPAWN]>0){ /* polish-01: Team Deathmatch and Flag redeploy in waves */
++ if(phOn()){snprintf(line,sizeof(line),"DEPLOYING IN %d",(p.stats[TCP_STAT_RESPAWN]+999)/1000);phStatus(line);}
++ else{snprintf(line,sizeof(line),"Deploying in %d seconds",(p.stats[TCP_STAT_RESPAWN]+999)/1000);hudText(8,118,.25f,hudWhite,line,1);}}
++ else if(phOn())phStatus("NO MORE DEPLOYMENTS THIS ROUND");else hudText(8,118,.25f,hudWhite,"No more deployments this round",1);}
+         break;
+     case TCP_ROUND_RESULT: {
+         if (mapVoteShowing() || matchCgOwnsResult()) break;
+         int winner=p.stats[TCP_STAT_ROUND_WINNER]-1;
+         char name[48]="";
+-        if (team && winner>TCP_TEAM_NONE && winner<=TCP_TEAM_BLUE)
++        const int teams=teamMatch(&p); /* polish-01: also for a spectator, who has no team */
++        if (teams && winner>TCP_TEAM_NONE && winner<=TCP_TEAM_BLUE)
+             snprintf(name,sizeof(name),"%s team",winner==TCP_TEAM_RED?"Red":"Blue");
+-        else if (!team && winner>=0 && winner<MAX_CLIENTS)
++        else if (!teams && winner>=0 && winner<MAX_CLIENTS)
+             TCP_InfoValue(config(CS_PLAYERS+winner),"n",name,sizeof(name));
+         if (winner<0)
+             snprintf(line,sizeof(line),"Round draw. Next round in: %i",seconds);
+@@ -1771,8 +1843,9 @@ static void frame(int time,int demo){
+     qolOverlay(); /* TCP_QOL: vote panel, quick menus */
+     mapVoteDraw(time);
+     vxDraw(&p,time,showScores||dm.open||mapVoteShowing()||br.open); /* podium, tactical map, What's new */
+-    obFrame(&snap.ps,time,demo||showScores||dm.open||mapVoteShowing());
++    obFrame(&snap.ps,time,demo||showScores||dm.open||mapVoteShowing()||vxTac.held||vxTac.toggled); /* polish-01: the tip card drew across the open tactical map */
+     pgDraw(hudNow);bmFrame(hudNow);bmDraw(hudNow); /* BOT_SMART */hudAspectOverride=phOn()?16.f/9.f:0;dmDraw();hudAspectOverride=0;brFrame(hudNow);hudAnchor=HUD_RIGHT;brDraw();hudAnchor=HUD_AUTO;
++    netStallDraw(); /* polish-01 */
+     SystemCall(CG_R_SETCOLOR,NULL);
+     draws++;
+ }
+diff --git a/game_src/native/tcp_cqb_perks_cg.h b/game_src/native/tcp_cqb_perks_cg.h
+index 5b2e0ea..19199c5 100644
+--- a/game_src/native/tcp_cqb_perks_cg.h
++++ b/game_src/native/tcp_cqb_perks_cg.h
+@@ -31,7 +31,7 @@ static void cqbPerkSend(void){
+ }
+ /* First snapshot on a CQB Rules server: send the saved perks once. */
+ static void cqbPerkFrame(void){if(!cqbPerksSent&&ready&&cqbPerksShown())cqbPerkSend();}
+-static float cqbPerkRowY(int g,int i){return CQB_PK_Y+44.f+g*(CQB_PK_ROW*4+20.f)+i*CQB_PK_ROW;}
++static float cqbPerkRowY(int g,int i){return CQB_PK_Y+50.f+g*(CQB_PK_ROW*4+20.f)+i*CQB_PK_ROW;}
+ static void cqbPerkDraw(void){
+     if(!cqbPerksShown())return;cqbPerkLoad();
+     static const float panel[4]={.051f,.067f,.086f,.94f},cell[4]={1,1,1,.04f},hoverCell[4]={1,1,1,.08f},amberFill[4]={1,.72f,.2f,.16f};
+diff --git a/game_src/native/tcp_deploy_menu.h b/game_src/native/tcp_deploy_menu.h
+index 6ee1c26..ecfb1c9 100644
+--- a/game_src/native/tcp_deploy_menu.h
++++ b/game_src/native/tcp_deploy_menu.h
+@@ -230,6 +230,7 @@ static int dmLastChoice(int f[4]){
+     return f[0]>=0&&f[0]<=5;
+ }
+ static void dmOpen(void){
++    if(demoPlaying)return; /* polish-01: the menu opened over a playing demo (join pop-up) and stayed there */
+     int own=snap.ps.clientNum,team=ready?playerTeam(own):0,last[4];
+     if(!dm.initialized){dm.identity=0;dm.special=0;dm.initialized=1;}
+     dm.team=team==TCP_TEAM_BLUE?0:1;
+@@ -262,7 +263,7 @@ static void dmAccept(void){
+     SystemCall(CG_SENDCLIENTCOMMAND,line);cqbPerkAccept(); /* 0.38.0 CQB Rules perks */
+     {char last[64];snprintf(last,sizeof(last),"%i %i %i %i",dm.identity,dm.primary,dm.secondary,dm.special);SystemCall(CG_CVAR_SET,"tcp_deploy_last",last);}
+     if(dm.primary)dmLoadText(dm.primary);
+-    char note[128];snprintf(note,sizeof(note),"You will deploy as a %s with a %s.",dm.team==1?"Terrorist":"Specops",dm.primary?dmTexts[dm.primary].shortName:"^1UNKNOWN WEAPON");
++    char note[128];snprintf(note,sizeof(note),"You will deploy as %s with a %s.",dm.team==1?"a Terrorist":"SpecOps",dm.primary?dmTexts[dm.primary].shortName:"^1UNKNOWN WEAPON");
+     addPopup(note,0,hudNow);
+     {char m[160];snprintf(m,sizeof(m),"TCP_NATIVE_DEPLOYMENU accept %s\n",line);SystemCall(CG_PRINT,m);}
+     dmSound(dmSelect);dmClose();
+@@ -417,7 +418,10 @@ static void dmDrawExpChip(void){
+     dmOutline(DM_EXP_X,DM_EXP_Y,DM_EXP_W,DM_EXP_H,c);
+     if(on)hudFill(DM_EXP_X,DM_EXP_Y+DM_EXP_H-1,DM_EXP_W,1,c);
+     const char *label=live?"EXPERIMENTAL":"EXPERIMENTAL OFF";
+-    if(phOn())phTextT(&phBody,DM_EXP_X+DM_EXP_W/2,DM_EXP_Y+3.5f,4.2f,.5f,c,label,PH_MID);
++    if(phOn()){float sz=4.2f,tr=.5f;const float tw=phWidthT(&phBody,sz,tr,label);if(tw>DM_EXP_W-9){const float k=(DM_EXP_W-9)/tw;sz*=k;tr*=k;
++            if(!live&&phWidthT(&phBody,sz,tr,label)>DM_EXP_W-5){label="EXP OFF";sz=4.2f;tr=.5f;}} /* text at its 8 px floor cannot shrink: short label */
++        /* polish-01: "EXPERIMENTAL OFF" ran over its outline */
++        phTextT(&phBody,DM_EXP_X+DM_EXP_W/2,DM_EXP_Y+3.5f+(4.2f-sz)*.5f,sz,tr,c,label,PH_MID);}
+     else dmText(&classicFont,DM_EXP_X+DM_EXP_W/2-dmTextWidth(&classicFont,5.2f,label)/2,DM_EXP_Y+2.8f,5.2f,c,label,0);
+ }
+ static int dmClickExpChip(void){
+diff --git a/game_src/native/tcp_fps_cg.h b/game_src/native/tcp_fps_cg.h
+index c670ffc..32bda8b 100644
+--- a/game_src/native/tcp_fps_cg.h
++++ b/game_src/native/tcp_fps_cg.h
+@@ -25,7 +25,7 @@ static void fpsFrame(void){
+     if(now-fpsStart>=500){fpsValue=fpsFrames*1000/(now-fpsStart);fpsFrames=0;fpsStart=now;}
+ }
+ static void fpsDraw(void){
+-    SystemCall(CG_CVAR_UPDATE,&fpsCvar);
++    SystemCall(CG_CVAR_UPDATE,&fpsCvar);phFpsRoom=0;
+     if(!fpsCvar.integer)return;
+     char value[16];
+     if(fpsValue<0)snprintf(value,sizeof(value),"--");else snprintf(value,sizeof(value),"%d",fpsValue>9999?9999:fpsValue);
+@@ -33,7 +33,7 @@ static void fpsDraw(void){
+         if(dmOpenNow())return;
+         const int saved=hudAnchor;hudAnchor=HUD_RIGHT;hudVAnchor=1;
+         /* Fixed width (mono digits): the chip does not resize as the number changes. */
+-        const float right=PH_W-16,y=77,h=13;
++        const float right=PH_W-16,y=phRightEnd+4,h=13;phFpsRoom=h+4; /* polish-01: under the minimap and the objective card (was fixed at 77, across the minimap since 0.37.2) */
+         const float lw=phWidthT(&phBody,4.5f,.8f,"FPS"),vw=phWidth(&phMono,6,"0000"),w=vw+lw+16;
+         phPanel(right-w,y,w,h,1);
+         phText(&phMono,right-lw-10,y+3.5f,6,phT1,value,PH_RIGHT);
+diff --git a/game_src/native/tcp_hud_platinum_cg.h b/game_src/native/tcp_hud_platinum_cg.h
+index 83b4cc3..0decf7d 100644
+--- a/game_src/native/tcp_hud_platinum_cg.h
++++ b/game_src/native/tcp_hud_platinum_cg.h
+@@ -239,9 +239,23 @@ static void phScoreBox(float x,int team,int score,int alive,int showAlive){
+         if(!alive)phTextT(&phBody,x+23,29,4,.5f,phT3,"OUT",PH_MID);
+     }
+ }
++/* polish-01: the number of the round that is about to start or being played; 0 during the long warm-up before a match.
++ * The team scores alone miss drawn rounds and count nothing in Elimination, so the rounds this client saw end are
++ * counted too (a player who joined late falls back on the scores). A countdown of more than 5 s is a match start. */
++static int phRndSeen,phRndPhase=-1,phRndWon,phRndWarm;
++static int phRoundNumber(const playerState_t *p){
++    const int phase=p->stats[TCP_STAT_ROUND],won=p->persistant[PERS_UNUSED_14]+p->persistant[PERS_UNUSED_15];
++    if(phase!=phRndPhase){if(phase==TCP_ROUND_RESULT)phRndSeen++;if(phRndPhase==TCP_ROUND_COUNTDOWN)phRndWarm=0;phRndPhase=phase;}
++    if(phase==TCP_ROUND_COUNTDOWN&&p->stats[TCP_STAT_ROUND_SECONDS]>5){phRndWarm=1;phRndSeen=0;}
++    if(won<phRndWon)phRndSeen=0;
++    phRndWon=won;
++    if(phase==TCP_ROUND_COUNTDOWN&&phRndWarm)return 0;
++    return (won>phRndSeen?won:phRndSeen)+1;
++}
+ static void phRoundClock(const playerState_t *player,int time){
+     const int saved=hudAnchor;hudAnchor=HUD_CENTER;
+     const int phase=player->stats[TCP_STAT_ROUND],seconds=player->stats[TCP_STAT_ROUND_SECONDS];
++    const int roundNo=phRoundNumber(player); /* polish-01: called every frame, it follows the round phases */
+     /* 0.37.1: Round timer off (cg_drawRoundTimer 0) hides only the clock; the team score boxes stay. */
+     if(optRoundTimer()){
+     phPanel(PH_CX-34,6,68,20,1);
+@@ -249,9 +263,12 @@ static void phRoundClock(const playerState_t *player,int time){
+         char clock[16];snprintf(clock,sizeof(clock),"%d:%d%d",seconds/60,seconds%60/10,seconds%10);
+         phText(&phMono,PH_CX,11,9,seconds<=30?phAmber:phT1,clock,PH_MID);
+     }else if(phase==TCP_ROUND_RESULT)phTextT(&phDisplay,PH_CX,12,8,1,phT2,"ROUND END",PH_MID);
+-    else{float c[4];phAlpha(phAmber,.45f+.55f*fabsf(sinf(time*.002f)),c);phTextT(&phDisplay,PH_CX,12,8,1,c,"WARMUP",PH_MID);}
++    else{float c[4];phAlpha(phAmber,.45f+.55f*fabsf(sinf(time*.002f)),c);
++        const int gm=player->holdable[TCP_HOLD_GAMEMODE];char chip[16]="WARMUP";
++        if(phase==TCP_ROUND_COUNTDOWN&&(gm==0||gm==6)&&roundNo>0)snprintf(chip,sizeof(chip),"ROUND %d",roundNo); /* polish-01 */
++        phTextT(&phDisplay,PH_CX,12,8,1,c,chip,PH_MID);}
+     }
+-    if(player->teamNum){
++    if(teamMatch(player)){ /* polish-01: also for a spectator */
+         const int mode=player->holdable[TCP_HOLD_GAMEMODE];int alive[3];phAliveCounts(player,alive);
+         const int showAlive=phase==TCP_ROUND_LIVE&&mode!=4&&mode!=5;
+         const int match=phMatchAt&&hudNow-phMatchAt<500;
+@@ -312,6 +329,8 @@ static void phCompass(const playerState_t *player,const entityState_t *objective
+ }
+ 
+ /* ---- top right: location and objective ------------------------------------------------------- */
++static float phFpsRoom; /* polish-01: height the FPS chip takes under the right column; the practice tag and range panel move down by it */
++static float phRightEnd=50; /* polish-01: bottom of the right column (place name, bomb card, objective card); the practice tag and firing range panel hang under it */
+ static void phObjectivePanel(const playerState_t *player,const char *objective){
+     const int saved=hudAnchor;hudAnchor=HUD_RIGHT;
+     const float right=PH_W-16;float y=8+mmTopOffset; /* 0.37.2: under the minimap when it shows */
+@@ -339,11 +358,20 @@ static void phObjectivePanel(const playerState_t *player,const char *objective){
+         {const float hw=phTextT(&phBody,right-2,y+3.5f,4.5f,.5f,phT3,line,PH_RIGHT);vxCap(right-2-hw-4-vxCapWidth(9,key),y+1,9,key,1);}
+         phText(&phBody,right-2,y+14,6.5f,phT1,first,PH_RIGHT);
+         if(second)phText(&phBody,right-2,y+24,6.5f,phT1,second,PH_RIGHT);
++        y+=h;
+     }
++    phRightEnd=y;
+     hudAnchor=saved;
+ }
+ 
+ /* ---- top left: kill feed; centre: kill banner -------------------------------------------------- */
++/* polish-01: a kill feed name that is too wide is cut with an ellipsis (the dots keep the name's colour). */
++static void phFeedName(char *name,float h,float room){
++    if(phWidth(&phBody,h,name)<=room)return;
++    size_t n=strlen(name);while(n>1&&phWidth(&phBody,h,name)+phWidth(&phBody,h,"...")>room)name[--n]=0;
++    if(n&&name[n-1]=='^')name[--n]=0; /* never end on a lone colour caret */
++    strcat(name,"...");
++}
+ static void phPopupLine(const hudPopup_t *item,float y,float alpha){
+     if(alpha<=0)return;
+     const float k=qolTextScale,h=6.5f*k;float c[4],ic[4];
+@@ -352,14 +380,23 @@ static void phPopupLine(const hudPopup_t *item,float y,float alpha){
+         /* TCP_TERMINUS: the Twin T before a verified staff member's name */
+         const float tt=h*1.35f,ls=item->leftStaff&&staffIcon?tt:0,rs=item->rightStaff&&staffIcon?tt:0;
+         static const float ttWhite[4]={1,1,1,1};float tc[4];phAlpha(ttWhite,alpha,tc);
+-        const float gh=h*1.7f,gw=gh*4,lw=ls+phWidth(&phBody,h,item->left),rw=rs+phWidth(&phBody,h,item->right);
++        /* polish-01: two long names pushed the row across the team scores and the clock (always on 4:3, where the
++         * left and centre areas share one space). The row now ends 6 units before the left score box; the longer
++         * name gives way first. */
++        char left[72],right[72];snprintf(left,sizeof(left),"%s",item->left);snprintf(right,sizeof(right),"%s",item->right);
++        const float gh=h*1.7f,gw=gh*4;
++        {const float uk=hudUiK(),sc=hudScale(),wide=sc>0?(hudSafeWidth()/sc-853.333f)*.5f:0; /* wide: extra room on screens wider than 16:9 */
++         const float room=(420.667f+wide-84*uk)/uk-16-gw-30-ls-rs,half=room*.5f;
++         const float l0=phWidth(&phBody,h,left),r0=phWidth(&phBody,h,right);
++         if(l0+r0>room){if(l0<=half)phFeedName(right,h,room-l0);else if(r0<=half)phFeedName(left,h,room-r0);else{phFeedName(left,h,half);phFeedName(right,h,half);}}}
++        const float lw=ls+phWidth(&phBody,h,left),rw=rs+phWidth(&phBody,h,right);
+         const float w=lw+gw+rw+30;
+         phPanel(16,y,w,h+8,alpha*.9f);
+         if(ls)phTint(24,y+4+h*.5f-h*.6f,h*1.2f,h*1.2f,staffIcon,tc);
+-        phAlpha(phT1,alpha,c);phText(&phBody,24+ls,y+4,h,c,item->left,PH_LEFT);
++        phAlpha(phT1,alpha,c);phText(&phBody,24+ls,y+4,h,c,left,PH_LEFT);
+         phAlpha(phT1,alpha*.92f,ic);phTint(24+lw+7,y+4+h*.5f-gh*.5f,gw,gh,item->gun,ic);
+         if(rs)phTint(24+lw+gw+14,y+4+h*.5f-h*.6f,h*1.2f,h*1.2f,staffIcon,tc);
+-        phText(&phBody,24+lw+gw+14+rs,y+4,h,c,item->right,PH_LEFT);
++        phText(&phBody,24+lw+gw+14+rs,y+4,h,c,right,PH_LEFT);
+         return;
+     }
+     const float w=phWidth(&phBody,h,item->text)+h*2.2f+14;
+@@ -538,8 +575,8 @@ static void phScoreboard(const playerState_t *player,const hudScore_t *scores,in
+     if(phase==TCP_ROUND_LIVE)snprintf(line,sizeof(line),"%d:%d%d",seconds/60,seconds%60/10,seconds%10);
+     else snprintf(line,sizeof(line),"%s",phase==TCP_ROUND_RESULT?"ROUND END":"WARMUP");
+     phText(&phMono,x+w,38,10,phase==TCP_ROUND_LIVE?phT1:phAmber,line,PH_RIGHT);
+-    if(player->teamNum){
+-        snprintf(line,sizeof(line),"ROUND %d",red+blue+1);phTextT(&phBody,x+w,26,5,.9f,phT3,line,PH_RIGHT);
++    if(teamMatch(player)){ /* polish-01: also for a spectator */
++        if(player->holdable[TCP_HOLD_GAMEMODE]==0||player->holdable[TCP_HOLD_GAMEMODE]==6){const int rn=phRoundNumber(player);snprintf(line,sizeof(line),"ROUND %d",rn>0?rn:1);phTextT(&phBody,x+w,26,5,.9f,phT3,line,PH_RIGHT);} /* polish-01: Team Deathmatch, Flag and CQB Rules (mode value 4 or 5) have no rounds; the label counted the score there */
+         float rc[4],bc[4];phTeamColor(TCP_TEAM_RED,rc);phTeamColor(TCP_TEAM_BLUE,bc);
+         char a[16],b[16];snprintf(a,sizeof(a),"%d",red);snprintf(b,sizeof(b),"%d",blue);
+         phText(&phDisplay,PH_CX-10,30,22,rc,a,PH_RIGHT);phText(&phDisplay,PH_CX,34,14,phT3,":",PH_MID);phText(&phDisplay,PH_CX+10,30,22,bc,b,PH_LEFT);
+diff --git a/game_src/native/tcp_mapvote_cg.h b/game_src/native/tcp_mapvote_cg.h
+index 69919e7..0af0d95 100644
+--- a/game_src/native/tcp_mapvote_cg.h
++++ b/game_src/native/tcp_mapvote_cg.h
+@@ -89,6 +89,9 @@ static void mapVoteDrawPlatinum(int seconds, int total)
+     const float h = 40 + cgVote.count * rowH + 22;
+     char line[160], name[MAX_QPATH];
+     static const float win[4] = {.48f, .84f, .50f, 1};
++    /* polish-01: a player who is alive at the match end kept the bright game view, his gun and the HUD behind the
++     * vote card and the Match leaders podium; the view is dimmed as under the scoreboard (the gun is left out in tcp_cgame.c). */
++    { static const float shade[4] = {.035f, .043f, .055f, .45f}; hudFill(-200, 0, PH_W + 400, 480, shade); }
+     phPanel(x, top, w, h, 1.25f); hudFill(x, top, w, 2, phAcc); phTicks(x, top, w, h, phLine2);
+     phTextT(&phBody, x + 14, top + 12, 5, .9f, phAcc, cgVote.decided ? "NEXT MAP" : "MAP VOTE", PH_LEFT);
+     if (!cgVote.decided) { snprintf(line, sizeof(line), "%d", seconds); phText(&phMono, x + w - 14, top + 10, 9, seconds <= 5 ? phAmber : phT1, line, PH_RIGHT); }
+diff --git a/game_src/native/tcp_minimap_cg.h b/game_src/native/tcp_minimap_cg.h
+index c63031b..98adb2b 100644
+--- a/game_src/native/tcp_minimap_cg.h
++++ b/game_src/native/tcp_minimap_cg.h
+@@ -215,6 +215,10 @@ static void mmDraw(const playerState_t *p,int now){
+         mmDisc(sx,sy,br,20,fill);mmRing(sx,sy,br-.35f,.7f,20,ring);
+         float tc[4];phAlpha(phAmber,a,tc);phTextT(&phDisplay,sx,sy-3.3f*sc,6.2f*sc,.1f,tc,vxTac.site[i].name,PH_MID);
+      }}
++    /* polish-01: the capture point, a white badge with a dot (Capture Point mode only: the marker entity exists only there) */
++    if(vxCapSeen&&hudNow-vxCapSeen>=0&&hudNow-vxCapSeen<1500){float sx,sy;mmToHud(vxCapPos[0],vxCapPos[1],&sx,&sy);const int edge=mmClamp(&sx,&sy,6*sc);
++        const float a=(edge?.6f:1.f)*markK,fill[4]={.05f,.06f,.08f,.85f*a},ring[4]={1,1,1,a};
++        mmDisc(sx,sy,4.2f*sc,20,fill);mmRing(sx,sy,4.2f*sc-.35f,.7f,20,ring);mmDisc(sx,sy,1.5f*sc,12,ring);}
+     /* own team: the players the game already sends (the tactical map's set); never enemies or the dead */
+     const int team=p->teamNum;
+     if(team==TCP_TEAM_RED||team==TCP_TEAM_BLUE){
+diff --git a/game_src/native/tcp_onboarding_cg.h b/game_src/native/tcp_onboarding_cg.h
+index 9ae88ae..2132bab 100644
+--- a/game_src/native/tcp_onboarding_cg.h
++++ b/game_src/native/tcp_onboarding_cg.h
+@@ -20,6 +20,10 @@
+ static vmCvar_t obTips,obTipsSeen;
+ static int obShowing=-1,obStart,obNext,obAliveSince=-1,obReady;
+ 
++/* polish-01: the Platinum tip card draws one key cap per word, so "Right Mouse" read as two keys. A space inside one
++ * key name becomes the mark 0x1f, which the card (vxSplit) keeps in the word and draws as a space. */
++static int phOn(void);
++static void obJoin(char *name){if(phOn())for(char *c=name;*c;++c)if(*c==' ')*c='\x1f';}
+ /* Bound key for a command, readable ("W", "Shift", "Left Mouse"); the default
+  * key when nothing is bound. */
+ static void obKey(const char *command,const char *fallback,char *out,size_t size){
+@@ -32,9 +36,10 @@ static void obKey(const char *command,const char *fallback,char *out,size_t size
+     SystemCall(CG_KEY_BINDINGTOKEYS,command,&first,&second);
+     if(first>=0)SystemCall(CG_KEY_KEYNUMTOSTRINGBUF,first,key,(int)sizeof(key));
+     if(!key[0])snprintf(key,sizeof(key),"%s",fallback);
+-    for(size_t i=0;i<sizeof(names)/sizeof(names[0]);++i)if(!_stricmp(key,names[i].key)){snprintf(out,size,"%s",names[i].name);return;}
++    for(size_t i=0;i<sizeof(names)/sizeof(names[0]);++i)if(!_stricmp(key,names[i].key)){snprintf(out,size,"%s",names[i].name);obJoin(out);return;}
+     snprintf(out,size,"%s",key);
+     for(char *c=out;*c;++c)if(*c>='a'&&*c<='z')*c=(char)(*c-'a'+'A');
++    obJoin(out);
+ }
+ static void obTipText(int tip,char *out,size_t size){
+     char a[32],b[32],c[32],d[32];
+@@ -43,7 +48,7 @@ static void obTipText(int tip,char *out,size_t size){
+         obKey("+forward","w",a,sizeof(a));obKey("+moveleft","a",b,sizeof(b));obKey("+back","s",c,sizeof(c));obKey("+moveright","d",d,sizeof(d));
+         {char sprint[32];obKey("+sprint","SHIFT",sprint,sizeof(sprint));
+          snprintf(out,size,"Move with ^3%s %s %s %s^7 and hold ^3%s^7 to sprint. Sprinting drains stamina, which recovers while you walk. "
+-                  "To turn tips off, type ^3cg_tips 0^7 in the console.",a,b,c,d,sprint);}
++                  "To turn tips off, type ^3cg_tips%c0^7 in the console.",a,b,c,d,sprint,phOn()?'\x1f':' ');}
+         return;
+     case 1:
+         obKey("+zoom","MOUSE2",a,sizeof(a));
+@@ -67,7 +72,7 @@ static void obTipText(int tip,char *out,size_t size){
+         obKey("openlimbomenu","l",a,sizeof(a));
+         snprintf(out,size,"Press ^3%s^7 to open the Deployment Menu and change your team or loadout. Changes take effect when you next deploy.",a);return;
+     default:
+-        snprintf(out,size,"That is the last tip. To see them all again, type ^3cg_tips 1^7 in the console.");return;
++        snprintf(out,size,"That is the last tip. To see them all again, type ^3cg_tips%c1^7 in the console.",phOn()?'\x1f':' ');return;
+     }
+ }
+ /* Word wrap to the panel width; a colour code carries over to the next line. */
+diff --git a/game_src/native/tcp_player_models.h b/game_src/native/tcp_player_models.h
+index 80ac5df..fef1ebe 100644
+--- a/game_src/native/tcp_player_models.h
++++ b/game_src/native/tcp_player_models.h
+@@ -79,6 +79,10 @@ static const pmGearSlot_t pmGearSlots[PM_GEAR_COUNT]={
+     {"tag_bleft",{6.5f,-2.5f,-1},{0,0,0}},{"tag_bright",{6,3,1.5f},{0,0,0}},{"tag_bright",{6.5f,-.5f,2},{0,0,0}}};
+ static pmBack_t pmGear[MAX_CLIENTS];
+ static qhandle_t pmBackTag,pmBombBack,pmFlagBack[3];
++/* polish-01: set around pmAddPlayer for a figure in a scene without the world (match end podium). With
++ * RF_LIGHTING_ORIGIN the renderer lights such a figure from the map light grid at its made-up position, which is
++ * dark or inside a wall on some maps (black figures on Railhouse); without it the figure gets the fixed menu light. */
++static int pmStudioLight;
+ 
+ static int pmSameName(const char *a,const char *b){while(*a&&*b){int x=*a++,y=*b++;if(x>='A'&&x<='Z')x+=32;if(y>='A'&&y<='Z')y+=32;if(x!=y)return 0;}return *a==*b;}
+ static int pmFindAnim(const char *name){for(int i=0;i<pmAnimCount;i++)if(pmSameName(pmAnims[i].name,name))return i;return -1;}
+@@ -581,7 +585,7 @@ static void pmAddPlayer(int number,const vec3_t netOrigin,const vec3_t netAngles
+     body.reType=RT_MODEL;body.hModel=c->mesh;body.customSkin=c->skin;body.entityNum=number;
+     TCP_Axes(legsAngles,body.axis);TCP_Axes(torsoAngles,body.torsoAxis);
+     VectorCopy(origin,body.origin);VectorCopy(origin,body.oldorigin);VectorCopy(origin,body.lightingOrigin);
+-    body.renderfx=RF_LIGHTING_ORIGIN|(self&&!pmThirdPerson.integer?RF_THIRD_PERSON:0);
++    body.renderfx=(pmStudioLight?0:RF_LIGHTING_ORIGIN)|(self&&!pmThirdPerson.integer?RF_THIRD_PERSON:0); /* polish-01: see pmStudioLight */
+     pmRunLerp(&st->legs,legsAnim,time,frametime,climbing?climbScale:moving?pmSpeedScale(legsAnim,speed):1,restartLegs);
+     if(aimHold&&st->torso.anim==torsoAnim)st->torso.phase=0;
+     pmRunLerp(&st->torso,torsoAnim,time,frametime,climbing?climbScale:(torsoAnim==legsAnim&&moving)?pmSpeedScale(torsoAnim,speed):1,restartTorso);
+diff --git a/game_src/native/tcp_qol_cg.h b/game_src/native/tcp_qol_cg.h
+index c988461..1d91356 100644
+--- a/game_src/native/tcp_qol_cg.h
++++ b/game_src/native/tcp_qol_cg.h
+@@ -82,7 +82,7 @@ static int qolChatHistoryDraw(void){
+     const int catcher=(int)SystemCall(CG_KEY_GETCATCHER);
+     if(!qolHistoryHeld&&!(catcher&KEYCATCH_UI))return 0;
+     if(!qolHistoryCount)return 0;
+-    const int lines=qolHistoryCount<16?qolHistoryCount:16;const float k=qolTextScale,h=9*k,top=365-lines*h;
++    const int lines=qolHistoryCount<16?qolHistoryCount:16;const float k=qolTextScale,h=9*k,top=((catcher&KEYCATCH_UI)?314:365)-lines*h; /* polish-01: the chat prompt (y 320 to 384) covered the newest lines while typing */
+     static const float back[4]={0,0,0,.55f};
+     hudFill(2,top-2,330*k,lines*h+4,back);
+     for(int i=0;i<lines;i++){const char *s=qolHistory[(qolHistoryCount-lines+i)%QOL_HISTORY];
+@@ -112,6 +112,7 @@ static void qolVoteMapsCommand(void){
+     qolSetMaps(list);
+ }
+ static int qolVoteActive;static char qolVoteText[96];static int qolVoteYes,qolVoteNo,qolVoteVoters,qolVoteLeft,qolVoteAt,qolVoted;
++static int qolVoteAsked; /* polish-01: when the vote menu last asked for a vote; the server's answer to it is shown on screen */
+ static void qmFill(void){
+     qm.count=0;char line[64];
+     switch(qm.kind){
+@@ -135,7 +136,7 @@ static void qmFill(void){
+         break;}
+     }
+ }
+-static void qmOpen(int kind){if(qm.kind==kind){qm.kind=QM_NONE;return;}qm.kind=kind;qm.page=0;qm.opened=hudNow;qmFill();}
++static void qmOpen(int kind){if(demoPlaying)return; /* polish-01: no radio or vote menu over a recorded demo */if(qm.kind==kind){qm.kind=QM_NONE;return;}qm.kind=kind;qm.page=0;qm.opened=hudNow;qmFill();}
+ static void qmPick(int index){
+     if(!qm.kind||index<0||index>=qm.count)return;const int v=qm.value[index];char cmd[160];
+     if(v==-2){qm.kind=QM_NONE;return;}
+@@ -144,12 +145,12 @@ static void qmPick(int index){
+     case QM_RADIO:snprintf(cmd,sizeof(cmd),"say_team \"%s\"",qolRadio[v]);SystemCall(CG_SENDCLIENTCOMMAND,cmd);if(qolRadioSfx)SystemCall(CG_S_STARTLOCALSOUND,qolRadioSfx,CHAN_LOCAL_SOUND,90);qm.kind=QM_NONE;break;
+     case QM_VOTE:
+         if(v==1||v==2){SystemCall(CG_SENDCLIENTCOMMAND,v==1?"vote yes":"vote no");qolVoted=1;qm.kind=QM_NONE;}
+-        else if(v==10){SystemCall(CG_SENDCLIENTCOMMAND,"callvote restart");qm.kind=QM_NONE;}
+-        else if(v==11){SystemCall(CG_SENDCLIENTCOMMAND,"callvote shuffle");qm.kind=QM_NONE;}
++        else if(v==10){SystemCall(CG_SENDCLIENTCOMMAND,"callvote restart");qolVoteAsked=hudNow;qm.kind=QM_NONE;}
++        else if(v==11){SystemCall(CG_SENDCLIENTCOMMAND,"callvote shuffle");qolVoteAsked=hudNow;qm.kind=QM_NONE;}
+         else{qm.kind=v==12?QM_VOTEMAP:QM_VOTEKICK;qm.page=0;qm.opened=hudNow;qmFill();}
+         break;
+-    case QM_VOTEMAP:snprintf(cmd,sizeof(cmd),"callvote map %s",qolMaps[v]);SystemCall(CG_SENDCLIENTCOMMAND,cmd);qm.kind=QM_NONE;break;
+-    case QM_VOTEKICK:snprintf(cmd,sizeof(cmd),"callvote kick %d",v);SystemCall(CG_SENDCLIENTCOMMAND,cmd);qm.kind=QM_NONE;break;
++    case QM_VOTEMAP:snprintf(cmd,sizeof(cmd),"callvote map %s",qolMaps[v]);SystemCall(CG_SENDCLIENTCOMMAND,cmd);qolVoteAsked=hudNow;qm.kind=QM_NONE;break;
++    case QM_VOTEKICK:snprintf(cmd,sizeof(cmd),"callvote kick %d",v);SystemCall(CG_SENDCLIENTCOMMAND,cmd);qolVoteAsked=hudNow;qm.kind=QM_NONE;break;
+     case QM_MUTE:qolSetMuted(v,!qolIsMuted(v));qmFill();qm.opened=hudNow;break;
+     }
+ }
+@@ -157,12 +158,13 @@ static void qmDraw(void){
+     if(!qm.kind)return;
+     if(hudNow-qm.opened>8000){qm.kind=QM_NONE;return;}
+     static const char *titles[]={"","QUICK RADIO","CALL A VOTE","CHANGE THE MAP","KICK A PLAYER","MUTE A PLAYER"};
++    const char *title=qm.kind==QM_VOTE&&qolVoteActive&&!qolVoted?"CAST YOUR VOTE":titles[qm.kind]; /* polish-01: the menu offers Vote YES / Vote NO then */
+     static const float back[4]={.055f,.07f,.085f,.88f},accent[4]={.70f,.20f,.23f,1},grey[4]={.75f,.78f,.82f,1};
+     const int saved=hudAnchor;hudAnchor=HUD_LEFT;
+     if(phOn()){
+         const float x=16,y=120,w=230,h=30+qm.count*14.f+18;char line[96],key[4];
+         phPanel(x,y,w,h,1.2f);hudFill(x,y,w,2,phAcc);phTicks(x,y,w,h,phLine2);
+-        phTextT(&phBody,x+10,y+10,5.5f,.9f,phAcc,titles[qm.kind],PH_LEFT);
++        phTextT(&phBody,x+10,y+10,5.5f,.9f,phAcc,title,PH_LEFT);
+         for(int i=0;i<qm.count;i++){
+             const float ry=y+26+i*14.f;snprintf(key,sizeof(key),"%d",i==9?0:i+1);
+             hudFill(x+10,ry,11,11,phLine);phText(&phMono,x+15.5f,ry+3,5,phT1,key,PH_MID);
+@@ -173,7 +175,7 @@ static void qmDraw(void){
+     }
+     const float x=8,y=180,w=210,h=24+qm.count*13.f+16;
+     hudFill(x,y,w,h,back);hudFill(x,y,w,2,accent);hudBorder(x,y,w,h);
+-    hudText(x+8,y+16,.21f,hudWhite,titles[qm.kind],1);
++    hudText(x+8,y+16,.21f,hudWhite,title,1);
+     char line[96];
+     for(int i=0;i<qm.count;i++){snprintf(line,sizeof(line),"^3%d^7  %s",i==9?0:i+1,qm.label[i]);hudText(x+8,y+32+i*13.f,.19f,hudWhite,line,1);}
+     hudText(x+8,y+h-5,.15f,grey,"Number keys choose. Same key again closes.",0);
+@@ -186,10 +188,17 @@ static void qolVoteCommand(void){
+     SystemCall(CG_ARGV,2,a,sizeof(a));qolVoteYes=atoi(a);SystemCall(CG_ARGV,3,a,sizeof(a));qolVoteNo=atoi(a);
+     SystemCall(CG_ARGV,4,a,sizeof(a));qolVoteVoters=atoi(a);SystemCall(CG_ARGV,5,a,sizeof(a));qolVoteLeft=atoi(a);qolVoteAt=hudNow;
+     SystemCall(CG_ARGV,6,a,sizeof(a));snprintf(qolVoteText,sizeof(qolVoteText),"%s",a);
+-    if(qolVoteActive&&!was){qolVoted=0;qolFlashTaskbar();}
++    if(qolVoteActive&&!was){qolVoted=0;qolVoteAsked=0;qolFlashTaskbar();}
+     SystemCall(CG_ARGV,7,a,sizeof(a));if(qolVoteActive&&a[0])qolVoted=atoi(a)!=0; /* server: this player has voted */
+     if(!qolVoteActive){qolVoted=0;if(qm.kind==QM_VOTE)qm.kind=QM_NONE;}
+ }
++/* polish-01: a vote asked from the vote menu and refused by the server (bots cannot be kicked, too few players,
++ * vote type off, vote limit reached) only wrote a line to the console, so the menu closed and nothing happened. */
++static void qolVoteAnswer(const char *msg){
++    if(!qolVoteAsked||hudNow-qolVoteAsked>1500||hudNow<qolVoteAsked||strstr(msg," called a vote: "))return; /* a vote that starts has its own panel */
++    char line[160];size_t n=0;for(const char *c=msg;*c&&*c!='\n'&&n<sizeof(line)-1;c++)line[n++]=*c;line[n]=0;
++    if(!n)return;qolVoteAsked=0;addBigPopup(line,hudVoiceChat,hudNow);
++}
+ static void qolVoteEndCommand(void){
+     char a[16],text[96],why[96],line[200];SystemCall(CG_ARGV,1,a,sizeof(a));SystemCall(CG_ARGV,2,text,sizeof(text));SystemCall(CG_ARGV,3,why,sizeof(why));
+     snprintf(line,sizeof(line),"%s%s^7: %s",atoi(a)?"^2":"^1",why,text);addBigPopup(line,hudVoiceChat,hudNow);qolVoteActive=0;
+@@ -528,8 +537,9 @@ static void qolDrawPractice(const playerState_t *p){
+     if(!(p->holdable[TCP_HOLD_QOL]&QOL_PRACTICE))return;
+     if(phOn()){const int saved=hudAnchor;hudAnchor=HUD_RIGHT;
+         const float right=PH_W-16,w=phWidth(&phBody,5,"Infinite ammo   /practice_restart")+phWidthT(&phBody,5,.8f,"PRACTICE")+20;
+-        phPanel(right-w,58,w,15,1);phTextT(&phBody,right-w+7,63,5,.8f,phAmber,"PRACTICE",PH_LEFT);
+-        phText(&phBody,right-6,63,5,phT2,"Infinite ammo   /practice_restart",PH_RIGHT);hudAnchor=saved;return;}
++        const float ty=phRightEnd+4+phFpsRoom; /* polish-01: under the minimap and objective card, not across them (was fixed at 58) */
++        phPanel(right-w,ty,w,15,1);phTextT(&phBody,right-w+7,ty+5,5,.8f,phAmber,"PRACTICE",PH_LEFT);
++        phText(&phBody,right-6,ty+5,5,phT2,"Infinite ammo   /practice_restart",PH_RIGHT);hudAnchor=saved;return;}
+     hudTextRight(840,187,.15f,hudGrey,"^3PRACTICE^7  Infinite ammo   /practice_restart");
+ }
+ 
+diff --git a/game_src/native/tcp_range_cg.h b/game_src/native/tcp_range_cg.h
+index 7dbcff0..b5db633 100644
+--- a/game_src/native/tcp_range_cg.h
++++ b/game_src/native/tcp_range_cg.h
+@@ -34,11 +34,14 @@ static void rangeDraw(const playerState_t *p){
+     if(fired>0)snprintf(acc,sizeof(acc),"%d%%",landed*100/fired);else snprintf(acc,sizeof(acc),"-");
+     if(phOn()){
+         const int saved=hudAnchor;hudAnchor=HUD_RIGHT;
+-        const float w=150,x=PH_W-16-w,y=78,h=rangeHitCount?34+(rangeHitCount-1)*9+22:44;
++        const float w=150,x=PH_W-16-w,y=phRightEnd+24+phFpsRoom,h=rangeHitCount?34+(rangeHitCount-1)*9+22:44;
+         phPanel(x,y,w,h,1);phTicks(x,y,w,h,phLine2);
+         phTextT(&phBody,x+8,y+6,5,.8f,phAmber,"FIRING RANGE",PH_LEFT);
+         phText(&phBody,x+w-8,y+6,4.5f,phT3,"/range_reset",PH_RIGHT);
+-        if(!rangeHitCount){phText(&phBody,x+8,y+22,5,phT2,"Targets at 10 to 100 m",PH_LEFT);hudAnchor=saved;return;}
++        if(!rangeHitCount){ /* polish-01: say how many targets found room (was always "Targets at 10 to 100 m", also with one target at 9 m) */
++            if(rangeTargets>0){snprintf(line,sizeof(line),"%d target%s ahead of you",rangeTargets,rangeTargets==1?"":"s");phText(&phBody,x+8,y+22,5,phT2,line,PH_LEFT);}
++            else phText(&phBody,x+8,y+22,5,phT2,"Targets at 10 to 100 m",PH_LEFT);
++            hudAnchor=saved;return;}
+         const rangeHit_t *l=&rangeHits[0];const float fade=hudNow-l->time<300?1:.85f;float c[4];
+         phAlpha(l->branch==1?phAcc:phT1,fade,c);
+         phTextT(&phBody,x+8,y+18,8,.6f,c,rangeRegion(l->branch),PH_LEFT);
+diff --git a/game_src/native/tcp_vux_cg.h b/game_src/native/tcp_vux_cg.h
+index b762fb6..5022652 100644
+--- a/game_src/native/tcp_vux_cg.h
++++ b/game_src/native/tcp_vux_cg.h
+@@ -66,7 +66,7 @@ static int vxSplit(const char *s,float h,vxWord_t *out,int max){
+         char word[48];int len=0;int startKey=key;
+         while(*s&&*s!=' '){
+             if(*s=='^'&&s[1]&&s[1]!='^'){key=s[1]=='3';if(len==0)startKey=key;s+=2;continue;}
+-            if(len<(int)sizeof(word)-1){word[len++]=*s;}
++            if(len<(int)sizeof(word)-1){word[len++]=*s=='\x1f'?' ':*s;} /* polish-01: 0x1f is a space that does not split a key cap */
+             s++;
+         }
+         word[len]=0;if(!len)continue;
+@@ -163,12 +163,15 @@ static void vxNewDraw(int now,int blocked){
+         phAlpha(phT2,a,c);ty+=vxRich(x+24,ty,w-36,5.5f,10,c,vxNew.lines[i],PH_LEFT,1)+4;
+     }
+     phAlpha(phT3,a,c);phText(&phBody,x+14,y+h-11,4.5f,c,"Type whatsnew in the console to see this again.",PH_LEFT);
++    if(y+h>398)brHintCovered=hudNow; /* polish-01: the F12 hint no longer prints over the card */
+     /* progress hairline: time left */
+     phAlpha(phLine2,a,c);hudFill(x,y+h-2,w*(float)left/vxNew.length,1,c);
+     hudAnchor=saved;
+ }
+ 
+ /* ================================================================ tactical map */
++/* polish-01: the Capture Point marker of this frame (set where the marker entity is drawn), for tactical map and minimap */
++static float vxCapPos[2];static int vxCapSeen;
+ #define VX_CALLOUTS 48
+ static struct {
+     char map[64];int loaded,ok;qhandle_t image;float mins[2],maxs[2];
+@@ -221,10 +224,10 @@ static void vxTacDraw(const playerState_t *p,int now){
+     }
+     /* fit the layout in a 380 unit box, keeping its aspect */
+     const float ww=vxTac.maxs[0]-vxTac.mins[0],wh=vxTac.maxs[1]-vxTac.mins[1],box=380;
+-    const float w=ww>=wh?box:box*ww/wh,h=ww>=wh?box*wh/ww:box,x=PH_CX-w*.5f,y=48+(box-h)*.5f;
++    const float w=ww>=wh?box:box*ww/wh,h=ww>=wh?box*wh/ww:box,x=PH_CX-w*.5f,y=53+(box-h)*.5f; /* polish-01: 5 lower, the panel no longer cuts into the score header */
+     phPanel(x-10,y-26,w+20,h+42,1.2f);phTicks(x-10,y-26,w+20,h+42,phLine2);hudFill(x-10,y-26,w+20,2,phAcc);
+     char title[80],name[64];snprintf(name,sizeof(name),"%s",vxTac.map);
+-    {char *u=strchr(name,'_');snprintf(title,sizeof(title),"%s",u?u+1:name);}phUpper(title);
++    mapVotePretty(name,title,sizeof(title));phUpper(title); /* polish-01: same name as scoreboard and map vote */
+     phTextT(&phBody,x,y-18,5,.9f,phAcc,"TACTICAL MAP",PH_LEFT);
+     phTextT(&phDisplay,x+w,y-20,9,.5f,phT1,title,PH_RIGHT);
+     phTint(x,y,w,h,vxTac.image,(const float[4]){1,1,1,.92f});
+@@ -236,7 +239,10 @@ static void vxTacDraw(const playerState_t *p,int now){
+         phAlpha(phAmber,.22f,c);hudFill(x0,y0,x1-x0,y1-y0,c);phTicks(x0,y0,x1-x0,y1-y0,phAmber);
+         phTextT(&phDisplay,(x0+x1)*.5f,(y0+y1)*.5f-4,8,.3f,phAmber,vxTac.site[i].name,PH_MID);
+     }
+-    for(int i=0;i<vxTac.flags;i++){float tc[4];phTeamColor(vxTac.flag[i].team,tc);hudFill(VX_MX(vxTac.flag[i].p[0])-3,VX_MY(vxTac.flag[i].p[1])-3,6,6,tc);}
++    /* polish-01: flag bases only in Flag Capture; the capture point in Capture Point (neither was tied to its mode) */
++    if(snap.ps.holdable[TCP_HOLD_GAMEMODE]==5)for(int i=0;i<vxTac.flags;i++){float tc[4];phTeamColor(vxTac.flag[i].team,tc);hudFill(VX_MX(vxTac.flag[i].p[0])-3,VX_MY(vxTac.flag[i].p[1])-3,6,6,tc);}
++    if(vxCapSeen&&hudNow-vxCapSeen>=0&&hudNow-vxCapSeen<1500){const float px=VX_MX(vxCapPos[0]),py=VX_MY(vxCapPos[1]);
++        phAlpha(phT1,.18f,c);hudFill(px-5,py-5,10,10,c);phTicks(px-5,py-5,10,10,phT1);phTextT(&phBody,px,py+7,4,.6f,phT1,"POINT",PH_MID);}
+     for(int i=0;i<vxTac.callouts;i++)phText(&phBody,VX_MX(vxTac.callout[i].p[0]),VX_MY(vxTac.callout[i].p[1])-2,4,phT2,vxTac.callout[i].name,PH_MID);
+     /* own team only: spectators and free-for-all see the plan without players */
+     const int team=p->teamNum;
+@@ -306,7 +312,7 @@ static void vxPodiumDraw(int now){
+         int weapon=TCP_RIFLE_ID;for(int i=0;i<snap.numEntities;i++)if(snap.entities[i].eType==ET_PLAYER&&snap.entities[i].number==s->slot&&snap.entities[i].weapon>0)weapon=snap.entities[i].weapon;
+         pmInput_t in={s->team==TCP_TEAM_RED?PM_CHAR_AXIS:PM_CHAR_ALLIED,100,0,0,1,0,weapon,0,0,0,0,0,0};
+         /* entity numbers no game entity uses, so the soldiers keep their own animation state */
+-        pmAddPlayer(MAX_GENTITIES-8+col,at,ang,still,&in,snap.serverTime,now,0,rd.vieworg);
++        pmStudioLight=1;pmAddPlayer(MAX_GENTITIES-8+col,at,ang,still,&in,snap.serverTime,now,0,rd.vieworg);pmStudioLight=0; /* polish-01: lit the same on every map */
+         SystemCall(CG_R_RENDERSCENE,&rd);
+         /* name and score under the step */
+         char who[40]="";TCP_InfoValue(config(CS_PLAYERS+s->slot),"n",who,sizeof(who));
+diff --git a/game_src/native/tcp_weapon_pickup_cg.h b/game_src/native/tcp_weapon_pickup_cg.h
+index ed66eb1..4b46931 100644
+--- a/game_src/native/tcp_weapon_pickup_cg.h
++++ b/game_src/native/tcp_weapon_pickup_cg.h
+@@ -20,6 +20,7 @@ static void wpcHint(const playerState_t *p,int hintsOn){
+     if(phOn()){
+         char key[32];phKeyFor("+activate","F",key,sizeof(key));
+         const float w=vxCapWidth(12,key)+5+phWidthT(&phBody,5.5f,0,action);
++        phPanel(PH_CX-w*.5f-7,287.5f,w+14,20,.8f); /* polish-01: a backing, the bare text was lost on snow and bright walls */
+         phHint(PH_CX-w*.5f,292,key,action);
+     }else{
+         char key[32]="";int first=-1,second=-1;SystemCall(CG_KEY_BINDINGTOKEYS,"+activate",&first,&second);
