@@ -208,10 +208,10 @@ Vanaf deze update draait Official #2 (Unranked) met experimentele content aan: d
 
 ## Hoe we het getest hebben
 
-Elke kandidaat-build van 0.39.0 ging door onze volledige regressietest: negentien geautomatiseerde scenario's met matches tegen bots, netwerkspel, serverinstellingen, herstarts en predictie, op zowel DirectX 12 als OpenGL. Daarbovenop hebben we het zelf gespeeld, de anti-cheat van begin tot eind gecontroleerd en de nieuwe launcher door een volledige update en herstelling vanaf 0.38.2 gehaald. Onderweg kwamen er een paar problemen boven, van een bomronde die dubbel telde tot deuren die de verkeerde kant op zwaaiden, en die zijn allemaal opgelost in de build die je vandaag downloadt.
+Elke kandidaat-build van 0.39.0 ging door onze volledige regressietest: negentien geautomatiseerde scenario's met matches tegen bots, netwerkspel, serverinstellingen, herstarts en predictie, op zowel DirectX 12 als OpenGL. Daarbovenop hebben we het zelf gespeeld, de anti-cheat van begin tot eind gecontroleerd en de nieuwe launcher door een volledige update en herstelling vanaf 0.38.2 gehaald. Onderweg kwamen er een paar problemen boven, van een bomronde die dubbel telde tot deuren die de verkeerde kant op zwaaiden, en die zijn allemaal opgelost in de build die uitkomt.
 
 ## Wat komt er hierna
 
 0.39.0 is de laatste grote update voor 0.40, onze grootste mijlpaal tot nu toe. Een deel van wat eraan komt, lieten we al zien in [Opnieuw gemodelleerd, op weg naar 0.40](devlog-remodelled.html), en er is nog veel meer dat we nog niet getoond hebben.
 
-De volledige patch notes staan op de releasepagina. Update via de launcher, start Snow op en luister. Tot aan het front.
+Terwijl je dit leest, gaat 0.39.0 door zijn laatste controles, en heel binnenkort komt hij binnen via de launcher. De volledige patch notes staan op de releasepagina zodra hij uitkomt. Start dan Snow op en luister. Tot aan het front.

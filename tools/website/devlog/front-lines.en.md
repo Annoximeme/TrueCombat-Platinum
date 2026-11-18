@@ -208,10 +208,10 @@ From this update, Official #2 (Unranked) runs with experimental content on: the 
 
 ## How we tested it
 
-Every candidate build of 0.39.0 went through our full regression: nineteen automated scenarios covering matches with bots, network play, server settings, restarts and prediction, on both DirectX 12 and OpenGL. On top of that we played it ourselves, checked the anti-cheat end to end and ran the new launcher through a full update and repair from 0.38.2. A few issues turned up along the way, from a bomb round scoring twice to doors swinging the wrong way, and all of them are fixed in the build you download today.
+Every candidate build of 0.39.0 went through our full regression: nineteen automated scenarios covering matches with bots, network play, server settings, restarts and prediction, on both DirectX 12 and OpenGL. On top of that we played it ourselves, checked the anti-cheat end to end and ran the new launcher through a full update and repair from 0.38.2. A few issues turned up along the way, from a bomb round scoring twice to doors swinging the wrong way, and all of them are fixed in the build that ships.
 
 ## What comes next
 
 0.39.0 is the last large update before 0.40, our biggest milestone so far. We have already shown some of what is coming in [Remodelled, on the road to 0.40](devlog-remodelled.html), and there is a lot more we have not shown yet.
 
-The full patch notes are on the release page. Update through the launcher, load up Snow and listen. See you on the front line.
+0.39.0 is in its final round of checks as you read this and arrives through the launcher very soon. The full patch notes go up on the release page the moment it ships. When it does, load up Snow and listen. See you on the front line.
