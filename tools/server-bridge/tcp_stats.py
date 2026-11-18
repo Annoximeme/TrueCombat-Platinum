@@ -989,15 +989,20 @@ class StatsStore:
         return {"schema": "tcp-contracts/1", "player": pid, "week": week, "opens": tcp_season.iso(b[0]), "closes": tcp_season.iso(b[1]),
                 "bonusXp": tcp_season.CONTRACT_BONUS_XP, "contracts": out, "allDone": all(c["done"] for c in out)}
 
-    def solo_submit(self, run):
-        """A signed practice run (tcp-solo/1). Returns (status, info); raises Rejected for anything we refuse."""
-        if not isinstance(run, dict):
-            raise Rejected("not a run")
-        pub, sig = str(run.get("key", "")).lower(), str(run.get("sig", "")).lower()
+    def solo_submit(self, upload):
+        """A signed practice run: {"run": "<tcp-solo/1 JSON text>", "key": "<public hex>", "sig": "<Ed25519 hex>"}, the
+        signature over "tcp-solo/1\n" + that text. Returns (status, info); raises Rejected for anything refused."""
+        if not isinstance(upload, dict) or not isinstance(upload.get("run"), str):
+            raise Rejected("not a run upload")
+        pub, sig, raw = str(upload.get("key", "")).lower(), str(upload.get("sig", "")).lower(), upload["run"]
         if not (re.fullmatch(r"[0-9a-f]{64}", pub) and re.fullmatch(r"[0-9a-f]{128}", sig)):
             raise Rejected("run must carry the identity key and its signature")
-        if not tcp_season.ed25519_verify(bytes.fromhex(pub), tcp_season.run_message(run), bytes.fromhex(sig)):
+        if not tcp_season.ed25519_verify(bytes.fromhex(pub), tcp_season.run_message(raw), bytes.fromhex(sig)):
             raise Rejected("bad signature")
+        try:
+            run = json.loads(raw)
+        except ValueError:
+            raise Rejected("run is not JSON")
         now = self._now()
         week = tcp_season.solo_week(tcp_season.week_key(now))
         score, why = tcp_season.check_run(run, week)
@@ -1022,7 +1027,7 @@ class StatsStore:
             season = tcp_season.season_at(self.seasons, now) if self.seasons else None
             self.db.execute("INSERT INTO solo_runs VALUES(?,?,?,?,?,?,?,?,?,?,0)",
                             (rid, run["board"], week["week"], season["id"] if season else "", kid, pid, name, score,
-                             tcp_season.iso(now), json.dumps(run, separators=(",", ":"))))
+                             tcp_season.iso(now), raw))
             # keep full shot logs only for each board's weekly top 10; the rest keep their score
             better = tcp_season.SOLO_BOARDS[run["board"]]["better"] == "low"
             keep = [r[0] for r in self.db.execute(

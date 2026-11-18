@@ -129,8 +129,9 @@ rebuilds the first two on `recompute`, like every other total. Season dates come
   pool in `CONTRACTS`. Counted from the same per-match stats as the boards (real players, verified servers), ranked and
   unranked. A finished contract adds 150 XP to the match that finished it, all three 250 more; launch week doubles it.
 - **Solo boards** (practice records, no XP, no rating): `range` (Range Run, time), `drill` (Accuracy Drill, points),
-  `bots` (weekly bot challenge, time). Runs are `tcp-solo/1`, signed with the player's identity key (Ed25519 over
-  `"tcp-solo/1\n" + canonical JSON without "sig"`), checked against this week's seed, weapon and challenge and against
+  `bots` (weekly bot challenge, time). The game writes a `tcp-solo/1` run file; the launcher uploads
+  `{"run": "<the file's text>", "key": "<public hex>", "sig": "<hex>"}`, an Ed25519 signature with the player's identity
+  key over `"tcp-solo/1\n" + <the file's text>`. Runs are checked against this week's seed, weapon and challenge and against
   what no human can do. Full shot logs are kept for each board's weekly top 10 only.
 
 Routes:

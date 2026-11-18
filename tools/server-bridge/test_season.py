@@ -193,17 +193,17 @@ def run(board="range", gap=300, misses=1, **kw):
             shots.append([t - 50, -1, 0])
         shots.append([t, i, 0])
     r = {"schema": "tcp-solo/1", "board": board, "week": setup["week"], "seed": setup["seed"], "weapon": setup["rangeWeapon"],
-         "version": "0.40.0", "name": "Ana", "shots": shots, "key": pub.hex()}
+         "version": "0.40.0", "name": "Ana", "shots": shots}
     r.update(kw)
-    r["sig"] = sign(a, prefix, pub, S.run_message(r)).hex()
-    return r
+    raw = json.dumps(r)
+    return {"run": raw, "key": pub.hex(), "sig": sign(a, prefix, pub, S.run_message(raw)).hex()}
 
 
 good = run()
 status, info = store.solo_submit(good)
 check("signed range run stored", status == "stored" and info["score"] == 20 * 300 + 500, info)
 for name, bad, why in (("forged signature", dict(run(gap=310), sig="00" * 64), "signature"),
-                       ("tampered score after signing", dict(good, shots=good["shots"][:-1]), "signature"),
+                       ("tampered run after signing", dict(good, run=good["run"].replace("300", "100", 1)), "signature"),
                        ("inhuman target gaps", run(gap=60), "human"),
                        ("wrong weapon", run(gap=320, weapon="Knife"), "weapon"),
                        ("old week's seed", run(gap=330, seed=setup["seed"] + 1), "seed")):
