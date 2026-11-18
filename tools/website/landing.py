@@ -137,7 +137,7 @@ DOWNLOAD_T = {
         "h1t": "Windows shows a SmartScreen notice", "h1a": "Windows shows this for installers it has not seen often yet. Choose <b>More info</b>, then <b>Run anyway</b>. From then on the launcher verifies every update itself.",
         "h2t": "DirectX 12 won't start", "h2a": "Press <b>Safe start</b> in the launcher. It runs the game on OpenGL in a 1280 × 720 window and leaves your normal settings alone.",
         "h3t": "My server runs an older version", "h3a": "Everyone in a match needs the same version. The launcher can stay on an older release for as long as your community needs it, and return to the latest whenever you like.",
-        "h4t": "I need a hand", "h4a": "Ask in the <a href=\"https://discord.gg/8kcHdg2Hch\">TrueCombat: Platinum Discord</a>. The team and the community answer there every day.",
+        "h4t": "I need a hand", "h4a": "Ask in the <a href=\"https://discord.gg/7Dg4yhhvGF\">TrueCombat: Platinum Discord</a>. The team and the community answer there every day.",
         "help_all": "All questions and answers",
     },
     "nl": {
@@ -171,7 +171,7 @@ DOWNLOAD_T = {
         "h1t": "Windows toont een SmartScreen-melding", "h1a": "Windows toont die bij installatieprogramma's die het nog niet vaak heeft gezien. Kies <b>Meer informatie</b> en daarna <b>Toch uitvoeren</b>. Vanaf dan controleert de launcher elke update zelf.",
         "h2t": "DirectX 12 start niet", "h2a": "Druk op <b>Safe start</b> in de launcher. Het spel draait dan op OpenGL in een venster van 1280 × 720 en je gewone instellingen blijven ongemoeid.",
         "h3t": "Mijn server draait een oudere versie", "h3a": "Iedereen in een potje heeft dezelfde versie nodig. De launcher kan op een oudere release blijven zolang je community dat nodig heeft, en je gaat terug naar de nieuwste wanneer je wilt.",
-        "h4t": "Ik kom er niet uit", "h4a": "Vraag het in de <a href=\"https://discord.gg/8kcHdg2Hch\">TrueCombat: Platinum-Discord</a>. Het team en de community helpen je daar elke dag verder.",
+        "h4t": "Ik kom er niet uit", "h4a": "Vraag het in de <a href=\"https://discord.gg/7Dg4yhhvGF\">TrueCombat: Platinum-Discord</a>. Het team en de community helpen je daar elke dag verder.",
         "help_all": "Alle vragen en antwoorden",
     },
 }
@@ -186,7 +186,7 @@ FAQ = {
         "eyebrow": "Questions", "h1": "Questions and answers",
         "lede": "Everything players ask before their first match, and a few things they ask after it.",
         "toc": "On this page",
-        "more_h": "Still stuck?", "more": "Ask in the <a href=\"https://discord.gg/8kcHdg2Hch\">TrueCombat: Platinum Discord</a>. The team reads every question.",
+        "more_h": "Still stuck?", "more": "Ask in the <a href=\"https://discord.gg/7Dg4yhhvGF\">TrueCombat: Platinum Discord</a>. The team reads every question.",
         "groups": [
             ("start", "Getting started", [
                 ("what", "What is TrueCombat: Platinum?", "A native 64-bit Windows rebuild of <a href=\"truecombat-elite.html\">TrueCombat: Elite</a>, the realistic modern-combat total conversion for Enemy Territory. It has a DirectX 12 renderer, the original maps, soldiers and HUD, and a launcher that hosts servers and installs signed updates."),
@@ -202,7 +202,7 @@ FAQ = {
                 ("ranked", "How do the leaderboards work?", "Every completed match on a ranked server counts towards your rank and rating. You appear on the <a href=\"leaderboards.html\">leaderboards</a> after your first completed match, and each player gets a profile page with weapons, recent matches and rating history."),
                 ("match-mode", "Is there a mode for clan matches?", "Yes. <a href=\"competitive.html\">Match mode</a> adds ready-up, a knife round for sides, half-time and tactical timeouts that freeze the whole match. It is built into every server."),
                 ("offline", "Can I play offline?", "Yes. <b>Practice offline with bots</b> in the launcher starts a match in one click, with no connection needed."),
-                ("players", "Where do I find players?", "Join the <a href=\"https://discord.gg/8kcHdg2Hch\">TrueCombat: Platinum Discord</a>. That's where matches get organised, servers get shared and new versions are announced first."),
+                ("players", "Where do I find players?", "Join the <a href=\"https://discord.gg/7Dg4yhhvGF\">TrueCombat: Platinum Discord</a>. That's where matches get organised, servers get shared and new versions are announced first."),
             ]),
             ("graphics", "Graphics and performance", [
                 ("dx12", "DirectX 12 won't start. What now?", "Press <b>Safe start</b> in the launcher. It runs the game on OpenGL in a 1280 × 720 window, and the game also falls back to OpenGL by itself if DirectX 12 fails."),
@@ -228,7 +228,7 @@ FAQ = {
         "eyebrow": "Vragen", "h1": "Vragen en antwoorden",
         "lede": "Alles wat spelers vragen voor hun eerste potje, en een paar dingen die ze daarna vragen.",
         "toc": "Op deze pagina",
-        "more_h": "Kom je er niet uit?", "more": "Vraag het in de <a href=\"https://discord.gg/8kcHdg2Hch\">TrueCombat: Platinum-Discord</a>. Het team leest elke vraag.",
+        "more_h": "Kom je er niet uit?", "more": "Vraag het in de <a href=\"https://discord.gg/7Dg4yhhvGF\">TrueCombat: Platinum-Discord</a>. Het team leest elke vraag.",
         "groups": [
             ("start", "Aan de slag", [
                 ("what", "Wat is TrueCombat: Platinum?", "Een native 64-bit Windows-versie van <a href=\"truecombat-elite.html\">TrueCombat: Elite</a>, de realistische total conversion voor Enemy Territory in een moderne setting. Met een DirectX 12-renderer, de originele maps, soldaten en HUD, en een launcher die servers host en ondertekende updates installeert."),
@@ -244,7 +244,7 @@ FAQ = {
                 ("ranked", "Hoe werken de ranglijsten?", "Elk uitgespeeld potje op een ranked server telt mee voor je rang en rating. Je verschijnt op de <a href=\"leaderboards.html\">ranglijsten</a> na je eerste uitgespeelde potje, en elke speler krijgt een profielpagina met wapens, recente potjes en ratingverloop."),
                 ("match-mode", "Is er een modus voor clanwedstrijden?", "Ja. De <a href=\"competitive.html\">wedstrijdmodus</a> voegt ready-up, een mesronde om de kant, een rust en tactische time-outs toe die de hele wedstrijd bevriezen. Hij zit in elke server ingebouwd."),
                 ("offline", "Kan ik offline spelen?", "Ja. <b>Practice offline with bots</b> in de launcher start met één klik een potje, zonder verbinding."),
-                ("players", "Waar vind ik spelers?", "Word lid van de <a href=\"https://discord.gg/8kcHdg2Hch\">TrueCombat: Platinum-Discord</a>. Daar worden potjes afgesproken, servers gedeeld en nieuwe versies als eerste aangekondigd."),
+                ("players", "Waar vind ik spelers?", "Word lid van de <a href=\"https://discord.gg/7Dg4yhhvGF\">TrueCombat: Platinum-Discord</a>. Daar worden potjes afgesproken, servers gedeeld en nieuwe versies als eerste aangekondigd."),
             ]),
             ("graphics", "Graphics en prestaties", [
                 ("dx12", "DirectX 12 start niet. Wat nu?", "Druk op <b>Safe start</b> in de launcher. Het spel draait dan op OpenGL in een venster van 1280 × 720, en het spel valt ook zelf terug op OpenGL als DirectX 12 niet werkt."),
@@ -381,7 +381,7 @@ ELITE_T = {
         "r1": "If you played TC:E, you already know how to play Platinum. The keys, the pace and the maps are where you left them.",
         "r_a": "<a href=\"download.html\">Download the installer</a> and let the launcher set up the game.",
         "r_b": "Join <b>Official #2</b> from the Servers tab to shake off the rust, then move to <b>Official #1</b> when you want your matches to count.",
-        "r_c": "Say hello on the <a href=\"https://discord.gg/8kcHdg2Hch\">Discord</a>. Veterans and new players set up their matches there.",
+        "r_c": "Say hello on the <a href=\"https://discord.gg/7Dg4yhhvGF\">Discord</a>. Veterans and new players set up their matches there.",
         "r_note": "<b>New to TC:E?</b> The <a href=\"guide.html\">beginner's guide</a> covers the controls, the game modes and the habits that keep you alive.",
     },
     "nl": {
@@ -423,7 +423,7 @@ ELITE_T = {
         "r1": "Als je TC:E hebt gespeeld, kun je Platinum al spelen. De toetsen, het tempo en de maps zijn waar je ze hebt achtergelaten.",
         "r_a": "<a href=\"download.html\">Download het installatieprogramma</a> en laat de launcher het spel klaarzetten.",
         "r_b": "Speel eerst op <b>Official #2</b> via het tabblad Servers om er weer in te komen, en stap over naar <b>Official #1</b> wanneer je potjes moeten meetellen.",
-        "r_c": "Zeg hallo op de <a href=\"https://discord.gg/8kcHdg2Hch\">Discord</a>. Veteranen en nieuwe spelers spreken daar hun potjes af.",
+        "r_c": "Zeg hallo op de <a href=\"https://discord.gg/7Dg4yhhvGF\">Discord</a>. Veteranen en nieuwe spelers spreken daar hun potjes af.",
         "r_note": "<b>Nieuw met TC:E?</b> De <a href=\"guide.html\">beginnersgids</a> behandelt de besturing, de spelmodi en de gewoontes waarmee je overleeft.",
     },
 }

@@ -146,4 +146,4 @@ These are planned for the next update, and they ship when they pass the same gat
 
 Almost everything in this update started with a player: a request for built-in voice, a complaint that bots felt robotic, a question about a growing install folder. Thank you for playing, for reporting and for your patience while we got it right.
 
-If something in 0.36.0 feels wrong, press F12 in the game or tell us on [Discord](https://discord.gg/8kcHdg2Hch). See you on the servers.
+If something in 0.36.0 feels wrong, press F12 in the game or tell us on [Discord](https://discord.gg/7Dg4yhhvGF). See you on the servers.

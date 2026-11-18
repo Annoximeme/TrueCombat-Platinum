@@ -82,4 +82,4 @@ Een komende update koppelt elk ervan aan het best passende geluid dat het spel a
 
 De oplossing voor Windows-servers en de ontbrekende geluiden worden getest voor een komende update. We blijven deze metingen voor elke grote release herhalen, zodat een vertraging in onze cijfers opduikt voordat ze in jouw spel opduikt.
 
-Zie je haperingen, lange laadschermen of een hoog processorgebruik op je eigen pc, laat het ons weten op [Discord](https://discord.gg/8kcHdg2Hch). Een melding met je grafische kaart en instellingen is de snelste manier om het te vinden.
+Zie je haperingen, lange laadschermen of een hoog processorgebruik op je eigen pc, laat het ons weten op [Discord](https://discord.gg/7Dg4yhhvGF). Een melding met je grafische kaart en instellingen is de snelste manier om het te vinden.
