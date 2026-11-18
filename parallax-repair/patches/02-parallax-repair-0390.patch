@@ -1,0 +1,141 @@
+diff --git a/reference/etlegacy/src/renderer_dx12/dx12_core.cpp b/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
+index 5b12be3..f396170 100755
+--- a/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
++++ b/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
+@@ -717,6 +717,15 @@ float2 DetailSlope(int id, float2 uv)
+ // 0.39.0: parallax depth on brick, cobble, stone and rubble (matPad.x: depth in texture space, 0 off; matPad.y: full
+ // strength out to this many units, gone at twice it). The height is the albedo's brightness, so mortar joints and the
+ // gaps between cobbles sink in. Ten steps plus one refinement, only close up; world textures only, never the silhouette.
++// 0.39.0: matPad.z 1 = the HD pack's height map in the rmao alpha (1 = top) instead of the albedo's brightness.
++float ParallaxDepthAt(float2 uv, float2 gx, float2 gy)
++{
++	if (matPad.z > 0.5)
++		return 1.0 - texRmao.SampleGrad(samp0, uv, gx, gy).a;
++	// audit F01: the albedo is read one mip softer, so colour noise and the hard mortar edge make a smooth slope
++	// instead of jagged steps
++	return 1.0 - saturate((Luma(tex0.SampleGrad(samp0, uv, gx * 2.0, gy * 2.0).rgb) - 0.12) * 1.6);
++}
+ float2 ParallaxUv(VO i)
+ {
+ 	float k = matPad.x * saturate(2.0 - length(i.eye) / max(matPad.y, 1.0));
+@@ -724,29 +733,36 @@ float2 ParallaxUv(VO i)
+ 		return i.uv0;
+ 	float3 v = normalize(-i.eye), ng = normalize(i.normal);
+ 	float vz = dot(v, ng);
+-	if (vz < 0.05)
++	// 0.39.0 audit F01: fades out toward grazing angles. The offset grows with 1/vz, and a march of a few
++	// layers then jumps across thin mortar: stepped spikes and smeared slices on brick seen along the wall.
++	k *= saturate((vz - 0.2) / 0.3);
++	// ceilings and other downward-facing surfaces stay flat, whatever their texture is called (world draws only, so
++	// modelView is the camera's: its z column is world up in view space)
++	k *= saturate((dot(ng, normalize(mul((float3x3)modelView, float3(0.0, 0.0, 1.0)))) + 0.85) / 0.25);
++	if (k <= 0.0005)
+ 		return i.uv0;
+ 	float3 t = i.tangent.xyz - ng * dot(ng, i.tangent.xyz);
+ 	if (dot(t, t) < 1e-8)
+ 		return i.uv0;
+ 	t = normalize(t);
+ 	float3 b = cross(ng, t) * (i.tangent.w < 0.0 ? -1.0 : 1.0);
+-	float2 dir = float2(dot(v, t), dot(v, b)) / max(vz, 0.3) * k;
++	float2 dir = float2(dot(v, t), dot(v, b)) / max(vz, 0.5) * k;
+ 	float2 gx = ddx(i.uv0), gy = ddy(i.uv0);
+-	const int steps = 10;
+-	const float layer = 1.0 / steps;
++	// more layers when oblique (8 face-on, 24 at the fade): no visible slices
++	int steps = (int)lerp(24.0, 8.0, saturate((vz - 0.2) / 0.8));
++	float layer = 1.0 / steps;
+ 	float2 uv = i.uv0, duv = dir * layer;
+ 	float depth = 0.0;
+-	float h = 1.0 - saturate((Luma(tex0.SampleGrad(samp0, uv, gx, gy).rgb) - 0.12) * 1.6);
++	float h = ParallaxDepthAt(uv, gx, gy);
+ 	[loop] for (int s = 0; s < steps && depth < h; s++)
+ 	{
+ 		uv -= duv;
+ 		depth += layer;
+-		h = 1.0 - saturate((Luma(tex0.SampleGrad(samp0, uv, gx, gy).rgb) - 0.12) * 1.6);
++		h = ParallaxDepthAt(uv, gx, gy);
+ 	}
+ 	float2 prev = uv + duv;
+ 	float after = h - depth;
+-	float before = (1.0 - saturate((Luma(tex0.SampleGrad(samp0, prev, gx, gy).rgb) - 0.12) * 1.6)) - (depth - layer);
++	float before = ParallaxDepthAt(prev, gx, gy) - (depth - layer);
+ 	float w = after / min(after - before, -0.0001);
+ 	return lerp(uv, prev, saturate(w));
+ }
+diff --git a/reference/etlegacy/src/renderer_dx12/dx12_vk.c b/reference/etlegacy/src/renderer_dx12/dx12_vk.c
+index d37b005..647af11 100755
+--- a/reference/etlegacy/src/renderer_dx12/dx12_vk.c
++++ b/reference/etlegacy/src/renderer_dx12/dx12_vk.c
+@@ -970,6 +970,8 @@ static uint32_t *DX_CopyIndexes(const glIndex_t *indexes, int numIndexes)
+ static struct
+ {
+ 	int normal[DX_MAT_SLOTS], rmao[DX_MAT_SLOTS], cls[DX_MAT_SLOTS];
++	byte height[DX_MAT_SLOTS]; // 0.39.0: the rmao map carries a height map in its alpha (<base>_rmaoh.dds, height pak)
++	byte drawHeight;           // 0.39.0: the current material draw has a height map
+ 	image_t *pending[DX_MAT_PENDING];
+ 	int numPending;
+ 	int flatNormal, defaultRmao, defaultClass;
+@@ -1379,7 +1381,12 @@ static void DX_LoadPendingMaterials(void)
+ 		}
+ 		COM_StripExtension(image->imgName, base, sizeof(base));
+ 		dxm.normal[slot] = DX_LoadMaterialMap(base, "_n", qtrue, image->wrapClampMode != GL_REPEAT, slot);
+-		dxm.rmao[slot]   = DX_LoadMaterialMap(base, "_rmao", qfalse, image->wrapClampMode != GL_REPEAT, slot);
++		dxm.rmao[slot]   = DX_LoadMaterialDds(base, "_rmaoh", qfalse, image->wrapClampMode != GL_REPEAT); // height pak
++		dxm.height[slot] = dxm.rmao[slot] ? 1 : 0;
++		if (!dxm.rmao[slot])
++		{
++			dxm.rmao[slot] = DX_LoadMaterialMap(base, "_rmao", qfalse, image->wrapClampMode != GL_REPEAT, slot);
++		}
+ 		dxm.cls[slot]    = DX_LoadMaterialDds(base, "_mat", qfalse, image->wrapClampMode != GL_REPEAT); // BC1, shipped only
+ 		if (dxm.normal[slot] || dxm.rmao[slot] || dxm.cls[slot]) // a class map alone (new CQB textures) is a material too
+ 		{
+@@ -1442,6 +1449,7 @@ static void DX_ForgetMaterial(image_t *image, int slot)
+ 			DX_DeleteTexture(dxm.cls[slot]);
+ 		}
+ 		dxm.normal[slot] = dxm.rmao[slot] = dxm.cls[slot] = 0;
++		dxm.height[slot] = 0;
+ 	}
+ }
+ 
+@@ -2819,6 +2827,13 @@ static float DX_ParallaxDepth(const shader_t *sh)
+ 	}
+ 	Q_strncpyz(lower, sh->name, sizeof(lower));
+ 	Q_strlwr(lower);
++	/* 0.39.0 audit F01: plaster and ceilings stay flat, even with a height map or "stone" in the name
++	 * (streaks on Harbour plaster, a wavy ceiling on Villa 2.1) */
++	if (strstr(lower, "plaster") || strstr(lower, "putz") || strstr(lower, "ceil") || strstr(lower, "decke"))
++	{
++		depth[sh->index] = -1.0f;
++		return depth[sh->index];
++	}
+ 	for (i = 0; deep[i]; i++)
+ 	{
+ 		if (strstr(lower, deep[i]))
+@@ -2924,8 +2939,18 @@ static void DX_MaterialConstants(float *m, shaderCommands_t *input, qboolean ent
+ 	m[90] = Com_Clamp(0.0f, 1.5f, r_dx12MaterialReflect->value); // metal reflectance scale of the class maps (0.45: gun finishes, not chrome)
+ 	if (r_dx12Parallax->value > 0.0f && !firstPerson && (!ent || ent == &tr.worldEntity))
+ 	{
+-		m[84] = DX_ParallaxDepth(input->shader) * Com_Clamp(0.0f, 2.0f, r_dx12Parallax->value);
++		float pd = DX_ParallaxDepth(input->shader); // -1: never (plaster, ceilings)
++
++		/* audit F01: depth guessed from the albedo's brightness (no height map) is three quarters as deep as 0.39.0's
++		 * first build: stains read less as pits */
++		m[84] = MAX(pd, 0.0f) * 0.75f * Com_Clamp(0.0f, 2.0f, r_dx12Parallax->value);
+ 		m[85] = 384.0f; // full depth out to 384 units, none past 768
++		if (dxm.drawHeight && pd >= 0.0f)
++		{
++			/* a real height map (rmao alpha, <texture>_rmaoh.dds) gives parallax depth to every world surface that has one */
++			m[86] = 1.0f;
++			m[84] = MAX(pd, 0.012f) * Com_Clamp(0.0f, 2.0f, r_dx12Parallax->value);
++		}
+ 	}
+ }
+ 
+@@ -2957,6 +2982,7 @@ static qboolean DX_TryMaterialDraw(shaderCommands_t *input, const glIndex_t *ind
+ 	normalMap = dxm.normal[texture0] ? dxm.normal[texture0] : dxm.flatNormal;
+ 	rmaoMap   = dxm.rmao[texture0] ? dxm.rmao[texture0] : dxm.defaultRmao;
+ 	classMap  = dxm.cls[texture0] ? dxm.cls[texture0] : dxm.defaultClass;
++	dxm.drawHeight = dxm.height[texture0]; // 0.39.0: for DX_MaterialConstants (parallax from the HD pack's height map)
+ 	DX_MaterialWorldCheck();
+ 	DX_MaterialVertexes(input, indexes, numIndexes, colors, lightmapCoords, center);
+ 	DX_MaterialConstants(material, input, entityLight, vertexLit, center);

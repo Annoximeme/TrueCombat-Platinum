@@ -1,0 +1,1833 @@
+diff --git a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+index e0e227a..7059b80 100755
+--- a/game_src/native/tcp_cgame.c
++++ b/game_src/native/tcp_cgame.c
+@@ -42,8 +42,13 @@ static void imsRoundWipe(void);
+ static void imsShotLayers(int weapon,int shooter,const vec3_t muzzle,const vec3_t listener,int local);
+ static void imsSurfaceImpact(int mat,int metal,int soft,int exit,int pellets,const vec3_t at,const vec3_t normal,int time);
+ static void ffImpactWater(int shooter,const vec3_t end,int kind,int time);
++/* 0.39.0 graphics immersion (tcp_gfx039_cg.h) */
++static void gfxServerInfo(void);
++static void gfxRoundWipe(void);
++static void gfxBulletRipple(const vec3_t at,int effects,int time);
+ static void ffSmokeDisturb(vec3_t at,float radius,float *alpha);
+ static float ffHudK=1.f;static int ffHudScope;
++#include "tcp_gfx_pulse_cg.h" /* 0.39.0 smoke lit by flashes */
+ #include "tcp_viewfx.h"
+ #include "tcp_player_models.h"
+ #include "tcp_smoke_fx.h"
+@@ -77,6 +82,7 @@ static void refreshMovementSettings(void){
+     TCP_SetStaminaRunRecover(value[0]?atoi(value):0); /* 0.37.0: absent on 0.36 servers, which use the bare limit */
+     TCP_InfoValue(config(CS_SERVERINFO),"g_vault",value,sizeof(value));TCP_SetVault(value[0]?atoi(value):0); /* 0.38.0: absent on older servers = no vaulting */
+     {char xp[8];TCP_InfoValue(config(CS_SERVERINFO),"tcp_xp",xp,sizeof(xp));tcpXpGate=atoi(xp)!=0;} /* 0.38.0: absent on older servers = off */
++    gfxServerInfo(); /* 0.39.0: Ranked look flag (tcp_rk) */
+     {char r[8];TCP_InfoValue(config(CS_SERVERINFO),"tcp_cqbrules",r,sizeof(r));cqbRulesOn=tcpXpGate&&atoi(r)!=0;}
+     TCP_SetCqbMoveRules(TCP_ExperimentalEnabled(TCP_XP_CORNER_SLIDE),TCP_ExperimentalEnabled(TCP_XP_LEDGE_GRAB),cqbRulesOn&&TCP_ExperimentalEnabled(TCP_XP_CQB_MOVEMENT)); /* 0.38.0: as the server */
+     {char a[16],b[16];TCP_InfoValue(config(CS_SERVERINFO),"g_adsBlocksSprint",a,sizeof(a));TCP_InfoValue(config(CS_SERVERINFO),"g_sprintNeedsStamina",b,sizeof(b));
+@@ -1133,6 +1139,7 @@ static void waterEvent(int number,int level,const vec3_t at){
+ #include "tcp_impacts.h"
+ #include "tcp_firefight_cg.h" /* 0.38.0 firefight immersion */
+ #include "tcp_immersion_cg.h" /* 0.38.0 immersion: weather, magazines, footprints, flinch, glass, round replay */
++#include "tcp_gfx039_cg.h" /* 0.39.0 graphics immersion: ADS focus, water ripples, lens frost and drops, Ranked look */
+ #include "tcp_voice_cg.h"
+ #include "tcp_voip_cg.h" /* native voice chat */
+ #include "tcp_hud_platinum_net_cg.h" /* Platinum HUD: net graph, connection card, voice list */
+@@ -1279,6 +1286,8 @@ static void blastMedia(void){
+ }
+ static void blast(int weapon,const vec3_t at,int now){
+     blastMedia();
++    {vec3_t up={at[0],at[1],at[2]+24}; /* 0.39.0: the blast lights smoke and dust around it */
++     if(weapon==TCP_STUN_WEAPON)gpAdd(up,500.f,1.f,1.f,1.f,500,0);else gpAdd(up,420.f,1.f,.72f,.38f,900,0);}
+     if(weapon==TCP_FRAG_WEAPON&&exFlare)exFrag(at,now); /* 0.37.1: the 0.49b frag flash and dust */
+     else for(int i=0;i<16;i++)if(now-blasts[i].start>1000||!blasts[i].start){memcpy(blasts[i].at,at,sizeof(vec3_t));blasts[i].start=now;break;}
+     /* C5: from the explosion sprite's height (the resting point is on the floor) with the engine's light blast occlusion. */
+@@ -1305,7 +1314,8 @@ static void addBlasts(int now){
+         const float t=age*.001f,fade=1.f-(float)age/(float)e->life;
+         refEntity_t ref;memset(&ref,0,sizeof(ref));ref.reType=RT_SPRITE;ref.customShader=e->shader;ref.radius=e->radius;
+         VectorMA(e->org,t,e->vel,ref.origin);VectorCopy(ref.origin,ref.oldorigin);ref.rotation=e->roll+e->spin*t;
+-        for(int k=0;k<3;k++)ref.shaderRGBA[k]=(byte)(255.f*fminf(1,fmaxf(0,e->rgba[k]*(e->shader==exFlare?fade:1.f)))); /* the flare is additive: fade its colour too */
++        float lit[3]={e->rgba[0],e->rgba[1],e->rgba[2]};if(e->shader!=exFlare)gpLight(ref.origin,lit); /* 0.39.0: dust lit by the blast */
++        for(int k=0;k<3;k++)ref.shaderRGBA[k]=(byte)(255.f*fminf(1,fmaxf(0,lit[k]*(e->shader==exFlare?fade:1.f)))); /* the flare is additive: fade its colour too */
+         ref.shaderRGBA[3]=(byte)(255.f*fminf(1,fmaxf(0,e->rgba[3]*fade)));ref.shaderTime=e->start*.001f;
+         SystemCall(CG_R_ADDREFENTITYTOSCENE,&ref);}
+     for(int i=0;i<16;i++){blast_t *b=&blasts[i];if(!b->start||now-b->start>1000||!blastShader)continue;
+@@ -1321,7 +1331,7 @@ static void roundWipe(const char *reason){
+     bombCgRoundReset(); /* 0.38.0 */
+     SystemCall(CG_R_CLEARDECALS);
+     memset(imParticles,0,sizeof(imParticles));memset(dbFrags,0,sizeof(dbFrags));memset(brCasings,0,sizeof(brCasings));
+-    memset(blasts,0,sizeof(blasts));memset(exParts,0,sizeof(exParts));ffRoundWipe();imsRoundWipe();
++    memset(blasts,0,sizeof(blasts));memset(exParts,0,sizeof(exParts));ffRoundWipe();imsRoundWipe();gpRoundWipe();gfxRoundWipe();
+     char m[128];snprintf(m,sizeof(m),"TCP_NATIVE_ROUNDWIPE reason=%s marks_cleared=%d\n",reason,imMarkCount);SystemCall(CG_PRINT,m);
+     imMarkCount=0;
+ }
+@@ -1457,7 +1467,7 @@ static void drawFollowLines(const playerState_t *p){
+ #include "tcp_onboarding_cg.h"
+ #include "tcp_weapon_pickup_cg.h" /* 0.38.0 weapon pickup */
+ static void frame(int time,int demo){
+-    hudNow=time;
++    hudNow=time;gpNow=time; /* 0.39.0 */
+     int latest,stamp;SystemCall(CG_GETCURRENTSNAPSHOTNUMBER,&latest,&stamp);
+     /* Never loop over unbounded stale snapshot numbers after a connection gap. */
+     int fresh=0;if(latest>snapNum){const int skipped=latest-snapNum-1;if(SystemCall(CG_GETSNAPSHOT,latest,&snap)){netgraphSnapshot(time,skipped);snapNum=latest;ready=1;snapshots++;fresh=1;dmFirstSnapshot();staffFirstSnapshot();serverCommands(snap.serverCommandSequence);reconcileModels();}}
+@@ -1548,7 +1558,7 @@ static void frame(int time,int demo){
+                           target?pmDebugStance.integer:(e->eFlags&EF_PRONE)?2:(e->eFlags&EF_CROUCHING)?1:0,e->eFlags&EF_TELEPORT_BIT,modelLife[e->number].generation,0,0,0};
+             in.ladder=!target&&(e->constantLight&TCP_ES_LADDER)!=0;in.aimed=!target&&(e->constantLight&TCP_ES_AIMED)!=0;
+             if(!target)ffBody(e->number,(e->eFlags&EF_DEAD)!=0,e->pos.trBase,time); /* 0.38.0 blood pool */
+-            if(!target){in.water=playerWater(e->pos.trBase,e->eFlags);if(!(e->eFlags&EF_DEAD))waterEvent(e->number,in.water,e->pos.trBase);}
++            if(!target){in.water=playerWater(e->pos.trBase,e->eFlags);if(!(e->eFlags&EF_DEAD)){waterEvent(e->number,in.water,e->pos.trBase);gfxWade(e->number,in.water,e->pos.trBase,e->pos.trDelta,time);}}
+             if(!target)mantleEvent(e->number,!(e->eFlags&EF_DEAD)&&(e->constantLight&TCP_ES_MANTLE)!=0,e->pos.trBase,0);
+             asNet[e->number]=(asNet_t){target?0:e->frame,target?0:e->density}; /* TCP_ANIM_AUDIT */
+             pmAddPlayer(e->number,e->pos.trBase,e->apos.trBase,e->pos.trDelta,&in,snap.serverTime,time,followed==e,rd.vieworg);
+@@ -1562,7 +1572,7 @@ static void frame(int time,int demo){
+         pmInput_t in={p.teamNum==TCP_TEAM_RED?PM_CHAR_AXIS:PM_CHAR_ALLIED,p.stats[STAT_HEALTH],p.stats[TCP_STAT_SHOTS],
+                       p.stats[TCP_STAT_RELOAD]>0?snap.serverTime+p.stats[TCP_STAT_RELOAD]:0,p.groundEntityNum!=ENTITYNUM_NONE,0,p.weaponstate==TCP_WS_DEFUSING?TCP_PLIERS_WEAPON:p.weapon,(p.eFlags&EF_PRONE)?2:(p.eFlags&EF_CROUCHING)?1:0,p.eFlags&EF_TELEPORT_BIT,connectionId(p.clientNum),0,0,0};
+         vec3_t angles={p.viewangles[0],p.viewangles[1],p.leanf};in.ladder=(p.pm_flags&PMF_LADDER)!=0||((p.pm_flags&TCP_PMF_VAULT)&&!(p.movementDir&128));in.aimed=p.holdable[TCP_HOLD_AIMED]!=0;
+-        in.water=TCP_WaterLevel(&p);if(p.stats[STAT_HEALTH]>0&&p.pm_type==PM_NORMAL)waterEvent(p.clientNum,in.water,p.origin);
++        in.water=TCP_WaterLevel(&p);if(p.stats[STAT_HEALTH]>0&&p.pm_type==PM_NORMAL){waterEvent(p.clientNum,in.water,p.origin);gfxWade(p.clientNum,in.water,p.origin,p.velocity,time);}
+         mantleEvent(p.clientNum,p.stats[STAT_HEALTH]>0&&(p.pm_flags&(8192|TCP_PMF_VAULT))!=0,p.origin,1);
+         if(p.pm_type!=PM_SPECTATOR)ffBody(p.clientNum,p.stats[STAT_HEALTH]<=0&&p.pm_type==PM_DEAD,p.origin,time); /* 0.38.0 blood pool */
+         if(p.pm_type!=PM_SPECTATOR&&!replay)pmAddPlayer(p.clientNum,p.origin,angles,p.velocity,&in,snap.serverTime,time,followed||vxCamActive()?0:1,rd.vieworg);
+@@ -1601,7 +1611,7 @@ static void frame(int time,int demo){
+     qolScene(&p,demo); /* TCP_QOL: auto demo, taskbar flash, grenade path */
+     imFrame(time);vcFrame(snap.serverTime,time,p.clientNum);
+     ffScene(&p,rd.vieworg,time); /* 0.38.0 firefight: smoke, haze, dust, breath */
+-    imsScene(&p,rd.vieworg,time); /* 0.38.0 immersion: weather, magazines, glass edges, birds, replay recording */
++    imsScene(&p,rd.vieworg,time);gfxScene(&p,time); /* 0.39.0 */ /* 0.38.0 immersion: weather, magazines, glass edges, birds, replay recording */
+     /* The renderer tints what the world leaves undrawn when the view is in water. */
+     if(cgContents(rd.vieworg,0)&TCP_MASK_WATER)rd.rdflags|=RDF_UNDERWATER;
+     vxScene(&rd,&p,demo,time); /* photo mode and camera paths */
+@@ -1658,7 +1668,7 @@ static void frame(int time,int demo){
+     /* FUN_30022a40: chat always, the rest of the HUD only without the scoreboard. */
+     phFrame();fpsFrame();
+     hfxFrame(&p,rd.vieworg); /* 0.37.2 hit and suppression feedback: blood, red flash, suppression edge (both HUD styles) */
+-    ffScreen(time);imsScreen(time);ffHudFrame(&p,hudNow); /* 0.38.0 firefight: dirt on the screen, death fade; optional HUD fade */
++    ffScreen(time);imsScreen(time);gfxLensDraw(time);ffHudFrame(&p,hudNow); /* 0.38.0 firefight: dirt on the screen, death fade; optional HUD fade */
+     if(!(p.pm_flags&PMF_FOLLOW))pvCues(&p); /* kit-hudprefs (part D): near-death breathing + screen edge, both HUD styles */
+     if(!qolChatHistoryDraw())drawChat(time); /* TCP_QOL: full history while chatting */
+     if(!showScores){
+@@ -1751,7 +1761,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+     case CG_MOUSE_EVENT:if(vxCam.on){vxPhotoMouse((int)a0,(int)a1);return 0;}hudAspectOverride=phOn()?16.f/9.f:0;dmMouse((int)a0,(int)a1);hudAspectOverride=0;return 0;
+     case CG_EVENT_HANDLING:if((int)a0==CGAME_EVENT_NONE){dmClose();brClose();vxClose();}return 0;
+     case CG_WANTSBINDKEYS:case CG_CHECKEXECKEY:return 0;
+-    case CG_CONSOLE_COMMAND:{char cmd[64];SystemCall(CG_ARGV,0,cmd,sizeof(cmd));if(optCommand(cmd)||hfxCommand(cmd)||ffCommand(cmd)||imsCommand(cmd)||vxCommand(cmd,hudNow)||dmCommand(cmd)||obCommand(cmd)||qolCommand(cmd)||chatCommand(cmd)||brCommand(cmd)||pgCommand(cmd,hudNow)||paCommand(cmd))return 1;if(!strcmp(cmd,"toggleobjectivedesc")){showObjective=!showObjective;return 1;}if(!strcmp(cmd,"+scores")){showScores=1;hudScoreRequest=hudNow;SystemCall(CG_SENDCLIENTCOMMAND,"score");return 1;}if(!strcmp(cmd,"-scores")){showScores=0;return 1;}if(mapVoteConsoleCommand(cmd))return 1;if(vcConsoleCommand(cmd))return 1;/* Stock binds 1..9 send weaponbank: bank 4 holds grenades (ET layout), the others the rifle. */
++    case CG_CONSOLE_COMMAND:{char cmd[64];SystemCall(CG_ARGV,0,cmd,sizeof(cmd));if(optCommand(cmd)||hfxCommand(cmd)||ffCommand(cmd)||imsCommand(cmd)||gfxConsole(cmd)||vxCommand(cmd,hudNow)||dmCommand(cmd)||obCommand(cmd)||qolCommand(cmd)||chatCommand(cmd)||brCommand(cmd)||pgCommand(cmd,hudNow)||paCommand(cmd))return 1;if(!strcmp(cmd,"toggleobjectivedesc")){showObjective=!showObjective;return 1;}if(!strcmp(cmd,"+scores")){showScores=1;hudScoreRequest=hudNow;SystemCall(CG_SENDCLIENTCOMMAND,"score");return 1;}if(!strcmp(cmd,"-scores")){showScores=0;return 1;}if(mapVoteConsoleCommand(cmd))return 1;if(vcConsoleCommand(cmd))return 1;/* Stock binds 1..9 send weaponbank: bank 4 holds grenades (ET layout), the others the rifle. */
+         /* 0.37.0 (Gianni): 1 primary, 2 secondary, 3 knife (was the ET layout 1 knife, 2 pistol, 3 primary); 4 grenades. */
+         if(!strcmp(cmd,"weaponbank")||!strcmp(cmd,"weapnext")||!strcmp(cmd,"weapprev")){
+             char arg[16]="";const int primary=snap.ps.holdable[TCP_HOLD_PRIMARY]?snap.ps.holdable[TCP_HOLD_PRIMARY]:TCP_RIFLE_ID,secondary=snap.ps.holdable[TCP_HOLD_SECONDARY];
+diff --git a/game_src/native/tcp_cqb_g.h b/game_src/native/tcp_cqb_g.h
+index ea264fe..9f1e85b 100755
+--- a/game_src/native/tcp_cqb_g.h
++++ b/game_src/native/tcp_cqb_g.h
+@@ -15,11 +15,17 @@ static void TCP_XpServerInit(void){
+     tcpXpGate=TCP_XpGateFor(requested,ranked);tcpXpUsed=0;
+     if(requested&&ranked){SystemCall(G_CVAR_SET,"g_experimental","0");print("TCP_NATIVE_XP g_experimental forced to 0: this server is Ranked\n");}
+     SystemCall(G_CVAR_SET,"tcp_xp",tcpXpGate?"1":"0");
++    /* 0.39.0: tcp_rk (serverinfo) tells clients this is a Ranked or clan-match server, so cosmetic effects that change
++     * how the scene looks (sun shafts and glare, map colour mood, lens frost and drops) stay off there */
++    SystemCall(G_CVAR_REGISTER,NULL,"tcp_rk","0",CVAR_SERVERINFO|CVAR_ROM);
++    SystemCall(G_CVAR_SET,"tcp_rk",(ranked||SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_competitive"))?"1":"0");
+     char m[96];snprintf(m,sizeof(m),"TCP_NATIVE_XP gate=%d requested=%d ranked=%d\n",tcpXpGate,requested,ranked);print(m);
+ }
+ /* Once a second: a server switched to Ranked mid-map drops the gate at once. */
+ static void TCP_XpServerFrame(void){
+     static int next;if(levelTime<next&&levelTime>=next-2000)return;next=levelTime+1000;
++    {const int rk=cqbRankedNow()||SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_competitive");
++     if(rk!=(int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"tcp_rk"))SystemCall(G_CVAR_SET,"tcp_rk",rk?"1":"0");}
+     if(!cqbRankedNow())return;
+     if(SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_experimental"))SystemCall(G_CVAR_SET,"g_experimental","0");
+     if(tcpXpGate){tcpXpGate=0;SystemCall(G_CVAR_SET,"tcp_xp","0");print("TCP_NATIVE_XP gate=0 (server switched to Ranked)\n");}
+diff --git a/game_src/native/tcp_firefight_cg.h b/game_src/native/tcp_firefight_cg.h
+index 4f5d0b1..f01ad98 100755
+--- a/game_src/native/tcp_firefight_cg.h
++++ b/game_src/native/tcp_firefight_cg.h
+@@ -271,7 +271,7 @@ static void ffImpactWater(int shooter,const vec3_t end,int kind,int time){
+     if(SystemCall(CG_CM_POINTCONTENTS,eye,0)&TCP_MASK_WATER)return; /* shot from under water */
+     trace_t tr;static const vec3_t z={0,0,0};SystemCall(CG_CM_BOXTRACE,&tr,eye,end,z,z,0,TCP_MASK_WATER);
+     if(tr.fraction>=1.f||tr.startsolid)return;
+-    SystemCall(CG_CVAR_UPDATE,&imEffects);ffWaterSplash(tr.endpos,imEffects.integer,time);
++    SystemCall(CG_CVAR_UPDATE,&imEffects);ffWaterSplash(tr.endpos,imEffects.integer,time);gfxBulletRipple(tr.endpos,imEffects.integer,time);
+     if(ffLog()){char m[120];snprintf(m,sizeof(m),"TCP_FF water shooter=%d at=%.0f,%.0f,%.0f\n",shooter,tr.endpos[0],tr.endpos[1],tr.endpos[2]);SystemCall(CG_PRINT,m);}
+ }
+ 
+diff --git a/game_src/native/tcp_gfx039_cg.h b/game_src/native/tcp_gfx039_cg.h
+new file mode 100644
+index 0000000..c2e2ca1
+--- /dev/null
++++ b/game_src/native/tcp_gfx039_cg.h
+@@ -0,0 +1,151 @@
++/* GPL-3.0-or-later. 0.39.0 graphics immersion (cgame). Included by tcp_cgame.c after tcp_immersion_cg.h.
++ *
++ *  - Ranked look: serverinfo tcp_rk (Ranked or a clan match) -> cl_tcpRanked, which the DX12 renderer reads to keep
++ *    sun shafts, sun glare and the map colour mood off; the lens effects below and muzzle-lit smoke are off too.
++ *  - Aim-down-sights focus: the aim blend (eased over 180 ms) -> r_dx12AdsFocus; the DX12 post pass softens the rear
++ *    of the player's own gun (never the world). Off through a magnified scope and in photo mode.
++ *  - Water ripples: rings spread on the surface around anyone wading or swimming (more while moving) and where a
++ *    bullet goes into water. Flat polys on the surface (both renderers); cg_impactEffects 0 keeps the bullet rings off.
++ *  - Lens: drops run down the screen edges for a few seconds after the head comes out of water; on Snow, frost
++ *    creeps into the screen corners outdoors and melts indoors. Only the outer edge of the screen, never the centre.
++ *    cg_lensEffects 0 turns both off; always off on Ranked and in clan matches.
++ * Debug: gfxTest ripple | drops | frost (console). */
++
++static int vxCamActive(void); /* tcp_vux_cg.h (photo mode) */
++static vmCvar_t gfxLensCvar;
++static qhandle_t gfxShRipple,gfxShDrop,gfxShFrost;
++static int gfxRanked=-1;
++
++static void gfxMedia(void){
++    static int done;if(done)return;done=1;
++    SystemCall(CG_CVAR_REGISTER,&gfxLensCvar,"cg_lensEffects","1",CVAR_ARCHIVE);
++    gfxShRipple=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"gfx/platinum/gfx039/ripple");
++    gfxShDrop=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"gfx/platinum/gfx039/drop");
++    gfxShFrost=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,"gfx/platinum/gfx039/frost");
++    char m[96];snprintf(m,sizeof(m),"TCP_GFX media ripple=%d drop=%d frost=%d\n",gfxShRipple,gfxShDrop,gfxShFrost);SystemCall(CG_PRINT,m);
++}
++
++/* from refreshMovementSettings (serverinfo changes) */
++static void gfxServerInfo(void){
++    char v[8]="";TCP_InfoValue(config(CS_SERVERINFO),"tcp_rk",v,sizeof(v));
++    const int rk=atoi(v)!=0;gpRanked=rk;
++    if(rk!=gfxRanked){gfxRanked=rk;SystemCall(CG_CVAR_SET,"cl_tcpRanked",rk?"1":"0");}
++}
++
++/* ---- aim-down-sights focus ------------------------------------------------------------------------------------ */
++static void gfxAdsFrame(const playerState_t *p,int time){
++    static float blend,sent=-1.f;static int last;
++    const int dt=last&&time>last&&time-last<250?time-last:0;last=time;
++    const int scoped=p->holdable[TCP_HOLD_SCOPE10]>10; /* a magnified scope draws its own overlay */
++    const int want=p->holdable[TCP_HOLD_AIMED]&&!scoped&&p->stats[STAT_HEALTH]>0&&p->pm_type==PM_NORMAL&&!vxCamActive();
++    const float step=dt/180.f;
++    blend=want?fminf(1.f,blend+step):fmaxf(0.f,blend-step);if(!dt)blend=want?1.f:0.f;
++    if(fabsf(blend-sent)>=.04f||((blend==0.f||blend==1.f)&&blend!=sent)){
++        char v[16];snprintf(v,sizeof(v),"%.2f",blend);SystemCall(CG_CVAR_SET,"r_dx12AdsFocus",v);sent=blend;}
++}
++
++/* ---- water ripples -------------------------------------------------------------------------------------------- */
++#define GFX_RIPPLES 48
++typedef struct {vec3_t at;int start,life;float r0,r1,alpha;} gfxRipple_t;
++static gfxRipple_t gfxRipples[GFX_RIPPLES];
++static int gfxWadeNext[MAX_GENTITIES];
++static void gfxRippleAdd(const vec3_t at,float r0,float r1,int life,float alpha,int time){
++    gfxRipple_t *slot=&gfxRipples[0];
++    for(int i=0;i<GFX_RIPPLES;i++){gfxRipple_t *q=&gfxRipples[i];
++        if(!q->start||time-q->start>=q->life||time<q->start){slot=q;break;}
++        if(q->start<slot->start)slot=q;}
++    VectorCopy(at,slot->at);slot->start=time?time:1;slot->life=life;slot->r0=r0;slot->r1=r1;slot->alpha=alpha;
++}
++/* the water surface above or at `at` (traced down from 64 u above); 0 when there is none */
++static int gfxWaterSurface(const vec3_t at,vec3_t out){
++    trace_t tr;static const vec3_t z={0,0,0};vec3_t from={at[0],at[1],at[2]+64.f},to={at[0],at[1],at[2]-32.f};
++    if(SystemCall(CG_CM_POINTCONTENTS,from,0)&TCP_MASK_WATER)return 0; /* deep under: no surface close above */
++    SystemCall(CG_CM_BOXTRACE,&tr,from,to,z,z,0,TCP_MASK_WATER);
++    if(tr.fraction>=1.f||tr.startsolid)return 0;
++    VectorCopy(tr.endpos,out);out[2]+=.6f;return 1;
++}
++/* every player in water (level 1-2: wading; 3 with the head just under still breaks the surface), from the player loop */
++static void gfxWade(int number,int level,const vec3_t origin,const vec3_t velocity,int time){
++    if(number<0||number>=MAX_GENTITIES||level<=0||!gfxShRipple)return;
++    if(gfxWadeNext[number]&&time<gfxWadeNext[number]&&gfxWadeNext[number]-time<2000)return;
++    const float speed=sqrtf(velocity[0]*velocity[0]+velocity[1]*velocity[1]);
++    gfxWadeNext[number]=time+(speed>40.f?260:1100);
++    vec3_t s;if(!gfxWaterSurface(origin,s))return;
++    if(speed>40.f){s[0]-=velocity[0]*.06f;s[1]-=velocity[1]*.06f;} /* rings trail a little behind a walker */
++    gfxRippleAdd(s,10.f,speed>40.f?58.f:40.f,speed>40.f?1500:2200,speed>40.f?.55f:.35f,time);
++}
++/* a bullet into water (ffImpactWater) */
++static void gfxBulletRipple(const vec3_t at,int effects,int time){
++    if(!effects||!gfxShRipple)return;
++    vec3_t s={at[0],at[1],at[2]+.6f};
++    gfxRippleAdd(s,3.f,26.f,900,.7f,time);gfxRippleAdd(s,2.f,16.f,600,.5f,time+80);
++}
++static void gfxDrawRipples(int time){
++    if(!gfxShRipple)return;
++    for(int i=0;i<GFX_RIPPLES;i++){gfxRipple_t *q=&gfxRipples[i];if(!q->start)continue;
++        const int age=time-q->start;if(age<0)continue;if(age>=q->life){q->start=0;continue;}
++        const float t=(float)age/(float)q->life,ease=1.f-(1.f-t)*(1.f-t),r=q->r0+(q->r1-q->r0)*ease;
++        float lit[3];ffLight(q->at,lit);
++        const float a=q->alpha*(1.f-t)*(t<.1f?t*10.f:1.f);
++        polyVert_t v[4];memset(v,0,sizeof(v));
++        static const float corner[4][2]={{-1,-1},{1,-1},{1,1},{-1,1}};
++        for(int c=0;c<4;c++){v[c].xyz[0]=q->at[0]+corner[c][0]*r;v[c].xyz[1]=q->at[1]+corner[c][1]*r;v[c].xyz[2]=q->at[2];
++            v[c].st[0]=corner[c][0]*.5f+.5f;v[c].st[1]=corner[c][1]*.5f+.5f;
++            for(int k=0;k<3;k++)v[c].modulate[k]=(byte)fminf(255.f,(.45f+lit[k]*.75f)*255.f);
++            v[c].modulate[3]=(byte)fminf(255.f,a*255.f);}
++        SystemCall(CG_R_ADDPOLYTOSCENE,gfxShRipple,4,v);}
++}
++
++/* ---- lens: drops after surfacing, frost on Snow ---------------------------------------------------------------- */
++#define GFX_DROPS 14
++typedef struct {float x,y,size,speed;int start,life;} gfxDrop_t;
++static gfxDrop_t gfxDrops[GFX_DROPS];
++static float gfxFrost;
++static int gfxLensOn(void){SystemCall(CG_CVAR_UPDATE,&gfxLensCvar);return gfxLensCvar.integer&&!gpRanked;}
++static void gfxSurfaced(int time){
++    for(int i=0;i<GFX_DROPS;i++){gfxDrop_t *d=&gfxDrops[i];
++        /* outer bands only: left/right 0-18% and 82-100% of the width, any height; a few along the top */
++        const int side=i%3;d->x=side==0?ffRand()*.18f:side==1?.82f+ffRand()*.18f:ffRand();
++        d->y=side==2?ffRand()*.12f:ffRand()*.8f;d->size=.018f+ffRand()*.03f;d->speed=.02f+ffRand()*.06f;
++        d->start=time+(int)(ffRand()*400.f);d->life=2500+(int)(ffRand()*2500.f);}
++}
++static void gfxLensFrame(const playerState_t *p,int time){
++    static int lastLevel,last;const int dt=last&&time>last&&time-last<250?time-last:0;last=time;
++    const int level=p->pm_type==PM_NORMAL&&p->stats[STAT_HEALTH]>0?TCP_WaterLevel(p):0;
++    if(lastLevel==3&&level<3&&gfxLensOn())gfxSurfaced(time);
++    lastLevel=level;
++    /* frost: Snow, outdoors, alive; grows over ~6 s, melts over ~3 s indoors */
++    const int cold=imsMapKind==1&&!imsIndoorCam&&p->stats[STAT_HEALTH]>0&&p->pm_type==PM_NORMAL&&level<3;
++    gfxFrost=cold?fminf(1.f,gfxFrost+dt/6000.f):fmaxf(0.f,gfxFrost-dt/3000.f);
++}
++static void gfxLensDraw(int time){
++    if(!gfxLensOn())return;
++    const float w=(float)gl.vidWidth,h=(float)gl.vidHeight;
++    if(gfxFrost>0.f&&gfxShFrost){
++        const float a=.38f*gfxFrost*gfxFrost*(3.f-2.f*gfxFrost);float col[4]={.9f,.95f,1.f,a};
++        SystemCall(CG_R_SETCOLOR,col);pic(0,0,w,h,0,0,1,1,gfxShFrost);SystemCall(CG_R_SETCOLOR,NULL);}
++    if(gfxShDrop)for(int i=0;i<GFX_DROPS;i++){gfxDrop_t *d=&gfxDrops[i];if(!d->start)continue;
++        const int age=time-d->start;if(age<0)continue;if(age>=d->life){d->start=0;continue;}
++        const float t=(float)age/(float)d->life,y=d->y+d->speed*t*t*4.f,s=d->size*h;
++        float col[4]={1,1,1,.55f*(1.f-t)};
++        SystemCall(CG_R_SETCOLOR,col);pic(d->x*w-s*.5f,y*h-s*.5f,s,s*1.25f,0,0,1,1,gfxShDrop);SystemCall(CG_R_SETCOLOR,NULL);}
++}
++
++static void gfxRoundWipe(void){memset(gfxRipples,0,sizeof(gfxRipples));memset(gfxDrops,0,sizeof(gfxDrops));}
++
++/* scene: before CG_R_RENDERSCENE */
++static void gfxScene(const playerState_t *p,int time){
++    gfxMedia();gfxAdsFrame(p,time);gfxLensFrame(p,time);gfxDrawRipples(time);
++}
++
++static int gfxConsole(const char *cmd){
++    if(_stricmp(cmd,"gfxTest"))return 0;
++    char a[32]="";SystemCall(CG_ARGV,1,a,sizeof(a));gfxMedia();
++    const int time=gpNow;
++    if(!_stricmp(a,"ripple")){vec3_t at;VectorCopy(snap.ps.origin,at);vec3_t s;
++        if(gfxWaterSurface(at,s))gfxRippleAdd(s,10.f,58.f,1500,.55f,time);else{at[2]-=20.f;gfxRippleAdd(at,10.f,58.f,1500,.55f,time);}}
++    else if(!_stricmp(a,"drops"))gfxSurfaced(time);
++    else if(!_stricmp(a,"frost"))gfxFrost=1.f;
++    char m[96];snprintf(m,sizeof(m),"TCP_GFX test %s lens=%d ranked=%d\n",a,gfxLensOn(),gpRanked);SystemCall(CG_PRINT,m);
++    return 1;
++}
+diff --git a/game_src/native/tcp_gfx_pulse_cg.h b/game_src/native/tcp_gfx_pulse_cg.h
+new file mode 100644
+index 0000000..858a4db
+--- /dev/null
++++ b/game_src/native/tcp_gfx_pulse_cg.h
+@@ -0,0 +1,28 @@
++/* GPL-3.0-or-later. 0.39.0 graphics immersion: smoke lit by flashes (cgame). Included by tcp_cgame.c before
++ * tcp_viewfx.h, so the weapon media (muzzle flashes), the blast code and the M83 smoke can all use it.
++ *
++ * A pulse is a short burst of light at a point: an explosion (0.9 s, 420 u) or a muzzle flash (70 ms, 90 u). Smoke
++ * and dust sprites add the pulses near them to their own light-grid colour, so a grenade going off inside smoke
++ * lights the cloud from within. Muzzle flashes only light smoke right at the muzzle and are off on Ranked and in
++ * clan matches (serverinfo tcp_rk): a glowing cloud must never give a shooter away where it did not before. */
++#define GP_PULSES 24
++typedef struct {vec3_t at;float radius,rgb[3];int start,life;} gpPulse_t;
++static gpPulse_t gpPulses[GP_PULSES];
++static int gpNow,gpRanked;
++static void gpAdd(const vec3_t at,float radius,float r,float g,float b,int life,int muzzle){
++    if(muzzle&&gpRanked)return;
++    gpPulse_t *slot=&gpPulses[0];
++    for(int i=0;i<GP_PULSES;i++){gpPulse_t *q=&gpPulses[i];
++        if(!q->start||gpNow-q->start>=q->life||gpNow<q->start){slot=q;break;}
++        if(q->start<slot->start)slot=q;}
++    VectorCopy(at,slot->at);slot->radius=radius;slot->rgb[0]=r;slot->rgb[1]=g;slot->rgb[2]=b;slot->start=gpNow?gpNow:1;slot->life=life>1?life:1;
++}
++/* adds the light of the live pulses near `at` to rgb (0..1 light-grid scale) */
++static void gpLight(const vec3_t at,float *rgb){
++    for(int i=0;i<GP_PULSES;i++){const gpPulse_t *q=&gpPulses[i];
++        if(!q->start)continue;const int age=gpNow-q->start;if(age<0||age>=q->life)continue;
++        vec3_t d;VectorSubtract(at,q->at,d);const float dd=DotProduct(d,d);if(dd>=q->radius*q->radius)continue;
++        const float f=1.f-sqrtf(dd)/q->radius,k=f*f*(1.f-(float)age/(float)q->life);
++        for(int c=0;c<3;c++)rgb[c]+=q->rgb[c]*k*1.6f;}
++}
++static void gpRoundWipe(void){memset(gpPulses,0,sizeof(gpPulses));}
+diff --git a/game_src/native/tcp_smoke_fx.h b/game_src/native/tcp_smoke_fx.h
+index 211d6d7..66d349f 100755
+--- a/game_src/native/tcp_smoke_fx.h
++++ b/game_src/native/tcp_smoke_fx.h
+@@ -38,7 +38,8 @@ static void smokeSprite(qhandle_t shader,const vec3_t cloudAt,float radius,float
+     vec3_t at;VectorCopy(cloudAt,at);ffSmokeDisturb(at,radius,&alpha); /* 0.38.0 firefight: bullets punch through, people push it aside */
+     refEntity_t ref;memset(&ref,0,sizeof(ref));ref.reType=RT_SPRITE;ref.customShader=shader;
+     VectorCopy(at,ref.origin);VectorCopy(at,ref.oldorigin);ref.radius=radius;ref.rotation=rotation;
+-    for(int k=0;k<3;k++)ref.shaderRGBA[k]=(byte)fminf(255,light[k]*204);
++    float lit[3]={light[0],light[1],light[2]};gpLight(at,lit); /* 0.39.0: flashes and blasts light the cloud */
++    for(int k=0;k<3;k++)ref.shaderRGBA[k]=(byte)fminf(255,lit[k]*204);
+     ref.shaderRGBA[3]=(byte)fmaxf(0,fminf(255,alpha));
+     SystemCall(CG_R_ADDREFENTITYTOSCENE,&ref);
+ }
+diff --git a/game_src/native/tcp_weapon_media.h b/game_src/native/tcp_weapon_media.h
+index 318336a..1356a64 100755
+--- a/game_src/native/tcp_weapon_media.h
++++ b/game_src/native/tcp_weapon_media.h
+@@ -184,6 +184,7 @@ static void wmFlashLight(int weapon,const vec3_t origin){
+     const wmMedia_t *m=wmGet(weapon);if(!m||!m->hasFlashLight)return;
+     SystemCall(CG_R_ADDLIGHTTOSCENE,origin,TCP_Float(300.f+(float)(rand()&31)),TCP_Float(1.f),
+                TCP_Float(m->flashLight[0]),TCP_Float(m->flashLight[1]),TCP_Float(m->flashLight[2]),0,1<<27);
++    gpAdd(origin,90.f,m->flashLight[0]*.6f,m->flashLight[1]*.6f,m->flashLight[2]*.6f,70,1); /* 0.39.0: smoke at the muzzle */
+ }
+ /* ET CG_AddPlayerWeapon / CG_AddViewWeapon: the flash gets a random roll of crandom() * 10
+  * degrees each frame (angles[ROLL] = crandom() * 10), so consecutive flashes differ. */
+diff --git a/reference/etlegacy/src/renderer/tr_bsp.c b/reference/etlegacy/src/renderer/tr_bsp.c
+index 282c757..7026cea 100644
+--- a/reference/etlegacy/src/renderer/tr_bsp.c
++++ b/reference/etlegacy/src/renderer/tr_bsp.c
+@@ -36,6 +36,13 @@
+  */
+ 
+ #include "tr_local.h"
++#include "../renderercommon/tcp_lightmap_smooth.h"
++
++/* 0.39.0 smoother lightmaps: called by R_FindImageFile (tr_image.c) for lightmap images */
++byte *R_LightmapSmooth(const char *name, const byte *pic, int *width, int *height)
++{
++	return TCP_LightmapSmooth(name, pic, width, height);
++}
+ 
+ static world_t s_worldData;
+ static byte    *fileBase;
+@@ -2686,7 +2693,9 @@ void RE_LoadWorldMap(const char *name)
+ 	Ren_UpdateScreen();
+ 	//% R_LoadFogs( &header->lumps[LUMP_FOGS], &header->lumps[LUMP_BRUSHES], &header->lumps[LUMP_BRUSHSIDES] );
+ 	//% Ren_UpdateScreen();
++	TCP_LightmapSmoothBegin(fileBase, &header->lumps[LUMP_SURFACES], &header->lumps[LUMP_DRAWVERTS], &header->lumps[LUMP_DRAWINDEXES], tr.worldDir);
+ 	R_LoadSurfaces(&header->lumps[LUMP_SURFACES], &header->lumps[LUMP_DRAWVERTS], &header->lumps[LUMP_DRAWINDEXES]);
++	TCP_LightmapSmoothEnd();
+ 	Ren_UpdateScreen();
+ 	R_LoadMarksurfaces(&header->lumps[LUMP_LEAFSURFACES]);
+ 	Ren_UpdateScreen();
+diff --git a/reference/etlegacy/src/renderer/tr_image.c b/reference/etlegacy/src/renderer/tr_image.c
+index 4e8a623..517279d 100644
+--- a/reference/etlegacy/src/renderer/tr_image.c
++++ b/reference/etlegacy/src/renderer/tr_image.c
+@@ -1084,6 +1084,8 @@ void R_LoadImage(const char *name, byte **pic, int *width, int *height)
+  *
+  * @return NULL if it fails, not a default image.
+  */
++byte *R_LightmapSmooth(const char *name, const byte *pic, int *width, int *height);
++
+ image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip, int glWrapClampMode, qboolean lightmap)
+ {
+ 	image_t  *image;
+@@ -1091,6 +1093,7 @@ image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip
+ 	byte     *pic;
+ 	long     hash;
+ 	qboolean allowCompress = qfalse;
++	byte     *smoothed     = NULL;
+ 
+ 	if (!name)
+ 	{
+@@ -1154,6 +1157,11 @@ image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip
+ 	if (lightmap)
+ 	{
+ 		R_ProcessLightmap(pic, 4, width, height, pic);
++		smoothed = R_LightmapSmooth(name, pic, &width, &height); // 0.39.0: 2x chart-aware upscale (tr_bsp.c)
++		if (smoothed)
++		{
++			pic = smoothed;
++		}
+ 
+ 		// no texture compression
+ 		if (lightmap)
+@@ -1176,6 +1184,10 @@ image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip
+ 	{
+ 		tr.allowCompress = allowCompress;
+ 	}
++	if (smoothed)
++	{
++		Com_Dealloc(smoothed);
++	}
+ 
+ 	return image;
+ }
+diff --git a/reference/etlegacy/src/renderer/tr_shader.c b/reference/etlegacy/src/renderer/tr_shader.c
+index 679690b..bc34ec2 100644
+--- a/reference/etlegacy/src/renderer/tr_shader.c
++++ b/reference/etlegacy/src/renderer/tr_shader.c
+@@ -42,6 +42,8 @@ static char *s_shaderText;
+ // dynamically allocated memory if it is valid.
+ static shaderStage_t stages[MAX_SHADER_STAGES];
+ static shader_t      shader;
++
++#include "../renderercommon/tcp_wind.h" // 0.39.0 wind on foliage and cloth
+ static texModInfo_t  texMods[MAX_SHADER_STAGES][TR_MAX_TEXMODS];
+ 
+ // these are here because they are only referenced while parsing a shader
+@@ -2803,6 +2805,8 @@ static shader_t *FinishShader(void)
+ 	int      stage, i;
+ 	qboolean hasLightmapStage = qfalse;
+ 
++	TCP_WindSway(&shader);
++
+ 	// set sky stuff appropriate
+ 	if (shader.isSky)
+ 	{
+diff --git a/reference/etlegacy/src/renderer_dx12/dx12_core.cpp b/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
+index d039e38..5b12be3 100755
+--- a/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
++++ b/reference/etlegacy/src/renderer_dx12/dx12_core.cpp
+@@ -67,6 +67,7 @@ constexpr int kSlotShadowCascades = 24, kSlotShadowStatic = 25;
+ // materials (slots 18..23): probe mip sources 18..21 (Texture2DArray, one mip each), light grid 22, probe cube array 23
+ constexpr int kSlotProbeMip = 18, kSlotLightGrid = 22, kSlotProbeCube = 23;
+ constexpr int kPostConstants = 56; // 0.38.0: + c13 heat shimmer spot (root signature: 56 + 6 tables = 62 of 64)
++constexpr int kPostExtraFloats = 64; // 0.39.0: root CBV b1 (2 more DWORDs: 64 of 64)
+ // modern look targets (slots 11..17): luminance grid, exposure and TAA / AO histories (ping-pong)
+ constexpr int kSlotLumGrid = 11, kSlotExposure = 12 /* 12, 13 */, kSlotTaaHistory = 14 /* 14, 15 */, kSlotAoHistory = 16 /* 16, 17 */;
+ constexpr int kLumGridW = 64, kLumGridH = 32;
+@@ -186,6 +187,11 @@ struct State
+ 	float worldProj[16] = {};
+ 	float heat[4] = {};      // 0.38.0 heat shimmer spot (DX_SetHeatSpot), cleared after each world view
+ 	unsigned heatFrame = 0;
++	// 0.39.0 world-view extras (DX_SetPostExtra, register b1: ADS focus, sun shafts and glare, wet patches),
++	// cleared after each world view; postExtraDefault is a zeroed buffer bound when the frame ring is full
++	float postExtra[kPostExtraFloats] = {};
++	bool  postExtraActive = false;
++	ComPtr<ID3D12Resource> postExtraDefault;
+ 	ComPtr<ID3D12RootSignature> postRoot;
+ 	ComPtr<ID3DBlob> postVS, aoPS, brightPS, blurPS, compositePS, finalPS;
+ 	ComPtr<ID3D12PipelineState> aoPipeline, brightPipeline, blurPipeline, compositePipeline, finalPipeline;
+@@ -708,8 +714,45 @@ float2 DetailSlope(int id, float2 uv)
+ 	}
+ 	return slope;
+ }
++// 0.39.0: parallax depth on brick, cobble, stone and rubble (matPad.x: depth in texture space, 0 off; matPad.y: full
++// strength out to this many units, gone at twice it). The height is the albedo's brightness, so mortar joints and the
++// gaps between cobbles sink in. Ten steps plus one refinement, only close up; world textures only, never the silhouette.
++float2 ParallaxUv(VO i)
++{
++	float k = matPad.x * saturate(2.0 - length(i.eye) / max(matPad.y, 1.0));
++	[branch] if (k <= 0.0005 || alphaTest.x > 0.5)
++		return i.uv0;
++	float3 v = normalize(-i.eye), ng = normalize(i.normal);
++	float vz = dot(v, ng);
++	if (vz < 0.05)
++		return i.uv0;
++	float3 t = i.tangent.xyz - ng * dot(ng, i.tangent.xyz);
++	if (dot(t, t) < 1e-8)
++		return i.uv0;
++	t = normalize(t);
++	float3 b = cross(ng, t) * (i.tangent.w < 0.0 ? -1.0 : 1.0);
++	float2 dir = float2(dot(v, t), dot(v, b)) / max(vz, 0.3) * k;
++	float2 gx = ddx(i.uv0), gy = ddy(i.uv0);
++	const int steps = 10;
++	const float layer = 1.0 / steps;
++	float2 uv = i.uv0, duv = dir * layer;
++	float depth = 0.0;
++	float h = 1.0 - saturate((Luma(tex0.SampleGrad(samp0, uv, gx, gy).rgb) - 0.12) * 1.6);
++	[loop] for (int s = 0; s < steps && depth < h; s++)
++	{
++		uv -= duv;
++		depth += layer;
++		h = 1.0 - saturate((Luma(tex0.SampleGrad(samp0, uv, gx, gy).rgb) - 0.12) * 1.6);
++	}
++	float2 prev = uv + duv;
++	float after = h - depth;
++	float before = (1.0 - saturate((Luma(tex0.SampleGrad(samp0, prev, gx, gy).rgb) - 0.12) * 1.6)) - (depth - layer);
++	float w = after / min(after - before, -0.0001);
++	return lerp(uv, prev, saturate(w));
++}
+ float4 PSColor(VO i) : SV_Target
+ {
++	i.uv0 = ParallaxUv(i);
+ 	float4 albedo = tex0.Sample(samp0, i.uv0);
+ 	float4 base = albedo * i.color;
+ 	float3 light;
+@@ -960,6 +1003,18 @@ cbuffer Post : register(b0)
+ 	float4 c12; // exposure key (linear), frame index, AO history blend, temporal reset
+ 	float4 c13; // 0.38.0 heat shimmer: centre x, y (scene pixels), radius (pixels), strength
+ };
++// 0.39.0 world-view extras (DX_SetPostExtra); all zero = off
++cbuffer PostExtra : register(b1)
++{
++	float4 x0;  // ADS focus: strength, focus distance, full-blur distance (units), max radius (pixels)
++	float4 x1;  // sun: x, y (scene pixels), shaft strength, glare strength
++	float4 x2;  // sun colour (display), facing
++	float4 x3;  // wet patches: strength, coverage, time (s), pattern scale (units)
++	float4 x4;  // view to world, row x (xyz) + view origin x (w)
++	float4 x5;  // row y + origin y
++	float4 x6;  // row z + origin z
++	float4 x7;  // unused
++};
+ Texture2D t0 : register(t0);
+ Texture2D t1 : register(t1);
+ Texture2D t2 : register(t2);
+@@ -1171,6 +1226,187 @@ float3 GradeDisplay(float3 d, int modern)
+ 	return d;
+ }
+ 
++// ---- 0.39.0 world-view extras
++// The first-person weapon is drawn into depth 0..0.3 with the world's projection: its own eye distance.
++float WeaponDistance(float depth)
++{
++	return c1.w / (depth / 0.3 + c1.z);
++}
++
++// Aim down sights: the parts of the gun closest to the eye (rear sight, receiver, hands) go soft while the front
++// sight and the whole world stay sharp. Only weapon pixels are read and written.
++float3 AdsFocus(int2 p, float3 c)
++{
++	float depth = LoadDepth(p);
++	if (x0.x <= 0.0 || depth <= 0.0 || depth >= 0.3)
++		return c;
++	float k = saturate((x0.y - WeaponDistance(depth)) / max(x0.y - x0.z, 0.5)) * x0.x;
++	if (k < 0.02)
++		return c;
++	float  r   = k * x0.w;
++	float3 sum = c;
++	float  n   = 1.0;
++	[unroll] for (int i = 0; i < 12; i++)
++	{
++		float  t = sqrt((i + 0.5) / 12.0);
++		float  a = i * 2.3999632;
++		int2   q = ClampRect(p + int2(round(float2(cos(a), sin(a)) * t * r)));
++		float  d = LoadDepth(q);
++		if (d > 0.0 && d < 0.3)
++		{
++			sum += t0.Load(int3(q, 0)).rgb;
++			n   += 1.0;
++		}
++	}
++	return sum / n;
++}
++
++bool IsSky(int2 q)
++{
++	return LoadDepth(ClampRect(q)) >= 0.99999;
++}
++
++// Sun shafts: march towards the sun and count open sky (screen-space light scattering), plus a soft glare
++// around a visible sun disc. Display space, added like bloom; the caller caps the total.
++float3 SunLight(float2 pixel)
++{
++	if (x2.w <= 0.0 || (x1.z <= 0.0 && x1.w <= 0.0))
++		return 0.0;
++	float  h     = c3.y;
++	float2 toSun = x1.xy - pixel;
++	float  r     = length(toSun) / h; // in view heights
++	float3 light = 0.0;
++	if (x1.z > 0.0 && r < 1.4)
++	{
++		float  noise = frac(52.9829189 * frac(dot(pixel, float2(0.06711056, 0.00583715))));
++		float2 delta = toSun / 20.0;
++		float2 pos   = pixel + delta * noise;
++		float  illum = 0.0, total = 0.0, decay = 1.0;
++		[unroll] for (int i = 0; i < 20; i++)
++		{
++			pos   += delta;
++			illum += (IsSky(int2(pos)) ? 1.0 : 0.0) * decay;
++			total += decay;
++			decay *= 0.93;
++		}
++		// rays are the light that passed through gaps: the pixel itself being sky adds nothing new
++		float self = IsSky(int2(pixel)) ? 0.55 : 1.0;
++		light += (illum / total) * self * saturate(1.0 - r / 1.4) * saturate(1.0 - r / 1.4) * x1.z;
++	}
++	if (x1.w > 0.0 && r < 0.6)
++	{
++		// how much of the disc is open sky (12 taps on a 1% ring)
++		float vis = 0.0;
++		[unroll] for (int i = 0; i < 12; i++)
++		{
++			float a = i * 0.5235988;
++			vis += IsSky(int2(x1.xy + float2(cos(a), sin(a)) * h * 0.01)) ? 1.0 : 0.0;
++		}
++		vis /= 12.0;
++		float q = r / 0.06, s = r / 0.25;
++		light += vis * (exp(-q * q) * 0.6 + exp(-s * s) * 0.25) * x1.w;
++	}
++	return light * x2.rgb * x2.w;
++}
++
++float PHash(float2 p)
++{
++	p = frac(p * float2(123.34, 456.21));
++	p += dot(p, p + 45.32);
++	return frac(p.x * p.y);
++}
++
++float PNoise(float2 p)
++{
++	float2 i = floor(p), f = frac(p);
++	f = f * f * (3.0 - 2.0 * f);
++	return lerp(lerp(PHash(i), PHash(i + float2(1, 0)), f.x), lerp(PHash(i + float2(0, 1)), PHash(i + float2(1, 1)), f.x), f.y);
++}
++
++float2 ProjectPixel(float3 q)
++{
++	float  dist = max(-q.z, 0.001);
++	float2 ndc  = float2(q.x * c1.x / dist - c2.x, q.y * c1.y / dist - c2.y);
++	return float2((ndc.x + 1.0) * 0.5 * c3.x + c2.z, (1.0 - ndc.y) * 0.5 * c3.y + c2.w);
++}
++
++// Wet patches: a world-space puddle pattern on floors (up-facing, from depth) that darkens the ground and mirrors
++// what is on screen (screen-space reflection, the sky where the ray leaves upwards). Never shows anything that is
++// not already on screen. Renderer space in and out.
++float3 WetPatches(int2 p, float3 c)
++{
++	if (x3.x <= 0.0)
++		return c;
++	float depth = LoadDepth(p);
++	if (depth < 0.3 || depth >= 0.99999)
++		return c;
++	float dist = EyeDistance(depth);
++	if (dist <= 0.0 || dist > 2600.0)
++		return c;
++	float2 pixel = float2(p) + 0.5;
++	float3 P  = ViewPos(pixel, dist);
++	float3 Pr = ViewPos(pixel + float2(1, 0), EyeDistance(LoadDepth(ClampRect(p + int2(1, 0)))));
++	float3 Pl = ViewPos(pixel - float2(1, 0), EyeDistance(LoadDepth(ClampRect(p - int2(1, 0)))));
++	float3 Pd = ViewPos(pixel + float2(0, 1), EyeDistance(LoadDepth(ClampRect(p + int2(0, 1)))));
++	float3 Pu = ViewPos(pixel - float2(0, 1), EyeDistance(LoadDepth(ClampRect(p - int2(0, 1)))));
++	float3 dx = abs(Pr.z - P.z) < abs(P.z - Pl.z) ? Pr - P : P - Pl;
++	float3 dy = abs(Pd.z - P.z) < abs(P.z - Pu.z) ? Pd - P : P - Pu;
++	float3 N  = normalize(cross(dx, dy));
++	if (dot(N, -P) < 0.0)
++		N = -N;
++	float3 Nw = float3(dot(x4.xyz, N), dot(x5.xyz, N), dot(x6.xyz, N));
++	if (Nw.z < 0.93)
++		return c;
++	float3 W    = float3(dot(x4.xyz, P), dot(x5.xyz, P), dot(x6.xyz, P)) + float3(x4.w, x5.w, x6.w);
++	float2 uv   = W.xy / max(x3.w, 16.0);
++	float  n    = PNoise(uv) * 0.65 + PNoise(uv * 2.7 + 17.0) * 0.35;
++	float  edge = 1.0 - x3.y;
++	float  mask = smoothstep(edge, edge + 0.06, n) * saturate((2600.0 - dist) / 900.0) * saturate((Nw.z - 0.93) / 0.04);
++	if (mask <= 0.01)
++		return c;
++	c *= lerp(1.0, 0.7, mask); // wet ground is darker
++
++	float3 V    = normalize(-P);
++	float3 R    = reflect(-V, N);
++	float  fres = 0.02 + 0.98 * pow(1.0 - saturate(dot(N, V)), 5.0);
++	float  stepLen = max(dist * 0.015, 3.0);
++	float3 Q    = P + N * 0.5;
++	float3 hit  = 0.0;
++	float  found = 0.0;
++	[loop] for (int i = 0; i < 28; i++)
++	{
++		Q    += R * stepLen;
++		stepLen *= 1.13;
++		if (-Q.z <= 1.0)
++			break;
++		float2 pq = ProjectPixel(Q);
++		if (pq.x < c2.z || pq.y < c2.w || pq.x >= c2.z + c3.x || pq.y >= c2.w + c3.y)
++			break;
++		int2  qi = int2(pq);
++		float qd = LoadDepth(qi);
++		if (qd >= 0.99999)
++		{
++			if (i > 1)
++			{
++				hit   = t0.Load(int3(qi, 0)).rgb;
++				found = 1.0;
++			}
++			break;
++		}
++		float sd = EyeDistance(qd);
++		if (sd > 0.0 && -Q.z > sd && -Q.z - sd < max(stepLen * 2.0, 24.0))
++		{
++			hit = t0.Load(int3(qi, 0)).rgb;
++			// fade towards the edges of the view, where the reflected point would come from off screen
++			float2 e = saturate(min(pq - c2.zw, c2.zw + c3.xy - pq) / (0.08 * c3.xy));
++			found = min(e.x, e.y);
++			break;
++		}
++	}
++	float k = fres * mask * x3.x * found;
++	return lerp(c, hit, k);
++}
++
+ float4 PSComposite(float4 svpos : SV_Position) : SV_Target
+ {
+ 	int2   p      = int2(svpos.xy);
+@@ -1191,6 +1427,8 @@ float4 PSComposite(float4 svpos : SV_Position) : SV_Target
+ 		}
+ 	}
+ 	float3 c      = center.rgb;
++	c = AdsFocus(p, c);      // 0.39.0
++	c = WetPatches(p, c);    // 0.39.0
+ 
+ 	if (c5.x > 0.0)
+ 	{
+@@ -1233,6 +1471,7 @@ float4 PSComposite(float4 svpos : SV_Position) : SV_Target
+ 	{
+ 		d += t2.SampleLevel(linearClamp, svpos.xy * 0.25 * c6.xy, 0).rgb * c4.x;
+ 	}
++	d += min(SunLight(svpos.xy), 0.3); // 0.39.0 sun shafts and glare, capped
+ 	int modern = (int)c10.w;
+ 	d *= c4.w;
+ 	if (modern & 3)
+@@ -2001,7 +2240,10 @@ bool CreateGammaPipeline()
+ bool CreatePostRootSignature()
+ {
+ 	D3D12_DESCRIPTOR_RANGE ranges[6] = {};
+-	D3D12_ROOT_PARAMETER   params[7] = {};
++	D3D12_ROOT_PARAMETER   params[8] = {};
++	params[7].ParameterType             = D3D12_ROOT_PARAMETER_TYPE_CBV; // 0.39.0 world-view extras (b1)
++	params[7].Descriptor.ShaderRegister = 1;
++	params[7].ShaderVisibility          = D3D12_SHADER_VISIBILITY_PIXEL;
+ 	params[0].ParameterType            = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
+ 	params[0].Constants.Num32BitValues = kPostConstants;
+ 	params[0].ShaderVisibility         = D3D12_SHADER_VISIBILITY_ALL;
+@@ -2024,7 +2266,7 @@ bool CreatePostRootSignature()
+ 	sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+ 
+ 	D3D12_ROOT_SIGNATURE_DESC desc = {};
+-	desc.NumParameters     = 7;
++	desc.NumParameters     = 8;
+ 	desc.pParameters       = params;
+ 	desc.NumStaticSamplers = 1;
+ 	desc.pStaticSamplers   = &sampler;
+@@ -2035,8 +2277,59 @@ bool CreatePostRootSignature()
+ 		Log(0, "DX12: post root signature: %s\n", errors ? (const char *)errors->GetBufferPointer() : "?");
+ 		return false;
+ 	}
+-	return Check(dx.device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&dx.postRoot)),
+-	             "CreateRootSignature(post)");
++	if (!Check(dx.device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&dx.postRoot)),
++	           "CreateRootSignature(post)"))
++	{
++		return false;
++	}
++	// zeroed extras for passes that do not use them and for a full upload ring
++	D3D12_HEAP_PROPERTIES heap = {};
++	heap.Type                  = D3D12_HEAP_TYPE_UPLOAD;
++	D3D12_RESOURCE_DESC buffer = {};
++	buffer.Dimension           = D3D12_RESOURCE_DIMENSION_BUFFER;
++	buffer.Width               = 256 * ((kPostExtraFloats * 4 + 255) / 256);
++	buffer.Height              = 1;
++	buffer.DepthOrArraySize    = 1;
++	buffer.MipLevels           = 1;
++	buffer.SampleDesc.Count    = 1;
++	buffer.Layout              = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
++	dx.postExtraDefault.Reset();
++	if (!Check(dx.device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &buffer, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr,
++	                                              IID_PPV_ARGS(&dx.postExtraDefault)),
++	           "CreateCommittedResource(post extras)"))
++	{
++		return false;
++	}
++	void *mapped = nullptr;
++	D3D12_RANGE none = { 0, 0 };
++	if (SUCCEEDED(dx.postExtraDefault->Map(0, &none, &mapped)) && mapped)
++	{
++		memset(mapped, 0, (size_t)buffer.Width);
++		dx.postExtraDefault->Unmap(0, nullptr);
++	}
++	return true;
++}
++
++uint8_t *RingAlloc(UINT64 bytes, UINT64 alignment, D3D12_GPU_VIRTUAL_ADDRESS *gpu, UINT64 *offset);
++
++// 0.39.0: binds the world-view extras (b1) for the post passes; zeroed ones when `zero` or the ring is full.
++void BindPostExtra(bool zero)
++{
++	D3D12_GPU_VIRTUAL_ADDRESS gpu = dx.postExtraDefault ? dx.postExtraDefault->GetGPUVirtualAddress() : 0;
++	if (!zero && dx.postExtraActive)
++	{
++		D3D12_GPU_VIRTUAL_ADDRESS ring = 0;
++		uint8_t *dest = RingAlloc(kPostExtraFloats * 4, 256, &ring, nullptr);
++		if (dest)
++		{
++			memcpy(dest, dx.postExtra, sizeof(dx.postExtra));
++			gpu = ring;
++		}
++	}
++	if (gpu)
++	{
++		dx.list->SetGraphicsRootConstantBufferView(7, gpu);
++	}
+ }
+ 
+ bool CreatePostPipeline(ID3DBlob *ps, DXGI_FORMAT format, ComPtr<ID3D12PipelineState> &out)
+@@ -2632,6 +2925,7 @@ void TaaEndWorld()
+ 	dx.list->RSSetViewports(1, &viewport);
+ 	dx.list->RSSetScissorRects(1, &scissor);
+ 	dx.list->SetGraphicsRootSignature(dx.postRoot.Get());
++	BindPostExtra(true);
+ 	dx.list->SetPipelineState(modern.taaPipeline.Get());
+ 	dx.list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+ 	dx.list->SetGraphicsRoot32BitConstants(0, kPostConstants, c, 0);
+@@ -2924,7 +3218,8 @@ void ShutdownInternal()
+ bool PostEnabled()
+ {
+ 	const dxPostSettings_t &p = dx.post;
+-	return dx.postAvailable && (p.ssao || p.bloom || p.tonemap || p.sharpen > 0.0f || p.fxaa || p.autoExposure || p.grade || dx.heat[3] > 0.0f);
++	return dx.postAvailable && (p.ssao || p.bloom || p.tonemap || p.sharpen > 0.0f || p.fxaa || p.autoExposure || p.grade || dx.heat[3] > 0.0f ||
++	                            dx.postExtraActive);
+ }
+ 
+ // One full-screen triangle into `target`, restricted to the given rect.
+@@ -2965,6 +3260,13 @@ void RunPost(int x, int y, int width, int height)
+ 	Barrier(dx.list.Get(), dx.sceneColor.Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+ 	dx.list->SetGraphicsRootSignature(dx.postRoot.Get());
+ 	dx.list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
++	if (dx.postExtraActive)
++	{
++		// 0.39.0: the sun position arrives as a fraction of the world view; the passes work in scene pixels
++		dx.postExtra[4] = (float)x + dx.postExtra[4] * (float)width;
++		dx.postExtra[5] = (float)y + dx.postExtra[5] * (float)height;
++	}
++	BindPostExtra(false);
+ 
+ 	const float *proj = dx.worldProj;
+ 	float invW = 1.0f / (float)dx.sceneWidth, invH = 1.0f / (float)dx.sceneHeight;
+@@ -3118,6 +3420,7 @@ void EndWorldInternal()
+ 		RunPost(x, y, width, height);
+ 	}
+ 	dx.heat[3] = 0.0f; // one world view only
++	dx.postExtraActive = false;
+ 	// Frame Generation: only frames with a reconstructed world view. Keep a pre-HUD
+ 	// copy (postColor is free after the effects) and the hudless image through the
+ 	// same gamma pass the back buffer gets.
+@@ -6056,6 +6359,17 @@ void DX_SetHeatSpot(float u, float v, float radius, float strength)
+ 	dx.heat[3] = strength > 0.0f ? std::min(strength, 1.0f) : 0.0f;
+ }
+ 
++/* 0.39.0: world-view extras for the next world view (see PostExtra in kPostHLSL); count floats, rest zeroed. */
++void DX_SetPostExtra(const float *values, int count)
++{
++	memset(dx.postExtra, 0, sizeof(dx.postExtra));
++	if (values && count > 0)
++	{
++		memcpy(dx.postExtra, values, sizeof(float) * (size_t)std::min(count, kPostExtraFloats));
++	}
++	dx.postExtraActive = values && count > 0;
++}
++
+ void DX_LightingArm(const float *constants, int shadows, int volumetrics)
+ {
+ 	if (!constants)
+diff --git a/reference/etlegacy/src/renderer_dx12/dx12_core.h b/reference/etlegacy/src/renderer_dx12/dx12_core.h
+index de73d8f..1e457f4 100755
+--- a/reference/etlegacy/src/renderer_dx12/dx12_core.h
++++ b/reference/etlegacy/src/renderer_dx12/dx12_core.h
+@@ -272,6 +272,13 @@ void DX_LightingArm(const float *constants, int shadows, int volumetrics);
+ /* 0.38.0 immersion (item 12): barrel heat shimmer for the next world view's post pass. u, v: the spot in the world
+  * view (0..1, top-left origin), radius: fraction of the view width, strength 0..1 (0 = none). Cleared every view. */
+ void DX_SetHeatSpot(float u, float v, float radius, float strength);
++/* 0.39.0: world-view extras for the next world view (register b1 of the post passes, up to 64 floats):
++ * [0..3] ADS focus: strength 0..1, focus distance, full-blur distance (units), max radius (pixels)
++ * [4..7] sun: u, v (fraction of the world view), shaft strength, glare strength
++ * [8..11] sun colour rgb (display), facing 0..1
++ * [12..15] wet patches: strength, coverage 0..1, time (s), pattern scale (units)
++ * [16..27] view to world: three rows (xyz) + view origin component (w) */
++void DX_SetPostExtra(const float *values, int count);
+ void DX_ShadowApply(void);
+ int DX_ProbesTexelBytes(void);
+ int DX_ProbesRead(void *out, int capacity);
+diff --git a/reference/etlegacy/src/renderer_dx12/dx12_vk.c b/reference/etlegacy/src/renderer_dx12/dx12_vk.c
+index d0fcec5..d37b005 100755
+--- a/reference/etlegacy/src/renderer_dx12/dx12_vk.c
++++ b/reference/etlegacy/src/renderer_dx12/dx12_vk.c
+@@ -57,6 +57,7 @@ static cvar_t *r_dx12Materials, *r_dx12MaterialsStrength, *r_dx12Specular, *r_dx
+               *r_dx12MaterialsDebug, *r_dx12ProbeCache, *r_dx12MaterialCache, *r_dx12CacheKey;
+ /* 0.38.0: per-part material classes (_mat sidecars), close-range detail and the first-person local reflection */
+ static cvar_t *r_dx12MaterialDetail, *r_dx12ProbeLocal, *r_dx12MaterialReflect;
++static cvar_t *r_dx12Parallax; /* 0.39.0 */
+ /* cl_forceClassicVisuals (from the server's sv_forceClassicVisuals): the Ultra-only look is off, AA and upscaling stay */
+ static cvar_t *cl_forceClassicVisuals;
+ /* real-time lighting (Ultra): sun shadows, contact shadows, volumetric sun shafts; all off by default */
+@@ -64,6 +65,12 @@ static cvar_t *r_dx12Shadows, *r_dx12ShadowsStrength, *r_dx12ShadowsDistance, *r
+               *r_dx12Volumetrics, *r_dx12VolumetricsStrength, *r_dx12VolumetricsDensity, *r_dx12ShadowsDebug;
+ /* 0.38.0 immersion: muzzle-flash shadows (item 11) and barrel heat shimmer (item 12) */
+ static cvar_t *r_dx12FlashShadows, *r_dx12HeatShimmer;
++/* 0.39.0 graphics immersion: sun shafts and glare, wet patches, aim-down-sights focus, colour mood per map.
++ * cl_tcpRanked is set by the cgame from the server's tcp_rk (Ranked or a clan match): shafts, glare and mood are
++ * off there (they only ever make the scene look different, never clearer). r_dx12AdsFocus is the cgame's
++ * aim-down-sights fraction (0..1) for the frame. */
++static cvar_t *r_dx12SunShafts, *r_dx12SunGlare, *r_dx12WetPatches, *r_dx12AdsDof, *r_dx12AdsFocus, *r_dx12MapMood, *cl_tcpRanked;
++static void DX_PostExtras(void);
+ #define DX_REF_FLASH_SHADOW BIT(27) /* cgame flag on a muzzle-flash dlight (tcp_weapon_media.h wmFlashLight) */
+ 
+ static cvar_t *DX_Cvar(const char *name, const char *value, int flags, const char *description)
+@@ -123,6 +130,7 @@ static void DX_RegisterGraphicsCvars(void)
+ 	r_dx12ProbesStrength  = DX_Cvar("r_dx12ProbesStrength", "1", CVAR_ARCHIVE, "Materials: reflection strength (0..4)");
+ 	r_dx12ProbeCache      = DX_Cvar("r_dx12ProbeCache", "1", CVAR_ARCHIVE, "Materials: keep captured reflection probes in dx12cache/ and reuse them on the next load of the map");
+ 	r_dx12MaterialCache   = DX_Cvar("r_dx12MaterialCache", "1", CVAR_ARCHIVE, "Materials: keep the block-compressed material maps in dx12cache/materials and reuse them on later loads");
++	r_dx12Parallax        = DX_Cvar("r_dx12Parallax", "1", CVAR_ARCHIVE, "Materials: parallax depth on brick, cobble, stone and rubble close up (0 off .. 2)");
+ 	r_dx12MaterialDetail  = DX_Cvar("r_dx12MaterialDetail", "1", CVAR_ARCHIVE, "Materials: close-range surface detail on weapons, arms and players with a class map (0 off .. 2)");
+ 	r_dx12MaterialReflect = DX_Cvar("r_dx12MaterialReflect", "0.45", CVAR_ARCHIVE, "Materials: reflectance of steel and bright metal parts with a class map (0.45 = blued / parkerised gun steel, 1 = bare steel)");
+ 	r_dx12ProbeLocal      = DX_Cvar("r_dx12ProbeLocal", "1", CVAR_ARCHIVE, "Materials: the first-person weapon and arms reflect a probe kept up to date where you stand (needs r_dx12Probes)");
+@@ -139,6 +147,13 @@ static void DX_RegisterGraphicsCvars(void)
+ 	r_dx12ShadowsDebug    = DX_Cvar("r_dx12ShadowsDebug", "0", CVAR_CHEAT, "Shadow diagnostics: 1 dynamic shadows, 2 sun visibility from the static map, 3 light grid sun share");
+ 	r_dx12FlashShadows    = DX_Cvar("r_dx12FlashShadows", "1", CVAR_ARCHIVE, "Muzzle flashes cast short screen-space shadows (0..1 strength; needs r_dx12Shadows, the Ultra lighting)");
+ 	r_dx12HeatShimmer     = DX_Cvar("r_dx12HeatShimmer", "1", CVAR_ARCHIVE, "Heat shimmer above a barrel after sustained fire (0..1 strength)");
++	r_dx12SunShafts       = DX_Cvar("r_dx12SunShafts", "0.35", CVAR_ARCHIVE, "Ultra: light shafts from the sun through gaps, screen space (0..1 strength; off on Ranked)");
++	r_dx12SunGlare        = DX_Cvar("r_dx12SunGlare", "0.5", CVAR_ARCHIVE, "Ultra: soft glare around the sun when it is in view (0..1 strength; off on Ranked)");
++	r_dx12WetPatches      = DX_Cvar("r_dx12WetPatches", "1", CVAR_ARCHIVE, "Ultra: wet patches on outdoor maps that mirror what is on screen (0..1 strength)");
++	r_dx12AdsDof          = DX_Cvar("r_dx12AdsDof", "1", CVAR_ARCHIVE, "Aim down sights: the rear of your own gun goes soft, the world stays sharp (0..1)");
++	r_dx12AdsFocus        = DX_Cvar("r_dx12AdsFocus", "0", CVAR_TEMP, "Set by the game: how far the view is into aim down sights (0..1)");
++	r_dx12MapMood         = DX_Cvar("r_dx12MapMood", "1", CVAR_ARCHIVE, "Ultra: a subtle colour mood per map (colder Snow, warmer Delta); off on Ranked");
++	cl_tcpRanked          = ri.Cvar_Get("cl_tcpRanked", "0", CVAR_TEMP);
+ 	r_dx12MaterialsDebug  = DX_Cvar("r_dx12MaterialsDebug", "0", CVAR_CHEAT, "Materials diagnostics: 1 normals, 2 highlights and reflections only, 3 roughness/metal/occlusion, 4 classic surfaces (A/B)");
+ 	r_dx12CostMeter       = DX_Cvar("r_dx12CostMeter", "0", 0, "Measure the GPU cost of graphics changes for Options > Graphics (ui_gfxGpu, ui_gfxCost)");
+ 	r_dx12GpuTimes        = DX_Cvar("r_dx12GpuTimes", "0", 0, "Print the average DX12 GPU time per frame and of the world effects every N frames (0 off)");
+@@ -623,6 +638,73 @@ static void DX_HeatSpot(void)
+ 	DX_SetHeatSpot(u, v, radius < 0.25f ? radius : 0.25f, strength);
+ }
+ 
++/* 0.39.0 per-map look: a subtle colour mood (white balance and saturation only: luminance, contrast and shadows are
++ * untouched, so nothing gets harder to see) and how much of the ground has wet patches. */
++typedef struct
++{
++	const char *map;
++	float      temperature, tint, saturation, wet;
++} dxMapLook_t;
++static const dxMapLook_t dxMapLooks[] = {
++	{ "obj_snow", -0.25f, 0.0f, 0.92f, 0.0f },       /* cold, overcast */
++	{ "obj_delta", 0.25f, 0.02f, 1.05f, 0.0f },      /* warm, dusty, dry */
++	{ "obj_village", 0.10f, 0.0f, 1.04f, 0.15f },
++	{ "obj_northport", -0.10f, -0.02f, 0.95f, 0.30f }, /* grey harbour, wet quays */
++	{ "obj_railhouse", 0.05f, 0.0f, 0.97f, 0.18f },
++	{ "obj_stadtrand", -0.05f, 0.0f, 0.96f, 0.25f },
++	{ "harbour", -0.12f, 0.0f, 0.97f, 0.35f },
++	{ NULL, 0.0f, 0.0f, 1.0f, 0.0f }
++};
++
++static const dxMapLook_t *DX_MapLook(void)
++{
++	const char *map = (tr.world && tr.world->baseName[0]) ? tr.world->baseName : "";
++	char        base[MAX_QPATH];
++	int         i;
++
++	COM_StripExtension(map, base, sizeof(base));
++	for (i = 0; dxMapLooks[i].map; i++)
++	{
++		if (!Q_stricmp(base, dxMapLooks[i].map))
++		{
++			return &dxMapLooks[i];
++		}
++	}
++	return NULL;
++}
++
++static qboolean DX_RankedLook(void)
++{
++	return (cl_tcpRanked && cl_tcpRanked->integer) || (cl_forceClassicVisuals && cl_forceClassicVisuals->integer) ? qtrue : qfalse;
++}
++
++static void DX_ApplyMapMood(dxPostSettings_t *post)
++{
++	const dxMapLook_t *look = DX_MapLook();
++	float              k    = r_dx12MapMood ? Com_Clamp(0.0f, 1.0f, r_dx12MapMood->value) : 0.0f;
++
++	if (!look || k <= 0.0f || DX_RankedLook() || !r_dx12Materials->integer)
++	{
++		return;
++	}
++	if (!post->grade)
++	{
++		/* the player's own grade is off: a neutral grade carries the mood */
++		post->grade            = 1;
++		post->gradeContrast    = 1.0f;
++		post->gradeSaturation  = 1.0f;
++		post->gradeTemperature = 0.0f;
++		post->gradeTint        = 0.0f;
++		VectorSet(post->gradeLift, 0.0f, 0.0f, 0.0f);
++		VectorSet(post->gradeGamma, 1.0f, 1.0f, 1.0f);
++		VectorSet(post->gradeGain, 1.0f, 1.0f, 1.0f);
++		post->gradeLutStrength = 0.0f;
++	}
++	post->gradeTemperature += look->temperature * k;
++	post->gradeTint        += look->tint * k;
++	post->gradeSaturation  *= 1.0f + (look->saturation - 1.0f) * k;
++}
++
+ static void DX_UpdatePostSettings(void)
+ {
+ 	dxPostSettings_t post;
+@@ -669,6 +751,7 @@ static void DX_UpdatePostSettings(void)
+ 			post.tonemap = 1;
+ 		}
+ 	}
++	DX_ApplyMapMood(&post); /* 0.39.0 */
+ 	if (post.grade && post.gradeLutStrength > 0.0f)
+ 	{
+ 		DX_UpdateGradeLut();
+@@ -2703,6 +2786,58 @@ static int DX_NearestProbe(const vec3_t worldCenter)
+ 	return best;
+ }
+ 
++/* 0.39.0: parallax depth of a world shader, in texture space (0 = flat); cached per shader index. */
++static float DX_ParallaxDepth(const shader_t *sh)
++{
++	static unsigned      known[MAX_SHADERS]; /* name hash + 1 of the shader the entry was made for */
++	static float         depth[MAX_SHADERS];
++	unsigned             hash = 2166136261u;
++	const char           *c;
++	static const char    *deep[]    = { "brick", "cobble", "kopf", "pave", "pflaster", NULL };
++	static const char    *shallow[] = { "rubble", "rock", "stone", "cliff", "gravel", NULL };
++	char                 lower[MAX_QPATH];
++	int                  i;
++
++	if (!sh || sh->index < 0 || sh->index >= MAX_SHADERS)
++	{
++		return 0.0f;
++	}
++	for (c = sh->name; *c; c++)
++	{
++		hash = (hash ^ (unsigned char)*c) * 16777619u;
++	}
++	hash |= 1u;
++	if (known[sh->index] == hash)
++	{
++		return depth[sh->index];
++	}
++	known[sh->index] = hash;
++	depth[sh->index] = 0.0f;
++	if (Q_stricmpn(sh->name, "textures/", 9) || sh->isSky || sh->numDeforms)
++	{
++		return 0.0f;
++	}
++	Q_strncpyz(lower, sh->name, sizeof(lower));
++	Q_strlwr(lower);
++	for (i = 0; deep[i]; i++)
++	{
++		if (strstr(lower, deep[i]))
++		{
++			depth[sh->index] = 0.016f;
++			return depth[sh->index];
++		}
++	}
++	for (i = 0; shallow[i]; i++)
++	{
++		if (strstr(lower, shallow[i]))
++		{
++			depth[sh->index] = 0.011f;
++			return depth[sh->index];
++		}
++	}
++	return 0.0f;
++}
++
+ /* The material constants (register b2) of one draw. */
+ static void DX_MaterialConstants(float *m, shaderCommands_t *input, qboolean entityLight, qboolean vertexLit, const vec3_t center)
+ {
+@@ -2787,6 +2922,11 @@ static void DX_MaterialConstants(float *m, shaderCommands_t *input, qboolean ent
+ 	m[88] = firstPerson ? 1.0f : 0.0f;
+ 	m[89] = Com_Clamp(0.0f, 2.0f, r_dx12MaterialDetail->value);
+ 	m[90] = Com_Clamp(0.0f, 1.5f, r_dx12MaterialReflect->value); // metal reflectance scale of the class maps (0.45: gun finishes, not chrome)
++	if (r_dx12Parallax->value > 0.0f && !firstPerson && (!ent || ent == &tr.worldEntity))
++	{
++		m[84] = DX_ParallaxDepth(input->shader) * Com_Clamp(0.0f, 2.0f, r_dx12Parallax->value);
++		m[85] = 384.0f; // full depth out to 384 units, none past 768
++	}
+ }
+ 
+ static qboolean DX_MaterialBlendOk(unsigned long stateBits)
+@@ -3197,6 +3337,7 @@ void VK_SetSceneViewport(int x, int y, int width, int height)
+         DX_DlssView(backEnd.viewParms.world.modelMatrix,dxs.projMatrix,backEnd.refdef.vieworg,&backEnd.refdef.viewaxis[0][0],backEnd.viewParms.zFar,backEnd.refdef.time,backEnd.viewParms.isPortal);
+         DX_BeginWorld(dxs.lastX, dxs.lastY, width, height, dxs.projMatrix);
+ 		DX_HeatSpot(); /* 0.38.0 item 12 */
++		DX_PostExtras(); /* 0.39.0 */
+ 		DX_ArmLighting();
+ 	}
+ 	DX_SetViewport(dxs.lastX, dxs.lastY, width, height, 0.0f, 1.0f);
+@@ -3638,3 +3779,79 @@ void VK_DlssBeginBatch(shaderCommands_t *input){
+         DX_DlssBatch(key,sky?2:(!world||sh->numDeforms>0)?1:0);
+     }
+ }
++
++/* 0.39.0: world-view extras for this view (DX_SetPostExtra): aim-down-sights focus, sun shafts and glare, wet patches. */
++static void DX_PostExtras(void)
++{
++	float       v[28];
++	qboolean    any = qfalse;
++	const float tanX = tanf(DEG2RAD(backEnd.refdef.fov_x * 0.5f)), tanY = tanf(DEG2RAD(backEnd.refdef.fov_y * 0.5f));
++	const float *axis = &backEnd.refdef.viewaxis[0][0];
++	const float *org  = backEnd.refdef.vieworg;
++	const float height = (float)(dxs.lastHeight > 0 ? dxs.lastHeight : 1080);
++	const dxMapLook_t *look = DX_MapLook();
++	const qboolean ultra = r_dx12Materials->integer && !DX_ClassicForced();
++	int         i;
++
++	Com_Memset(v, 0, sizeof(v));
++	if (backEnd.viewParms.isPortal || tanX <= 0.0f || tanY <= 0.0f)
++	{
++		DX_SetPostExtra(NULL, 0);
++		return;
++	}
++	/* aim down sights: the cgame's fraction; focus 16 units ahead (front sight), full softness at 7 */
++	if (r_dx12AdsDof->value > 0.0f && r_dx12AdsFocus->value > 0.0f)
++	{
++		v[0] = Com_Clamp(0.0f, 1.0f, r_dx12AdsDof->value) * Com_Clamp(0.0f, 1.0f, r_dx12AdsFocus->value);
++		v[1] = 16.0f;
++		v[2] = 7.0f;
++		v[3] = 2.5f * height / 1080.0f;
++		any  = qtrue;
++	}
++	/* the sun: from q3map_sun or the light grid (the same source as the sun shadows) */
++	if (ultra && !DX_RankedLook() && (r_dx12SunShafts->value > 0.0f || r_dx12SunGlare->value > 0.0f) && DX_ShadowSun())
++	{
++		vec3_t d;
++		float  z, x, y;
++
++		VectorCopy(dxsh.sun, d);
++		z = DotProduct(d, backEnd.refdef.viewaxis[0]);
++		if (z > 0.05f)
++		{
++			x = -DotProduct(d, backEnd.refdef.viewaxis[1]) / (z * tanX);
++			y = DotProduct(d, backEnd.refdef.viewaxis[2]) / (z * tanY);
++			if (x > -2.5f && x < 2.5f && y > -2.5f && y < 2.5f)
++			{
++				float m = MAX(dxsh.sunColor[0], MAX(dxsh.sunColor[1], dxsh.sunColor[2]));
++
++				v[4]  = x * 0.5f + 0.5f;
++				v[5]  = 0.5f - y * 0.5f;
++				v[6]  = Com_Clamp(0.0f, 1.0f, r_dx12SunShafts->value);
++				v[7]  = Com_Clamp(0.0f, 1.0f, r_dx12SunGlare->value);
++				v[8]  = m > 0.0f ? dxsh.sunColor[0] / m : 1.0f;
++				v[9]  = m > 0.0f ? dxsh.sunColor[1] / m : 1.0f;
++				v[10] = m > 0.0f ? dxsh.sunColor[2] / m : 1.0f;
++				v[11] = Com_Clamp(0.0f, 1.0f, (z - 0.05f) / 0.3f);
++				any   = qtrue;
++			}
++		}
++	}
++	/* wet patches: per map, with the view's rotation and origin for the world-space pattern */
++	if (ultra && look && look->wet > 0.0f && r_dx12WetPatches->value > 0.0f)
++	{
++		v[12] = Com_Clamp(0.0f, 1.0f, r_dx12WetPatches->value);
++		v[13] = look->wet;
++		v[14] = backEnd.refdef.time * 0.001f;
++		v[15] = 220.0f;
++		/* eye space: x right, y up, -z forward (Q3 axes: [0] forward, [1] left, [2] up) */
++		for (i = 0; i < 3; i++)
++		{
++			v[16 + i * 4 + 0] = -axis[3 + i];
++			v[16 + i * 4 + 1] = axis[6 + i];
++			v[16 + i * 4 + 2] = -axis[0 + i];
++			v[16 + i * 4 + 3] = org[i];
++		}
++		any = qtrue;
++	}
++	DX_SetPostExtra(any ? v : NULL, any ? 28 : 0);
++}
+diff --git a/reference/etlegacy/src/renderer_vk/tr_bsp.c b/reference/etlegacy/src/renderer_vk/tr_bsp.c
+index 815e1e6..23025cc 100644
+--- a/reference/etlegacy/src/renderer_vk/tr_bsp.c
++++ b/reference/etlegacy/src/renderer_vk/tr_bsp.c
+@@ -36,6 +36,13 @@
+  */
+ 
+ #include "tr_local.h"
++#include "../renderercommon/tcp_lightmap_smooth.h"
++
++/* 0.39.0 smoother lightmaps: called by R_FindImageFile (tr_image.c) for lightmap images */
++byte *R_LightmapSmooth(const char *name, const byte *pic, int *width, int *height)
++{
++	return TCP_LightmapSmooth(name, pic, width, height);
++}
+ 
+ static world_t s_worldData;
+ static byte    *fileBase;
+@@ -2828,7 +2835,9 @@ void RE_LoadWorldMap(const char *name)
+ 	Ren_UpdateScreen();
+ 	//% R_LoadFogs( &header->lumps[LUMP_FOGS], &header->lumps[LUMP_BRUSHES], &header->lumps[LUMP_BRUSHSIDES] );
+ 	//% Ren_UpdateScreen();
++	TCP_LightmapSmoothBegin(fileBase, &header->lumps[LUMP_SURFACES], &header->lumps[LUMP_DRAWVERTS], &header->lumps[LUMP_DRAWINDEXES], tr.worldDir);
+ 	R_LoadSurfaces(&header->lumps[LUMP_SURFACES], &header->lumps[LUMP_DRAWVERTS], &header->lumps[LUMP_DRAWINDEXES]);
++	TCP_LightmapSmoothEnd();
+ 	R_LoadSurfaceCullData();
+ 	R_LoadStaticWorldVertices();
+ 	Ren_UpdateScreen();
+diff --git a/reference/etlegacy/src/renderer_vk/tr_image.c b/reference/etlegacy/src/renderer_vk/tr_image.c
+index f8a11e3..614340d 100644
+--- a/reference/etlegacy/src/renderer_vk/tr_image.c
++++ b/reference/etlegacy/src/renderer_vk/tr_image.c
+@@ -956,6 +956,8 @@ void R_LoadImage(const char *name, byte **pic, int *width, int *height)
+  *
+  * @return NULL if it fails, not a default image.
+  */
++byte *R_LightmapSmooth(const char *name, const byte *pic, int *width, int *height);
++
+ image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip, int glWrapClampMode, qboolean lightmap)
+ {
+ 	image_t  *image;
+@@ -963,6 +965,7 @@ image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip
+ 	byte     *pic;
+ 	long     hash;
+ 	qboolean allowCompress = qfalse;
++	byte     *smoothed     = NULL;
+ 
+ 	if (!name)
+ 	{
+@@ -1026,6 +1029,11 @@ image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip
+ 	if (lightmap)
+ 	{
+ 		R_ProcessLightmap(pic, 4, width, height, pic);
++		smoothed = R_LightmapSmooth(name, pic, &width, &height); // 0.39.0: 2x chart-aware upscale (tr_bsp.c)
++		if (smoothed)
++		{
++			pic = smoothed;
++		}
+ 
+ 		// no texture compression
+ 		if (lightmap)
+@@ -1042,6 +1050,10 @@ image_t *R_FindImageFile(const char *name, qboolean mipmap, qboolean allowPicmip
+ 	{
+ 		tr.allowCompress = allowCompress;
+ 	}
++	if (smoothed)
++	{
++		Com_Dealloc(smoothed);
++	}
+ 
+ 	return image;
+ }
+diff --git a/reference/etlegacy/src/renderer_vk/tr_shader.c b/reference/etlegacy/src/renderer_vk/tr_shader.c
+index a9cdfd0..63e13ac 100644
+--- a/reference/etlegacy/src/renderer_vk/tr_shader.c
++++ b/reference/etlegacy/src/renderer_vk/tr_shader.c
+@@ -42,6 +42,8 @@ static char *s_shaderText;
+ // dynamically allocated memory if it is valid.
+ static shaderStage_t stages[MAX_SHADER_STAGES];
+ static shader_t      shader;
++
++#include "../renderercommon/tcp_wind.h" // 0.39.0 wind on foliage and cloth
+ static texModInfo_t  texMods[MAX_SHADER_STAGES][TR_MAX_TEXMODS];
+ 
+ // these are here because they are only referenced while parsing a shader
+@@ -2922,6 +2924,8 @@ static shader_t *FinishShader(void)
+ 	int      stage, i;
+ 	qboolean hasLightmapStage = qfalse;
+ 
++	TCP_WindSway(&shader);
++
+ 	// set sky stuff appropriate
+ 	if (shader.isSky)
+ 	{
+diff --git a/reference/etlegacy/src/renderercommon/tcp_lightmap_smooth.h b/reference/etlegacy/src/renderercommon/tcp_lightmap_smooth.h
+new file mode 100644
+index 0000000..a589128
+--- /dev/null
++++ b/reference/etlegacy/src/renderercommon/tcp_lightmap_smooth.h
+@@ -0,0 +1,412 @@
++/*
++ * TrueCombat: Platinum - smoother lightmaps (0.39.0).
++ *
++ * The maps ship 256x256 (Harbour 512x512) external lightmaps (maps/<map>/lm_NNNN.tga). Seen up close, the
++ * baked shadows are blocky and bilinear filtering shows stair steps along every shadow edge. At load time each
++ * lightmap is doubled in size with a Mitchell-Netravali filter that only mixes texels of the same lightmap chart:
++ *
++ *   1. the BSP's surfaces are rasterized in lightmap space, so every texel knows which chart it belongs to
++ *      (surfaces that share a lightmap vertex are one chart, as q3map2 merges coplanar faces);
++ *   2. q3map2's padding texels around each chart (lit, beyond the triangles) join the nearest chart;
++ *   3. the 2x upscale only takes taps from the centre texel's chart, weights renormalized.
++ *
++ * Brightness is unchanged (the filter is normalized), so dark corners stay exactly as dark: no visibility change.
++ * Both renderers (DX12 and OpenGL) include this header; r_lightmapSmooth 0 restores the original lightmaps.
++ * Cost: load time only (a few ms per lightmap) and 4x the lightmap memory (about 15-60 MB per map).
++ */
++#ifndef TCP_LIGHTMAP_SMOOTH_H
++#define TCP_LIGHTMAP_SMOOTH_H
++
++#include <math.h>
++
++static struct
++{
++	const dsurface_t *surfs;
++	int              numSurfs;
++	const drawVert_t *verts;
++	int              numVerts;
++	const int        *indexes;
++	int              numIndexes;
++	char             worldDir[MAX_QPATH];
++	int              active;
++} lmSmooth;
++
++static cvar_t *r_lightmapSmooth;
++
++/* RE_LoadWorldMap: the BSP lumps stay valid until the file is freed at the end of the load */
++static void TCP_LightmapSmoothBegin(const byte *base, const lump_t *surfs, const lump_t *verts, const lump_t *indexes,
++                                    const char *worldDir)
++{
++	if (!r_lightmapSmooth)
++	{
++		r_lightmapSmooth = ri.Cvar_Get("r_lightmapSmooth", "1", CVAR_ARCHIVE | CVAR_LATCH);
++	}
++	Com_Memset(&lmSmooth, 0, sizeof(lmSmooth));
++	if (!r_lightmapSmooth->integer || !worldDir)
++	{
++		return;
++	}
++	lmSmooth.surfs      = (const dsurface_t *)(base + surfs->fileofs);
++	lmSmooth.numSurfs   = surfs->filelen / (int)sizeof(dsurface_t);
++	lmSmooth.verts      = (const drawVert_t *)(base + verts->fileofs);
++	lmSmooth.numVerts   = verts->filelen / (int)sizeof(drawVert_t);
++	lmSmooth.indexes    = (const int *)(base + indexes->fileofs);
++	lmSmooth.numIndexes = indexes->filelen / (int)sizeof(int);
++	Q_strncpyz(lmSmooth.worldDir, worldDir, sizeof(lmSmooth.worldDir));
++	lmSmooth.active = 1;
++}
++
++static void TCP_LightmapSmoothEnd(void)
++{
++	Com_Memset(&lmSmooth, 0, sizeof(lmSmooth));
++}
++
++static int lmsFind(int *parent, int i)
++{
++	while (parent[i] != i)
++	{
++		parent[i] = parent[parent[i]];
++		i         = parent[i];
++	}
++	return i;
++}
++
++static void lmsUnion(int *parent, int a, int b)
++{
++	a = lmsFind(parent, a);
++	b = lmsFind(parent, b);
++	if (a != b)
++	{
++		parent[a < b ? b : a] = a < b ? a : b;
++	}
++}
++
++/* chart ids are surface numbers + 1; 0 = no chart */
++static void lmsRasterTri(int *ids, int w, int h, const float *a, const float *b, const float *c, int id)
++{
++	float ax = a[0] * w, ay = a[1] * h, bx = b[0] * w, by = b[1] * h, cx = c[0] * w, cy = c[1] * h;
++	float area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
++	int   x0, x1, y0, y1, x, y;
++
++	if (fabsf(area) < 1e-6f)
++	{
++		return;
++	}
++	x0 = (int)floorf(fminf(ax, fminf(bx, cx)) - 0.5f);
++	x1 = (int)ceilf(fmaxf(ax, fmaxf(bx, cx)) + 0.5f);
++	y0 = (int)floorf(fminf(ay, fminf(by, cy)) - 0.5f);
++	y1 = (int)ceilf(fmaxf(ay, fmaxf(by, cy)) + 0.5f);
++	if (x1 < 0 || y1 < 0 || x0 >= w || y0 >= h || x1 - x0 > w + 2 || y1 - y0 > h + 2)
++	{
++		return; /* off the page or wrapped coordinates: leave it to dilation */
++	}
++	x0 = x0 < 0 ? 0 : x0;
++	y0 = y0 < 0 ? 0 : y0;
++	x1 = x1 >= w ? w - 1 : x1;
++	y1 = y1 >= h ? h - 1 : y1;
++	for (y = y0; y <= y1; y++)
++	{
++		for (x = x0; x <= x1; x++)
++		{
++			float px = x + 0.5f, py = y + 0.5f;
++			float w0 = ((bx - px) * (cy - py) - (by - py) * (cx - px)) / area;
++			float w1 = ((cx - px) * (ay - py) - (cy - py) * (ax - px)) / area;
++			float w2 = 1.0f - w0 - w1;
++			/* a small tolerance: q3map2 samples at texel centres, so a chart's border texels sit on its edges */
++			if (w0 >= -0.02f && w1 >= -0.02f && w2 >= -0.02f && !ids[y * w + x])
++			{
++				ids[y * w + x] = id;
++			}
++		}
++	}
++}
++
++static float lmsMitchell(float x)
++{
++	const float B = 1.0f / 3.0f, C = 1.0f / 3.0f;
++	x = fabsf(x);
++	if (x < 1.0f)
++	{
++		return ((12.0f - 9.0f * B - 6.0f * C) * x * x * x + (-18.0f + 12.0f * B + 6.0f * C) * x * x + (6.0f - 2.0f * B)) / 6.0f;
++	}
++	if (x < 2.0f)
++	{
++		return ((-B - 6.0f * C) * x * x * x + (6.0f * B + 30.0f * C) * x * x + (-12.0f * B - 48.0f * C) * x + (8.0f * B + 24.0f * C)) / 6.0f;
++	}
++	return 0.0f;
++}
++
++/*
++ * Called by R_FindImageFile for lightmap images after R_ProcessLightmap. Returns a new RGBA buffer (Com_Allocate,
++ * caller frees with Com_Dealloc) twice the size, or NULL to keep the original.
++ */
++static byte *TCP_LightmapSmooth(const char *name, const byte *pic, int *width, int *height)
++{
++	const char *base;
++	int        index, w = *width, h = *height, i, j, k, x, y, ow, oh, pass;
++	int        *ids, *parent, *hashKey, hashSize;
++	byte       *src, *out;
++
++	if (!lmSmooth.active || w < 16 || h < 16 || w > 1024 || h > 1024)
++	{
++		return NULL;
++	}
++	base = strrchr(name, '/');
++	if (!base || Q_stricmpn(name, lmSmooth.worldDir, (int)strlen(lmSmooth.worldDir)) || sscanf(base + 1, "lm_%d", &index) != 1)
++	{
++		return NULL;
++	}
++
++	ids    = Com_Allocate(sizeof(int) * w * h);
++	parent = Com_Allocate(sizeof(int) * (lmSmooth.numSurfs + 1));
++	src    = Com_Allocate(w * h * 4);
++	if (!ids || !parent || !src)
++	{
++		Com_Dealloc(ids);
++		Com_Dealloc(parent);
++		Com_Dealloc(src);
++		return NULL;
++	}
++	Com_Memset(ids, 0, sizeof(int) * w * h);
++	Com_Memcpy(src, pic, w * h * 4);
++	for (i = 0; i <= lmSmooth.numSurfs; i++)
++	{
++		parent[i] = i;
++	}
++
++	/* surfaces sharing an exact lightmap vertex are one chart (open-addressed hash of the coordinate pair) */
++	hashSize = 1;
++	while (hashSize < lmSmooth.numVerts * 2 + 16)
++	{
++		hashSize <<= 1;
++	}
++	hashKey = Com_Allocate(sizeof(int) * 2 * hashSize);
++	if (hashKey)
++	{
++		for (i = 0; i < hashSize; i++)
++		{
++			hashKey[i * 2] = -1;
++		}
++	}
++
++	for (i = 0; i < lmSmooth.numSurfs; i++)
++	{
++		const dsurface_t *s   = &lmSmooth.surfs[i];
++		int              fv   = LittleLong(s->firstVert), nv = LittleLong(s->numVerts);
++		int              type = LittleLong(s->surfaceType);
++
++		if (LittleLong(s->lightmapNum) != index || fv < 0 || nv <= 0 || fv + nv > lmSmooth.numVerts)
++		{
++			continue;
++		}
++		if (hashKey)
++		{
++			for (j = 0; j < nv; j++)
++			{
++				const float  *lm = lmSmooth.verts[fv + j].lightmap;
++				unsigned int hv  = ((unsigned int)(lm[0] * 65536.0f) * 73856093u) ^ ((unsigned int)(lm[1] * 65536.0f) * 19349663u);
++				for (k = 0; k < hashSize; k++)
++				{
++					int slot = (int)((hv + (unsigned int)k) & (unsigned int)(hashSize - 1));
++					if (hashKey[slot * 2] < 0)
++					{
++						hashKey[slot * 2]     = fv + j;
++						hashKey[slot * 2 + 1] = i + 1;
++						break;
++					}
++					{
++						const float *o = lmSmooth.verts[hashKey[slot * 2]].lightmap;
++						if (o[0] == lm[0] && o[1] == lm[1])
++						{
++							lmsUnion(parent, hashKey[slot * 2 + 1], i + 1);
++							break;
++						}
++					}
++				}
++			}
++		}
++		if (type == MST_PATCH)
++		{
++			int pw = LittleLong(s->patchWidth), ph = LittleLong(s->patchHeight);
++			if (pw < 2 || ph < 2 || pw * ph > nv)
++			{
++				continue;
++			}
++			for (y = 0; y < ph - 1; y++)
++			{
++				for (x = 0; x < pw - 1; x++)
++				{
++					const drawVert_t *v = &lmSmooth.verts[fv + y * pw + x];
++					lmsRasterTri(ids, w, h, v[0].lightmap, v[1].lightmap, v[pw].lightmap, i + 1);
++					lmsRasterTri(ids, w, h, v[1].lightmap, v[pw + 1].lightmap, v[pw].lightmap, i + 1);
++				}
++			}
++		}
++		else if (type == MST_PLANAR || type == MST_TRIANGLE_SOUP)
++		{
++			int fi = LittleLong(s->firstIndex), ni = LittleLong(s->numIndexes);
++			if (fi < 0 || fi + ni > lmSmooth.numIndexes)
++			{
++				continue;
++			}
++			for (j = 0; j + 2 < ni; j += 3)
++			{
++				int a = LittleLong(lmSmooth.indexes[fi + j]), b = LittleLong(lmSmooth.indexes[fi + j + 1]), c = LittleLong(lmSmooth.indexes[fi + j + 2]);
++				if (a < 0 || b < 0 || c < 0 || a >= nv || b >= nv || c >= nv)
++				{
++					continue;
++				}
++				lmsRasterTri(ids, w, h, lmSmooth.verts[fv + a].lightmap, lmSmooth.verts[fv + b].lightmap, lmSmooth.verts[fv + c].lightmap, i + 1);
++			}
++		}
++	}
++	Com_Dealloc(hashKey);
++
++	/* nothing of this page is used by the BSP (another map's lightmap name, or a load from elsewhere) */
++	for (i = 0; i < w * h && !ids[i]; i++)
++	{
++	}
++	if (i == w * h)
++	{
++		Com_Dealloc(ids);
++		Com_Dealloc(parent);
++		Com_Dealloc(src);
++		return NULL;
++	}
++	for (i = 0; i < w * h; i++)
++	{
++		ids[i] = ids[i] ? lmsFind(parent, ids[i]) : 0;
++	}
++
++	/* chart padding: q3map2 pads every chart with lit texels beyond its triangles; those texels join the
++	 * nearest chart (3 rings), their colour is kept as baked */
++	for (pass = 0; pass < 3; pass++)
++	{
++		int changed = 0;
++		int *next   = Com_Allocate(sizeof(int) * w * h);
++		if (!next)
++		{
++			break;
++		}
++		Com_Memcpy(next, ids, sizeof(int) * w * h);
++		for (y = 0; y < h; y++)
++		{
++			for (x = 0; x < w; x++)
++			{
++				int dy, dx, best = 0;
++				if (ids[y * w + x])
++				{
++					continue;
++				}
++				for (dy = -1; dy <= 1 && !best; dy++)
++				{
++					for (dx = -1; dx <= 1; dx++)
++					{
++						int nx = x + dx, ny = y + dy;
++						if ((dx || dy) && nx >= 0 && ny >= 0 && nx < w && ny < h && ids[ny * w + nx])
++						{
++							best = ids[ny * w + nx];
++							break;
++						}
++					}
++				}
++				if (best)
++				{
++					next[y * w + x] = best;
++					changed         = 1;
++				}
++			}
++		}
++		Com_Memcpy(ids, next, sizeof(int) * w * h);
++		Com_Dealloc(next);
++		if (!changed)
++		{
++			break;
++		}
++	}
++
++	/* 2x Mitchell-Netravali upscale within the centre texel's chart */
++	ow  = w * 2;
++	oh  = h * 2;
++	out = Com_Allocate(ow * oh * 4);
++	if (!out)
++	{
++		Com_Dealloc(ids);
++		Com_Dealloc(parent);
++		Com_Dealloc(src);
++		return NULL;
++	}
++	/* a 2x upscale only ever samples at two phases (0.25 and 0.75 past a texel): weights per phase and tap */
++	{
++		float tw[2][4];
++		for (i = 0; i < 2; i++)
++		{
++			for (j = 0; j < 4; j++)
++			{
++				tw[i][j] = lmsMitchell((i ? 0.25f : 0.75f) - (float)(j - 1));
++			}
++		}
++	for (y = 0; y < oh; y++)
++	{
++		float sy = (y + 0.5f) * 0.5f - 0.5f;
++		int   cy = (int)floorf(sy);
++		for (x = 0; x < ow; x++)
++		{
++			float sx     = (x + 0.5f) * 0.5f - 0.5f;
++			int   cx     = (int)floorf(sx);
++			int   nearX  = (int)floorf((x + 0.5f) * 0.5f), nearY = (int)floorf((y + 0.5f) * 0.5f);
++			int   chart  = ids[(nearY < h ? nearY : h - 1) * w + (nearX < w ? nearX : w - 1)];
++			float acc[3] = { 0, 0, 0 }, total = 0;
++			int   ty, tx;
++			for (ty = cy - 1; ty <= cy + 2; ty++)
++			{
++				float wy = tw[y & 1][ty - cy + 1];
++				int   qy = ty < 0 ? 0 : (ty >= h ? h - 1 : ty);
++				for (tx = cx - 1; tx <= cx + 2; tx++)
++				{
++					int        qx = tx < 0 ? 0 : (tx >= w ? w - 1 : tx);
++					float      wt;
++					const byte *p;
++					if (chart && ids[qy * w + qx] != chart)
++					{
++						continue;
++					}
++					wt      = wy * tw[x & 1][tx - cx + 1];
++					p       = src + (qy * w + qx) * 4;
++					acc[0] += p[0] * wt;
++					acc[1] += p[1] * wt;
++					acc[2] += p[2] * wt;
++					total  += wt;
++				}
++			}
++			{
++				byte       *o = out + (y * ow + x) * 4;
++				const byte *n = src + ((nearY < h ? nearY : h - 1) * w + (nearX < w ? nearX : w - 1)) * 4;
++				if (total > 0.05f)
++				{
++					for (k = 0; k < 3; k++)
++					{
++						float v = acc[k] / total;
++						o[k] = (byte)(v < 0.0f ? 0 : (v > 255.0f ? 255 : (int)(v + 0.5f)));
++					}
++				}
++				else
++				{
++					o[0] = n[0];
++					o[1] = n[1];
++					o[2] = n[2];
++				}
++				o[3] = 255;
++			}
++		}
++	}
++	}
++	Com_Dealloc(ids);
++	Com_Dealloc(parent);
++	Com_Dealloc(src);
++	*width  = ow;
++	*height = oh;
++	return out;
++}
++
++#endif
+diff --git a/reference/etlegacy/src/renderercommon/tcp_wind.h b/reference/etlegacy/src/renderercommon/tcp_wind.h
+new file mode 100644
+index 0000000..14e024a
+--- /dev/null
++++ b/reference/etlegacy/src/renderercommon/tcp_wind.h
+@@ -0,0 +1,112 @@
++/*
++ * TrueCombat: Platinum - wind on foliage and cloth (0.39.0).
++ *
++ * Tree branches, bushes, plants, ground grass and canvas tarps get a gentle sway from the same two vertex deforms
++ * map shaders have always been able to use ("deformVertexes wave" for a flutter along the normal, varied across the
++ * surface, and "deformVertexes move" for a slow drift with the wind). Shaders that already deform are left alone,
++ * as are trunks, the sky and 2D shaders. The movement is at most about 1.5 units, far smaller than a player, so it
++ * never reads as movement at the edge of the screen. r_windSway 0 turns it off (latched: vid_restart).
++ * Both renderers include this header from tr_shader.c (FinishShader).
++ */
++#ifndef TCP_WIND_H
++#define TCP_WIND_H
++
++static cvar_t *r_windSway;
++
++static int TCP_WindKind(const char *name)
++{
++	static const char *skip[]   = { "trunk", "stump", "log", "pot", "cabinet", "metal", "decal", "street", "road", "wall", "floor", NULL };
++	static const char *canopy[] = { "branch", "leaves", "leaf", "_fill", "radial", "bush", "plant", "palm", "fern", "hedge", "ivy",
++		                            "autospr", "tree2", "tree_oak", NULL };
++	static const char *grass[]  = { "grassfoliage", "sedimentfoliage", "grass_dry", "grass_mixed", NULL };
++	char lower[MAX_QPATH];
++	int  i;
++
++	Q_strncpyz(lower, name, sizeof(lower));
++	Q_strlwr(lower);
++	for (i = 0; skip[i]; i++)
++	{
++		if (strstr(lower, skip[i]))
++		{
++			return 0;
++		}
++	}
++	if (!Q_stricmpn(lower, "textures/liq/canvas", 19))
++	{
++		return 3; /* tarp */
++	}
++	for (i = 0; grass[i]; i++)
++	{
++		if (strstr(lower, grass[i]))
++		{
++			return 2;
++		}
++	}
++	/* canopy: model foliage, plus the two tree sprites in textures/ */
++	if (Q_stricmpn(lower, "models/", 7) && Q_stricmpn(lower, "textures/tree", 13))
++	{
++		return 0;
++	}
++	for (i = 0; canopy[i]; i++)
++	{
++		if (strstr(lower, canopy[i]))
++		{
++			return 1;
++		}
++	}
++	return 0;
++}
++
++static void TCP_WindAddWave(shader_t *sh, deform_t type, float amplitude, float frequency, float spread, float mx, float my)
++{
++	deformStage_t *ds;
++
++	if (sh->numDeforms >= MAX_SHADER_DEFORMS)
++	{
++		return;
++	}
++	ds = &sh->deforms[sh->numDeforms++];
++	Com_Memset(ds, 0, sizeof(*ds));
++	ds->deformation                 = type;
++	ds->deformationWave.func        = GF_SIN;
++	ds->deformationWave.base        = 0.0f;
++	ds->deformationWave.amplitude   = amplitude;
++	ds->deformationWave.phase       = 0.0f;
++	ds->deformationWave.frequency   = frequency;
++	ds->deformationSpread           = spread;
++	ds->moveVector[0]               = mx;
++	ds->moveVector[1]               = my;
++	ds->moveVector[2]               = 0.0f;
++}
++
++static void TCP_WindSway(shader_t *sh)
++{
++	int kind;
++
++	if (!r_windSway)
++	{
++		r_windSway = ri.Cvar_Get("r_windSway", "1", CVAR_ARCHIVE | CVAR_LATCH);
++	}
++	if (!r_windSway->integer || sh->isSky || sh->numDeforms || sh->lightmapIndex == LIGHTMAP_2D)
++	{
++		return;
++	}
++	kind = TCP_WindKind(sh->name);
++	if (kind == 1)
++	{
++		/* canopy: leaf flutter (spread 1/96: neighbouring leaves out of step) and a slow drift of the crown */
++		TCP_WindAddWave(sh, DEFORM_WAVE, 0.55f, 0.55f, 1.0f / 96.0f, 0, 0);
++		TCP_WindAddWave(sh, DEFORM_MOVE, 1.0f, 0.16f, 0, 0.8f, 0.6f);
++	}
++	else if (kind == 2)
++	{
++		TCP_WindAddWave(sh, DEFORM_WAVE, 0.35f, 0.7f, 1.0f / 64.0f, 0, 0);
++	}
++	else if (kind == 3)
++	{
++		/* tarp: a slow billow along the normal */
++		TCP_WindAddWave(sh, DEFORM_WAVE, 0.9f, 0.3f, 1.0f / 160.0f, 0, 0);
++	}
++}
++
++#endif
