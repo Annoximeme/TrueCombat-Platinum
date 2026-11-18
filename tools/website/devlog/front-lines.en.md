@@ -45,11 +45,19 @@ Each team also keeps track of which round plans have worked on each map and adap
 
 Some of you noticed a short hitch at the end of rounds on servers with bots. We tracked it down to the moment bots recalculate their routes for the next round, and that work is now spread out so the server no longer stalls. Servers that run bots should feel smoother from round to round.
 
+### Out of your way
+
+Bots also got a round of navigation fixes. They no longer climb the same ledge over and over, and a bomb carrier sticks to one site instead of switching back and forth. A bot that gets stuck at the start of its route, or ends up somewhere with no route at all, like a roof or the pit by the Railhouse ladder, now finds its way out. One bot keeps the defuse or bomb pickup job instead of two bots swapping it, and bots no longer stand inside you when you stop on the spot they were heading for. Close to a known enemy they walk quietly, and round starts with a full server of bots are smoother.
+
+One fix many of you will feel straight away: bots no longer freeze in front of you while you aim down a scope. If they can't get out of your line of fire, they crouch and keep moving.
+
 ## Four classics return
 
 Villa 2.1, Shozen, Snowtown and Chlite were among the most played community maps in the TrueCombat:Elite years, and they are the maps we were asked about most when Platinum began. All four now ship with the game, so any server can run them and you can play them against bots offline.
 
-We left the maps exactly as their authors made them: the same layouts, the same textures and the same spots you remember. What we did change is sound. Several of the original sounds were recorded at low quality or played far too loud next to Platinum's own ambience. We cleaned them up, levelled them to sit alongside the rest of the game and left out a few we had no right to ship. Both bomb sites on Villa and Chlite now work as their authors intended.
+We left the maps exactly as their authors made them: the same layouts, the same textures and the same spots you remember. What we did change is sound. Several of the original sounds were recorded at low quality or played far too loud next to Platinum's own ambience. We cleaned them up, levelled them to sit alongside the rest of the game and left out a few we had no right to ship. Both bomb sites on Villa and Chlite now work as their authors intended, and the site A crate on Villa 2.1 now breaks when the bomb goes off.
+
+The four maps also get everything the core maps have: a minimap, a tactical map and a loading screen with a map plan, picture and description. On Villa 2.1 and Shozen, bots now pick up the flag in Flag Capture.
 
 ![Villa 2.1](img/devlog/front-lines-villa.webp "Villa 2.1 in the evening, Ultra preset, DirectX 12.")
 
@@ -169,6 +177,12 @@ The tray icon has a dark menu with quick play, the firing range and settings, an
 
 Launcher 3.0 also includes the repair work from launcher 2.6.2: missing or damaged game files are downloaded again automatically, and when something goes wrong, the error now tells you what happened.
 
+## A clearer HUD
+
+We went through every game mode screen by screen and fixed what got in the way. Map names now read properly on the scoreboard and the tactical map, round results name the teams ("Terrorists win the round"), and the Bomb, Flag and Capture Point objective cards tell you what to do next. In Capture Point the point is marked on the tactical map and the minimap, and in Team Deathmatch and Flag a player waiting for the next wave sees when they deploy instead of being told there are no more deployments.
+
+Smaller things add up too: spectators of team matches get the team scoreboard, the firing range panel and the FPS counter no longer sit on the minimap, small UI sizes keep all text readable, the match end podium is lit the same on every map, and the kill feed, chat box, vote menu and weapon pickup prompt no longer overlap or cut off text. Flash grenades now also blind the minimap, compass and objective card, and the final-kill replay camera no longer ends up inside the shooter or behind a fence.
+
 ## Close quarters
 
 CQB remains experimental while we bring it up to the standard of the core game. In 0.39.0, CQB's spawn rules apply only in the CQB Rules playlist, so every other mode keeps standard spawns even with experimental content enabled. In CQB Rules, health regeneration and the Protected and Tank perks are no longer undone by the next hit.
@@ -184,6 +198,9 @@ From this update, Official #2 (Unranked) runs with experimental content on: the 
 - Grenades and smoke from the previous round are cleared when a new round starts.
 - Players no longer slide down slopes while standing still, and stay planted when running downhill.
 - Pulling the pin on a grenade is now audible to you and to players nearby.
+- Smoother movement along the glass fronts on Railhouse, and fewer small freezes the first time a sound or effect is used.
+- A "Connection interrupted" notice appears when the server stops answering.
+- Recorded demos play back without menus opening over them.
 - We've tightened and expanded our security measures.
 
 ## How we tested it

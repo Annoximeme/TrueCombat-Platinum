@@ -21,7 +21,7 @@
 <meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-front-lines.jpg">
 <meta property="article:published_time" content="2026-11-18">
 <meta property="article:section" content="Update">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Front lines","description":"Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound and body language across every map. The full story of update 0.39.0.","datePublished":"2026-11-18","dateModified":"2026-11-18","inLanguage":"en","articleSection":"Update","timeRequired":"PT14M","image":"https://truecombat.eu/img/og-devlog-front-lines.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-front-lines","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Front lines","description":"Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound and body language across every map. The full story of update 0.39.0.","datePublished":"2026-11-18","dateModified":"2026-11-18","inLanguage":"en","articleSection":"Update","timeRequired":"PT16M","image":"https://truecombat.eu/img/og-devlog-front-lines.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-front-lines","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
 <!--alt-->
 <link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -80,13 +80,13 @@
 <!--/nav-->
 
 <main id="top">
-<article class="post" data-post="front-lines" data-min="14">
+<article class="post" data-post="front-lines" data-min="16">
   <header class="page-head post-head cine-post">
     <div class="head-art" style="--art: url(img/devlog/front-lines-teaser-clean-1920.webp); --art-s: url(img/devlog/front-lines-teaser-clean-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog">All devlog posts</a>
       <span class="cine-kicker">Update 0.39.0</span>
-      <p class="post-meta"><span class="tag">Update</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-18">18 Nov 2026</time><span>14 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="front-lines" hidden></span><span class="post-cmts" data-post-cmts="front-lines" hidden></span></p>
+      <p class="post-meta"><span class="tag">Update</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-18">18 Nov 2026</time><span>16 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="front-lines" hidden></span><span class="post-cmts" data-post-cmts="front-lines" hidden></span></p>
       <h1>Front lines</h1>
       <p class="lede">Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound and body language across every map. The full story of update 0.39.0.</p>
     </div>
@@ -103,6 +103,7 @@
           <li><a href="#focus-zoom">Focus zoom</a></li>
           <li><a href="#sound-that-holds">Sound that holds</a></li>
           <li><a href="#launcher-3-0">Launcher 3.0</a></li>
+          <li><a href="#a-clearer-hud">A clearer HUD</a></li>
           <li><a href="#close-quarters">Close quarters</a></li>
           <li><a href="#fixes">Fixes</a></li>
           <li><a href="#how-we-tested-it">How we tested it</a></li>
@@ -141,9 +142,13 @@
 </figure>
 <h3>Smoother rounds</h3>
 <p>Some of you noticed a short hitch at the end of rounds on servers with bots. We tracked it down to the moment bots recalculate their routes for the next round, and that work is now spread out so the server no longer stalls. Servers that run bots should feel smoother from round to round.</p>
+<h3>Out of your way</h3>
+<p>Bots also got a round of navigation fixes. They no longer climb the same ledge over and over, and a bomb carrier sticks to one site instead of switching back and forth. A bot that gets stuck at the start of its route, or ends up somewhere with no route at all, like a roof or the pit by the Railhouse ladder, now finds its way out. One bot keeps the defuse or bomb pickup job instead of two bots swapping it, and bots no longer stand inside you when you stop on the spot they were heading for. Close to a known enemy they walk quietly, and round starts with a full server of bots are smoother.</p>
+<p>One fix many of you will feel straight away: bots no longer freeze in front of you while you aim down a scope. If they can't get out of your line of fire, they crouch and keep moving.</p>
 <h2 id="four-classics-return">Four classics return</h2>
 <p>Villa 2.1, Shozen, Snowtown and Chlite were among the most played community maps in the TrueCombat:Elite years, and they are the maps we were asked about most when Platinum began. All four now ship with the game, so any server can run them and you can play them against bots offline.</p>
-<p>We left the maps exactly as their authors made them: the same layouts, the same textures and the same spots you remember. What we did change is sound. Several of the original sounds were recorded at low quality or played far too loud next to Platinum's own ambience. We cleaned them up, levelled them to sit alongside the rest of the game and left out a few we had no right to ship. Both bomb sites on Villa and Chlite now work as their authors intended.</p>
+<p>We left the maps exactly as their authors made them: the same layouts, the same textures and the same spots you remember. What we did change is sound. Several of the original sounds were recorded at low quality or played far too loud next to Platinum's own ambience. We cleaned them up, levelled them to sit alongside the rest of the game and left out a few we had no right to ship. Both bomb sites on Villa and Chlite now work as their authors intended, and the site A crate on Villa 2.1 now breaks when the bomb goes off.</p>
+<p>The four maps also get everything the core maps have: a minimap, a tactical map and a loading screen with a map plan, picture and description. On Villa 2.1 and Shozen, bots now pick up the flag in Flag Capture.</p>
 <figure class="wide">
   <img src="img/devlog/front-lines-villa.webp" alt="Villa 2.1" width="1280" height="720" loading="lazy">
   <figcaption>Villa 2.1 in the evening, Ultra preset, DirectX 12.</figcaption>
@@ -248,6 +253,9 @@
 <h3>The details</h3>
 <p>The tray icon has a dark menu with quick play, the firing range and settings, and notifications now carry the game icon. A downloads panel shows progress and speed and lets you pause and resume, and a resumed update never downloads finished files again. Settings gain a search box, a graphics preview you can drag to compare presets and a new Accessibility tab with high contrast, larger text, colour-blind friendly markers and reduced motion. Screen readers can now read the launcher's pages, rows and buttons. The launcher is also available in Dutch, alongside English, German, French and Polish.</p>
 <p>Launcher 3.0 also includes the repair work from launcher 2.6.2: missing or damaged game files are downloaded again automatically, and when something goes wrong, the error now tells you what happened.</p>
+<h2 id="a-clearer-hud">A clearer HUD</h2>
+<p>We went through every game mode screen by screen and fixed what got in the way. Map names now read properly on the scoreboard and the tactical map, round results name the teams ("Terrorists win the round"), and the Bomb, Flag and Capture Point objective cards tell you what to do next. In Capture Point the point is marked on the tactical map and the minimap, and in Team Deathmatch and Flag a player waiting for the next wave sees when they deploy instead of being told there are no more deployments.</p>
+<p>Smaller things add up too: spectators of team matches get the team scoreboard, the firing range panel and the FPS counter no longer sit on the minimap, small UI sizes keep all text readable, the match end podium is lit the same on every map, and the kill feed, chat box, vote menu and weapon pickup prompt no longer overlap or cut off text. Flash grenades now also blind the minimap, compass and objective card, and the final-kill replay camera no longer ends up inside the shooter or behind a fence.</p>
 <h2 id="close-quarters">Close quarters</h2>
 <p>CQB remains experimental while we bring it up to the standard of the core game. In 0.39.0, CQB's spawn rules apply only in the CQB Rules playlist, so every other mode keeps standard spawns even with experimental content enabled. In CQB Rules, health regeneration and the Protected and Tank perks are no longer undone by the next hit.</p>
 <p>From this update, Official #2 (Unranked) runs with experimental content on: the new CQB weapons are in every match there, and Harbour joins the rotation as Team Deathmatch.</p>
@@ -260,6 +268,9 @@
   <li>Grenades and smoke from the previous round are cleared when a new round starts.</li>
   <li>Players no longer slide down slopes while standing still, and stay planted when running downhill.</li>
   <li>Pulling the pin on a grenade is now audible to you and to players nearby.</li>
+  <li>Smoother movement along the glass fronts on Railhouse, and fewer small freezes the first time a sound or effect is used.</li>
+  <li>A "Connection interrupted" notice appears when the server stops answering.</li>
+  <li>Recorded demos play back without menus opening over them.</li>
   <li>We've tightened and expanded our security measures.</li>
 </ul>
 <h2 id="how-we-tested-it">How we tested it</h2>

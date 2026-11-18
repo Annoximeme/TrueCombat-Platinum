@@ -45,11 +45,19 @@ Elk team houdt ook bij welke rondeplannen op welke map gewerkt hebben en past zi
 
 Sommigen van jullie merkten een korte hapering op het einde van rondes op servers met bots. We hebben die herleid tot het moment waarop bots hun routes voor de volgende ronde herberekenen, en dat werk wordt nu gespreid zodat de server niet meer stokt. Servers met bots zouden van ronde tot ronde vlotter moeten aanvoelen.
 
+### Uit de weg
+
+Bots kregen ook een reeks navigatiefixes. Ze klimmen niet meer steeds opnieuw op dezelfde richel, en een bomdrager blijft bij één site in plaats van heen en weer te wisselen. Een bot die vastloopt aan het begin van zijn route, of ergens belandt zonder route, zoals op een dak of in de put bij de ladder op Railhouse, vindt nu zelf de weg terug. Eén bot houdt de taak om te ontmantelen of de bom op te rapen, in plaats van twee bots die ze steeds overnemen, en bots staan niet meer in je wanneer je stilstaat op de plek waar ze naartoe wilden. Dicht bij een bekende vijand lopen ze stil, en rondestarts met een volle server bots verlopen vlotter.
+
+Eén fix zullen velen meteen merken: bots bevriezen niet meer voor je neus terwijl je door een scope richt. Kunnen ze niet uit je schootslijn, dan bukken ze en blijven ze bewegen.
+
 ## Vier klassiekers keren terug
 
 Villa 2.1, Shozen, Snowtown en Chlite hoorden bij de meest gespeelde community-maps uit de TrueCombat:Elite-jaren, en het zijn de maps waar ons het meest naar gevraagd werd toen Platinum begon. Alle vier zitten ze nu in het spel, dus elke server kan ze draaien en je kunt ze offline tegen bots spelen.
 
-We lieten de maps precies zoals hun makers ze gemaakt hebben: dezelfde indeling, dezelfde texturen en dezelfde plekken die je je herinnert. Wat we wel veranderd hebben, is het geluid. Een aantal originele geluiden was in lage kwaliteit opgenomen of speelde veel te luid naast de eigen sfeergeluiden van Platinum. We hebben ze opgeschoond, op hetzelfde niveau gebracht als de rest van het spel en een paar weggelaten die we niet mochten meeleveren. Beide bomsites op Villa en Chlite werken nu zoals hun makers het bedoelden.
+We lieten de maps precies zoals hun makers ze gemaakt hebben: dezelfde indeling, dezelfde texturen en dezelfde plekken die je je herinnert. Wat we wel veranderd hebben, is het geluid. Een aantal originele geluiden was in lage kwaliteit opgenomen of speelde veel te luid naast de eigen sfeergeluiden van Platinum. We hebben ze opgeschoond, op hetzelfde niveau gebracht als de rest van het spel en een paar weggelaten die we niet mochten meeleveren. Beide bomsites op Villa en Chlite werken nu zoals hun makers het bedoelden, en de krat bij site A op Villa 2.1 breekt nu wanneer de bom ontploft.
+
+De vier maps krijgen ook alles wat de kernmaps hebben: een minimap, een tactische kaart en een laadscherm met plattegrond, afbeelding en beschrijving. Op Villa 2.1 en Shozen rapen bots nu de vlag op in Flag Capture.
 
 ![Villa 2.1](img/devlog/front-lines-villa.webp "Villa 2.1 's avonds, Ultra-preset, DirectX 12.")
 
@@ -169,6 +177,12 @@ Het trayicoon heeft een donker menu met snel spelen, de schietbaan en instelling
 
 Launcher 3.0 bevat ook het herstelwerk uit launcher 2.6.2: ontbrekende of beschadigde spelbestanden worden automatisch opnieuw gedownload, en als er iets misgaat, vertelt de foutmelding nu wat er gebeurd is.
 
+## Een duidelijkere HUD
+
+We zijn elke spelmodus scherm per scherm doorgegaan en hebben weggewerkt wat in de weg zat. Mapnamen staan nu leesbaar op het scorebord en de tactische kaart, rondeuitslagen noemen de teams ("Terrorists win the round"), en de doelkaarten van Bomb, Flag en Capture Point zeggen wat je nu moet doen. In Capture Point staat het punt op de tactische kaart en de minimap, en in Team Deathmatch en Flag ziet een speler die op de volgende golf wacht wanneer hij weer inzet, in plaats van te lezen dat er geen inzet meer is.
+
+Kleine dingen tellen ook: toeschouwers van teamwedstrijden krijgen het teamscorebord, het paneel van de schietbaan en de FPS-teller staan niet meer op de minimap, kleine UI-formaten houden alle tekst leesbaar, het podium op het einde van een wedstrijd is op elke map even goed belicht, en de killfeed, het chatvak, het stemmenu en de melding om een wapen op te rapen overlappen of knippen geen tekst meer af. Flitsgranaten verblinden nu ook de minimap, het kompas en de doelkaart, en de replaycamera van de laatste kill belandt niet meer in de schutter of achter een hek.
+
 ## Close quarters
 
 CQB blijft experimenteel terwijl we het op het niveau van het kernspel brengen. In 0.39.0 gelden de spawnregels van CQB alleen nog in de CQB Rules-playlist, zodat elke andere modus standaard-spawns houdt, ook met experimentele content aan. In CQB Rules worden gezondheidsherstel en de perks Protected en Tank niet meer ongedaan gemaakt door de volgende treffer.
@@ -184,6 +198,9 @@ Vanaf deze update draait Official #2 (Unranked) met experimentele content aan: d
 - Granaten en rook uit de vorige ronde worden opgeruimd wanneer een nieuwe ronde begint.
 - Spelers glijden niet meer van hellingen terwijl ze stilstaan, en blijven staan wanneer ze bergaf lopen.
 - Het trekken van de pin van een granaat is nu hoorbaar, voor jou en voor spelers in de buurt.
+- Vlotter bewegen langs de glazen gevels op Railhouse, en minder korte haperingen de eerste keer dat een geluid of effect gebruikt wordt.
+- Er verschijnt een melding "Verbinding onderbroken" wanneer de server niet meer antwoordt.
+- Opgenomen demo's spelen af zonder dat er menu's over openen.
 - We hebben onze beveiligingsmaatregelen aangescherpt en uitgebreid.
 
 ## Hoe we het getest hebben
