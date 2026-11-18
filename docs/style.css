@@ -676,6 +676,30 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
 @media (max-width: 900px) { .stat-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 520px) { .stat-cards { grid-template-columns: 1fr; } }
 
+/* season (season.html) */
+.tier-grid { list-style: none; margin: 0 0 22px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.tier { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; display: grid; grid-template-columns: 64px 1fr; column-gap: 14px; row-gap: 4px; align-content: start; }
+.tier img { grid-row: span 3; width: 64px; height: 64px; }
+.tier b { font: 700 1.15rem/1.1 var(--f-display); text-transform: uppercase; letter-spacing: .06em; }
+.tier-from { font: 400 .8rem/1.3 var(--f-mono); color: var(--t-steel); }
+.tier p { margin: 0; color: var(--muted); font-size: .88rem; }
+.tier:last-child { border-color: var(--t-line-hot); background: linear-gradient(160deg, var(--panel-2), var(--panel)); }
+.tier-ico { width: 20px; height: 20px; vertical-align: -5px; margin-right: 6px; }
+[data-season] td:nth-child(3) { white-space: nowrap; }
+.season-when { margin: 0 0 12px; color: var(--muted); font-size: .9rem; }
+.contracts { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.ct { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--ok); border-radius: 8px; padding: 18px; display: grid; gap: 8px; }
+.ct-medium { border-left-color: var(--amber); }
+.ct-hard { border-left-color: var(--red); }
+.ct-lvl { font: 700 .78rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .14em; color: var(--muted); }
+.ct b { font-size: 1.05rem; }
+.ct-xp { font: 400 .82rem/1 var(--f-mono); color: var(--t-steel); }
+#solo .stat-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 22px; }
+.frontline-art { display: grid; place-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 40px; }
+.frontline-art img { width: 160px; height: 160px; }
+@media (max-width: 900px) { .tier-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .contracts, #solo .stat-cards { grid-template-columns: 1fr; } }
+@media (max-width: 520px) { .tier-grid { grid-template-columns: 1fr; } }
+
 /* news */
 .news-tools { display: flex; flex-wrap: wrap; gap: 12px; }
 .rel-link { margin: 4px 0 0; font-size: .88rem; }
