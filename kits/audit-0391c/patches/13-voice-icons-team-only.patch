@@ -1,0 +1,63 @@
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index b485727..cce84a6 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -1996,7 +1996,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+         SystemCall(G_CVAR_REGISTER,NULL,"tcp_native_targets","1",CVAR_ARCHIVE);
+         {char hold[16];snprintf(hold,sizeof(hold),"%d",TCP_CAPTURE_HOLD_DEFAULT_MS);SystemCall(G_CVAR_REGISTER,NULL,"g_captureHoldMs",hold,CVAR_ARCHIVE);}
+         SystemCall(G_CVAR_REGISTER,NULL,"g_roundlimit","0",CVAR_ARCHIVE|CVAR_SERVERINFO);roundsPlayed=0;matchEnded=0;TCP_MapVoteInit();qolVoteInit((int)a2);
+-        SystemCall(G_CVAR_REGISTER,NULL,"g_voiceChatsAllowed","4",CVAR_ARCHIVE);memset(voRoundWins,0,sizeof(voRoundWins));memset(voSquelch,0,sizeof(voSquelch));memset(voContactAt,0,sizeof(voContactAt));
++        SystemCall(G_CVAR_REGISTER,NULL,"g_voiceChatsAllowed","4",CVAR_ARCHIVE);SystemCall(G_CVAR_REGISTER,NULL,"g_voiceSprites","1",CVAR_ARCHIVE|CVAR_SERVERINFO); /* 0.39.1: 0 = no voice icons over heads for anyone (ranked) */memset(voRoundWins,0,sizeof(voRoundWins));memset(voSquelch,0,sizeof(voSquelch));memset(voContactAt,0,sizeof(voContactAt));
+         /* TC:E g_movespeed (default 76) scales walking speeds; the cgame reads it from serverinfo. */
+         SystemCall(G_CVAR_REGISTER,NULL,"g_movespeed","76",CVAR_SERVERINFO|CVAR_LATCH);TCP_PasswordInit();SystemCall(G_CVAR_REGISTER,NULL,"tcp_native_grenades","1",CVAR_ARCHIVE);SystemCall(G_CVAR_REGISTER,NULL,"tcp_skill_level","3",CVAR_SERVERINFO|CVAR_ARCHIVE);SystemCall(G_CVAR_REGISTER,NULL,"tcp_tdm_fraglimit","20",0);SystemCall(G_CVAR_REGISTER,NULL,"tcp_roundtime","300",CVAR_ARCHIVE);SystemCall(G_CVAR_REGISTER,NULL,"g_fallDamage","1",CVAR_ARCHIVE|CVAR_SERVERINFO);SystemCall(G_CVAR_REGISTER,NULL,"g_antilag","1",CVAR_ARCHIVE|CVAR_SERVERINFO);SystemCall(G_CVAR_REGISTER,NULL,"g_antilagMaxMs","250",CVAR_ARCHIVE);SystemCall(G_CVAR_REGISTER,NULL,"g_antilagDelayCap","1",CVAR_ARCHIVE);SystemCall(G_CVAR_REGISTER,NULL,"g_antilagDelaySlack","30",CVAR_ARCHIVE);SystemCall(G_CVAR_REGISTER,NULL,"g_combatLog","0",CVAR_ARCHIVE);SystemCall(G_CVAR_REGISTER,NULL,"g_combatLogMax","400",CVAR_ARCHIVE);lagMigrateMaxMs();SystemCall(G_CVAR_REGISTER,NULL,"g_antilagDebug","0",0);memset(lagHistory,0,sizeof(lagHistory));memset(&lagTest,0,sizeof(lagTest));loadWeaponSpecs();TCP_SetMoveSpeed((int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_movespeed"));SystemCall(G_CVAR_REGISTER,NULL,"g_staminaRunRecover","1",CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_LATCH);TCP_SetStaminaRunRecover((int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_staminaRunRecover"));SystemCall(G_CVAR_REGISTER,NULL,"g_vault","1",CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_LATCH);TCP_SetVault((int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_vault")); /* 0.38.0 */SystemCall(G_CVAR_REGISTER,NULL,"g_adsBlocksSprint","1",CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_LATCH);SystemCall(G_CVAR_REGISTER,NULL,"g_sprintNeedsStamina","1",CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_LATCH);TCP_SetSprintRules((int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_adsBlocksSprint"),(int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_sprintNeedsStamina"));SystemCall(G_CVAR_REGISTER,NULL,"g_adsFocus","1",CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_LATCH);TCP_SetAdsFocus((int)SystemCall(G_CVAR_VARIABLE_INTEGER_VALUE,"g_adsFocus")); /* 0.39 ADS focus */ /* 0.37.1 */ /* 0.37.0 */
+         SystemCall(G_CVAR_REGISTER,NULL,"g_warmup","30",CVAR_ARCHIVE|CVAR_SERVERINFO);warmupDone=0; /* H */
+diff --git a/game_src/native/tcp_voice_cg.h b/game_src/native/tcp_voice_cg.h
+index 527d524..634054e 100644
+--- a/game_src/native/tcp_voice_cg.h
++++ b/game_src/native/tcp_voice_cg.h
+@@ -119,10 +119,25 @@ static int vcConsoleCommand(const char *cmd){
+     snprintf(line,sizeof(line),"%s %s",to,id);SystemCall(CG_SENDCLIENTCOMMAND,line);
+     char m[120];snprintf(m,sizeof(m),"TCP_NATIVE_VOICE send %s\n",line);SystemCall(CG_PRINT,m);return 1;
+ }
+-/* The voice sprite over the speaker's head (ET CG_PlayerSprites: 8 units above the head). */
++/* The voice sprite over the speaker's head (ET CG_PlayerSprites: 8 units above the head).
++ * 0.39.1: the sprite draws through walls, so over an enemy (a global vsay, a combat voice line, local voice chat) it
++ * gave away where he stood. Now only over team mates of the player you see the game through (free spectators see
++ * all, free-for-all players see none). Off for everyone with g_voiceSprites 0 in the server info (missing = on);
++ * off for yourself with cg_voiceSprites 0. */
++static vmCvar_t vcSprites;static int vcSpritesReg;
++static int playerTeam(int slot);
++static int vcSpriteAllowed(void){
++    if(!vcSpritesReg){vcSpritesReg=1;SystemCall(CG_CVAR_REGISTER,&vcSprites,"cg_voiceSprites","1",CVAR_ARCHIVE);}
++    SystemCall(CG_CVAR_UPDATE,&vcSprites);if(!vcSprites.integer)return 0;
++    char v[8]="";TCP_InfoValue(config(CS_SERVERINFO),"g_voiceSprites",v,sizeof(v));return !v[0]||atoi(v)!=0;
++}
+ static void vcFrame(int serverTime,int time,int self){
++    if(!vcSpriteAllowed())return;
++    const int free=snap.ps.pm_type==PM_SPECTATOR,mine=self>=0&&self<MAX_CLIENTS?playerTeam(self):0;
++    if(!free&&!mine)return;
+     for(int i=0;i<snap.numEntities;i++){const entityState_t *e=&snap.entities[i];
+         if(e->eType!=ET_PLAYER||e->number==self||e->number<0||e->number>=MAX_CLIENTS||vcSpriteUntil[e->number]<=time||(e->eFlags&EF_DEAD))continue;
++        if(!free&&playerTeam(e->number)!=mine)continue;
+         vec3_t origin,angles;pmFollowPose(e,serverTime,time,origin,angles);
+         refEntity_t ref;memset(&ref,0,sizeof(ref));ref.reType=RT_SPRITE;ref.customShader=vcSprite[e->number];
+         origin[2]+=48.f+(e->eFlags&EF_CROUCHING?-16.f:0.f);VectorCopy(origin,ref.origin);VectorCopy(origin,ref.oldorigin);ref.radius=10.f;
+diff --git a/game_src/native/tcp_voice_g.h b/game_src/native/tcp_voice_g.h
+index dfd0cd8..37da21c 100644
+--- a/game_src/native/tcp_voice_g.h
++++ b/game_src/native/tcp_voice_g.h
+@@ -140,7 +140,13 @@ static void voPos(int n,int kind){
+     if((voPosAt[n]&&levelTime-voPosAt[n]<3500&&levelTime>=voPosAt[n])||(voKindAt[n][kind]&&levelTime-voKindAt[n][kind]<gap[kind]&&levelTime>=voKindAt[n][kind]))return;
+     const int id=voIndex(ids[kind]);if(id<0)return;
+     voPosAt[n]=voKindAt[n][kind]=levelTime?levelTime:1;
+-    char c[96];snprintf(c,sizeof(c),"tcp_vpos %d %s %d",n,voIds[id],rand()&1023);SystemCall(G_SEND_SERVER_COMMAND,-1,c);
++    char c[96];snprintf(c,sizeof(c),"tcp_vpos %d %s %d",n,voIds[id],rand()&1023);
++    /* 0.39.1: only to players who can hear it (within 1600 u of the speaker; the sound fades out by 1250 u) and to
++     * players who are not alive in the round (they watch someone else); it went to every player on the map. */
++    {vec3_t at;voEye(n,at);
++     for(int i=0;i<maxClients;i++){if(!clients[i].begun)continue;
++        if(voAlive(i)){vec3_t b,d;voEye(i,b);VectorSubtract(b,at,d);if(DotProduct(d,d)>1600.f*1600.f)continue;}
++        SystemCall(G_SEND_SERVER_COMMAND,i,c);}}
+     char m[120];snprintf(m,sizeof(m),"TCP_NATIVE_VOICE vpos slot=%d %s\n",n,voIds[id]);print(m);
+ }
+ static void voReloadLine(int n){if(voEnemyNear(n,1800.f))voPos(n,VO_RELOAD);}
