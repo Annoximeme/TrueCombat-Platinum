@@ -32,6 +32,7 @@ PAGES = {
     "faq": ("hero-stadtrand-canal.webp", "Questions", "Install, online play, graphics and the project"),
     "truecombat-elite": ("map-delta.webp", "TC:E today", "TrueCombat: Elite, playable on Windows 10 and 11"),
     "privacy": ("map-stadtrand.webp", "Privacy", "What we count, and what we never will"),
+    "banners": ("hero-northport-gashouse.webp", "Server banners", "Live player counts for your forum, Discord or clan page"),
 }
 # one per map page (map-<name>.html)
 PAGES.update({"map-" + m: ("map-%s.webp" % m, m.capitalize(), "Layout, bomb sites and location names")

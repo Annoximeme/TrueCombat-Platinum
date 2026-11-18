@@ -1335,10 +1335,14 @@ class StatsStore:
         since = (dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days)).replace(
             microsecond=0).isoformat().replace("+00:00", "Z")
 
+        # a voided player never headlines a recap (the home page and the Discord bot show it);
+        # voided matches are already gone, void() rebuilds the totals without them
+        clean = "mp.pid NOT IN (SELECT id FROM voided WHERE kind='player')"
+
         def best(expr, having="1"):
             r = self.db.execute(
                 "SELECT mp.pid, p.name, %s v, COUNT(*) n FROM match_players mp JOIN players p ON p.pid=mp.pid "
-                "WHERE mp.ended >= ? GROUP BY mp.pid HAVING %s ORDER BY v DESC, n DESC LIMIT 1" % (expr, having),
+                "WHERE mp.ended >= ? AND %s GROUP BY mp.pid HAVING %s ORDER BY v DESC, n DESC LIMIT 1" % (expr, clean, having),
                 (since,)).fetchone()
             return {"id": r["pid"], "name": r["name"], "value": round(r["v"], 2), "matches": r["n"]} if r and r["v"] else None
 
@@ -1358,6 +1362,19 @@ class StatsStore:
                    "biggestClimb": best("SUM(mp.rating_after - mp.rating_before)"),
                    "bestKd": best("CAST(SUM(mp.kills) AS REAL) / MAX(1, SUM(mp.deaths))", "COUNT(*) >= 3"),
                    "mostActive": best("COUNT(*)")}
+            w = self.db.execute(
+                "SELECT mp.weapon, SUM(mp.kills) k, SUM(mp.headshots) hs, COUNT(DISTINCT mp.pid) users FROM match_weapons mp "
+                "WHERE mp.ended >= ? AND %s GROUP BY mp.weapon ORDER BY k DESC, hs DESC LIMIT 1" % clean, (since,)).fetchone()
+            out["topWeapon"] = {"weapon": w["weapon"], "kills": w["k"], "headshots": w["hs"] or 0,
+                                "players": w["users"]} if w and w["k"] else None
+            # the standout single performance: most kills in one match, then most XP
+            b = self.db.execute(
+                "SELECT mp.pid, p.name, mp.kills, mp.deaths, mp.headshots, mp.xp, mp.won, m.pub, m.map, m.mode, m.ended "
+                "FROM match_players mp JOIN players p ON p.pid=mp.pid JOIN matches m ON m.server=mp.server AND m.id=mp.match "
+                "WHERE mp.ended >= ? AND %s ORDER BY mp.kills DESC, mp.xp DESC, mp.deaths LIMIT 1" % clean, (since,)).fetchone()
+            out["bestMatch"] = {"id": b["pid"], "name": b["name"], "kills": b["kills"], "deaths": b["deaths"],
+                                "headshots": b["headshots"] or 0, "won": bool(b["won"]), "match": b["pub"], "map": b["map"],
+                                "mode": b["mode"], "ended": b["ended"]} if b and b["kills"] else None
         return out
 
     def medals(self, pid):

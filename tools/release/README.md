@@ -55,3 +55,11 @@ Setup, once: the repository secret `VT_API_KEY` holds a free VirusTotal API key
 Without it the checksums are still recorded and shown. The free API allows 4 requests a
 minute and 500 a day; the script paces itself (16 s per request, at most 110 per run).
 Files VirusTotal already knows cost one lookup, so a typical release takes a few minutes.
+
+## Candidate virus scan (pipeline plan item 7)
+
+`candidate_scan.py pc --label <version>-<run> <files...>` runs on the PC right after a candidate is built
+(launcher, engine and server .bin, every .dll, and Setup once a package dry run made one). It puts only
+those files in a hidden `vt-<label>` draft, starts the **Candidate virus scan** workflow, prints each
+file's VirusTotal verdict with the false-positive submission link per vendor, deletes the draft, and
+exits 1 when anything is flagged. Never touches the website or a published release.
