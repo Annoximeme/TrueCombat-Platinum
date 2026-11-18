@@ -144,6 +144,7 @@ check("GET /contracts.json", code == 200 and body["player"] == pid["Ben"])
 
 # Frontline badge and ranks.txt
 fl = store.frontline()
+check("profile lists the badge", store.player(pid["Ana"])["seasonBadges"] == ["frontline"])
 check("Frontline for everyone in the badge window", all("frontline" in fl.get(pid[n], []) for n in G), fl)
 rk = tmp / "ranks.txt"
 n = store.export_ranks(rk)

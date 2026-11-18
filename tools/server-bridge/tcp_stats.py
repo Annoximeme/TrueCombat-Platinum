@@ -925,13 +925,14 @@ class StatsStore:
         r = self.db.execute("SELECT * FROM season_players WHERE season=? AND pid=?", (season["id"], pid)).fetchone()
         return self._season_row_json(season, r) if r else None
 
-    def frontline(self, pids=None):
-        """Player ids with the launch-week badge: one counted match inside a badge window."""
+    def frontline(self, pid=None):
+        """Player ids with a season badge (Frontline: one counted match inside the badge window) -> badge ids."""
         out = {}
         for s in self.seasons or []:
             for b in s.get("badges") or []:
-                rows = self.db.execute("SELECT DISTINCT pid FROM match_players WHERE ended >= ? AND ended < ? AND pid NOT IN "
-                                       "(SELECT id FROM voided WHERE kind='player')", (b["start"], b["end"])).fetchall()
+                one = " AND pid=?" if pid else ""
+                rows = self.db.execute("SELECT DISTINCT pid FROM match_players WHERE ended >= ? AND ended < ?" + one + " AND pid NOT IN "
+                                       "(SELECT id FROM voided WHERE kind='player')", (b["start"], b["end"]) + ((pid,) if pid else ())).fetchall()
                 for (pid,) in rows:
                     out.setdefault(pid, []).append(b["id"])
         return out
@@ -1270,6 +1271,8 @@ class StatsStore:
                                 "headshots": x["headshots"], "xp": x["xp"],
                                 "ratingChange": int(round(x["rating_after"] - x["rating_before"]))} for x in recent]})
         out["topWeapon"] = weapons[0]["weapon"] if weapons and weapons[0]["kills"] else ""
+        with self.lock:
+            out["seasonBadges"] = self.frontline(pid).get(pid, [])
         return out
 
     def _window(self, period, scope, map_="", mode="", alias="x"):
