@@ -21,7 +21,7 @@
 <meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-front-lines.jpg">
 <meta property="article:published_time" content="2026-11-18">
 <meta property="article:section" content="Update">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Aan het front","description":"Bots die luisteren, plannen en samen terugnemen, vier klassieke community-maps, een volledig vernieuwde launcher met vrienden, en een nieuwe laag licht, weer, geluid en lichaamstaal op elke map. Het volledige verhaal van update 0.39.0.","datePublished":"2026-11-18","dateModified":"2026-11-18","inLanguage":"nl","articleSection":"Update","timeRequired":"PT13M","image":"https://truecombat.eu/img/og-devlog-front-lines.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-front-lines","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Aan het front","description":"Bots die luisteren, plannen en samen terugnemen, vier klassieke community-maps, een volledig vernieuwde launcher met vrienden, en een nieuwe laag licht, weer, geluid en lichaamstaal op elke map. Het volledige verhaal van update 0.39.0.","datePublished":"2026-11-18","dateModified":"2026-11-18","inLanguage":"nl","articleSection":"Update","timeRequired":"PT16M","image":"https://truecombat.eu/img/og-devlog-front-lines.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-front-lines","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
 <!--alt-->
 <link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -80,13 +80,13 @@
 <!--/nav-->
 
 <main id="top">
-<article class="post" data-post="front-lines" data-min="13">
+<article class="post" data-post="front-lines" data-min="16">
   <header class="page-head post-head cine-post">
     <div class="head-art" style="--art: url(../img/devlog/front-lines-teaser-clean-1920.webp); --art-s: url(../img/devlog/front-lines-teaser-clean-640.webp)" aria-hidden="true"></div>
     <div class="wrap">
       <a class="back" href="devlog">Alle devlogartikelen</a>
       <span class="cine-kicker">Update 0.39.0</span>
-      <p class="post-meta"><span class="tag">Update</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-18">18 nov 2026</time><span>13 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="front-lines" hidden></span><span class="post-cmts" data-post-cmts="front-lines" hidden></span></p>
+      <p class="post-meta"><span class="tag">Update</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-18">18 nov 2026</time><span>16 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="front-lines" hidden></span><span class="post-cmts" data-post-cmts="front-lines" hidden></span></p>
       <h1>Aan het front</h1>
       <p class="lede">Bots die luisteren, plannen en samen terugnemen, vier klassieke community-maps, een volledig vernieuwde launcher met vrienden, en een nieuwe laag licht, weer, geluid en lichaamstaal op elke map. Het volledige verhaal van update 0.39.0.</p>
     </div>
@@ -103,6 +103,7 @@
           <li><a href="#focuszoom">Focuszoom</a></li>
           <li><a href="#geluid-dat-standhoudt">Geluid dat standhoudt</a></li>
           <li><a href="#launcher-3-0">Launcher 3.0</a></li>
+          <li><a href="#een-duidelijkere-hud">Een duidelijkere HUD</a></li>
           <li><a href="#close-quarters">Close quarters</a></li>
           <li><a href="#fixes">Fixes</a></li>
           <li><a href="#hoe-we-het-getest-hebben">Hoe we het getest hebben</a></li>
@@ -141,9 +142,13 @@
 </figure>
 <h3>Vlottere rondes</h3>
 <p>Sommigen van jullie merkten een korte hapering op het einde van rondes op servers met bots. We hebben die herleid tot het moment waarop bots hun routes voor de volgende ronde herberekenen, en dat werk wordt nu gespreid zodat de server niet meer stokt. Servers met bots zouden van ronde tot ronde vlotter moeten aanvoelen.</p>
+<h3>Uit de weg</h3>
+<p>Bots kregen ook een reeks navigatiefixes. Ze klimmen niet meer steeds opnieuw op dezelfde richel, en een bomdrager blijft bij één site in plaats van heen en weer te wisselen. Een bot die vastloopt aan het begin van zijn route, of ergens belandt zonder route, zoals op een dak of in de put bij de ladder op Railhouse, vindt nu zelf de weg terug. Eén bot houdt de taak om te ontmantelen of de bom op te rapen, in plaats van twee bots die ze steeds overnemen, en bots staan niet meer in je wanneer je stilstaat op de plek waar ze naartoe wilden. Dicht bij een bekende vijand lopen ze stil, en rondestarts met een volle server bots verlopen vlotter.</p>
+<p>Eén fix zullen velen meteen merken: bots bevriezen niet meer voor je neus terwijl je door een scope richt. Kunnen ze niet uit je schootslijn, dan bukken ze en blijven ze bewegen.</p>
 <h2 id="vier-klassiekers-keren-terug">Vier klassiekers keren terug</h2>
 <p>Villa 2.1, Shozen, Snowtown en Chlite hoorden bij de meest gespeelde community-maps uit de TrueCombat:Elite-jaren, en het zijn de maps waar ons het meest naar gevraagd werd toen Platinum begon. Alle vier zitten ze nu in het spel, dus elke server kan ze draaien en je kunt ze offline tegen bots spelen.</p>
-<p>We lieten de maps precies zoals hun makers ze gemaakt hebben: dezelfde indeling, dezelfde texturen en dezelfde plekken die je je herinnert. Wat we wel veranderd hebben, is het geluid. Een aantal originele geluiden was in lage kwaliteit opgenomen of speelde veel te luid naast de eigen sfeergeluiden van Platinum. We hebben ze opgeschoond, op hetzelfde niveau gebracht als de rest van het spel en een paar weggelaten die we niet mochten meeleveren. Beide bomsites op Villa en Chlite werken nu zoals hun makers het bedoelden.</p>
+<p>We lieten de maps precies zoals hun makers ze gemaakt hebben: dezelfde indeling, dezelfde texturen en dezelfde plekken die je je herinnert. Wat we wel veranderd hebben, is het geluid. Een aantal originele geluiden was in lage kwaliteit opgenomen of speelde veel te luid naast de eigen sfeergeluiden van Platinum. We hebben ze opgeschoond, op hetzelfde niveau gebracht als de rest van het spel en een paar weggelaten die we niet mochten meeleveren. Beide bomsites op Villa en Chlite werken nu zoals hun makers het bedoelden, en de krat bij site A op Villa 2.1 breekt nu wanneer de bom ontploft.</p>
+<p>De vier maps krijgen ook alles wat de kernmaps hebben: een minimap, een tactische kaart en een laadscherm met plattegrond, afbeelding en beschrijving. Op Villa 2.1 en Shozen rapen bots nu de vlag op in Flag Capture.</p>
 <figure class="wide">
   <img src="../img/devlog/front-lines-villa.webp" alt="Villa 2.1" width="1280" height="720" loading="lazy">
   <figcaption>Villa 2.1 's avonds, Ultra-preset, DirectX 12.</figcaption>
@@ -248,6 +253,9 @@
 <h3>De details</h3>
 <p>Het trayicoon heeft een donker menu met snel spelen, de schietbaan en instellingen, en meldingen dragen nu het icoon van het spel. Een downloadpaneel toont voortgang en snelheid en laat je pauzeren en hervatten, en een hervatte update downloadt afgewerkte bestanden nooit opnieuw. De instellingen krijgen een zoekvak, een grafische preview die je kunt verslepen om presets te vergelijken en een nieuw tabblad Toegankelijkheid met hoog contrast, grotere tekst, kleurenblindvriendelijke markeringen en minder beweging. Schermlezers kunnen de pagina's, rijen en knoppen van de launcher nu voorlezen. De launcher is ook beschikbaar in het Nederlands, naast Engels, Duits, Frans en Pools.</p>
 <p>Launcher 3.0 bevat ook het herstelwerk uit launcher 2.6.2: ontbrekende of beschadigde spelbestanden worden automatisch opnieuw gedownload, en als er iets misgaat, vertelt de foutmelding nu wat er gebeurd is.</p>
+<h2 id="een-duidelijkere-hud">Een duidelijkere HUD</h2>
+<p>We zijn elke spelmodus scherm per scherm doorgegaan en hebben weggewerkt wat in de weg zat. Mapnamen staan nu leesbaar op het scorebord en de tactische kaart, rondeuitslagen noemen de teams ("Terrorists win the round"), en de doelkaarten van Bomb, Flag en Capture Point zeggen wat je nu moet doen. In Capture Point staat het punt op de tactische kaart en de minimap, en in Team Deathmatch en Flag ziet een speler die op de volgende golf wacht wanneer hij weer inzet, in plaats van te lezen dat er geen inzet meer is.</p>
+<p>Kleine dingen tellen ook: toeschouwers van teamwedstrijden krijgen het teamscorebord, het paneel van de schietbaan en de FPS-teller staan niet meer op de minimap, kleine UI-formaten houden alle tekst leesbaar, het podium op het einde van een wedstrijd is op elke map even goed belicht, en de killfeed, het chatvak, het stemmenu en de melding om een wapen op te rapen overlappen of knippen geen tekst meer af. Flitsgranaten verblinden nu ook de minimap, het kompas en de doelkaart, en de replaycamera van de laatste kill belandt niet meer in de schutter of achter een hek.</p>
 <h2 id="close-quarters">Close quarters</h2>
 <p>CQB blijft experimenteel terwijl we het op het niveau van het kernspel brengen. In 0.39.0 gelden de spawnregels van CQB alleen nog in de CQB Rules-playlist, zodat elke andere modus standaard-spawns houdt, ook met experimentele content aan. In CQB Rules worden gezondheidsherstel en de perks Protected en Tank niet meer ongedaan gemaakt door de volgende treffer.</p>
 <p>Vanaf deze update draait Official #2 (Unranked) met experimentele content aan: de nieuwe CQB-wapens zitten daar in elke match, en Harbour komt in de rotatie als Team Deathmatch.</p>
@@ -260,6 +268,9 @@
   <li>Granaten en rook uit de vorige ronde worden opgeruimd wanneer een nieuwe ronde begint.</li>
   <li>Spelers glijden niet meer van hellingen terwijl ze stilstaan, en blijven staan wanneer ze bergaf lopen.</li>
   <li>Het trekken van de pin van een granaat is nu hoorbaar, voor jou en voor spelers in de buurt.</li>
+  <li>Vlotter bewegen langs de glazen gevels op Railhouse, en minder korte haperingen de eerste keer dat een geluid of effect gebruikt wordt.</li>
+  <li>Er verschijnt een melding "Verbinding onderbroken" wanneer de server niet meer antwoordt.</li>
+  <li>Opgenomen demo's spelen af zonder dat er menu's over openen.</li>
   <li>We hebben onze beveiligingsmaatregelen aangescherpt en uitgebreid.</li>
 </ul>
 <h2 id="hoe-we-het-getest-hebben">Hoe we het getest hebben</h2>
