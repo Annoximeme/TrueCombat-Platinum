@@ -34,3 +34,27 @@ cqb-06.jpg | harbour | Harbour TDM with the CQB weapons, close fight | DX12 Ultr
 cqb-09.jpg | harbour | Harbour TDM with the CQB weapons, close fight | DX12 Ultra 3840x2160, spectating, HUD hidden
 retake-03.jpg | obj_stadtrand | Bomb mode with bots: entries, holds and retakes | DX12 Ultra 3840x2160, spectating, HUD hidden
 spectate-04.jpg | obj_railhouse | spectating a teammate: sprint, aim, weapon sway | DX12 Ultra 3840x2160, spectating, HUD hidden
+pass2-blast-obj_delta-0-charge-04.jpg | obj_delta | breaching charge detonating on the crate: fireball, dust and debris | DX12 Ultra 3840x2160, HUD hidden
+pass2-blast-obj_delta-0-charge-10.jpg | obj_delta | breaching charge: the fireball rolling out after the blast | DX12 Ultra 3840x2160, HUD hidden
+pass2-blast-obj_delta-0-grenade-04.jpg | obj_delta | frag grenade: flash and dust | DX12 Ultra 3840x2160, HUD hidden
+pass2-blast-obj_delta-1-charge-08.jpg | obj_delta | breaching charge against the parked car: fireball and sparks | DX12 Ultra 3840x2160, HUD hidden
+pass2-blast-obj_delta-1-charge-10.jpg | obj_delta | breaching charge against the parked car: the fireball at full size | DX12 Ultra 3840x2160, HUD hidden
+pass2-blast-obj_delta-2-charge-08.jpg | obj_delta | breaching charge in the courtyard: blast light on the walls | DX12 Ultra 3840x2160, HUD hidden
+pass2-blast-obj_stadtrand-0-charge-08.jpg | obj_stadtrand | breaching charge in the street: fireball and smoke | DX12 Ultra 3840x2160, HUD hidden
+pass2-retake-05.jpg | obj_snowtown | bomb retake: moving out toward the site | DX12 Ultra 3840x2160, HUD hidden
+pass2-retake-15.jpg | obj_snowtown | bomb retake: watching the courtyard | DX12 Ultra 3840x2160, HUD hidden
+pass2-retake-16.jpg | obj_snowtown | bomb retake: holding the street under the lamps | DX12 Ultra 3840x2160, HUD hidden
+pass2-retake-21.jpg | obj_snowtown | bomb retake: two attackers close together | DX12 Ultra 3840x2160, HUD hidden
+pass2-retake-23.jpg | obj_snowtown | bomb retake: pushing to the truck | DX12 Ultra 3840x2160, HUD hidden
+pass2-ripples-2-04.jpg | harbour | open water toward the container yard | DX12 Ultra 3840x2160, HUD hidden
+pass2-ripples-fire-0-03.jpg | harbour | firing out over the water from the container deck | DX12 Ultra 3840x2160, HUD hidden
+pass2-ripples-fire-0-05.jpg | harbour | muzzle smoke and brass over the water | DX12 Ultra 3840x2160, HUD hidden
+pass2-sniper-11.jpg | obj_snow | over the shoulder: rifleman stepping out by the wall | DX12 Ultra 3840x2160, HUD hidden
+pass2-sniper-12.jpg | obj_snow | over the shoulder: sniper crossing the loading yard | DX12 Ultra 3840x2160, HUD hidden
+pass2-sniper-14.jpg | obj_snow | over the shoulder: sniper moving along the crates | DX12 Ultra 3840x2160, HUD hidden
+pass2-sniper-21.jpg | obj_snow | over the shoulder: warehouse aisle between the racks | DX12 Ultra 3840x2160, HUD hidden
+pass2-sniper-23.jpg | obj_snow | over the shoulder: by the shutters, a fallen opponent | DX12 Ultra 3840x2160, HUD hidden
+pass2-sniper-26.jpg | obj_snow | over the shoulder: squad pushing down the snowy lane | DX12 Ultra 3840x2160, HUD hidden
+pass2-sun-obj_stadtrand-0-+0.jpg | obj_stadtrand | warehouse yard in daylight | DX12 Ultra 3840x2160, HUD hidden
+pass2-sun-obj_stadtrand-2-+0.jpg | obj_stadtrand | water tower and yard in daylight | DX12 Ultra 3840x2160, HUD hidden
+pass2-sun-obj_village-1-+0.jpg | obj_village | garden and rooftops in daylight | DX12 Ultra 3840x2160, HUD hidden
