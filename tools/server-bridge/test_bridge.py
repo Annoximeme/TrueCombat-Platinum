@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Loopback test: a fake master and two fake game servers on 127.0.0.1, then the bridge over HTTP."""
-import json, pathlib, socket, struct, sys, tempfile, threading, time, urllib.request
+import json, pathlib, socket, struct, sys, tempfile, threading, time, urllib.error, urllib.request
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import tcp_bridge
 
@@ -62,4 +62,19 @@ assert red["need"] == 1 and red["eac"] == 2
 assert quiet["bots"] == 0 and quiet["ranked"] is None and quiet["need"] == 0 and quiet["eac"] == 0
 assert lb["matches"] == 3 and [p["name"] for p in lb["players"]] == ["Gianni", "Bob"]
 assert lb["players"][0]["kills"] == 30 and lb["players"][0]["topWeapon"] == "M4" and "guid" not in lb["players"][0]
+# live banners: a PNG for every name, a 404 for anything else, and no address on them
+for name in ("all-wide", "all-small", "official1-wide", "official2-small"):
+    r = urllib.request.urlopen("http://127.0.0.1:%d/banner/%s.png" % (port, name))
+    body = r.read()
+    assert r.headers["Content-Type"] == "image/png" and body[:8] == b"\x89PNG\r\n\x1a\n", name
+for bad in ("official3-wide.png", "all-huge.png", "../tcp_bridge.py", "all-wide.png.bak"):
+    try:
+        urllib.request.urlopen("http://127.0.0.1:%d/banner/%s" % (port, bad))
+        raise AssertionError("banner should 404: " + bad)
+    except urllib.error.HTTPError as e:
+        assert e.code == 404, bad
+import tcp_banner
+v = tcp_banner.view(srv["servers"], "all")
+assert v[3] == "2" and v[2] == "2 servers online", v
+assert tcp_banner.view(srv["servers"], "official1")[5] is False      # no server called Official #1 here
 print("bridge test passed")

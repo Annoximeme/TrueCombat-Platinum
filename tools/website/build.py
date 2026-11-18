@@ -46,7 +46,7 @@ FEED = GITHUB + "/releases.atom"
 
 MAPLIST = ["delta", "northport", "railhouse", "snow", "stadtrand", "village"]
 # written out in full by this script from landing.py (the other pages are hand-edited)
-LANDING = ["download", "faq", "truecombat-elite", "privacy"]
+LANDING = ["download", "faq", "truecombat-elite", "privacy", "banners"]
 PAGES = ["index", "maps", "weapons", "media", "guide", "servers", "leaderboards", "player", "competitive", "news", "devlog", "press", "studio", "support",
          "account"]
 # pages that only make sense with a signed-in player or a query (player?u=, account): not in the sitemap or site search
@@ -55,7 +55,7 @@ HIDDEN = ("player", "account")
 LABELS = {
     "en": {
         "maps": "Maps", "weapons": "Weapons", "guide": "Guide", "servers": "Servers",
-        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support", "privacy": "Privacy",
+        "leaderboards": "Leaderboards", "competitive": "Competitive", "news": "News", "devlog": "Devlog", "press": "Press kit", "media": "Media", "studio": "Studio", "support": "Support", "privacy": "Privacy", "banners": "Server banners",
         "gallery": "Gallery", "graphics": "Graphics", "faq": "FAQ", "about": "About", "truecombat-elite": "TrueCombat: Elite", "search": "Search", "top": "Back to top",
         "download": "Download", "menu": "Menu", "sections": "Sections", "discord": "Join the Discord", "language": "Language",
         "other": "Nederlands", "other_short": "NL", "skip": "Skip to content", "footer": "Footer", "releases": "Releases",
@@ -65,7 +65,7 @@ LABELS = {
     },
     "nl": {
         "maps": "Maps", "weapons": "Wapens", "guide": "Gids", "servers": "Servers",
-        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons", "privacy": "Privacy",
+        "leaderboards": "Ranglijsten", "competitive": "Competitief", "news": "Nieuws", "devlog": "Devlog", "press": "Perskit", "media": "Media", "studio": "Studio", "support": "Steun ons", "privacy": "Privacy", "banners": "Serverbanners",
         "gallery": "Galerij", "graphics": "Graphics", "faq": "Vragen", "about": "Over", "truecombat-elite": "TrueCombat: Elite", "search": "Zoeken", "top": "Terug naar boven",
         "download": "Download", "menu": "Menu", "sections": "Onderdelen", "discord": "Word lid van de Discord", "language": "Taal",
         "other": "English", "other_short": "EN", "skip": "Naar de inhoud", "footer": "Voettekst", "releases": "Releases",
@@ -137,7 +137,7 @@ MENU = {
                  "truecombat-elite": "Where it all began", "maps": "Every map, with plans in 3D", "weapons": "The full arsenal, compared", "graphics": "Low, High and Ultra side by side",
                  "gallery": "In-game screenshots", "leaderboards": "Ratings, ranks and stat leaders", "competitive": "Ranked play and its rules", "account": "Your profile, stats and friends",
                  "devlog": "How the game is being built", "news": "Patch notes for every release", "media": "Trailers, screenshots and wallpapers", "discord": "Find a match, talk to the team",
-                 "studio": "The team behind the game", "press": "Logos, key art and facts"}},
+                 "studio": "The team behind the game", "press": "Logos, key art and facts", "banners": "Live player counts for your page"}},
     "nl": {"play": "Spelen", "game": "Het spel", "compete": "Competitie", "community": "Community", "close": "Menu sluiten",
            "live": "{p} spelers · {s} servers", "idle": "{s} servers online", "live_h": "Live servers", "all": "Alle servers", "ranked": "Ranked", "home": "TrueCombat: Platinum home",
            "f_play": "Gratis · Windows 10 en 11, 64-bit", "f_game": "{m} maps · {w} wapens", "f_compete": "Ranked spelen op de officiële servers", "f_community": "Al {n} devlogartikelen",
@@ -145,10 +145,10 @@ MENU = {
                  "truecombat-elite": "Waar het allemaal begon", "maps": "Elke map, met plattegronden in 3D", "weapons": "Het volledige arsenaal, vergeleken", "graphics": "Low, High en Ultra naast elkaar",
                  "gallery": "Screenshots uit het spel", "leaderboards": "Ratings, rangen en topspelers", "competitive": "Ranked spelen en de regels", "account": "Je profiel, statistieken en vrienden",
                  "devlog": "Hoe het spel gebouwd wordt", "news": "Patchnotes van elke release", "media": "Trailers, screenshots en wallpapers", "discord": "Zoek een potje, praat met het team",
-                 "studio": "Het team achter het spel", "press": "Logo's, key art en feiten"}},
+                 "studio": "Het team achter het spel", "press": "Logo's, key art en feiten", "banners": "Live spelersaantallen voor je pagina"}},
 }
 MENU_GROUPS = [("play", ["download", "guide", "servers", "faq", "truecombat-elite"]), ("game", ["maps", "weapons", "graphics", "gallery"]),
-               ("compete", ["leaderboards", "competitive", "account"]), ("community", ["devlog", "news", "media", "discord", "studio", "press"])]
+               ("compete", ["leaderboards", "competitive", "account"]), ("community", ["devlog", "news", "media", "discord", "banners", "studio", "press"])]
 _NI = {
     "download": '<path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/>', "guide": '<path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/>',
     "servers": '<rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/>',
@@ -163,6 +163,7 @@ _NI = {
     "discord": '<path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/>',
     "studio": '<circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/>',
     "press": '<path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/>',
+    "banners": '<rect x="2" y="7" width="20" height="10"/><path d="M6 12h.01M9 10.5h6M9 13.5h4M18 10v4"/>',
 }
 
 
@@ -299,7 +300,7 @@ def footer(lang, page=""):
         (L["col_game"], [(href(p), L[p]) for p in ("download", "maps", "weapons", "guide", "media", "faq", "truecombat-elite")]),
         (L["col_play"], [(href(p), L[p]) for p in ("servers", "leaderboards", "competitive")] + [(href("account"), ACCOUNT_T.get(lang, "Account"))]),
         (L["col_studio"], [(href(p), L[p]) for p in ("news", "devlog", "studio", "press", "support", "privacy")]),
-        (L["col_community"], [(DISCORD, "Discord"), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]),
+        (L["col_community"], [(DISCORD, "Discord"), (href("banners"), L["banners"]), (GITHUB, "GitHub"), (GITHUB + "/releases", L["releases"]), (FEED, L["rss"])]),
     ]
     nav_html = "\n".join(
         '        <div><p class="foot-h">%s</p>%s</div>' % (h, "".join('<a href="%s">%s</a>' % (u, x) for u, x in items))
@@ -556,11 +557,19 @@ LO = {
     "en": {"title": "Layout", "intro": "Top-down plan built from the original map file, with the spawns, bomb sites and flags the game uses and its own location names.",
            "bomb": "Bomb", "flag": "Flag Capture", "callouts": "Location names", "show": "Show",
            "terrorists": "Terrorist spawn", "specops": "SpecOps spawn", "flag_terrorists": "Terrorist flag", "flag_specops": "SpecOps flag",
-           "site": "Bomb site", "alt": "Overhead layout of {m}", "nocallouts": "This map has no in-game location names."},
+           "site": "Bomb site", "alt": "Overhead layout of {m}", "nocallouts": "This map has no in-game location names.",
+           "routes": "Routes", "first": "Who gets there first", "times": "Run times from spawn", "team_t": "Terrorists", "team_s": "SpecOps",
+           "site_n": "Site {s}", "enemy_flag": "Enemy flag", "onsite": "On site", "sec": "{n} s",
+           "times_note": "Seconds from a fresh spawn, sprinting on a full stamina bar and then running, along the shortest walking route. Jumps and ladders not included.",
+           "first_t": "Terrorists first", "first_s": "SpecOps first", "first_both": "Both teams together"},
     "nl": {"title": "Plattegrond", "intro": "Bovenaanzicht op basis van het originele mapbestand, met de spawns, bomplekken en vlaggen die het spel gebruikt en de eigen locatienamen.",
            "bomb": "Bomb", "flag": "Flag Capture", "callouts": "Locatienamen", "show": "Tonen",
            "terrorists": "Spawn Terroristen", "specops": "Spawn SpecOps", "flag_terrorists": "Vlag Terroristen", "flag_specops": "Vlag SpecOps",
-           "site": "Bomplek", "alt": "Bovenaanzicht van {m}", "nocallouts": "Deze map heeft geen locatienamen in het spel."},
+           "site": "Bomplek", "alt": "Bovenaanzicht van {m}", "nocallouts": "Deze map heeft geen locatienamen in het spel.",
+           "routes": "Routes", "first": "Wie is er eerst", "times": "Looptijden vanaf de spawn", "team_t": "Terroristen", "team_s": "SpecOps",
+           "site_n": "Plek {s}", "enemy_flag": "Vijandelijke vlag", "onsite": "Op de plek", "sec": "{n} s",
+           "times_note": "Seconden vanaf een verse spawn, sprintend op een volle staminabalk en daarna lopend, over de kortste looproute. Zonder sprongen en ladders.",
+           "first_t": "Terroristen eerst", "first_s": "SpecOps eerst", "first_both": "Beide teams tegelijk"},
 }
 
 
@@ -580,6 +589,75 @@ def clusters(points, gap):
     return sorted(groups, key=len, reverse=True)
 
 
+_ROUTES = None
+
+
+def map_routes(name):
+    """Route timings for a map from maproutes.json (tools/website/maproutes.py), or None."""
+    global _ROUTES
+    if _ROUTES is None:
+        f = HERE / "maproutes.json"
+        _ROUTES = json.loads(f.read_text(encoding="utf-8")) if f.exists() else {}
+    return _ROUTES.get(name)
+
+
+def run_secs(T, r):
+    if not r:
+        return "–"
+    return T["onsite"] if r["t"] < 1.5 else T["sec"].replace("{n}", str(int(round(r["t"]))))
+
+
+def routes_svg(T, name, u):
+    """Each team's shortest route to the bomb sites and to the enemy flag, with the run time near the end."""
+    rt = map_routes(name)
+    if not rt:
+        return []
+
+    def line(team, r, cls):
+        if not r or len(r["p"]) < 2 or r["t"] < 1.5:
+            return ""
+        pts = r["p"]
+        seg = [((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** .5 for a, b in zip(pts, pts[1:])]
+        goal, acc, at = sum(seg) * .62, 0, pts[0]
+        for (a, b), L in zip(zip(pts, pts[1:]), seg):
+            if acc + L >= goal:
+                k = (goal - acc) / (L or 1)
+                at = (a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k)
+                break
+            acc += L
+        poly = " ".join("%s,%s" % (x, y) for x, y in pts)
+        return ('<g class="%s %s"><polyline class="halo" points="%s"/><polyline points="%s"/><circle cx="%s" cy="%s" r="%.1f"/>'
+                '<text x="%.1f" y="%.1f" font-size="%.1f" text-anchor="middle">%s</text></g>'
+                % (cls, team, poly, poly, pts[-1][0], pts[-1][1], u * .55, at[0], at[1] - u * .9, u * 1.7, run_secs(T, r)))
+    out = ['<g class="lo-route lo-route-bomb" style="--u: %.2f">' % u]
+    for s_ in rt["sites"]:
+        for team in ("terrorists", "specops"):
+            out.append(line(team, s_.get(team), "rt"))
+    out.append('</g><g class="lo-route lo-route-flag" style="--u: %.2f">' % u)
+    for f in rt["flags"]:
+        out.append(line(f["runner"], f["route"], "rt"))
+    out.append("</g>")
+    return out
+
+
+def times_html(T, rt):
+    """The run times as a small table under the layout controls, one per objective mode."""
+    if not rt:
+        return ""
+    head = '<thead><tr><th scope="col"><span class="sr-only">%s</span></th><th scope="col"><span class="k t"></span>%s</th><th scope="col"><span class="k s"></span>%s</th></tr></thead>' % (
+        T["times"], T["team_t"], T["team_s"])
+    bomb = "".join('<tr><th scope="row">%s</th><td>%s</td><td>%s</td></tr>' % (
+        T["site_n"].replace("{s}", s_["site"]), run_secs(T, s_.get("terrorists")), run_secs(T, s_.get("specops"))) for s_ in rt["sites"])
+    by = {f["runner"]: f["route"] for f in rt["flags"]}
+    flag = '<tr><th scope="row">%s</th><td>%s</td><td>%s</td></tr>' % (T["enemy_flag"], run_secs(T, by.get("terrorists")), run_secs(T, by.get("specops")))
+    return f"""<div class="lo-times">
+          <h4>{T['times']}</h4>
+          <table class="lo-t-bomb">{head}<tbody>{bomb}</tbody></table>
+          <table class="lo-t-flag">{head}<tbody>{flag}</tbody></table>
+          <p class="note">{T['times_note']}</p>
+        </div>"""
+
+
 def layout_html(lang, name, intro=True):
     T = LO[lang]
     intro_p = "<p>%s</p>" % T["intro"] if intro else ""
@@ -587,7 +665,7 @@ def layout_html(lang, name, intro=True):
     w, h = d["w"], d["h"]
     u = max(w, h) / 100
     e = lambda s: htmlmod.escape(s)
-    svg = []
+    svg = routes_svg(T, name, u)          # under the markers, so sites and spawns stay readable
     for team in ("terrorists", "specops"):
         pts = d["spawns"][team]
         svg.append('<g class="lo-spawn %s">%s' % (team, "".join('<circle cx="%s" cy="%s" r="%.1f"/>' % (x, y, u * .42) for x, y in pts)))
@@ -618,9 +696,14 @@ def layout_html(lang, name, intro=True):
     svg.append("</g>")
     label = name.capitalize()
     call_btn = ('<button type="button" class="lo-toggle" data-lo-call aria-pressed="true">%s</button>' % T["callouts"]) if d["callouts"] else ""
+    rt = map_routes(name)
+    if rt:
+        call_btn += ('<button type="button" class="lo-toggle" data-lo-opt="routes" aria-pressed="true">%s</button>'
+                     '<button type="button" class="lo-toggle" data-lo-opt="first" aria-pressed="false">%s</button>' % (T["routes"], T["first"]))
+    first_img = ('<img class="lo-first" src="img/maps/first-%s.webp" alt="" width="%d" height="%d" loading="lazy">' % (name, w, h)) if rt else ""
     note = "" if d["callouts"] else '<p class="note">%s</p>' % T["nocallouts"]
     return f"""<!--layout-{name}-->
-    <div class="layout" data-layout data-mode="bomb">
+    <div class="layout opt-routes" data-layout data-mode="bomb">
       <div class="layout-copy">
         <h3>{T['title']}</h3>
         {intro_p}
@@ -632,10 +715,17 @@ def layout_html(lang, name, intro=True):
           <li><span class="k t"></span>{T['terrorists']}</li>
           <li><span class="k s"></span>{T['specops']}</li>
         </ul>
+        <ul class="lo-legend lo-first-key">
+          <li><span class="k ft"></span>{T['first_t']}</li>
+          <li><span class="k fs"></span>{T['first_s']}</li>
+          <li><span class="k fb"></span>{T['first_both']}</li>
+        </ul>
         {note}
+        {times_html(T, rt)}
       </div>
       <figure class="layout-fig" style="--ar: {w} / {h}">
         <img src="img/maps/layout-{name}.webp" alt="{T['alt'].replace('{m}', label)}" width="{w}" height="{h}" loading="lazy">
+        {first_img}
         <svg viewBox="0 0 {w} {h}" aria-hidden="true">{''.join(svg)}</svg>
       </figure>
     </div>
@@ -1671,7 +1761,7 @@ def extend_tables():
     for code in XLANGS:
         ROAD[code] = tuple(i18n.tx(code, t) for t in ROAD["en"])
         OGLOCALE[code] = i18n.OGLOCALE[code]
-    for name in ("DOWNLOAD_T", "FAQ", "ELITE_T", "PRIVACY_T"):
+    for name in ("DOWNLOAD_T", "FAQ", "ELITE_T", "PRIVACY_T", "BANNERS_T"):
         i18n.extend(getattr(landing, name), name)
     i18n.extend(detail.S, "S")
 
