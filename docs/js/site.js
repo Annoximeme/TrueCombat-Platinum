@@ -91,7 +91,12 @@ var TCP_API = 'https://api.truecombat.eu';
       cmYou: 'You', cmPinned: 'Pinned', cmEdited: 'edited', cmWait: 'In review', cmHeld: 'Waiting for a moderator. Only you can see it for now.',
       cm_removed: 'This comment was removed by a moderator.', cm_hidden: 'This comment is hidden while our team takes a look.', cm_deleted: 'The author deleted this comment.',
       cmMore: 'Show {n} more comments', cmMore1: 'Show 1 more comment', cmLike: 'Like', cmCount: '{n} comments', cmCount1: '1 comment',
-      cmThanksHeld: 'Thanks. Your comment shows once our team has checked it.', cmErr: 'That did not work. Please try again.'
+      cmThanksHeld: 'Thanks. Your comment shows once our team has checked it.', cmErr: 'That did not work. Please try again.',
+      ssLive: 'Live', ssUpcoming: 'Starts {d}', ssEnded: 'Finished', ssLiveWhen: 'Live until {d}. Your tier shows after your first ranked match.',
+      ssUpcomingWhen: 'Season 1 starts on {d}. Standings open with the first ranked match.', ssEndedWhen: 'The season ended on {d}. Final standings.',
+      ssEmpty: 'No ranked matches yet this season.', ssOffline: 'The season standings are temporarily unavailable. Please check back in a few minutes.',
+      ctEasy: 'Easy', ctMedium: 'Medium', ctHard: 'Hard', ctWeek: 'Week {w}', ctNext: 'Next week', ctBonus: 'Finish all three for +{x} XP',
+      soloWeek: 'Week {w} · Range Run weapon: {g} · Bot challenge: {c}', soloEmpty: 'No runs yet this week. Be the first.', soloRuns: 'runs', soloPts: 'points'
     },
     nl: {
       months: ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'],
@@ -166,6 +171,13 @@ var TCP_API = 'https://api.truecombat.eu';
       cm_removed: 'Deze reactie is verwijderd door een moderator.', cm_hidden: 'Deze reactie is verborgen terwijl ons team ze bekijkt.', cm_deleted: 'De schrijver heeft deze reactie verwijderd.',
       cmMore: 'Toon nog {n} reacties', cmMore1: 'Toon nog 1 reactie', cmLike: 'Leuk', cmCount: '{n} reacties', cmCount1: '1 reactie',
       cmThanksHeld: 'Bedankt. Je reactie verschijnt zodra ons team ze heeft nagekeken.', cmErr: 'Dat lukte niet. Probeer het opnieuw.',
+      ssLive: 'Live', ssUpcoming: 'Start {d}', ssEnded: 'Afgelopen', ssLiveWhen: 'Loopt tot {d}. Je tier verschijnt na je eerste ranked potje.',
+      ssUpcomingWhen: 'Seizoen 1 start op {d}. De stand opent met het eerste ranked potje.', ssEndedWhen: 'Het seizoen eindigde op {d}. Eindstand.',
+      ssEmpty: 'Nog geen ranked potjes dit seizoen.', ssOffline: 'De seizoensstand is tijdelijk niet beschikbaar. Kom over een paar minuten terug.',
+      ctEasy: 'Makkelijk', ctMedium: 'Gemiddeld', ctHard: 'Moeilijk', ctWeek: 'Week {w}', ctNext: 'Volgende week', ctBonus: 'Haal ze alle drie voor +{x} XP',
+      soloWeek: 'Week {w} · Wapen voor de Range Run: {g} · Botuitdaging: {c}', soloEmpty: 'Nog geen runs deze week. Wees de eerste.', soloRuns: 'runs', soloPts: 'punten',
+      "ct_e-play3": "Speel 3 potjes", "ct_e-rounds5": "Win 5 rondes", "ct_e-kills10": "Maak 10 kills", "ct_e-obj1": "Plaats of ontmantel een bom", "ct_e-assists5": "Haal 5 assists", "ct_e-play2r": "Speel 2 ranked potjes", "ct_e-aimed8": "Maak 8 kills terwijl je richt", "ct_e-damage1500": "Doe 1.500 schade", "ct_m-bombrounds3": "Win 3 bomrondes", "ct_m-hs5": "Maak 5 headshotkills", "ct_m-trades3": "Maak 3 trades", "ct_m-open3": "Maak 3 openingskills", "ct_m-wins2": "Win 2 potjes", "ct_m-low10": "Maak 10 kills gehurkt of liggend", "ct_m-double3": "Maak 3 double kills", "ct_m-mvp3": "Word 3 keer MVP van de ronde", "ct_h-long40": "Maak een kill van 40 m of meer", "ct_h-clutch2": "Win een 1-tegen-2-clutch", "ct_h-knife2": "Maak 2 meskills", "ct_h-triple1": "Maak een triple kill", "ct_h-obj3": "Plaats of ontmantel 3 bommen", "ct_h-rwins3": "Win 3 ranked potjes", "ct_h-streak5": "Maak 5 kills zonder te sterven", "ct_h-revenge3": "Neem 3 keer wraak",
+      "bc_Village Bomb, 5 v 5 against hard bots": "Village Bom, 5 tegen 5 tegen sterke bots", "bc_Railhouse Team Elimination, 5 v 5 against hard bots": "Railhouse Team Elimination, 5 tegen 5 tegen sterke bots", "bc_Snow Bomb, 4 v 4 against the hardest bots": "Snow Bom, 4 tegen 4 tegen de sterkste bots", "bc_Village Team Elimination, 3 v 3 against the hardest bots": "Village Team Elimination, 3 tegen 3 tegen de sterkste bots",
       cmErr400: 'Controleer je reactie: minstens 2 en hoogstens 1.000 tekens.', cmErr403: 'Dat kan nu niet met jouw account.', cmErr409: 'Dat kan niet meer. Vernieuw de pagina en probeer opnieuw.', cmErr429: 'Even rustig aan. Probeer het zo meteen opnieuw.'
     }
   };
@@ -766,6 +778,75 @@ var TCP_API = 'https://api.truecombat.eu';
       b.addEventListener('click', function () {
         $all('[data-sort]', root).forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
         state.sort = b.dataset.sort; draw();
+      });
+    });
+    load();
+  });
+
+  /* ---------- Season 1 (season.html): standings, weekly contracts, solo boards (tcp_stats.py /season.json, /solo.json) ---------- */
+  function sDate(iso) { var d = new Date(iso); return isNaN(d) ? '' : d.getDate() + ' ' + L.months[d.getMonth()] + ' ' + d.getFullYear(); }
+  function weekNo(w) { return String(w || '').replace(/^\d{4}-W0?/, ''); }
+  var IMG = (document.querySelector('[data-img]') || { dataset: {} }).dataset.img || 'img/';   /* ../img/ on translated pages */
+  function emblem(t, name) { return t ? '<img class="tier-ico" src="' + IMG + 'ranks/rank' + Number(t) + '.svg" alt="" width="20" height="20"> ' + esc(name || '') : '–'; }
+  var seasonP = null;
+  function seasonData() { if (!seasonP) seasonP = api('/season.json?limit=100'); return seasonP; }
+  $all('[data-season]').forEach(function (root) {
+    var tbody = root.querySelector('tbody'), empty = root.querySelector('.lb-empty'), when = root.querySelector('[data-season-when]');
+    seasonData().then(function (d) {
+      var s = d.season || {};
+      if (d.state === 'live') { setPill(root, true, L.ssLive); when.textContent = L.ssLiveWhen.replace('{d}', sDate(s.end)); }
+      else if (d.state === 'upcoming') { setPill(root, false, L.ssUpcoming.replace('{d}', sDate(s.start))); when.textContent = L.ssUpcomingWhen.replace('{d}', sDate(s.start)); }
+      else { setPill(root, false, L.ssEnded); when.textContent = s.end ? L.ssEndedWhen.replace('{d}', sDate(s.end)) : ''; }
+      var rows = d.players || [];
+      if (!rows.length) { empty.textContent = L.ssEmpty; empty.hidden = false; tbody.innerHTML = ''; return; }
+      empty.hidden = true;
+      tbody.innerHTML = rows.map(function (p, i) {
+        return '<tr><td class="rank">' + (p.position || i + 1) + '</td><td><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a></td><td>' +
+          emblem(p.tier, p.tierName) + '</td><td>' + (p.rating ? num(p.rating) : '–') + '</td><td>' + num(p.matches) + '</td><td>' + num(p.wins) + '</td><td>' + num(p.xp) + '</td></tr>';
+      }).join('');
+    }, function () { setPill(root, false, TCP_API ? L.offline : L.soon); empty.textContent = L.ssOffline; empty.hidden = false; });
+  });
+  $all('[data-contracts]').forEach(function (root) {
+    seasonData().then(function (d) {
+      var wk = d.state === 'upcoming' ? null : d.week;
+      if (!wk || !(wk.contracts || []).length) return;
+      var lvl = { easy: L.ctEasy, medium: L.ctMedium, hard: L.ctHard }, bonus = (d.rules || {}).contractBonusXp || 250;
+      root.innerHTML = '<p class="muted">' + esc(L.ctWeek.replace('{w}', weekNo(wk.id))) + ' · ' + esc(L.ctBonus.replace('{x}', bonus)) + '</p><ol class="contracts">' +
+        wk.contracts.map(function (c) {
+          return '<li class="ct ct-' + esc(c.difficulty) + '"><span class="ct-lvl">' + esc(lvl[c.difficulty] || c.difficulty) + '</span><b>' + esc(L['ct_' + c.id] || c.text) + '</b><span class="ct-xp">+' + num(c.xp) + ' XP</span></li>';
+        }).join('') + '</ol>';
+    }, function () {});
+  });
+  $all('[data-solo]').forEach(function (root) {
+    var tbody = root.querySelector('tbody'), empty = root.querySelector('.lb-empty'), info = root.querySelector('[data-solo-week]');
+    var cache = {}, board = 'range';
+    function fmt(b, p) {
+      if (b.unit === 'ms') return (p.score / 1000).toFixed(p.score >= 600000 ? 0 : 2) + ' s';
+      return num(p.score) + ' ' + L.soloPts;
+    }
+    function draw(b) {
+      var st = b.setup || {}, ch = st.botChallenge || {};
+      info.textContent = L.soloWeek.replace('{w}', weekNo(st.week)).replace('{g}', st.rangeWeapon || '–').replace('{c}', L['bc_' + ch.text] || ch.text || '–');
+      setPill(root, true, b.name || '');
+      var rows = b.players || [];
+      if (!rows.length) { empty.textContent = L.soloEmpty; empty.hidden = false; tbody.innerHTML = ''; return; }
+      empty.hidden = true;
+      tbody.innerHTML = rows.map(function (p) {
+        return '<tr><td class="rank">' + p.position + '</td><td><a class="who" href="' + esc(profileHref(p.id)) + '">' + esc(p.name) + '</a></td><td>' + esc(fmt(b, p)) +
+          ' <small class="muted">' + num(p.runs) + ' ' + L.soloRuns + '</small></td></tr>';
+      }).join('');
+    }
+    function load() {
+      if (cache[board]) { draw(cache[board]); return; }
+      var want = board;
+      api('/solo.json?board=' + want + '&limit=50').then(function (b) { cache[want] = b; if (want === board) draw(b); }, function () {
+        setPill(root, false, TCP_API ? L.offline : L.soon); empty.textContent = L.ssOffline; empty.hidden = false;
+      });
+    }
+    $all('[data-board]', root).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        $all('[data-board]', root).forEach(function (o) { o.setAttribute('aria-pressed', String(o === btn)); });
+        board = btn.dataset.board; load();
       });
     });
     load();
