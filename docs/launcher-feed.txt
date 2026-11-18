@@ -1,15 +1,15 @@
 # Launcher Play page. Written by tools/website/build.py from tools/website/launcher.json; do not edit.
 [slide]
-eyebrow=Update 0.38.1
+eyebrow=Update 0.38.2
 chip=Live now
-title=Update 0.38.1|is live.
+title=Update 0.38.2|is live.
 text=See everything that changed in the latest update.
 button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
 title=Front|lines.
-text=Bots that listen and plan, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather and sound across every map.
+text=Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound and body language across every map.
 button=Read the devlog
 url=https://truecombat.eu/devlog-front-lines.html
 [slide]
@@ -27,7 +27,7 @@ url=https://discord.gg/8kcHdg2Hch
 [news]
 tag=Devlog
 title=Front lines
-text=Bots that listen and plan, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather and sound across every map.
+text=Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound…
 url=https://truecombat.eu/devlog-front-lines.html
 [news]
 tag=Community
