@@ -1,0 +1,38 @@
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -81,6 +81,7 @@
+ static vec3_t bombPos;static int bombBase,bombSmoke=-1;
+ typedef struct {vec3_t mins,maxs;int owner;char target[32];int crate;char letter;} bombsite_t; /* letter: 0.38.0, from the map's "track" ("Main Storage [A]") */
+ static bombsite_t bombSites[4];static int bombSiteCount;
++static struct {char name[64];int ent;} crateWait[8];static int crateWaitCount; /* 0.39.x: crates listed before their site (Villa 2.1 site A) */
+ #define TCP_BOMB_MARKER 0x5454
+ #define TCP_DYNAMITE_ID 15
+ typedef struct {vec3_t mins,maxs;int spawnflags;} flagzone_t;
+@@ -260,7 +261,7 @@
+             memcpy(f->home,origin,sizeof(origin));memcpy(f->pos,origin,sizeof(origin));f->present=1;}
+         if(model[0]=='*'&&!strcmp(cls,"trigger_objective_info")&&((spawnflags&128)||!strncmp(target,"bombsite",8))&&bombSiteCount<4){ /* 0.39.0: sites marked only by target bombsite*_crate (Villa 2.1, Chlite, Stadtrand site A) */
+             sharedEntity_t *e=&ents[ENTITYNUM_WORLD-1].shared;memset(e,0,sizeof(*e));SystemCall(G_SET_BRUSH_MODEL,e,model);
+-            bombsite_t *z=&bombSites[bombSiteCount++];memcpy(z->mins,e->r.mins,sizeof(vec3_t));memcpy(z->maxs,e->r.maxs,sizeof(vec3_t));z->owner=spawnflags&3;snprintf(z->target,sizeof(z->target),"%s",target);z->crate=-1;
++            bombsite_t *z=&bombSites[bombSiteCount++];memcpy(z->mins,e->r.mins,sizeof(vec3_t));memcpy(z->maxs,e->r.maxs,sizeof(vec3_t));z->owner=spawnflags&3;snprintf(z->target,sizeof(z->target),"%s",target);z->crate=-1;for(int w=0;w<crateWaitCount;w++)if(!strcmp(crateWait[w].name,target))z->crate=crateWait[w].ent;
+             {const char *l=strstr(track,"[");z->letter=l&&l[1]>='A'&&l[1]<='D'&&l[2]==']'?l[1]:(char)('A'+bombSiteCount-1);} /* obj_northport lists [B] first */
+             memset(e,0,sizeof(*e));e->r.ownerNum=ENTITYNUM_NONE;}
+         if(model[0]=='*'&&!strcmp(cls,"trigger_flagonly_multiple")&&flagZoneCount<4){
+@@ -293,7 +294,8 @@
+             sharedEntity_t *e=&ents[numEnts].shared;e->s.number=numEnts++;e->s.eType=ET_MOVER;
+             memcpy(e->r.currentOrigin,origin,sizeof(origin));memcpy(e->s.pos.trBase,origin,sizeof(origin));e->s.pos.trType=TR_STATIONARY;
+             SystemCall(G_SET_BRUSH_MODEL,e,model);e->r.contents=CONTENTS_SOLID;e->r.svFlags=SVF_BROADCAST;locate();SystemCall(G_LINKENTITY,e);brushes++;
+-            if(!strcmp(cls,"func_explosive")&&targetname[0])for(int z=0;z<bombSiteCount;z++)if(!strcmp(bombSites[z].target,targetname))bombSites[z].crate=e->s.number;
++            if(!strcmp(cls,"func_explosive")&&targetname[0]){for(int z=0;z<bombSiteCount;z++)if(!strcmp(bombSites[z].target,targetname))bombSites[z].crate=e->s.number;
++                if(crateWaitCount<8){snprintf(crateWait[crateWaitCount].name,sizeof(crateWait[0].name),"%s",targetname);crateWait[crateWaitCount++].ent=e->s.number;}}
+             if(!strcmp(cls,"func_explosive")&&breakableCount<TCP_MAX_BREAKABLES){breakable_t *b=&breakables[breakableCount++];b->ent=e->s.number;b->health=hasHealth?health:100;b->broken=0;snprintf(b->type,sizeof(b->type),"%s",btype);
+                 b->mass=mass;b->speed=speed!=0?speed:1;b->size=size;snprintf(b->noise,sizeof(b->noise),"%s",noise[0]?noise:"-");
+                 b->dir[0]=b->dir[1]=0;b->dir[2]=1;if(yaw==-2)b->dir[2]=-1;else if(yaw!=0&&yaw!=-1){b->dir[1]=-sinf(yaw*.01745329252f);b->dir[2]=cosf(yaw*.01745329252f);}}
+@@ -1953,7 +1955,7 @@
+     if(command>=GAME_CLIENT_CONNECT&&command<=GAME_CLIENT_THINK&&(n<0||n>=maxClients))return command==GAME_CLIENT_CONNECT?(intptr_t)"Native sandbox slot out of range":0;
+     switch(command){
+     case GAME_INIT:{
+-        memset(ents,0,sizeof(ents));for(int i=0;i<MAX_GENTITIES;i++)ents[i].shared.r.ownerNum=ENTITYNUM_NONE;memset(clients,0,sizeof(clients));memset(targets,0,sizeof(targets));rangeReset();memset(connectionIds,0,sizeof(connectionIds));memset(spawnTeleports,0,sizeof(spawnTeleports));connectionSerial=0;spawnCount=brushes=0;doorCount=0;breakableCount=0;memset(breakables,0,sizeof(breakables));bobberCount=mapTimerCount=mapSpeakerCount=0;memset(doors,0,sizeof(doors));memset(flags,0,sizeof(flags));memset(flagZones,0,sizeof(flagZones));flagZoneCount=0;memset(bombSites,0,sizeof(bombSites));bombSiteCount=0;bombCarrier=-1;bombState=3;frames=joins=disconnects=0;levelTime=(int)a0;
++        memset(ents,0,sizeof(ents));for(int i=0;i<MAX_GENTITIES;i++)ents[i].shared.r.ownerNum=ENTITYNUM_NONE;memset(clients,0,sizeof(clients));memset(targets,0,sizeof(targets));rangeReset();memset(connectionIds,0,sizeof(connectionIds));memset(spawnTeleports,0,sizeof(spawnTeleports));connectionSerial=0;spawnCount=brushes=0;doorCount=0;breakableCount=0;memset(breakables,0,sizeof(breakables));bobberCount=mapTimerCount=mapSpeakerCount=0;memset(doors,0,sizeof(doors));memset(flags,0,sizeof(flags));memset(flagZones,0,sizeof(flagZones));flagZoneCount=0;memset(bombSites,0,sizeof(bombSites));bombSiteCount=0;crateWaitCount=0;bombCarrier=-1;bombState=3;frames=joins=disconnects=0;levelTime=(int)a0;
+         TCP_SetContents(contents);casterLoad();
+         SystemCall(G_CVAR_REGISTER,NULL,"g_staffKeyFile","staffkeys/staffkeys.txt",0);TCP_StaffLoadFile(); /* 0.36.0 portal staff keys */
+         TCP_AcctInit(); /* 0.37.0 player accounts */
