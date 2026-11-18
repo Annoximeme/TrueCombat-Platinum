@@ -258,6 +258,17 @@
    "checked": "2026-11-16T17:59:29Z",
    "settle": true
   },
+  "2b2c85c384dfb9deb0ab069af36142edbc6452320e54ee3a8650b1fb9fcd8fa9": {
+   "name": "platinum-server.bin",
+   "bytes": 1820672,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-18T03:23:57Z",
+   "flagged_by": [],
+   "checked": "2026-11-18T03:27:39Z",
+   "settle": true
+  },
   "2bf16cb2e29a4b9c356b1dbc4002c7093e9941d3c5a06ce5116f6ffe77b44770": {
    "name": "platinum-engine.bin",
    "bytes": 3982848,
@@ -398,6 +409,17 @@
    "checked": "2026-11-17T23:18:21Z",
    "settle": false,
    "flagged_by": []
+  },
+  "4353811500cde0829ddb70e1ab5d6180ebaf498559105f0644c1a029584eecae": {
+   "name": "platinum-engine.bin",
+   "bytes": 4187136,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-18T03:22:21Z",
+   "flagged_by": [],
+   "checked": "2026-11-18T03:26:51Z",
+   "settle": true
   },
   "437cb36a15ab04efbcf5c323caa0fdb0d37fcdac91f63892d7be0c36664663bd": {
    "name": "qagame_mp_x64.dll",
@@ -581,6 +603,17 @@
    "checked": "2026-11-17T17:17:05Z",
    "settle": true
   },
+  "5c71a909d0ae8f10ea47709e5013c9be49b7a457289201b2d63974d4b29df8cf": {
+   "name": "renderer_dx12_x64.dll",
+   "bytes": 2306560,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-18T03:22:53Z",
+   "flagged_by": [],
+   "checked": "2026-11-18T03:27:07Z",
+   "settle": true
+  },
   "5c75d6196bcae554d0f4ef9a29487f6ada8ecf3d755d6b31327c0123bcb7ebb5": {
    "name": "TrueCombat-Platinum-Setup.exe",
    "bytes": 915968,
@@ -668,6 +701,17 @@
    "checked": "2026-11-16T17:57:05Z",
    "settle": true
   },
+  "621a65e92893ee0854e7ec9358060ce92acf679f6ccdf64f78f4c2da59dcd641": {
+   "name": "ui_mp_x64.dll",
+   "bytes": 402944,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 69,
+   "analysed": "2026-11-18T03:25:33Z",
+   "flagged_by": [],
+   "checked": "2026-11-18T03:28:27Z",
+   "settle": true
+  },
   "633d29e2510e11a61658e545c5cb1acfe6a03c89fe408994601530f161241c57": {
    "name": "TrueCombatPlatinum.exe",
    "bytes": 7185408,
@@ -697,6 +741,20 @@
    "engines": 71,
    "analysed": "2026-11-16T17:22:58Z",
    "checked": "2026-11-16T17:54:42Z",
+   "settle": true
+  },
+  "656ced87463c093bc38ffe93fe1c62edfe3d066a00684a1f4d401a49a7b56761": {
+   "name": "TrueCombat-Platinum-Setup.exe",
+   "bytes": 915968,
+   "malicious": 2,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-18T03:21:18Z",
+   "flagged_by": [
+    "Bkav: W32.Malware.A80D2986",
+    "Elastic: malicious (high confidence)"
+   ],
+   "checked": "2026-11-18T03:26:19Z",
    "settle": true
   },
   "67fafa6f083eab07abc13b04170333d8e41cb5f5d22b550ebe44d5940815b23a": {
@@ -1076,6 +1134,17 @@
     "Trapmine: malicious.moderate.ml.score"
    ]
   },
+  "b48a0fda2d1c4bd37ad5202cf711a5feaa2303f978de3d56b5ad81b4e6793647": {
+   "name": "cgame_mp_x64.dll",
+   "bytes": 762368,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-18T03:24:29Z",
+   "flagged_by": [],
+   "checked": "2026-11-18T03:27:55Z",
+   "settle": true
+  },
   "b4dac59944d24bd793fdee5d7cb440b41ed7d3c2dad50507e7d9d0f6dae37096": {
    "name": "ui_mp_x64.dll",
    "bytes": 406528,
@@ -1137,6 +1206,17 @@
    "engines": 70,
    "analysed": "2026-11-16T17:39:12Z",
    "checked": "2026-11-16T17:58:09Z",
+   "settle": true
+  },
+  "beb5d433363cd5b482fbc4e82e7b71eeba3ca2a7c4a9cf1a79343af20719c6a9": {
+   "name": "renderer_opengl1_x64.dll",
+   "bytes": 1756672,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-18T03:23:25Z",
+   "flagged_by": [],
+   "checked": "2026-11-18T03:27:23Z",
    "settle": true
   },
   "c2a1fe9557ec8c461802b7732b03fbd73405be6da3b21f2da889cb6746cbf104": {
@@ -1298,6 +1378,19 @@
    "checked": "2026-11-17T17:30:06Z",
    "settle": true
   },
+  "dc8b1396d2fbe9682f7e04277fa5194940f1e52239f2fe1fe761fe2127546c97": {
+   "name": "OpenAL64.dll",
+   "bytes": 902656,
+   "malicious": 1,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-18T03:21:49Z",
+   "flagged_by": [
+    "Skyhigh: BehavesLike.Win64.Dropper.cc"
+   ],
+   "checked": "2026-11-18T03:26:35Z",
+   "settle": true
+  },
   "e0e13d8e4350082a8ab1a2cf2873a07e25df1a89753cb8174a77b0d0e187491e": {
    "name": "renderer_opengl1_x64.dll",
    "bytes": 1796096,
@@ -1308,6 +1401,17 @@
    "checked": "2026-11-17T16:30:37Z",
    "settle": false,
    "flagged_by": []
+  },
+  "e6c1cfa6e163c5d384edeb57cb22b17b5d0d93daee7dc42c76a41b3fcb84cccc": {
+   "name": "qagame_mp_x64.dll",
+   "bytes": 742912,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-18T03:25:01Z",
+   "flagged_by": [],
+   "checked": "2026-11-18T03:28:11Z",
+   "settle": true
   },
   "eb6802fdbce7e35d9d252e8ec7ebf508dbd2056b26cea56d356df3216b48c343": {
    "name": "TrueCombatPlatinum.exe",
@@ -1452,6 +1556,52 @@
   }
  },
  "releases": {
+  "v0.38.2-sandbox36": {
+   "published": "2026-11-18T03:29:59Z",
+   "draft": false,
+   "setup": "656ced87463c093bc38ffe93fe1c62edfe3d066a00684a1f4d401a49a7b56761",
+   "files": {
+    "TrueCombat-Platinum-Setup.exe": "656ced87463c093bc38ffe93fe1c62edfe3d066a00684a1f4d401a49a7b56761",
+    "TrueCombatPlatinum-Launcher.exe": "27fe8c54b5bd713f0bbfd08f05a98e15523d65f11ef860f44047087203baf4aa",
+    "f__EasyAntiCheat__EasyAntiCheat_EOS_Setup.exe": "8b60d4e8962ee5b4b7130afabb029673e284367bc22a590293d14f089c9f46a0",
+    "f__TrueCombatPlatinum.exe": "27fe8c54b5bd713f0bbfd08f05a98e15523d65f11ef860f44047087203baf4aa",
+    "f__TrueCombatPlatinum_EAC.exe": "46d2552552ac95c436389a2c9f1aba6fda37ab998acf9b9ee026f3262dd70c53",
+    "f__engine__EOSSDK-Win64-Shipping.dll": "ab25af350c48856633d671a16e8469277f9acee39186d69fe5b2a26100d738e8",
+    "f__engine__OpenAL64.dll": "dc8b1396d2fbe9682f7e04277fa5194940f1e52239f2fe1fe761fe2127546c97",
+    "f__engine__dlss__concrt140.dll": "54716f0738af891f283d213b5c8d11b25896bb8ee3097d301eae718560cf974e",
+    "f__engine__dlss__msvcp140.dll": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca",
+    "f__engine__dlss__msvcp140_1.dll": "206c931bf90fdad8816de3b5e2ef80b2bcaa9406c89ecc05fe6fddffe251e982",
+    "f__engine__dlss__msvcp140_2.dll": "d50d7883f20d1dc6191768d3746f52dd9cac89c346ffaed5be1f110c2f34a838",
+    "f__engine__dlss__msvcp140_atomic_wait.dll": "3d0cbfaa1bf3eecf5a3f4491d2960ee803cb994f30292c6adc4a07c498f60e2b",
+    "f__engine__dlss__msvcp140_codecvt_ids.dll": "8a65c7596ef2e6938731f5a1058e7e40145b6d97967cc649231a076b9a608d78",
+    "f__engine__dlss__nvngx_dlss.dll": "d00b5b0ab29c3ca101b70c3a5ecb3a01b7ef33766a3383a28a18623083e6123e",
+    "f__engine__dlss__nvngx_dlssg.dll": "8d59d49b36410dd6b62fef2503a5871d347415bd85d943fa0848563a95dd50c7",
+    "f__engine__dlss__sl.common.dll": "38eea3b4209afc455636ea372b5933d65fcc13becec6c84d101dcfc4d8648f75",
+    "f__engine__dlss__sl.dlss.dll": "18871eea87c90345da97d8109faa81ea7d5840e8d99b51b55b0e46cfa177f84e",
+    "f__engine__dlss__sl.dlss_g.dll": "3ed9538df724993bea8a050195a6a78b9c8c8a566d5b05ade477aab3c390e90f",
+    "f__engine__dlss__sl.interposer.dll": "b1d7395aebd7b9722841d64dcf7433680020b6a8e421f851c16d5ba0c2182edf",
+    "f__engine__dlss__sl.pcl.dll": "5698c38e722318681f215c9fe68e45b9bedd51378acc699d8eee26e961e57770",
+    "f__engine__dlss__sl.reflex.dll": "443577e869352436ff7ec8f4d9c90418d3e95368436ce219261e0f4f07a38122",
+    "f__engine__dlss__vccorlib140.dll": "09f93d5ff96ae09767f3e1af3cdd43a5a58f2598654fc63089429bb6f9f4737f",
+    "f__engine__dlss__vcruntime140.dll": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7",
+    "f__engine__dlss__vcruntime140_1.dll": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e",
+    "f__engine__dlss__vcruntime140_threads.dll": "40f39e8cee5f5a531b4010e18b807e8fe265b908dc58f959ecb7ebc6ea6cb11a",
+    "f__engine__msvcp140.dll": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca",
+    "f__engine__platinum-engine.bin": "4353811500cde0829ddb70e1ab5d6180ebaf498559105f0644c1a029584eecae",
+    "f__engine__renderer_dx12_x64.dll": "5c71a909d0ae8f10ea47709e5013c9be49b7a457289201b2d63974d4b29df8cf",
+    "f__engine__renderer_opengl1_x64.dll": "beb5d433363cd5b482fbc4e82e7b71eeba3ca2a7c4a9cf1a79343af20719c6a9",
+    "f__engine__vcruntime140.dll": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7",
+    "f__engine__vcruntime140_1.dll": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e",
+    "f__server__EOSSDK-Win64-Shipping.dll": "ab25af350c48856633d671a16e8469277f9acee39186d69fe5b2a26100d738e8",
+    "f__server__msvcp140.dll": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca",
+    "f__server__platinum-server.bin": "2b2c85c384dfb9deb0ab069af36142edbc6452320e54ee3a8650b1fb9fcd8fa9",
+    "f__server__vcruntime140.dll": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7",
+    "f__server__vcruntime140_1.dll": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e",
+    "f__tcetest__cgame_mp_x64.dll": "b48a0fda2d1c4bd37ad5202cf711a5feaa2303f978de3d56b5ad81b4e6793647",
+    "f__tcetest__qagame_mp_x64.dll": "e6c1cfa6e163c5d384edeb57cb22b17b5d0d93daee7dc42c76a41b3fcb84cccc",
+    "f__tcetest__ui_mp_x64.dll": "621a65e92893ee0854e7ec9358060ce92acf679f6ccdf64f78f4c2da59dcd641"
+   }
+  },
   "v0.38.1-sandbox35": {
    "published": "2026-11-17T21:53:22Z",
    "draft": false,
