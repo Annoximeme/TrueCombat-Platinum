@@ -141,7 +141,8 @@ Routes:
 - `GET /contracts.json?id=<player id>[&week=2027-W06]` (`tcp-contracts/1`): one player's contracts with progress.
 - `GET /solo.json?board=range|drill|bots&period=week|season[&week=]` (`tcp-solo-board/1`): best run per player.
 - `POST /api/v1/solo`: a signed run from the launcher (64 KB max, one a minute per key). 200 stored, 409 duplicate,
-  422 refused with the reason.
+  422 refused with the reason (the launcher sets the file aside), 429 one run a minute (the launcher keeps it and
+  tries again later).
 - Staff (loopback + staff token): `POST /staff/solo/void` / `/staff/solo/unvoid` `{"id": "<run id>"}`; CLI
   `void-run` / `unvoid-run`.
 - Player JSON (`/player.json`, leaderboards, search) gains `season` (`season`, `seasonName`, `tier`, `tierName`,

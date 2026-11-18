@@ -215,7 +215,7 @@ for name, bad, why in (("forged signature", dict(run(gap=310), sig="00" * 64), "
 try:
     store.solo_submit(run(gap=350))
     check("one run a minute", False)
-except tcp_stats.Rejected as exc:
+except tcp_stats.RetryLater as exc:
     check("one run a minute", "minute" in str(exc), exc)
 board = store.solo("range")
 kid = hashlib.sha256(pub).hexdigest()[:40]

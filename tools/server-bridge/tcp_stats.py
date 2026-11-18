@@ -145,6 +145,10 @@ class Rejected(Exception):
     pass
 
 
+class RetryLater(Rejected):
+    """Refused for now only: the sender keeps the item and tries again later (HTTP 429)."""
+
+
 def sanitize(report, trusted=False, allow_cheats=False):
     """Validates a tcp-match/1 report. Returns a normalized copy with player ids
     in place of guids, or raises Rejected."""
@@ -1022,7 +1026,7 @@ class StatsStore:
             # one upload a minute per key keeps the table small
             last = self.db.execute("SELECT received FROM solo_runs WHERE kid=? ORDER BY received DESC LIMIT 1", (kid,)).fetchone()
             if last and (now - tcp_season.parse(last["received"])).total_seconds() < 60:
-                raise Rejected("one run a minute")
+                raise RetryLater("one run a minute")
             row = self.db.execute("SELECT name FROM players WHERE pid=?", (pid,)).fetchone()
             name = row["name"] if row else (clean(run.get("name")) or "Player")
             season = tcp_season.season_at(self.seasons, now) if self.seasons else None
@@ -1930,6 +1934,8 @@ def handle_post(store, path, headers, body):
             status, info = store.solo_submit(json.loads(body.decode("utf-8")))
         except (ValueError, UnicodeDecodeError):
             return 400, {"error": "not JSON"}
+        except RetryLater as exc:
+            return 429, {"error": str(exc)}
         except Rejected as exc:
             return 422, {"error": str(exc)}
         return (200 if status == "stored" else 409), dict(info, status=status)
