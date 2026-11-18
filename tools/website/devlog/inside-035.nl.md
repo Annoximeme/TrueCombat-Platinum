@@ -132,4 +132,4 @@ Aan al deze punten wordt gewerkt. Zoals altijd komen ze uit wanneer ze door deze
 
 Deze update bestaat omdat mensen speelden, dingen opmerkten en het ons vertelden. Sommige van de nuttigste meldingen waren één zin: "de sprong op de container op Delta lukt niet". Die ene zin leidde tot een meting, de meting tot de echte oorzaak, en de oorzaak tot een fix die veranderde hoe het hele spel beweegt.
 
-Voelt iets in 0.35.0 niet juist, druk dan op F12 in het spel, of laat het ons weten op [Discord](https://discord.gg/8kcHdg2Hch). De [roadmap](index.html#roadmap) toont wat er nog komt.
+Voelt iets in 0.35.0 niet juist, druk dan op F12 in het spel, of laat het ons weten op [Discord](https://discord.gg/7Dg4yhhvGF). De [roadmap](index.html#roadmap) toont wat er nog komt.

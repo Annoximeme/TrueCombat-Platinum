@@ -132,4 +132,4 @@ All of these are being worked on. As always, they ship when they pass the same g
 
 This update exists because people played, noticed and told us. Some of the most useful reports were a single sentence: "the jump onto the container on Delta doesn't work". That one sentence led to a measurement, the measurement to the real cause, and the cause to a fix that changed how the whole game moves.
 
-If something in 0.35.0 feels wrong, press F12 in the game, or tell us on [Discord](https://discord.gg/8kcHdg2Hch). The [roadmap](index.html#roadmap) shows what comes next.
+If something in 0.35.0 feels wrong, press F12 in the game, or tell us on [Discord](https://discord.gg/7Dg4yhhvGF). The [roadmap](index.html#roadmap) shows what comes next.

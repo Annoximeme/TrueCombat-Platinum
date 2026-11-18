@@ -64,4 +64,4 @@ After that come the larger features: 2D match replays with automatic highlights,
 
 ## Thank you
 
-Every item above came from players who took the time to play, notice and tell us. That is exactly the kind of testing we cannot do on our own, and it is why the next patch carries as many fixes as it does. If you spot something else, or if one of these issues matters more to you than the rest, tell us on [Discord](https://discord.gg/8kcHdg2Hch). The [roadmap](index.html#roadmap) shows what has landed as we go.
+Every item above came from players who took the time to play, notice and tell us. That is exactly the kind of testing we cannot do on our own, and it is why the next patch carries as many fixes as it does. If you spot something else, or if one of these issues matters more to you than the rest, tell us on [Discord](https://discord.gg/7Dg4yhhvGF). The [roadmap](index.html#roadmap) shows what has landed as we go.

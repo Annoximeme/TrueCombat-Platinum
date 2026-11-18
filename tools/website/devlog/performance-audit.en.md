@@ -82,4 +82,4 @@ An upcoming update points each one at the closest matching sound the game alread
 
 The Windows server fix and the missing sounds are in testing for an upcoming update. We will keep running these measurements before every major release, so that a slowdown shows up in our numbers before it shows up in your game.
 
-If you see stutters, long loading screens or high CPU use on your own PC, tell us on [Discord](https://discord.gg/8kcHdg2Hch). A report that names your graphics card and settings is the fastest way for us to find it.
+If you see stutters, long loading screens or high CPU use on your own PC, tell us on [Discord](https://discord.gg/7Dg4yhhvGF). A report that names your graphics card and settings is the fastest way for us to find it.

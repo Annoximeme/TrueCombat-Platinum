@@ -193,4 +193,4 @@ If something misses the bar, it waits for the next update. We would rather ship 
 
 0.40 is planned as the biggest update Platinum has had: the new interface, the lighting work, and the first wave of new models. It is currently planned for early February 2027. That date is provisional, and we will confirm it here once the final test run is behind us.
 
-The remodelling does not stop at 0.40. It is a long project, and we will keep posting before and after shots as each new model reaches the game. Tell us what you think in the comments below, or on [Discord](https://discord.gg/8kcHdg2Hch). Which model should we rebuild next?
+The remodelling does not stop at 0.40. It is a long project, and we will keep posting before and after shots as each new model reaches the game. Tell us what you think in the comments below, or on [Discord](https://discord.gg/7Dg4yhhvGF). Which model should we rebuild next?

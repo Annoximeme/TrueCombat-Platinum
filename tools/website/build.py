@@ -40,7 +40,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
 HERE = pathlib.Path(__file__).resolve().parent
 SITE = "https://truecombat.eu/"
-DISCORD = "https://discord.gg/8kcHdg2Hch"
+DISCORD = "https://discord.gg/7Dg4yhhvGF"
 GITHUB = "https://github.com/Annoximeme/TrueCombat-Platinum"
 FEED = GITHUB + "/releases.atom"
 
@@ -755,7 +755,7 @@ DL = {
            "rateThanks": "Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen.", "rateFail": "Je beoordeling kon niet worden verzonden. Probeer het later opnieuw.",
            "ratePriv": "Anoniem. Geen account, geen cookies.", "comments": "Reacties"},
 }
-DISCORD = "https://discord.gg/8kcHdg2Hch"
+DISCORD = "https://discord.gg/7Dg4yhhvGF"
 LATEST = None  # newest released version on the site, read from index.html
 
 

@@ -31,7 +31,7 @@ Before adding a single button, we wrote down what supporting the project would n
 
 You can leave a one-off contribution of any size, by card or PayPal, without creating an account. If you would rather help every month, there is a small monthly option that you can cancel whenever you like. Ko-fi handles the payment, so we never see your card details.
 
-As a thank-you, supporters get the Supporter role on our [Discord](https://discord.gg/8kcHdg2Hch). It is a thank-you and nothing more. It has no effect in the game, on the servers or in matchmaking.
+As a thank-you, supporters get the Supporter role on our [Discord](https://discord.gg/7Dg4yhhvGF). It is a thank-you and nothing more. It has no effect in the game, on the servers or in matchmaking.
 
 ## Why Ko-fi
 

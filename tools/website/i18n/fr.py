@@ -843,14 +843,14 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
  '<div><h3>I want to write about it</h3><p>Grab the <a href="press.html">press kit</a> with logos, screenshots and a fact sheet.</p></div>': '<div><h3>Je veux écrire à ce sujet</h3><p>Récupérez le '
                                                                                                                                              '<a href="press.html">kit presse</a> avec les logos, des '
                                                                                                                                              "captures d'écran et une fiche d'information.</p></div>",
- '<div><h3>Where do I find players?</h3><p>Join the <a href="https://discord.gg/8kcHdg2Hch">TrueCombat: Platinum Discord</a>. That\'s where matches get organised, servers get shared and new versions are announced first.</p></div>': '<div><h3>Où '
+ '<div><h3>Where do I find players?</h3><p>Join the <a href="https://discord.gg/7Dg4yhhvGF">TrueCombat: Platinum Discord</a>. That\'s where matches get organised, servers get shared and new versions are announced first.</p></div>': '<div><h3>Où '
                                                                                                                                                                                                                                         'trouver '
                                                                                                                                                                                                                                         'des '
                                                                                                                                                                                                                                         'joueurs '
                                                                                                                                                                                                                                         '?</h3><p>Rejoignez '
                                                                                                                                                                                                                                         'le '
                                                                                                                                                                                                                                         '<a '
-                                                                                                                                                                                                                                        'href="https://discord.gg/8kcHdg2Hch">Discord '
+                                                                                                                                                                                                                                        'href="https://discord.gg/7Dg4yhhvGF">Discord '
                                                                                                                                                                                                                                         'de '
                                                                                                                                                                                                                                         'TrueCombat: '
                                                                                                                                                                                                                                         'Platinum</a>. '
@@ -1476,7 +1476,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
                                                                                                                                                       'couvert</h3><p>Comptez vos tirs et rechargez '
                                                                                                                                                       'quand vous êtes en sécurité, pas quand '
                                                                                                                                                       "quelqu'un débouche à l'angle.</p></div>",
- '<div class="tip"><h3>Talk to your team</h3><p>Use team chat on <kbd>Y</kbd> to call out where you saw someone. Find a squad on the <a href="https://discord.gg/8kcHdg2Hch">Discord</a>.</p></div>': '<div '
+ '<div class="tip"><h3>Talk to your team</h3><p>Use team chat on <kbd>Y</kbd> to call out where you saw someone. Find a squad on the <a href="https://discord.gg/7Dg4yhhvGF">Discord</a>.</p></div>': '<div '
                                                                                                                                                                                                       'class="tip"><h3>Parlez '
                                                                                                                                                                                                       'à '
                                                                                                                                                                                                       'votre '
@@ -1499,7 +1499,7 @@ PAIRS = {'join.html#truecombat.eu:27960">Join now</a>': '../join.html#truecombat
                                                                                                                                                                                                       'sur '
                                                                                                                                                                                                       'le '
                                                                                                                                                                                                       '<a '
-                                                                                                                                                                                                      'href="https://discord.gg/8kcHdg2Hch">Discord</a>.</p></div>',
+                                                                                                                                                                                                      'href="https://discord.gg/7Dg4yhhvGF">Discord</a>.</p></div>',
  '<h2>Hosting a match</h2>': '<h2>Héberger un match</h2>',
  '<li>In the launcher, press <b>Host a server</b>. Choose the mode, the server name, the player limit, the starting map and the rotation.</li>': '<li>Dans le launcher, appuyez sur <b>Host a '
                                                                                                                                                  'server</b>. Choisissez le mode, le nom du serveur, '
@@ -2484,7 +2484,7 @@ TABLES = {'LABELS': {'banners': 'Bannières serveur', 'maps': 'Maps',
                 'h3a': "Tous les joueurs d'un match doivent avoir la même version. Le launcher peut rester sur une version antérieure aussi longtemps que votre communauté en a besoin, et revenir à "
                        'la dernière quand vous voulez.',
                 'h4t': "J'ai besoin d'un coup de main",
-                'h4a': 'Posez votre question sur le <a href="https://discord.gg/8kcHdg2Hch">Discord de TrueCombat: Platinum</a>. L\'équipe et la communauté y répondent chaque jour.',
+                'h4a': 'Posez votre question sur le <a href="https://discord.gg/7Dg4yhhvGF">Discord de TrueCombat: Platinum</a>. L\'équipe et la communauté y répondent chaque jour.',
                 'help_all': 'Toutes les questions et réponses'},
  'FAQ': {'title': 'FAQ : installation, jeu en ligne et graphismes · TrueCombat: Platinum',
          'desc': "Les réponses sur TrueCombat: Platinum : ce que c'est, comment l'installer, la configuration requise, le jeu en ligne, les serveurs, les classements, les réglages graphiques et son "
@@ -2495,7 +2495,7 @@ TABLES = {'LABELS': {'banners': 'Bannières serveur', 'maps': 'Maps',
          'lede': 'Tout ce que les joueurs demandent avant leur premier match, et quelques questions qui viennent après.',
          'toc': 'Sur cette page',
          'more_h': 'Toujours bloqué ?',
-         'more': 'Posez votre question sur le <a href="https://discord.gg/8kcHdg2Hch">Discord de TrueCombat: Platinum</a>. L\'équipe lit chaque question.',
+         'more': 'Posez votre question sur le <a href="https://discord.gg/7Dg4yhhvGF">Discord de TrueCombat: Platinum</a>. L\'équipe lit chaque question.',
          'groups': [('start',
                      'Pour commencer',
                      [('what',
@@ -2540,7 +2540,7 @@ TABLES = {'LABELS': {'banners': 'Bannières serveur', 'maps': 'Maps',
                       ('offline', 'Peut-on jouer hors ligne ?', 'Oui. <b>Practice offline with bots</b>, dans le launcher, lance un match en un clic, sans aucune connexion.'),
                       ('players',
                        'Où trouver des joueurs ?',
-                       'Rejoignez le <a href="https://discord.gg/8kcHdg2Hch">Discord de TrueCombat: Platinum</a>. C\'est là que les matchs s\'organisent, que les serveurs se partagent et que les '
+                       'Rejoignez le <a href="https://discord.gg/7Dg4yhhvGF">Discord de TrueCombat: Platinum</a>. C\'est là que les matchs s\'organisent, que les serveurs se partagent et que les '
                        'nouvelles versions sont annoncées en premier.')]),
                     ('graphics',
                      'Graphismes et performances',
@@ -2627,7 +2627,7 @@ TABLES = {'LABELS': {'banners': 'Bannières serveur', 'maps': 'Maps',
              'r1': 'Si vous avez joué à TC:E, vous savez déjà jouer à Platinum. Les touches, le rythme et les maps sont là où vous les avez laissés.',
              'r_a': '<a href="download.html">Téléchargez l\'installeur</a> et laissez le launcher mettre le jeu en place.',
              'r_b': "Rejoignez <b>Official #2</b> depuis l'onglet Servers pour vous dérouiller, puis passez sur <b>Official #1</b> quand vous voulez que vos matchs comptent.",
-             'r_c': 'Venez dire bonjour sur le <a href="https://discord.gg/8kcHdg2Hch">Discord</a>. Vétérans et nouveaux joueurs y organisent leurs matchs.',
+             'r_c': 'Venez dire bonjour sur le <a href="https://discord.gg/7Dg4yhhvGF">Discord</a>. Vétérans et nouveaux joueurs y organisent leurs matchs.',
              'r_note': '<b>Vous découvrez TC:E ?</b> Le <a href="guide.html">guide du débutant</a> présente les commandes, les modes de jeu et les réflexes qui vous gardent en vie.'}}
 
 JS = {'wkKillsV': '{n} éliminations', 'wkWins': 'Le plus de victoires', 'wkWinsV': '{n} victoires', 'wkEye': 'Temps forts de la semaine', 'wkTitle7': 'Cette semaine sur les serveurs', 'wkTitle30': 'Ce mois-ci sur les serveurs', 'wkSub7': '7 derniers jours. Matchs vérifiés contre de vrais joueurs.', 'wkSub30': '30 derniers jours. Matchs vérifiés contre de vrais joueurs.', 'wkMatches': 'Matchs', 'wkPlayers': 'Joueurs', 'wkNew': 'Nouveaux joueurs', 'wkKills': 'Éliminations', 'wkHs': 'Headshots', 'wkHours': 'Heures de jeu', 'wkPotw': 'Joueur de la semaine', 'wkPotm': 'Joueur du mois', 'wkXp': '{n} XP en {m} matchs', 'wkProfile': 'Voir le profil', 'wkBest': 'Meilleure performance', 'wkBestV': '{k} éliminations sur {map}', 'wkReport': 'Rapport de match', 'wkMostKills': 'Le plus d’éliminations', 'wkClimb': 'Plus forte progression', 'wkClimbV': '+{n} de classement', 'wkKd': 'Meilleur K/D', 'wkActive': 'Le plus actif', 'wkWeapon': 'Arme de la semaine', 'wkWeaponM': 'Arme du mois', 'wkWeaponV': '{k} éliminations · {h} headshots', 'wkMap': 'Carte la plus jouée', 'wkMatchesN': '{n} matchs', 'wkBoards': 'Tous les classements', 'eac': 'Anti-triche', 'eacTip': 'Protégé par Easy Anti-Cheat', 'eacReqTip': 'Protégé par Easy Anti-Cheat. Requis pour rejoindre.', 'joinBtn': 'Rejoindre', 'verified': 'Vérifié', 'verifiedTip': "Vérifié par l'équipe TrueCombat: Platinum",
@@ -2802,7 +2802,7 @@ TABLES['PRIVACY_T'] = {
     'g_note': '<b>Vérifiez par vous-même.</b> Paramètres &gt; Confidentialité &gt; Ce qui est partagé, dans le launcher, affiche le rapport exact que votre PC enverrait ensuite, avant qu’il ne quitte votre ordinateur.',
     'c_h': 'Vos choix',
     'c1': 'Pour ne pas être compté sur ce site, activez Global Privacy Control ou Do Not Track dans votre navigateur. Bloquer <code>api.truecombat.eu/insights</code> fonctionne aussi, et le site continue de fonctionner exactement pareil.',
-    'c2': 'Une question, ou une demande de suppression ? Écrivez-nous sur <a href="https://discord.gg/8kcHdg2Hch">Discord</a> ou ouvrez une issue sur <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>. Tout le code de comptage est dans le dépôt public, vous n’avez donc jamais à nous croire sur parole.',
+    'c2': 'Une question, ou une demande de suppression ? Écrivez-nous sur <a href="https://discord.gg/7Dg4yhhvGF">Discord</a> ou ouvrez une issue sur <a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a>. Tout le code de comptage est dans le dépôt public, vous n’avez donc jamais à nous croire sur parole.',
     'c3': 'Nous comptons les visites du site au titre de notre intérêt légitime à savoir comment il est utilisé (RGPD, article 6, paragraphe 1, point f), avec les garanties décrites ci-dessus. Les données d’utilisation du jeu ne sont collectées qu’avec votre consentement, que vous pouvez retirer à tout moment dans le launcher. TrueCombat: Platinum est développé par Team Terminus, sous la direction de RaziC*. Si vous estimez que nous traitons mal vos données, vous pouvez porter plainte auprès d’une autorité de protection des données ; en Belgique, où nous sommes établis, il s’agit de l’<a href="https://www.autoriteprotectiondonnees.be">Autorité de protection des données</a>.',
     'n6': 'Le launcher',
     'l_h': 'Données de plantage et de matériel du launcher',

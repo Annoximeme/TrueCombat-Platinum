@@ -40,4 +40,4 @@ Easy Anti-Cheat, dat uit 0.34.0 werd gehouden, wacht nog op de laatste controle:
 
 ## Jouw rol hierin
 
-De volgorde van dit alles ligt niet vast. Is een van deze dingen belangrijker voor jou dan de rest, of mis je iets, laat het weten op [Discord](https://discord.gg/8kcHdg2Hch). De [roadmap](index.html#roadmap) toont wat er gaandeweg landt, en elk onderdeel krijgt een eigen devlogartikel als het zover is.
+De volgorde van dit alles ligt niet vast. Is een van deze dingen belangrijker voor jou dan de rest, of mis je iets, laat het weten op [Discord](https://discord.gg/7Dg4yhhvGF). De [roadmap](index.html#roadmap) toont wat er gaandeweg landt, en elk onderdeel krijgt een eigen devlogartikel als het zover is.

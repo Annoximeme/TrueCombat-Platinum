@@ -40,4 +40,4 @@ Easy Anti-Cheat, held back from 0.34.0, is still waiting for its final check: a 
 
 ## Your part in this
 
-The order of all of this is not fixed. If one of these matters more to you than the rest, or if something you want is missing, say so on [Discord](https://discord.gg/8kcHdg2Hch). The [roadmap](index.html#roadmap) shows what has landed as we go, and every piece gets its own devlog post when it does.
+The order of all of this is not fixed. If one of these matters more to you than the rest, or if something you want is missing, say so on [Discord](https://discord.gg/7Dg4yhhvGF). The [roadmap](index.html#roadmap) shows what has landed as we go, and every piece gets its own devlog post when it does.
