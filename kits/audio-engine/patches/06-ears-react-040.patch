@@ -1,0 +1,65 @@
+diff -ru a/game_src/native/tcp_audio.h b/game_src/native/tcp_audio.h
+--- a/game_src/native/tcp_audio.h	2026-11-19 01:42:11.195757109 +0000
++++ b/game_src/native/tcp_audio.h	2026-11-19 01:43:45.960650806 +0000
+@@ -173,6 +173,28 @@
+     return w;
+ }
+ /* One shot. local: the listener's own weapon (non-positional, as before). */
++/* 0.40.0 ears react (Remastered, cl_remaster): an unsuppressed shot fired right beside the listener (under 160 u)
++ * dulls their hearing for a moment and leaves a faint ring: strength by calibre (pistol .35, SMG .4, rifle .5,
++ * sniper/shotgun .6) and closeness, recovery over 1 to 3 s. It feeds the same engine muffle as a blast
++ * (s_alConcussion, drawStun) but at most .45 deep (a blast reaches 1), so footsteps are never hidden longer than a
++ * real ear would hide them. Own shots do not count (they would never let go in a firefight). cg_concussionMuffle 0
++ * turns it off with the blast muffle. */
++static float taEarsPeak;static int taEarsStart,taEarsLen,taEarsClock; /* clock = snap.serverTime, set each frame by drawStun */
++static int taRemastered(void){char v[8]="";SystemCall(CG_CVAR_VARIABLESTRINGBUFFER,"cl_remaster",v,sizeof(v));return !v[0]||atoi(v)!=0;}
++static void taEarsShot(int weapon,float dist,int suppressed,int now){
++    if(suppressed||dist>=160.f||!taRemastered())return;
++    const tcp_gear_weapon *g=TCP_GearWeapon(weapon);if(!g)return;
++    float s=TCP_WeaponShotgun(weapon)||g->category==5?.6f:g->category==4?.5f:g->category==3?.4f:.35f;
++    s*=1.f-dist/160.f*.6f; /* at 160 u: 40 % */
++    const float cur=taEarsPeak*(taEarsLen>0&&now-taEarsStart<taEarsLen?1.f-(float)(now-taEarsStart)/(float)taEarsLen:0.f);
++    if(s<=cur)return;
++    taEarsPeak=s;taEarsStart=now;taEarsLen=1000+(int)(2000.f*(s/.6f)); /* 1 .. 3 s */
++}
++/* 0..0.45 muffle now (ease-out recovery). */
++static float taEarsNow(int now){
++    if(taEarsLen<=0||now-taEarsStart>=taEarsLen||now<taEarsStart)return 0.f;
++    const float t=1.f-(float)(now-taEarsStart)/(float)taEarsLen;return .45f/.6f*taEarsPeak*t*t;
++}
+ static void taFire(int weapon,int shooter,const vec3_t muzzle,const vec3_t listener,int local,int seq,sfxHandle_t fallback){
+     const taWeapon_t *w=taGetWeapon(weapon);
+     sfxHandle_t fire=w&&w->fireCount?w->fire[(unsigned)(seq*2654435761u>>16)%(unsigned)w->fireCount]:fallback;
+@@ -183,6 +205,7 @@
+         if(taDebug.integer){char m[96];snprintf(m,sizeof(m),"TCP_NATIVE_OWN_FIRE weapon=%d sfx=%d fallback=%d\n",weapon,(int)fire,fire==fallback);SystemCall(CG_PRINT,m);} /* 0.36.0: which report an own shot played (cg_audioDebug) */
+         return;}
+     if(fire){vec3_t at;VectorCopy(muzzle,at);SystemCall(CG_S_STARTSOUNDEX,at,shooter,CHAN_WEAPON,fire,SND_PITCHVAR,127);}
++    taEarsShot(weapon,taDist(muzzle,listener),w&&w->suppressed,taEarsClock); /* 0.40.0 ears react */
+     if(!w||!w->echoCount)return;
+     vec3_t dir;VectorSubtract(muzzle,listener,dir);const float dist=taDist(muzzle,listener);if(dist>0)VectorScale(dir,1.f/dist,dir);
+     if(dist<=512||dist>=(taOpenAL?6000:4096))return;
+diff -ru a/game_src/native/tcp_cgame.c b/game_src/native/tcp_cgame.c
+--- a/game_src/native/tcp_cgame.c	2026-11-19 01:42:11.195797841 +0000
++++ b/game_src/native/tcp_cgame.c	2026-11-19 01:43:45.962199467 +0000
+@@ -1442,16 +1442,19 @@
+     char m[128];snprintf(m,sizeof(m),"TCP_NATIVE_ROUNDWIPE reason=%s marks_cleared=%d\n",reason,imMarkCount);SystemCall(CG_PRINT,m);
+     imMarkCount=0;
+ }
+-static void drawStun(int now){
++static void drawStun(int now){taEarsClock=now; /* 0.40.0 ears react clock */
+     float deaf=stunAmount(deafEnd,now),blind=flashOn?stunAmount(blindEnd,now):0;
+     if(blind<=0)flashOn=0;
+     if(blind>0){float wcol[4]={1,1,1,blind};SystemCall(CG_R_SETCOLOR,wcol);pic(0,0,(float)gl.vidWidth,(float)gl.vidHeight,0,0,1,1,white);SystemCall(CG_R_SETCOLOR,NULL);}
+     SystemCall(CG_CVAR_UPDATE,&cgConcussionMuffle);SystemCall(CG_CVAR_UPDATE,&cgTinnitus);
+     {const sfxHandle_t ring=cgTinnitus.integer&&sfxTinnitus?sfxTinnitus:deafBeep;
+-     if(deaf>0&&ring){static const vec3_t z={0,0,0};SystemCall(CG_S_ADDLOOPINGSOUND,snap.ps.origin,z,1250,ring,(int)(deaf*255.f),0);}}
++     if(deaf>0&&ring){static const vec3_t z={0,0,0};SystemCall(CG_S_ADDLOOPINGSOUND,snap.ps.origin,z,1250,ring,(int)(deaf*255.f),0);}
++     /* 0.40.0 ears react: the soft ring only (never the harsh beep), faint: at most 18 % of a blast's ring */
++     else if(sfxTinnitus&&cgTinnitus.integer){const float e=taEarsNow(now);if(e>.05f){static const vec3_t z={0,0,0};SystemCall(CG_S_ADDLOOPINGSOUND,snap.ps.origin,z,1250,sfxTinnitus,(int)(e*.4f*255.f),0);}}}
+     {float c=cgConcussionMuffle.integer?deaf:0.f; /* engine low-pass, same strength and timing as the ring */
+      {const float dm=cgConcussionMuffle.integer?ffDeathMuffle(ffNow):0.f;if(dm>c)c=dm;} /* 0.38.0 death camera */
+      {const float lm=cgConcussionMuffle.integer?im2LowMuffle():0.f;if(lm>c)c=lm;} /* 0.39.0 low health */
++     {const float em=cgConcussionMuffle.integer?taEarsNow(now):0.f;if(em>c)c=em;} /* 0.40.0 ears react: a shot right beside you */
+      if(fabsf(c-concSent)>=.01f||(c==0&&concSent!=0)){char v[16];snprintf(v,sizeof(v),"%.2f",c);SystemCall(CG_CVAR_SET,"s_alConcussion",v);concSent=c;}}
+ }
+ /* polish-01: "<name> has joined the <team>!". The join command can reach the client before the player's name does

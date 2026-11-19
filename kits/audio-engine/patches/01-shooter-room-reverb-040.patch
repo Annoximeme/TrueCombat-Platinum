@@ -1,0 +1,588 @@
+diff -ru a/reference/etlegacy/src/client/snd_openal.c b/reference/etlegacy/src/client/snd_openal.c
+--- a/reference/etlegacy/src/client/snd_openal.c	2026-11-19 01:23:24.861044996 +0000
++++ b/reference/etlegacy/src/client/snd_openal.c	2026-11-19 01:23:24.862779357 +0000
+@@ -59,6 +59,7 @@
+ static cvar_t *s_alOcclusion;
+ static cvar_t *s_alReverb;
+ static cvar_t *s_alReverbGain;
++static cvar_t *s_alSourceReverb;    // 0.40.0: loud distant sounds ring in the shooter's own room (TCP_Zone*)
+ static cvar_t *s_alHRTF;
+ static cvar_t *s_alFarDistance;
+ static cvar_t *s_alAirAbsorption;
+@@ -3407,9 +3408,15 @@
+ 	int lastUpdate;
+ 	float gain, gainHF; // last values written to the filter
+ 	qboolean attached;
++	ALuint sendFilter;  // 0.40.0: filter on the shooter's-room send (muffled by the same walls as the dry path)
++	int zone;           // 0.40.0: index into tcpZones + 1, 0 = none
++	float zoneGain, zoneGainHF;
+ } tcpSrcSpatial_t;
+ 
+ static tcpSrcSpatial_t tcpSpatial[MAX_SRC];
++static void TCP_ZoneStart(int i, const vec3_t pos);
++static void TCP_ZoneApply(int i, float air);
++static qboolean TCP_Remastered(void);
+ 
+ typedef struct
+ {
+@@ -3583,6 +3590,7 @@
+ 	{
+ 		gainHF = 0.04f;
+ 	}
++	TCP_ZoneApply(i, air);
+ 	if (sp->attached && fabsf(gain - sp->gain) < 0.01f && fabsf(gainHF - sp->gainHF) < 0.01f)
+ 	{
+ 		return;
+@@ -3621,6 +3629,11 @@
+ 	sp->attached   = qfalse;
+ 	if (!TCP_SpatialOrigin(s, pos))
+ 	{
++		if (sp->zone)
++		{
++			qalSource3i(s->alSource, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 2, AL_FILTER_NULL);
++			sp->zone = 0;
++		}
+ 		if (sp->filter)
+ 		{
+ 			if (TCP_Concussion(s) > 0.0f)
+@@ -3638,6 +3651,7 @@
+ 	{
+ 		sp->occ = sp->occTarget = TCP_SpatialOcclusion(pos) * ((s->flags & SND_BLAST) ? 0.33f : 1.0f);
+ 	}
++	TCP_ZoneStart(i, pos);
+ 	TCP_SpatialApply(i, Distance(pos, lastListenerOrigin));
+ 	if (s_alSpatialDebug->integer > 1 && s->sfx >= 0 && s->sfx < numSfx)
+ 	{
+@@ -3694,9 +3708,51 @@
+ }
+ 
+ /**
+- * @brief Room probe around the listener; morphs the shared reverb.
++ * @brief 0.40.0: the reverb a room of this openness (share of sky above, 0..1) and mean wall distance
++ * (units) produces. Shared by the listener's room and the shooter's rooms.
+  */
+-static void TCP_SpatialReverb(int now)
++static void TCP_RoomParams(float roomOpen, float roomSize, tcpReverb_t *t)
++{
++	const float enclosed = 1.0f - roomOpen, meters = roomSize * 0.0254f * 1.6f; // mean wall distance -> room dimension
++
++	t->decay = 0.35f + meters * 0.11f;
++	t->decay = t->decay < 0.4f ? 0.4f : (t->decay > 3.2f ? 3.2f : t->decay);
++	t->decay = t->decay * enclosed + 0.9f * roomOpen;           // open streets: short slap and tail
++	t->reflections      = 0.06f + 0.5f * enclosed;
++	t->reflectionsDelay = meters * 2.0f / 343.0f;
++	t->reflectionsDelay = t->reflectionsDelay < 0.003f ? 0.003f : (t->reflectionsDelay > 0.3f ? 0.3f : t->reflectionsDelay);
++	t->late      = 0.3f + 1.1f * enclosed;
++	t->lateDelay = meters / 343.0f;
++	t->lateDelay = t->lateDelay < 0.005f ? 0.005f : (t->lateDelay > 0.1f ? 0.1f : t->lateDelay);
++	t->diffusion = 0.55f + 0.45f * enclosed;
++	t->gainHF    = 0.89f - 0.25f * roomOpen;
++	t->hfRatio   = 0.5f + 0.33f * enclosed;
++}
++
++static void TCP_ReverbWrite(ALuint effect, ALuint slot, const tcpReverb_t *r, float slotGain)
++{
++	qalEffectf(effect, AL_REVERB_DENSITY, 1.0f);
++	qalEffectf(effect, AL_REVERB_DIFFUSION, r->diffusion);
++	qalEffectf(effect, AL_REVERB_GAIN, 0.32f);
++	qalEffectf(effect, AL_REVERB_GAINHF, r->gainHF);
++	qalEffectf(effect, AL_REVERB_DECAY_TIME, r->decay);
++	qalEffectf(effect, AL_REVERB_DECAY_HFRATIO, r->hfRatio);
++	qalEffectf(effect, AL_REVERB_REFLECTIONS_GAIN, r->reflections);
++	qalEffectf(effect, AL_REVERB_REFLECTIONS_DELAY, r->reflectionsDelay);
++	qalEffectf(effect, AL_REVERB_LATE_REVERB_GAIN, r->late);
++	qalEffectf(effect, AL_REVERB_LATE_REVERB_DELAY, r->lateDelay);
++	qalEffectf(effect, AL_REVERB_AIR_ABSORPTION_GAINHF, 0.994f);
++	qalEffecti(effect, AL_REVERB_DECAY_HFLIMIT, AL_TRUE);
++	// effect changes take hold when the effect is (re)attached to the slot
++	qalAuxiliaryEffectSloti(slot, AL_EFFECTSLOT_EFFECT, (ALint)effect);
++	tcp_alAuxiliaryEffectSlotf(slot, AL_EFFECTSLOT_GAIN, slotGain);
++}
++
++/**
++ * @brief 14 rays from a point: share of the five upward rays that reach the sky, and the mean distance to
++ * walls and ceiling. qfalse when the point is inside a wall.
++ */
++static qboolean TCP_RoomProbe(const vec3_t from, float *roomOpen, float *roomSize)
+ {
+ 	static const float dirs[14][3] =
+ 	{
+@@ -3704,36 +3760,23 @@
+ 		{ 0.577f, 0.577f, 0.577f }, { -0.577f, 0.577f, 0.577f }, { 0.577f, -0.577f, 0.577f }, { -0.577f, -0.577f, 0.577f },
+ 		{ 0.577f, 0.577f, -0.577f }, { -0.577f, 0.577f, -0.577f }, { 0.577f, -0.577f, -0.577f }, { -0.577f, -0.577f, -0.577f }
+ 	};
+-	tcpReverb_t t;
+-	float       enclosed, meters, sum = 0.0f, a;
+-	int         k, open = 0, closed = 0, upward = 0;
+-
+-	if (!tcpReverbSlot || now < tcpReverbNext)
+-	{
+-		return;
+-	}
+-	tcpReverbNext = now + 200;
++	float sum = 0.0f;
++	int   k, open = 0, closed = 0, upward = 0, solid = 0;
+ 
+-	if (!s_alReverb->integer || !TCP_SpatialWorld())
+-	{
+-		tcp_alAuxiliaryEffectSlotf(tcpReverbSlot, AL_EFFECTSLOT_GAIN, 0.0f);
+-		tcpReverbSet = qfalse;
+-		return;
+-	}
+ 	for (k = 0; k < 14; k++)
+ 	{
+ 		trace_t tr;
+ 		vec3_t  end;
+ 
+-		VectorMA(lastListenerOrigin, 4096.0f, dirs[k], end);
+-		TCP_SpatialTrace(&tr, lastListenerOrigin, end);
++		VectorMA(from, 4096.0f, dirs[k], end);
++		TCP_SpatialTrace(&tr, from, end);
+ 		if (tr.startsolid)
+ 		{
++			solid++;
+ 			continue;
+ 		}
+ 		if (dirs[k][2] > 0.5f)
+ 		{
+-			// openness = share of the five upward rays that reach the sky
+ 			upward++;
+ 			if (tr.fraction >= 1.0f || (tr.surfaceFlags & SURF_SKY))
+ 			{
+@@ -3742,28 +3785,265 @@
+ 		}
+ 		if (dirs[k][2] > -0.5f && !(tr.surfaceFlags & SURF_SKY) && tr.fraction < 1.0f)
+ 		{
+-			// room size = mean distance to walls and ceiling (not the floor below)
+ 			closed++;
+ 			sum += tr.fraction * 4096.0f;
+ 		}
+ 	}
+-	tcpRoomOpen = upward ? (float)open / (float)upward : 1.0f;
+-	tcpRoomSize = closed ? sum / closed : 4096.0f;
+-	enclosed    = 1.0f - tcpRoomOpen;
+-	meters      = tcpRoomSize * 0.0254f * 1.6f; // mean wall distance -> room dimension, ET units ~1 inch
+-
+-	t.decay = 0.35f + meters * 0.11f;
+-	t.decay = t.decay < 0.4f ? 0.4f : (t.decay > 3.2f ? 3.2f : t.decay);
+-	t.decay = t.decay * enclosed + 0.9f * tcpRoomOpen;           // open streets: short slap and tail
+-	t.reflections      = 0.06f + 0.5f * enclosed;
+-	t.reflectionsDelay = meters * 2.0f / 343.0f;
+-	t.reflectionsDelay = t.reflectionsDelay < 0.003f ? 0.003f : (t.reflectionsDelay > 0.3f ? 0.3f : t.reflectionsDelay);
+-	t.late      = 0.3f + 1.1f * enclosed;
+-	t.lateDelay = meters / 343.0f;
+-	t.lateDelay = t.lateDelay < 0.005f ? 0.005f : (t.lateDelay > 0.1f ? 0.1f : t.lateDelay);
+-	t.diffusion = 0.55f + 0.45f * enclosed;
+-	t.gainHF    = 0.89f - 0.25f * tcpRoomOpen;
+-	t.hfRatio   = 0.5f + 0.33f * enclosed;
++	if (solid > 7)
++	{
++		return qfalse;
++	}
++	*roomOpen = upward ? (float)open / (float)upward : 1.0f;
++	*roomSize = closed ? sum / closed : 4096.0f;
++	return qtrue;
++}
++
++/*
++ * 0.40.0 shooter's room. A gunshot or blast more than TCP_ZONE_MIN units away rings in the room it was
++ * fired in, not only in the listener's: a rifle fired inside the warehouse booms out of it to a player in
++ * the street, a shot in the street stays dry to a player in the corridor. Each such source gets a third
++ * send into one of TCP_ZONES extra reverb slots tuned to its own room (14-ray probe at the source, cached
++ * per 128-unit cell). Its send into the listener's room drops to 40 %, and the shooter's-room send is
++ * muffled by the same walls as the dry sound, so a hall heard through a doorway blooms out muffled.
++ * A slot is only retuned once its last sound has rung out; until then the closest tuned slot is shared.
++ */
++#define TCP_ZONES      3
++#define TCP_ZONE_MIN   384.0f
++#define TCP_ZONE_CELLS 256
++typedef struct
++{
++	ALuint effect, slot;
++	tcpReverb_t r;
++	float roomOpen, roomSize;
++	int lastUse;        // Sys_Milliseconds of the last sound sent to it
++	qboolean tuned;
++} tcpZone_t;
++typedef struct
++{
++	int key, used;
++	float roomOpen, roomSize;
++	qboolean valid;
++} tcpZoneCell_t;
++static tcpZone_t     tcpZones[TCP_ZONES];
++static tcpZoneCell_t tcpZoneCells[TCP_ZONE_CELLS];
++static ALuint        tcpListenerSendFilter;      // the listener's-room send of a zoned source: 40 %
++static int           tcpZoneCount, tcpZoneAssigns, tcpZoneRetunes, tcpZoneShares, tcpZoneProbes, tcpZoneSkips;
++
++/**
++ * @brief 0.40.0: the new engine behaviour sits behind the Remastered option ("Visuals: Remastered / Classic",
++ * cl_remaster, registered by the remaster switch). Classic keeps the 0.39 engine sound. Unset = Remastered.
++ */
++static qboolean TCP_Remastered(void)
++{
++	const char *v = Cvar_VariableString("cl_remaster");
++
++	return !v[0] || atoi(v) != 0;
++}
++
++static float TCP_RoomDistance(float o1, float s1, float o2, float s2)
++{
++	const float ls = (float)fabs(log((s1 + 32.0f) / (s2 + 32.0f)));
++
++	return (float)fabs(o1 - o2) * 2.0f + ls;  // 0.5 openness ~ a 2.7x size difference
++}
++
++/**
++ * @brief The room at a point, from the cell cache or a fresh probe.
++ */
++static qboolean TCP_ZoneRoom(const vec3_t at, float *roomOpen, float *roomSize, int now)
++{
++	const int      cx = (int)floor(at[0] / 128.0f), cy = (int)floor(at[1] / 128.0f), cz = (int)floor(at[2] / 128.0f);
++	const int      key = (cx * 73856093) ^ (cy * 19349663) ^ (cz * 83492791);
++	tcpZoneCell_t *c   = &tcpZoneCells[(unsigned)key % TCP_ZONE_CELLS];
++	vec3_t         probe;
++
++	if (c->valid && c->key == key)
++	{
++		c->used   = now;
++		*roomOpen = c->roomOpen;
++		*roomSize = c->roomSize;
++		return qtrue;
++	}
++	VectorCopy(at, probe);
++	probe[2] += 8.0f;       // off the floor a muzzle or impact can sit on
++	tcpZoneProbes++;
++	if (!TCP_RoomProbe(probe, roomOpen, roomSize))
++	{
++		return qfalse;
++	}
++	c->key      = key;
++	c->used     = now;
++	c->roomOpen = *roomOpen;
++	c->roomSize = *roomSize;
++	c->valid    = qtrue;
++	return qtrue;
++}
++
++/**
++ * @brief Pick the shooter's-room slot for a source in this room: one already tuned close enough, else a
++ * free one retuned, else the closest. -1 when the listener's room is close enough already.
++ */
++static int TCP_ZonePick(float roomOpen, float roomSize, int now)
++{
++	tcpReverb_t r;
++	int         i, best = -1, freeSlot = -1;
++	float       bestD = 1e9f;
++
++	if (TCP_RoomDistance(roomOpen, roomSize, tcpRoomOpen, tcpRoomSize) < 0.35f)
++	{
++		return -1;      // same kind of space as the listener's: their room already sounds right
++	}
++	for (i = 0; i < tcpZoneCount; i++)
++	{
++		tcpZone_t   *z = &tcpZones[i];
++		const float d  = z->tuned ? TCP_RoomDistance(roomOpen, roomSize, z->roomOpen, z->roomSize) : 1e9f;
++
++		if (d < bestD)
++		{
++			bestD = d;
++			best  = i;
++		}
++		// rung out: a tail lasts its decay time, plus a margin for the last shots' own length
++		if (!z->tuned || now - z->lastUse > (int)(z->r.decay * 1000.0f) + 600)
++		{
++			if (freeSlot < 0 || tcpZones[freeSlot].lastUse > z->lastUse)
++			{
++				freeSlot = i;
++			}
++		}
++	}
++	if (best >= 0 && bestD < 0.35f)
++	{
++		return best;
++	}
++	if (freeSlot >= 0)
++	{
++		tcpZone_t *z = &tcpZones[freeSlot];
++
++		TCP_RoomParams(roomOpen, roomSize, &r);
++		z->r        = r;
++		z->roomOpen = roomOpen;
++		z->roomSize = roomSize;
++		z->tuned    = qtrue;
++		TCP_ReverbWrite(z->effect, z->slot, &z->r, s_alReverbGain->value);
++		tcpZoneRetunes++;
++		return freeSlot;
++	}
++	tcpZoneShares++;
++	return best;
++}
++
++/**
++ * @brief Source start: route loud distant world sounds into their own room. Clears the routing otherwise.
++ */
++static void TCP_ZoneStart(int i, const vec3_t pos)
++{
++	tcpSrcSpatial_t *sp  = &tcpSpatial[i];
++	src_t           *s   = &srcList[i];
++	const int        cls = (s->sfx >= 0 && s->sfx < numSfx) ? knownSfx[s->sfx].tcpClass : TCPC_OTHER;
++	const int        now = Sys_Milliseconds();
++	float            roomOpen, roomSize;
++	int              z;
++
++	if (!tcpZoneCount)
++	{
++		return;
++	}
++	if (sp->zone)
++	{
++		// a recycled source: clear the old routing
++		qalSource3i(s->alSource, AL_AUXILIARY_SEND_FILTER, AL_EFFECTSLOT_NULL, 2, AL_FILTER_NULL);
++		qalSource3i(s->alSource, AL_AUXILIARY_SEND_FILTER, (ALint)tcpReverbSlot, 1, AL_FILTER_NULL);
++		sp->zone = 0;
++	}
++	if (!s_alSourceReverb->integer || !s_alReverb->integer || !TCP_Remastered() || !tcpReverbSet || !TCP_SpatialWorld() || s->isLooping
++	    || (cls != TCPC_GUNFIRE && cls != TCPC_BLAST) || Distance(pos, lastListenerOrigin) < TCP_ZONE_MIN)
++	{
++		return;
++	}
++	if (!TCP_ZoneRoom(pos, &roomOpen, &roomSize, now))
++	{
++		tcpZoneSkips++;
++		return;
++	}
++	z = TCP_ZonePick(roomOpen, roomSize, now);
++	if (z < 0)
++	{
++		tcpZoneSkips++;
++		return;
++	}
++	tcpZones[z].lastUse = now;
++	sp->zone            = z + 1;
++	sp->zoneGain        = sp->zoneGainHF = -1.0f;    // written by TCP_SpatialApply
++	qalSource3i(s->alSource, AL_AUXILIARY_SEND_FILTER, (ALint)tcpReverbSlot, 1, (ALint)tcpListenerSendFilter);
++	qalSource3i(s->alSource, AL_AUXILIARY_SEND_FILTER, (ALint)tcpZones[z].slot, 2,
++	            sp->sendFilter ? (ALint)sp->sendFilter : AL_FILTER_NULL);
++	tcpZoneAssigns++;
++}
++
++/**
++ * @brief The shooter's-room send follows the dry path's wall muffling (a bit less: a big room's sound
++ * also leaks out through every opening) and air absorption.
++ */
++static void TCP_ZoneApply(int i, float air)
++{
++	tcpSrcSpatial_t *sp = &tcpSpatial[i];
++	float           gain, gainHF;
++
++	if (!sp->zone || !sp->sendFilter)
++	{
++		return;
++	}
++	gain   = 1.0f - 0.35f * sp->occ;
++	gainHF = (1.0f - 0.75f * sp->occ) * air;
++	if (gainHF < 0.05f)
++	{
++		gainHF = 0.05f;
++	}
++	if (fabsf(gain - sp->zoneGain) < 0.01f && fabsf(gainHF - sp->zoneGainHF) < 0.01f)
++	{
++		return;
++	}
++	sp->zoneGain   = gain;
++	sp->zoneGainHF = gainHF;
++	tcp_alFilterf(sp->sendFilter, AL_LOWPASS_GAIN, gain);
++	tcp_alFilterf(sp->sendFilter, AL_LOWPASS_GAINHF, gainHF);
++	// filter changes take hold when the filter is (re)attached to the send
++	qalSource3i(srcList[i].alSource, AL_AUXILIARY_SEND_FILTER, (ALint)tcpZones[sp->zone - 1].slot, 2, (ALint)sp->sendFilter);
++}
++
++/**
++ * @brief Room probe around the listener; morphs the shared reverb.
++ */
++static void TCP_SpatialReverb(int now)
++{
++	tcpReverb_t t;
++	float       a;
++
++	if (!tcpReverbSlot || now < tcpReverbNext)
++	{
++		return;
++	}
++	tcpReverbNext = now + 200;
++
++	if (!s_alReverb->integer || !TCP_SpatialWorld())
++	{
++		int z;
++
++		tcp_alAuxiliaryEffectSlotf(tcpReverbSlot, AL_EFFECTSLOT_GAIN, 0.0f);
++		for (z = 0; z < tcpZoneCount; z++)
++		{
++			tcp_alAuxiliaryEffectSlotf(tcpZones[z].slot, AL_EFFECTSLOT_GAIN, 0.0f);
++			tcpZones[z].tuned = qfalse;     // retuned (gain restored) on next use
++		}
++		tcpReverbSet = qfalse;
++		return;
++	}
++	if (!TCP_RoomProbe(lastListenerOrigin, &tcpRoomOpen, &tcpRoomSize))
++	{
++		return;         // inside a wall (noclip, a frame through a door): keep the last room
++	}
++	TCP_RoomParams(tcpRoomOpen, tcpRoomSize, &t);
+ 
+ 	a = tcpReverbSet ? 0.35f : 1.0f;
+ #define TCP_MIX(f) tcpReverbCur.f += (t.f - tcpReverbCur.f) * a
+@@ -3772,21 +4052,7 @@
+ #undef TCP_MIX
+ 	tcpReverbSet = qtrue;
+ 
+-	qalEffectf(tcpReverbEffect, AL_REVERB_DENSITY, 1.0f);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_DIFFUSION, tcpReverbCur.diffusion);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_GAIN, 0.32f);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_GAINHF, tcpReverbCur.gainHF);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_DECAY_TIME, tcpReverbCur.decay);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_DECAY_HFRATIO, tcpReverbCur.hfRatio);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_REFLECTIONS_GAIN, tcpReverbCur.reflections);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_REFLECTIONS_DELAY, tcpReverbCur.reflectionsDelay);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_LATE_REVERB_GAIN, tcpReverbCur.late);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_LATE_REVERB_DELAY, tcpReverbCur.lateDelay);
+-	qalEffectf(tcpReverbEffect, AL_REVERB_AIR_ABSORPTION_GAINHF, 0.994f);
+-	qalEffecti(tcpReverbEffect, AL_REVERB_DECAY_HFLIMIT, AL_TRUE);
+-	// effect changes take hold when the effect is (re)attached to the slot
+-	qalAuxiliaryEffectSloti(tcpReverbSlot, AL_EFFECTSLOT_EFFECT, (ALint)tcpReverbEffect);
+-	tcp_alAuxiliaryEffectSlotf(tcpReverbSlot, AL_EFFECTSLOT_GAIN, s_alReverbGain->value);
++	TCP_ReverbWrite(tcpReverbEffect, tcpReverbSlot, &tcpReverbCur, s_alReverbGain->value);
+ }
+ 
+ /**
+@@ -3886,6 +4152,10 @@
+ 		Com_Printf("TCP_AUDIO active=%d occluded=%d traces=%d open=%.2f size=%.0f decay=%.2f late=%.2f\n",
+ 		           active, tcpOccluded, tcpTraces, tcpRoomOpen, tcpRoomSize,
+ 		           tcpReverbCur.decay, tcpReverbCur.late);
++		Com_Printf("TCP_AUDIO_ZONES zones=%d assigns=%d retunes=%d shares=%d probes=%d skips=%d decay=%.2f,%.2f,%.2f\n",
++		           tcpZoneCount, tcpZoneAssigns, tcpZoneRetunes, tcpZoneShares, tcpZoneProbes, tcpZoneSkips,
++		           tcpZoneCount > 0 ? tcpZones[0].r.decay : 0.0f, tcpZoneCount > 1 ? tcpZones[1].r.decay : 0.0f,
++		           tcpZoneCount > 2 ? tcpZones[2].r.decay : 0.0f);
+ 		Com_Printf("TCP_AUDIO_MIX sources=%d peak=%d duck=%.2f level=%.2f conc=%.2f steals=%d,%d,%d,%d,%d,%d drops=%d,%d,%d,%d,%d,%d,%d,%d\n",
+ 		           srcCount, tcpPeakActive, tcpDuck, tcpDuckLevel, s_alConcussion->value,
+ 		           tcpSteals[0], tcpSteals[1], tcpSteals[2], tcpSteals[3], tcpSteals[4], tcpSteals[5],
+@@ -3915,9 +4185,9 @@
+ 	{
+ 		qalcGetIntegerv(alDevice, ALC_MONO_SOURCES, 1, &mono);
+ 	}
+-	Com_Printf("TCP_AUDIO_INFO efx=%d sends=%d filters=%d reverb=%d hrtf=%d occlusion=%.2f open=%.2f size=%.0f decay=%.2f\n",
++	Com_Printf("TCP_AUDIO_INFO efx=%d sends=%d filters=%d reverb=%d hrtf=%d occlusion=%.2f open=%.2f size=%.0f decay=%.2f zones=%d sourcereverb=%d\n",
+ 	           tcpEfx, tcpSends, tcpEfx ? srcCount : 0, tcpReverbSlot ? 1 : 0, hrtf,
+-	           s_alOcclusion->value, tcpRoomOpen, tcpRoomSize, tcpReverbCur.decay);
++	           s_alOcclusion->value, tcpRoomOpen, tcpRoomSize, tcpReverbCur.decay, tcpZoneCount, s_alSourceReverb->integer);
+ 	Com_Printf("TCP_AUDIO_INFO2 limiter=%d sources=%d device_mono=%d pitchvar=%.2f duck=%.2f dynamics=%d master=%.2f ambient=%.2f ui=%.2f\n",
+ 	           limiter, srcCount, mono, s_alPitchVariation->value, s_alDuck->value, s_alDynamics->integer,
+ 	           s_masterVolume->value, s_ambientVolume->value, s_uiVolume->value);
+@@ -4060,7 +4330,57 @@
+ 		tcp_alAuxiliaryEffectSlotf(tcpReverbSlot, AL_EFFECTSLOT_GAIN, 0.0f);
+ 	}
+ 	tcpEfx = qtrue;
+-	Com_Printf("TCP_AUDIO spatial audio ready: filters=%d sends=%d reverb=%d\n", i, tcpSends, tcpReverbSlot ? 1 : 0);
++	// 0.40.0 shooter's room: needs the third send and the listener's reverb
++	Com_Memset(tcpZones, 0, sizeof(tcpZones));
++	Com_Memset(tcpZoneCells, 0, sizeof(tcpZoneCells));
++	tcpZoneCount = tcpZoneAssigns = tcpZoneRetunes = tcpZoneShares = tcpZoneProbes = tcpZoneSkips = 0;
++	tcpListenerSendFilter = 0;
++	if (tcpReverbSlot && tcpSends > 2)
++	{
++		int z, k;
++
++		S_AL_ClearError(qfalse);
++		tcp_alGenFilters(1, &tcpListenerSendFilter);
++		if (qalGetError() == AL_NO_ERROR)
++		{
++			tcp_alFilteri(tcpListenerSendFilter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
++			tcp_alFilterf(tcpListenerSendFilter, AL_LOWPASS_GAIN, 0.4f);
++			tcp_alFilterf(tcpListenerSendFilter, AL_LOWPASS_GAINHF, 1.0f);
++			for (z = 0; z < TCP_ZONES; z++)
++			{
++				qalGenEffects(1, &tcpZones[z].effect);
++				qalEffecti(tcpZones[z].effect, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
++				qalGenAuxiliaryEffectSlots(1, &tcpZones[z].slot);
++				if (qalGetError() != AL_NO_ERROR)
++				{
++					if (tcpZones[z].slot)
++					{
++						tcp_alDeleteAuxiliaryEffectSlots(1, &tcpZones[z].slot);
++					}
++					if (tcpZones[z].effect)
++					{
++						tcp_alDeleteEffects(1, &tcpZones[z].effect);
++					}
++					tcpZones[z].slot = tcpZones[z].effect = 0;
++					break;
++				}
++				qalAuxiliaryEffectSloti(tcpZones[z].slot, AL_EFFECTSLOT_AUXILIARY_SEND_AUTO, AL_FALSE);
++				tcp_alAuxiliaryEffectSlotf(tcpZones[z].slot, AL_EFFECTSLOT_GAIN, 0.0f);
++			}
++			tcpZoneCount = z;
++			for (k = 0; tcpZoneCount && k < srcCount; k++)
++			{
++				tcp_alGenFilters(1, &tcpSpatial[k].sendFilter);
++				if (qalGetError() != AL_NO_ERROR)
++				{
++					tcpSpatial[k].sendFilter = 0;
++					break;
++				}
++				tcp_alFilteri(tcpSpatial[k].sendFilter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
++			}
++		}
++	}
++	Com_Printf("TCP_AUDIO spatial audio ready: filters=%d sends=%d reverb=%d zones=%d\n", i, tcpSends, tcpReverbSlot ? 1 : 0, tcpZoneCount);
+ }
+ 
+ /**
+@@ -4082,6 +4402,21 @@
+ 		{
+ 			tcp_alDeleteFilters(1, &tcpSpatial[i].filter);
+ 		}
++		if (tcpSpatial[i].sendFilter)
++		{
++			tcp_alDeleteFilters(1, &tcpSpatial[i].sendFilter);
++		}
++	}
++	for (i = 0; i < tcpZoneCount; i++)
++	{
++		tcp_alDeleteAuxiliaryEffectSlots(1, &tcpZones[i].slot);
++		tcp_alDeleteEffects(1, &tcpZones[i].effect);
++	}
++	tcpZoneCount = 0;
++	if (tcpListenerSendFilter)
++	{
++		tcp_alDeleteFilters(1, &tcpListenerSendFilter);
++		tcpListenerSendFilter = 0;
+ 	}
+ 	if (tcpReverbSlot)
+ 	{
+@@ -4114,7 +4449,7 @@
+  */
+ 
+ /**
+- * @brief Context with the Platinum attributes: two auxiliary sends per source (LFE + room reverb),
++ * @brief Context with the Platinum attributes: three auxiliary sends per source (LFE + room reverb + shooter's room),
+  * the HRTF choice, the output limiter and room for every game, music, stream and voice source.
+  */
+ static ALCcontext *TCP_CreateContext(ALCdevice *dev)
+@@ -4123,7 +4458,7 @@
+ 	ALCcontext *ctx;
+ 
+ 	attribs[n++] = ALC_MAX_AUXILIARY_SENDS;
+-	attribs[n++] = 2;
++	attribs[n++] = 3;       // 0.40.0: LFE / listener's room, shooter's room
+ 	if (qalcIsExtensionPresent(dev, "ALC_SOFT_HRTF"))
+ 	{
+ 		attribs[n++] = ALC_HRTF_SOFT;
+@@ -4732,6 +5067,7 @@
+ 	s_alOcclusion     = Cvar_Get("s_alOcclusion", "1", CVAR_ARCHIVE);           // 0 = off, 1 = full wall muffling
+ 	s_alReverb        = Cvar_Get("s_alReverb", "1", CVAR_ARCHIVE);              // room reverb from the surroundings
+ 	s_alReverbGain    = Cvar_Get("s_alReverbGain", "1.0", CVAR_ARCHIVE);
++	s_alSourceReverb  = Cvar_Get("s_alSourceReverb", "1", CVAR_ARCHIVE);      // 0.40.0: shooter's room reverb on distant gunfire
+ 	s_alHRTF          = Cvar_Get("s_alHRTF", "-1", CVAR_ARCHIVE | CVAR_LATCH);  // -1 auto (headphones), 0 off, 1 on
+ 	s_alFarDistance   = Cvar_Get("s_alFarDistance", "6000", CVAR_CHEAT);
+ 	s_alAirAbsorption = Cvar_Get("s_alAirAbsorption", "1.0", CVAR_ARCHIVE);

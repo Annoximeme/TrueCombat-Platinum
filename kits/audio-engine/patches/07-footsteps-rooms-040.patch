@@ -1,0 +1,27 @@
+diff -ru a/reference/etlegacy/src/client/snd_openal.c b/reference/etlegacy/src/client/snd_openal.c
+--- a/reference/etlegacy/src/client/snd_openal.c	2026-11-19 01:44:16.567945075 +0000
++++ b/reference/etlegacy/src/client/snd_openal.c	2026-11-19 01:44:16.585019864 +0000
+@@ -4424,7 +4424,7 @@
+ 		sp->zone = 0;
+ 	}
+ 	if (!s_alSourceReverb->integer || !s_alReverb->integer || !TCP_Remastered() || !tcpReverbSet || !TCP_SpatialWorld() || s->isLooping
+-	    || (cls != TCPC_GUNFIRE && cls != TCPC_BLAST) || Distance(pos, lastListenerOrigin) < TCP_ZONE_MIN)
++	    || (cls != TCPC_GUNFIRE && cls != TCPC_BLAST && cls != TCPC_FOOTSTEP) || Distance(pos, lastListenerOrigin) < TCP_ZONE_MIN)
+ 	{
+ 		return;
+ 	}
+@@ -4463,6 +4463,14 @@
+ 	}
+ 	gain   = 1.0f - 0.35f * sp->occ;
+ 	gainHF = (1.0f - 0.75f * sp->occ) * air;
++	// 0.40.0 item 7: footsteps ring in the walker's own room too (a hallway, a hall, a stairwell), at a lower
++	// wet level than gunfire. Only the wet send changes: the dry footstep (level, range, falloff, occlusion,
++	// doorway path) is exactly what every other player hears, so no one is easier or harder to hear.
++	if (srcList[i].sfx >= 0 && srcList[i].sfx < numSfx && knownSfx[srcList[i].sfx].tcpClass == TCPC_FOOTSTEP)
++	{
++		gain   *= 0.6f;
++		gainHF *= 0.8f;
++	}
+ 	if (gainHF < 0.05f)
+ 	{
+ 		gainHF = 0.05f;

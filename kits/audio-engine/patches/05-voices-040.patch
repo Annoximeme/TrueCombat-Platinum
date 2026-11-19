@@ -1,0 +1,77 @@
+diff -ru a/reference/etlegacy/src/client/snd_openal.c b/reference/etlegacy/src/client/snd_openal.c
+--- a/reference/etlegacy/src/client/snd_openal.c
++++ b/reference/etlegacy/src/client/snd_openal.c
+@@ -73,6 +73,9 @@
+ static cvar_t *s_alDynamics;         // 0 full range, 1 night (gunfire, blasts and impacts 6 dB lower)
+ static cvar_t *s_alConcussion;       // 0..1, written every frame by the cgame from the blast deafness
+ static cvar_t *s_alLimiter;          // OpenAL Soft output limiter (ALC_SOFT_output_limiter), latched
++static cvar_t *s_alMixRate;          // 0.40.0: mixing rate asked of OpenAL Soft (48000; 0 = the device's), latched
++static float TCP_Perceived(int i);
++static qboolean TCP_Remastered(void);
+ static float  tcpDuck = 1.0f;        // current ambience/music gain from ducking
+ static float  tcpDuckLevel;          // loudness estimate of fresh gunfire/blasts
+ static cvar_t *s_alMixPriority;      // 0.40.0: loudness-priority mix (TCP_MixPriority)
+@@ -1538,11 +1541,15 @@
+ 			{
+ 				continue;
+ 			}
+-			if (r < victimRank || (r == victimRank && (curSource->scaleGain < victimGain - 0.001f ||
+-			                                           (curSource->scaleGain <= victimGain + 0.001f && curSource->lastUsedTime < victimTime))))
++			// 0.40.0: "faintest" = what the listener actually hears (distance falloff and walls included),
++			// so a distant muffled shot goes before a near one of the same rank
++			const float heard = TCP_Remastered() ? TCP_Perceived(i) : curSource->scaleGain;
++
++			if (r < victimRank || (r == victimRank && (heard < victimGain - 0.001f ||
++			                                           (heard <= victimGain + 0.001f && curSource->lastUsedTime < victimTime))))
+ 			{
+ 				victimRank = r;
+-				victimGain = curSource->scaleGain;
++				victimGain = heard;
+ 				victimTime = curSource->lastUsedTime;
+ 				victim     = i;
+ 			}
+@@ -5020,7 +5027,7 @@
+  */
+ static ALCcontext *TCP_CreateContext(ALCdevice *dev)
+ {
+-	ALCint     attribs[15], n = 0;
++	ALCint     attribs[17], n = 0;
+ 	ALCcontext *ctx;
+ 
+ 	attribs[n++] = ALC_MAX_AUXILIARY_SENDS;
+@@ -5041,6 +5048,13 @@
+ 	attribs[n++] = MAX_SRC + 16;
+ 	attribs[n++] = ALC_STEREO_SOURCES;
+ 	attribs[n++] = 16;
++	// 0.40.0 (Remastered): mix at 48 kHz whatever the device runs at; OpenAL Soft resamples the output once.
++	// Fixed rate = the same reverb and filter behaviour on every PC (no 176.4/192 kHz mixing).
++	if (s_alMixRate->integer >= 22050 && s_alMixRate->integer <= 96000 && TCP_Remastered())
++	{
++		attribs[n++] = ALC_FREQUENCY;
++		attribs[n++] = s_alMixRate->integer;
++	}
+ 	attribs[n]   = 0;
+ 	ctx          = qalcCreateContext(dev, attribs);
+ 	if (!ctx)
+@@ -5619,10 +5633,10 @@
+ 	// New console variables
+ 	s_alPrecache      = Cvar_Get("s_alPrecache", "1", CVAR_ARCHIVE);
+ 	s_alGain          = Cvar_Get("s_alGain", "1.0", CVAR_ARCHIVE);
+-	s_alSources       = Cvar_Get("s_alSources", "192", CVAR_ARCHIVE);
+-	if (s_alSources->integer == 96)
++	s_alSources       = Cvar_Get("s_alSources", "240", CVAR_ARCHIVE);
++	if (s_alSources->integer == 96 || s_alSources->integer == 192)
+ 	{
+-		Cvar_Set("s_alSources", "192");   // Platinum: the old default; 192 keeps every enemy step in a 16-player firefight
++		Cvar_Set("s_alSources", "240");   // Platinum: old defaults; 0.40.0: 240 voices (slaps, tails, shooter's rooms need room)
+ 	}
+ 	s_alDopplerFactor = Cvar_Get("s_alDopplerFactor", "1.0", CVAR_ARCHIVE);
+ 	s_alDopplerSpeed  = Cvar_Get("s_alDopplerSpeed", "2200", CVAR_ARCHIVE);
+@@ -5648,6 +5662,7 @@
+ 	s_alDynamics       = Cvar_Get("s_alDynamics", "0", CVAR_ARCHIVE);
+ 	s_alConcussion     = Cvar_Get("s_alConcussion", "0", CVAR_TEMP);
+ 	s_alLimiter        = Cvar_Get("s_alLimiter", "1", CVAR_ARCHIVE | CVAR_LATCH);
++	s_alMixRate        = Cvar_Get("s_alMixRate", "48000", CVAR_ARCHIVE | CVAR_LATCH);
+ 	Cvar_CheckRange(s_alPitchVariation, 0.0f, 1.0f, qfalse);
+ 	Cvar_CheckRange(s_alDuck, 0.0f, 2.0f, qfalse);
+ 	Cvar_CheckRange(s_alDynamics, 0.0f, 1.0f, qtrue);
