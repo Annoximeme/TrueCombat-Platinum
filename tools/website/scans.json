@@ -1721,6 +1721,17 @@
    "checked": "2026-11-16T18:39:28Z",
    "settle": true
   },
+  "ed2663093fcc507db2c4231309e52f502d89d6cc87845fa57bff6b0a70dea2f3": {
+   "name": "TrueCombatPlatinum.exe",
+   "bytes": 5528064,
+   "malicious": 0,
+   "suspicious": 0,
+   "engines": 71,
+   "analysed": "2026-11-19T00:24:54Z",
+   "flagged_by": [],
+   "checked": "2026-11-19T00:57:04Z",
+   "settle": true
+  },
   "ef84fce7c54dcbde57d563eef811491d2e23251b23e93cd48bc3925216c40665": {
    "name": "renderer_opengl1_x64.dll",
    "bytes": 1796608,
@@ -1828,19 +1839,6 @@
    "checked": "2026-11-16T18:03:30Z",
    "settle": true
   },
-  "fda69a614ea862499949a0f6271c69f6acf1c68e00dd851015b293d4d32789b6": {
-   "name": "TrueCombatPlatinum.exe",
-   "bytes": 5528064,
-   "malicious": 1,
-   "suspicious": 0,
-   "engines": 69,
-   "analysed": "2026-11-19T00:12:39Z",
-   "flagged_by": [
-    "Microsoft: Trojan:Win32/Wacatac.C!ml"
-   ],
-   "checked": "2026-11-19T00:17:24Z",
-   "settle": true
-  },
   "fe5956b9e679fead9e80849d413317d87cfba03d13f4ce5db82bfff8958e9df9": {
    "name": "platinum-engine.bin",
    "bytes": 3965952,
@@ -1870,9 +1868,9 @@
    "setup": "662186f65b2a474e15f0c467ddae0a889472108be06b52803d52413fc3d5a8a8",
    "files": {
     "TrueCombat-Platinum-Setup.exe": "662186f65b2a474e15f0c467ddae0a889472108be06b52803d52413fc3d5a8a8",
-    "TrueCombatPlatinum-Launcher.exe": "fda69a614ea862499949a0f6271c69f6acf1c68e00dd851015b293d4d32789b6",
+    "TrueCombatPlatinum-Launcher.exe": "ed2663093fcc507db2c4231309e52f502d89d6cc87845fa57bff6b0a70dea2f3",
     "f__EasyAntiCheat__EasyAntiCheat_EOS_Setup.exe": "8b60d4e8962ee5b4b7130afabb029673e284367bc22a590293d14f089c9f46a0",
-    "f__TrueCombatPlatinum.exe": "fda69a614ea862499949a0f6271c69f6acf1c68e00dd851015b293d4d32789b6",
+    "f__TrueCombatPlatinum.exe": "ed2663093fcc507db2c4231309e52f502d89d6cc87845fa57bff6b0a70dea2f3",
     "f__TrueCombatPlatinum_EAC.exe": "46d2552552ac95c436389a2c9f1aba6fda37ab998acf9b9ee026f3262dd70c53",
     "f__engine__EOSSDK-Win64-Shipping.dll": "ab25af350c48856633d671a16e8469277f9acee39186d69fe5b2a26100d738e8",
     "f__engine__OpenAL64.dll": "dc8b1396d2fbe9682f7e04277fa5194940f1e52239f2fe1fe761fe2127546c97",
