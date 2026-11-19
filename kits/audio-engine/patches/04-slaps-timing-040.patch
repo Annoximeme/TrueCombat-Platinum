@@ -1,0 +1,341 @@
+diff -ru a/reference/etlegacy/src/client/snd_openal.c b/reference/etlegacy/src/client/snd_openal.c
+--- a/reference/etlegacy/src/client/snd_openal.c
++++ b/reference/etlegacy/src/client/snd_openal.c
+@@ -76,6 +76,8 @@
+ static float  tcpDuck = 1.0f;        // current ambience/music gain from ducking
+ static float  tcpDuckLevel;          // loudness estimate of fresh gunfire/blasts
+ static cvar_t *s_alMixPriority;      // 0.40.0: loudness-priority mix (TCP_MixPriority)
++static cvar_t *s_alTravelDelay;      // 0.40.0: distant gunfire arrives at the speed of sound (TCP_Delay*)
++static cvar_t *s_alWallSlaps;        // 0.40.0: early reflections off nearby walls (TCP_Slap*)
+ static float  tcpLoudPeak;           // 0.40.0: loudness of the loudest fresh event, held ~350 ms
+ static int    tcpMixDucked;          // 0.40.0: sources lowered under it this frame
+ static int    tcpDeviceMono;         // ALC_MONO_SOURCES the context granted (0 = unknown)
+@@ -1692,6 +1694,262 @@
+  * @param[in] volume
+  * @param[in] flags
+  */
++static qboolean tcpEfx;    // defined with the spatial audio below
++static void     TCP_SpatialTrace(trace_t *tr, const vec3_t start, const vec3_t end);
++static qboolean TCP_SpatialWorld(void);
++/*
++ * 0.40.0 timing and wall slaps. Travel delay applies to every player (Classic too, cheat-protected cvar) so
++ * nobody hears a shot earlier than anyone else; wall slaps are Remastered only.
++ * - Travel delay: gunfire and blasts more than 400 units away start after distance / speed of sound
++ *   (13504 units/s, 1 unit = 1 inch): about 0.3 s per 100 m. The supersonic crack the cgame plays when a
++ *   bullet passes the listener therefore lands before the report, as at a real range.
++ * - Wall slaps: the walls around the listener (7 traces, within 40 m, refreshed every 150 ms) throw back up to
++ *   two short copies of each gunshot or blast, from the wall, delayed by the extra path, at least 10 dB under
++ *   the direct sound and further down with the extra distance. One set per shooter per 90 ms and six slaps
++ *   per 100 ms at most, so full auto stays clean. Own shots slap too.
++ * Queued in tcpDelayQ and started from TCP_DelayFrame (S_AL_Update); a queued sound skips both again.
++ */
++#define TCP_SND_DELAYED BIT(30)
++#define TCP_SND_SLAP    BIT(29)
++#define TCP_DELAY_Q     96
++#define TCP_UNITS_PER_S 13504.0f
++typedef struct
++{
++	int at;             // Sys_Milliseconds to start
++	qboolean hasOrigin;
++	vec3_t origin;
++	int entnum, entchannel, flags, volume;
++	sfxHandle_t sfx;
++} tcpDelayed_t;
++static tcpDelayed_t tcpDelayQ[TCP_DELAY_Q];
++static int          tcpDelayCount, tcpDelayQueued, tcpDelayDropped, tcpSlapsPlayed;
++static vec3_t       tcpWallAt[7];
++static float        tcpWallDist[7];
++static int          tcpWallNext, tcpSlapShooter[MAX_GENTITIES + 1], tcpSlapWindow, tcpSlapWindowCount;
++static void S_AL_StartSoundEx(vec3_t origin, int entnum, int entchannel, sfxHandle_t sfx, int flags, int volume);
++static qboolean TCP_Remastered(void);
++
++static int TCP_SfxClassOf(sfxHandle_t sfx)
++{
++	return (sfx >= 0 && sfx < numSfx) ? knownSfx[sfx].tcpClass : TCPC_OTHER;
++}
++
++static qboolean TCP_DelayPush(int at, const vec3_t origin, int entnum, int entchannel, sfxHandle_t sfx, int flags, int volume)
++{
++	tcpDelayed_t *d;
++
++	if (tcpDelayCount >= TCP_DELAY_Q)
++	{
++		tcpDelayDropped++;
++		return qfalse;
++	}
++	d             = &tcpDelayQ[tcpDelayCount++];
++	d->at         = at;
++	d->hasOrigin  = origin != NULL;
++	if (origin)
++	{
++		VectorCopy(origin, d->origin);
++	}
++	d->entnum     = entnum;
++	d->entchannel = entchannel;
++	d->sfx        = sfx;
++	d->flags      = flags | TCP_SND_DELAYED;
++	d->volume     = volume;
++	tcpDelayQueued++;
++	return qtrue;
++}
++
++/**
++ * @brief Start every queued sound that is due. Order inside the queue does not matter.
++ */
++static void TCP_DelayFrame(void)
++{
++	const int now = Sys_Milliseconds();
++	int       i;
++
++	for (i = 0; i < tcpDelayCount; )
++	{
++		if (now - tcpDelayQ[i].at >= 0)
++		{
++			tcpDelayed_t d = tcpDelayQ[i];
++
++			tcpDelayQ[i] = tcpDelayQ[--tcpDelayCount];
++			if (d.entnum < 0 || d.entnum >= MAX_GENTITIES)
++			{
++				continue;
++			}
++			S_AL_StartSoundEx(d.hasOrigin ? d.origin : NULL, d.entnum, d.entchannel, d.sfx, d.flags, d.volume);
++			continue;
++		}
++		i++;
++	}
++}
++
++static float TCP_Attenuation(float d)
++{
++	const float ref = s_alMinDistance->value > 1.0f ? s_alMinDistance->value : 1.0f;
++
++	return d > ref ? ref / (ref + s_alRolloff->value * (d - ref)) : 1.0f;
++}
++
++/**
++ * @brief Walls around the listener: 6 horizontal directions and up, within 40 m (1575 units).
++ */
++static void TCP_WallProbe(int now)
++{
++	static const float dirs[7][3] = { { 1, 0, 0 }, { 0.5f, 0.866f, 0 }, { -0.5f, 0.866f, 0 }, { -1, 0, 0 }, { -0.5f, -0.866f, 0 }, { 0.5f, -0.866f, 0 }, { 0, 0, 1 } };
++	int                k;
++
++	if (now - tcpWallNext < 0)
++	{
++		return;
++	}
++	tcpWallNext = now + 150;
++	for (k = 0; k < 7; k++)
++	{
++		trace_t tr;
++		vec3_t  end;
++
++		VectorMA(lastListenerOrigin, 1575.0f, dirs[k], end);
++		TCP_SpatialTrace(&tr, lastListenerOrigin, end);
++		if (tr.startsolid || tr.fraction >= 1.0f || (tr.surfaceFlags & SURF_SKY) || tr.fraction * 1575.0f < 24.0f)
++		{
++			tcpWallDist[k] = -1.0f;
++			continue;
++		}
++		tcpWallDist[k] = tr.fraction * 1575.0f;
++		VectorMA(lastListenerOrigin, tcpWallDist[k] - 12.0f, dirs[k], tcpWallAt[k]);   // just off the wall, on our side
++	}
++}
++
++/**
++ * @brief Queue up to two wall slaps of a gunshot from src (the listener's own position for own shots).
++ * baseDelay = when the direct sound arrives (ms from now).
++ */
++static void TCP_Slaps(const vec3_t src, int shooter, sfxHandle_t sfx, int flags, int volume, int baseDelay)
++{
++	const int now    = Sys_Milliseconds();
++	const float dir  = Distance(src, lastListenerOrigin);
++	const float aDir = TCP_Attenuation(dir);
++	int       k, pick[2] = { -1, -1 };
++	float     g[7], best[2] = { 0.0f, 0.0f };
++
++	if (!s_alWallSlaps->integer || !TCP_SpatialWorld() || dir > 1575.0f * 2.0f)
++	{
++		return;
++	}
++	if (shooter >= 0 && shooter <= MAX_GENTITIES && tcpSlapShooter[shooter] && now - tcpSlapShooter[shooter] < 90)
++	{
++		return;
++	}
++	if (now - tcpSlapWindow >= 100)
++	{
++		tcpSlapWindow      = now;
++		tcpSlapWindowCount = 0;
++	}
++	if (tcpSlapWindowCount >= 6)
++	{
++		return;
++	}
++	TCP_WallProbe(now);
++	for (k = 0; k < 7; k++)
++	{
++		float path;
++
++		g[k] = 0.0f;
++		if (tcpWallDist[k] < 0.0f)
++		{
++			continue;
++		}
++		path = Distance(src, tcpWallAt[k]) + tcpWallDist[k];
++		if ((path - dir) < TCP_UNITS_PER_S * 0.008f)
++		{
++			continue;   // under 8 ms: fuses with the direct sound, adds nothing
++		}
++		// the reflection travels the longer path; OpenAL will attenuate it over the wall's short distance only
++		g[k] = 0.32f * (TCP_Attenuation(path) / (aDir > 0.0f ? aDir : 1.0f)) * aDir / TCP_Attenuation(tcpWallDist[k]);
++		if (g[k] > best[0])
++		{
++			best[1] = best[0];
++			pick[1] = pick[0];
++			best[0] = g[k];
++			pick[0] = k;
++		}
++		else if (g[k] > best[1])
++		{
++			best[1] = g[k];
++			pick[1] = k;
++		}
++	}
++	if (shooter >= 0 && shooter <= MAX_GENTITIES)
++	{
++		tcpSlapShooter[shooter] = now;
++	}
++	for (k = 0; k < 2; k++)
++	{
++		int   w = pick[k], vol;
++		float path;
++
++		if (w < 0 || best[k] < 0.02f)
++		{
++			continue;
++		}
++		if (dir > 32.0f)
++		{
++			// a remote shot only slaps off a wall it can reach
++			trace_t tr;
++
++			TCP_SpatialTrace(&tr, src, tcpWallAt[w]);
++			if (tr.startsolid || tr.fraction < 0.97f)
++			{
++				continue;
++			}
++		}
++		path = Distance(src, tcpWallAt[w]) + tcpWallDist[w];
++		vol  = (int)(volume * (best[k] > 0.32f ? 0.32f : best[k]));
++		if (vol < 2)
++		{
++			continue;
++		}
++		if (TCP_DelayPush(now + baseDelay + (int)((path - dir) / TCP_UNITS_PER_S * 1000.0f), tcpWallAt[w], ENTITYNUM_WORLD, CHAN_AUTO, sfx,
++		                  (flags & ~(SND_LISTENER | SND_LONGRANGE)) | TCP_SND_SLAP, vol))
++		{
++			tcpSlapsPlayed++;
++			tcpSlapWindowCount++;
++		}
++	}
++}
++
++/**
++ * @brief Gunfire or blast that should arrive late and/or slap: queue it. qtrue = queued, do not start now.
++ */
++static qboolean TCP_TimingStart(vec3_t origin, const vec3_t sorigin, int entnum, int entchannel, sfxHandle_t sfx, int flags, int volume)
++{
++	const int cls = TCP_SfxClassOf(sfx);
++	float     dist;
++	int       delay = 0;
++
++	if ((flags & TCP_SND_DELAYED) || (cls != TCPC_GUNFIRE && cls != TCPC_BLAST))
++	{
++		return qfalse;
++	}
++	dist = Distance(sorigin, lastListenerOrigin);
++	// the delay is the same for every player, Classic included, so nobody hears a shot earlier than anyone else
++	if (s_alTravelDelay->integer && dist > 400.0f)
++	{
++		delay = (int)(dist / TCP_UNITS_PER_S * 1000.0f);
++	}
++	if (tcpEfx && TCP_Remastered())
++	{
++		TCP_Slaps(sorigin, entnum, sfx, flags, volume, delay);
++	}
++	if (delay > 0)
++	{
++		return TCP_DelayPush(Sys_Milliseconds() + delay, origin, entnum, entchannel, sfx, flags, volume);
++	}
++	return qfalse;
++}
++
+ static void S_AL_StartLocalSoundEx(sfxHandle_t sfx, int channel, int volume, int flags)
+ {
+ 	srcHandle_t src;
+@@ -1709,6 +1967,12 @@
+ 		return;
+ 	}
+ 
++	// 0.40.0: own gunshots slap off the walls around the listener
++	if (!s_uiLocalSound && !(flags & TCP_SND_DELAYED) && tcpEfx && TCP_Remastered()
++	    && (TCP_SfxClassOf(sfx) == TCPC_GUNFIRE || TCP_SfxClassOf(sfx) == TCPC_BLAST))
++	{
++		TCP_Slaps(lastListenerOrigin, MAX_GENTITIES, sfx, flags, volume, 0);
++	}
+ 	// Set up the effect
+ 	srcList[src].ui = s_uiLocalSound;   // before setup: the class gain reads it
+ 	S_AL_SrcSetup(src, sfx, SRCPRI_LOCAL, -1, channel, qtrue, volume, s_alMaxDistance->value, flags);
+@@ -1771,6 +2035,10 @@
+ 	}
+ 
+ 	S_AL_SanitiseVector(sorigin);
++	if (TCP_TimingStart(origin, sorigin, entnum, entchannel, sfx, flags, volume))
++	{
++		return;     // 0.40.0: arrives later (travel delay)
++	}
+ 
+ 	if ((srcActiveCnt > 5 * srcCount / 3) /*&&
+ 	    (vec3_distance_squared(sorigin, lastListenerOrigin) >=
+@@ -3342,6 +3610,7 @@
+ 	int i;
+ 
+ 	S_AL_SrcShutup();
++	tcpDelayCount = 0;      // 0.40.0: drop queued (delayed) shots too
+ 	S_AL_StopBackgroundTrack();
+ 	for (i = 0; i < MAX_STREAMING_SOUNDS; i++)
+ 	{
+@@ -4446,6 +4715,7 @@
+ 		           tcpReverbCur.decay, tcpReverbCur.late);
+ 		Com_Printf("TCP_AUDIO_PORTALS searches=%d found=%d active=%d\n", tcpPortalSearches, tcpPortalFound, tcpPortalActive);
+ 		Com_Printf("TCP_AUDIO_PRIORITY loud=%.2f ducked=%d\n", tcpLoudPeak, tcpMixDucked);
++		Com_Printf("TCP_AUDIO_TIMING delayed=%d slaps=%d queue=%d dropped=%d\n", tcpDelayQueued, tcpSlapsPlayed, tcpDelayCount, tcpDelayDropped);
+ 		Com_Printf("TCP_AUDIO_ZONES zones=%d assigns=%d retunes=%d shares=%d probes=%d skips=%d decay=%.2f,%.2f,%.2f\n",
+ 		           tcpZoneCount, tcpZoneAssigns, tcpZoneRetunes, tcpZoneShares, tcpZoneProbes, tcpZoneSkips,
+ 		           tcpZoneCount > 0 ? tcpZones[0].r.decay : 0.0f, tcpZoneCount > 1 ? tcpZones[1].r.decay : 0.0f,
+@@ -4565,6 +4835,8 @@
+ 	int i;
+ 
+ 	Com_Memset(tcpSpatial, 0, sizeof(tcpSpatial));
++	tcpDelayCount = 0;      // 0.40.0: nothing queued survives a sound restart
++	tcpWallNext   = 0;
+ 	tcpEfx        = qfalse;
+ 	tcpReverbSlot = tcpReverbEffect = 0;
+ 	tcpReverbSet  = qfalse;
+@@ -5087,6 +5359,7 @@
+ 	}
+ 
+ 	// Update SFX channels
++	TCP_DelayFrame();       // 0.40.0: queued (travel delay, wall slaps) sounds that are due
+ 	S_AL_SrcUpdate();
+ 	TCP_SpatialUpdate();
+ 
+@@ -5362,6 +5635,8 @@
+ 	s_alReverb        = Cvar_Get("s_alReverb", "1", CVAR_ARCHIVE);              // room reverb from the surroundings
+ 	s_alReverbGain    = Cvar_Get("s_alReverbGain", "1.0", CVAR_ARCHIVE);
+ 	s_alMixPriority   = Cvar_Get("s_alMixPriority", "1", CVAR_ARCHIVE);       // 0.40.0: quieter sounds step back under the loudest
++	s_alTravelDelay   = Cvar_Get("s_alTravelDelay", "1", CVAR_CHEAT);         // 0.40.0: sound travel delay for distant gunfire (everyone, Classic too: fairness)
++	s_alWallSlaps     = Cvar_Get("s_alWallSlaps", "1", CVAR_ARCHIVE);         // 0.40.0: wall slaps after gunshots
+ 	s_alSourceReverb  = Cvar_Get("s_alSourceReverb", "1", CVAR_ARCHIVE);      // 0.40.0: shooter's room reverb on distant gunfire
+ 	s_alPortals       = Cvar_Get("s_alPortals", "1", CVAR_ARCHIVE);           // 0.40.0: sound through doorways and windows
+ 	s_alHRTF          = Cvar_Get("s_alHRTF", "-1", CVAR_ARCHIVE | CVAR_LATCH);  // -1 auto (headphones), 0 off, 1 on

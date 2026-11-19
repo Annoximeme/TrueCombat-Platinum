@@ -1,0 +1,171 @@
+diff -ru a/reference/etlegacy/src/client/snd_openal.c b/reference/etlegacy/src/client/snd_openal.c
+--- a/reference/etlegacy/src/client/snd_openal.c
++++ b/reference/etlegacy/src/client/snd_openal.c
+@@ -75,6 +75,9 @@
+ static cvar_t *s_alLimiter;          // OpenAL Soft output limiter (ALC_SOFT_output_limiter), latched
+ static float  tcpDuck = 1.0f;        // current ambience/music gain from ducking
+ static float  tcpDuckLevel;          // loudness estimate of fresh gunfire/blasts
++static cvar_t *s_alMixPriority;      // 0.40.0: loudness-priority mix (TCP_MixPriority)
++static float  tcpLoudPeak;           // 0.40.0: loudness of the loudest fresh event, held ~350 ms
++static int    tcpMixDucked;          // 0.40.0: sources lowered under it this frame
+ static int    tcpDeviceMono;         // ALC_MONO_SOURCES the context granted (0 = unknown)
+ static int    tcpSteals[8], tcpDrops[8], tcpPeakActive;
+ // Platinum 0.37.2 audio device watchdog (TCP_DeviceWatch)
+@@ -954,10 +957,18 @@
+  * @brief Platinum category gain of a source: ambience loops (s_ambientVolume, ducking), menu sounds
+  * (s_uiVolume) and the night dynamics trim. Voice chat and music never pass through here.
+  */
++static float tcpMixGain[MAX_SRC];    // 0.40.0: per-source loudness-priority gain, 1 = untouched
++
+ static float TCP_ClassGain(const src_t *s)
+ {
+ 	const int cls = (s->sfx >= 0 && s->sfx < numSfx) ? knownSfx[s->sfx].tcpClass : TCPC_OTHER;
+ 	float     g   = 1.0f;
++	const int idx = (int)(s - srcList);
++
++	if (idx >= 0 && idx < MAX_SRC && tcpMixGain[idx] > 0.0f)
++	{
++		g *= tcpMixGain[idx];
++	}
+ 
+ 	if (s->ui)
+ 	{
+@@ -1203,6 +1214,7 @@
+ 	curSource->range        = range;
+ 	curSource->flags        = flags;
+ 	curSource->rank         = TCP_SrcRank(priority, sfx);
++	tcpMixGain[src]         = 1.0f;
+ 	curSource->scaleGain   *= TCP_ClassGain(curSource);
+ 
+ 	// Platinum: SND_PITCHVAR gives each shot / step / impact a slightly different pitch
+@@ -4242,6 +4254,106 @@
+  * wall muffling included) lower ambience loops and music by up to 5 dB; 60 ms attack, 1.2 s
+  * release. Footsteps, gunfire, impacts, voice chat and radio are never ducked.
+  */
++/*
++ * 0.40.0 loudness-priority mix. The loudest fresh event (your own shot, a close burst or blast) opens a short
++ * window: other gunfire, impacts, debris and casings that are more than 12 dB under it step back by up to
++ * 4 dB (30 ms down, 300 ms back), so every shot keeps its punch in a busy fight without a louder master.
++ * Never touched: footsteps, near-miss snaps, the tinnitus tone, voice, music, menus, ambience loops (those
++ * already duck), and your own sounds. The same rule for every player; s_alMixPriority 0 or Classic turns it off.
++ */
++static float TCP_Perceived(int i)
++{
++	const src_t *s = &srcList[i];
++	float       g  = s->scaleGain;
++	vec3_t      pos;
++
++	if (tcpEfx && tcpSpatial[i].attached)
++	{
++		g *= tcpSpatial[i].gain;
++	}
++	if (s->local)
++	{
++		return g;
++	}
++	if (TCP_SpatialOrigin(s, pos))
++	{
++		// OpenAL inverse distance clamped, as the sources are set up (reference distance s_alMinDistance)
++		const float ref = s_alMinDistance->value > 1.0f ? s_alMinDistance->value : 1.0f;
++		const float d   = Distance(pos, lastListenerOrigin);
++
++		if (d > ref)
++		{
++			g *= ref / (ref + s_alRolloff->value * (d - ref));
++		}
++	}
++	return g;
++}
++
++static void TCP_MixPriority(int now, int dt)
++{
++	float loud = 0.0f, k;
++	int   i;
++
++	tcpMixDucked = 0;
++	for (i = 0; i < srcCount; i++)
++	{
++		const src_t *s = &srcList[i];
++		int         cls;
++
++		if (!s->isActive || !s->isPlaying || s->isLooping || s->sfx < 0 || s->sfx >= numSfx || now - s->lastUsedTime > 150)
++		{
++			continue;
++		}
++		cls = knownSfx[s->sfx].tcpClass;
++		if (cls == TCPC_GUNFIRE || cls == TCPC_BLAST)
++		{
++			const float p = TCP_Perceived(i) * (cls == TCPC_BLAST ? 2.0f : 1.0f);
++
++			loud = p > loud ? p : loud;
++		}
++	}
++	// hold the loudest, ~350 ms fall
++	k           = dt / 350.0f;
++	tcpLoudPeak = loud > tcpLoudPeak ? loud : tcpLoudPeak * (1.0f - (k > 1.0f ? 1.0f : k));
++	for (i = 0; i < srcCount; i++)
++	{
++		src_t *s = &srcList[i];
++		int   cls;
++		float target = 1.0f, old = tcpMixGain[i] > 0.0f ? tcpMixGain[i] : 1.0f, now_g;
++
++		if (!s->isActive || !s->isPlaying || s->sfx < 0 || s->sfx >= numSfx)
++		{
++			continue;
++		}
++		cls = knownSfx[s->sfx].tcpClass;
++		if (s_alMixPriority->integer && TCP_Remastered() && tcpLoudPeak > 0.02f && !s->local && !s->ui && !s->isLooping
++		    && (cls == TCPC_GUNFIRE || cls == TCPC_IMPACT || cls == TCPC_DEBRIS || cls == TCPC_CASING || cls == TCPC_OTHER))
++		{
++			const float r = TCP_Perceived(i) / old / tcpLoudPeak;    // its own level without the mix gain
++
++			if (r < 0.25f)
++			{
++				const float depth = (0.25f - r) / 0.25f;
++
++				target = powf(10.0f, -4.0f * (depth > 1.0f ? 1.0f : depth) / 20.0f);
++				tcpMixDucked++;
++			}
++		}
++		k     = dt / (target < old ? 30.0f : 300.0f);
++		now_g = old + (target - old) * (k > 1.0f ? 1.0f : (k < 0.0f ? 0.0f : k));
++		if (fabsf(now_g - old) > 0.005f || (target == 1.0f && old != 1.0f && fabsf(now_g - 1.0f) < 0.005f))
++		{
++			if (target == 1.0f && fabsf(now_g - 1.0f) < 0.005f)
++			{
++				now_g = 1.0f;
++			}
++			tcpMixGain[i] = now_g;
++			s->scaleGain  = s->scaleGain / old * now_g;
++			S_AL_Gain(s->alSource, s->scaleGain);
++		}
++	}
++}
++
+ static void TCP_MixUpdate(void)
+ {
+ 	static int last;
+@@ -4288,6 +4400,7 @@
+ 	}
+ 	k = dt / (target < tcpDuck ? 60.0f : 1200.0f);
+ 	tcpDuck += (target - tcpDuck) * (k > 1.0f ? 1.0f : (k < 0.0f ? 0.0f : k));
++	TCP_MixPriority(now, dt);
+ }
+ 
+ static void TCP_SpatialUpdate(void)
+@@ -4332,6 +4445,7 @@
+ 		           active, tcpOccluded, tcpTraces, tcpRoomOpen, tcpRoomSize,
+ 		           tcpReverbCur.decay, tcpReverbCur.late);
+ 		Com_Printf("TCP_AUDIO_PORTALS searches=%d found=%d active=%d\n", tcpPortalSearches, tcpPortalFound, tcpPortalActive);
++		Com_Printf("TCP_AUDIO_PRIORITY loud=%.2f ducked=%d\n", tcpLoudPeak, tcpMixDucked);
+ 		Com_Printf("TCP_AUDIO_ZONES zones=%d assigns=%d retunes=%d shares=%d probes=%d skips=%d decay=%.2f,%.2f,%.2f\n",
+ 		           tcpZoneCount, tcpZoneAssigns, tcpZoneRetunes, tcpZoneShares, tcpZoneProbes, tcpZoneSkips,
+ 		           tcpZoneCount > 0 ? tcpZones[0].r.decay : 0.0f, tcpZoneCount > 1 ? tcpZones[1].r.decay : 0.0f,
+@@ -5247,6 +5361,7 @@
+ 	s_alOcclusion     = Cvar_Get("s_alOcclusion", "1", CVAR_ARCHIVE);           // 0 = off, 1 = full wall muffling
+ 	s_alReverb        = Cvar_Get("s_alReverb", "1", CVAR_ARCHIVE);              // room reverb from the surroundings
+ 	s_alReverbGain    = Cvar_Get("s_alReverbGain", "1.0", CVAR_ARCHIVE);
++	s_alMixPriority   = Cvar_Get("s_alMixPriority", "1", CVAR_ARCHIVE);       // 0.40.0: quieter sounds step back under the loudest
+ 	s_alSourceReverb  = Cvar_Get("s_alSourceReverb", "1", CVAR_ARCHIVE);      // 0.40.0: shooter's room reverb on distant gunfire
+ 	s_alPortals       = Cvar_Get("s_alPortals", "1", CVAR_ARCHIVE);           // 0.40.0: sound through doorways and windows
+ 	s_alHRTF          = Cvar_Get("s_alHRTF", "-1", CVAR_ARCHIVE | CVAR_LATCH);  // -1 auto (headphones), 0 off, 1 on
