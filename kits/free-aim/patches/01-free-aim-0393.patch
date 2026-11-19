@@ -1,0 +1,412 @@
+diff --git a/analysis_scripts/integration/build_candidate.py b/analysis_scripts/integration/build_candidate.py
+index 934f5f7..2cfcd1d 100644
+--- a/analysis_scripts/integration/build_candidate.py
++++ b/analysis_scripts/integration/build_candidate.py
+@@ -458,7 +458,8 @@ if (SOURCE / 'game_src/tests/native_vault_probe.c').exists():
+ move_src = [SOURCE / 'game_src/native/tcp_move.c']
+ for probe_name, extra in [('cqb_gate_probe', move_src), ('cqb_mech_probe', move_src), ('cqb_rules_probe', move_src),
+                           ('combat_feel_probe', [SOURCE / 'game_src/native/tcp_lagpredict.c', *move_src, *combat]),
+-                          ('fps_fairness_probe', [*move_src, *combat])]:
++                          ('fps_fairness_probe', [*move_src, *combat]),
++                          ('freeaim_deadzone_probe', [SOURCE / 'game_src/native/tcp_lagpredict.c', *move_src, *combat])]:  # 0.39.3 free aim
+     if (SOURCE / 'game_src/tests' / (probe_name + '.c')).exists():
+         exe = probes / (probe_name.replace('_', '-') + '.exe')
+         run([cc, *common, '-DMODLIB', '-I', engine / 'src', SOURCE / 'game_src/tests' / (probe_name + '.c'), *extra,
+diff --git a/game_src/native/tcp_aim.c b/game_src/native/tcp_aim.c
+index e0806ad..6bd8bbc 100644
+--- a/game_src/native/tcp_aim.c
++++ b/game_src/native/tcp_aim.c
+@@ -80,14 +80,44 @@ void TCP_AimShot(tcp_aim_state *s,const tcp_native_gun *g,float speed,int crouch
+     if(dp)*dp=ftol((float)*dp-(qrandom(&s->seed)*t+2.f)*(float)k);
+     if(dy)*dy=ftol((float)*dy-qrandom(&s->seed)*t*(float)k);
+ }
+-/* TC:E 0.49b free aim, FREEAIM-RECONSTRUCTION.md (cgame FUN_3000A3B0, qagame FUN_20032710): the same
+- * arithmetic as shared/tcp_math.c tcp_freeaim_step. p = op + dp/2, y = oy + dy/2; inside
+- * sqrt(p^2 + y^2/4) <= 3 the view moves by half the input, beyond it the offsets are scaled back to the
+- * ellipse and the view takes the rest. Stored trunc(2000 + 100 * offset); the view uses the unquantized
+- * value. The view change (input minus offset change) goes into delta_angles, rounded to shorts. */
+ static int shortDelta(int now,int prev){return (int)(int16_t)(uint16_t)((now-prev)&0xffff);}
+-int TCP_FreeAimFrame(tcp_aim_state *s,int enabled,const int now[2],const int prev[2],int *delta_pitch,int *delta_yaw,float view[3]){
+-    if(!s||!enabled||!s->aimed||!now||!prev||!delta_pitch||!delta_yaw)return 0;
++/* 0.39.3 deadzone box half sizes in angle shorts (65536 = 360 deg): mode 2 2.5 x 4 deg, mode 3 4 x 7 deg. */
++static const int freeBoxPitch[TCP_FREEAIM_MODES]={0,0,455,728},freeBoxYaw[TCP_FREEAIM_MODES]={0,0,728,1274};
++static int clampi(int v,int lo,int hi){return v<lo?lo:v>hi?hi:v;}
++/* Deadzone free aim, all integer (angle shorts) so the server and the client replay match exactly and
++ * the weapon's world direction (view + offset) follows the input without rounding drift. */
++static int freeAimDeadzone(tcp_aim_state *s,int mode,int msec,const int now[2],const int prev[2],int *delta_pitch,int *delta_yaw,float view[3]){
++    const int bp=freeBoxPitch[mode],by=freeBoxYaw[mode];
++    const int op=clampi(s->free_pitch,-bp,bp),oy=clampi(s->free_yaw,-by,by);
++    int np,ny;
++    if(s->aimed){
++        /* Ease back to the centre: remove o * msec / (msec + 40), at least one short while off centre. */
++        const int m=msec>0?msec:0;
++        int rp=(int)((long long)op*m/(m+40)),ry=(int)((long long)oy*m/(m+40));
++        if(m&&!rp&&op)rp=op>0?1:-1;if(m&&!ry&&oy)ry=oy>0?1:-1;
++        np=op-rp;ny=oy-ry; /* the mouse turns the view directly while aimed */
++    }else{
++        np=clampi(op+shortDelta(now[0],prev[0]),-bp,bp);ny=clampi(oy+shortDelta(now[1],prev[1]),-by,by);
++    }
++    const int sp=np-s->free_pitch,sy=ny-s->free_yaw; /* the weapon took this much; the view takes the rest */
++    s->free_pitch=np;s->free_yaw=ny;
++    if(!sp&&!sy)return 1;
++    *delta_pitch=(int)(int16_t)(uint16_t)((*delta_pitch-sp)&0xffff);*delta_yaw=(int)(int16_t)(uint16_t)((*delta_yaw-sy)&0xffff);
++    if(view){view[0]-=(float)sp*(360.f/65536.f);view[1]-=(float)sy*(360.f/65536.f);
++        if(view[0]>89)view[0]=89;if(view[0]<-89)view[0]=-89;}
++    return 1;
++}
++int TCP_FreeAimFrame(tcp_aim_state *s,int mode,int msec,const int now[2],const int prev[2],int *delta_pitch,int *delta_yaw,float view[3]){
++    if(!s||!now||!prev||!delta_pitch||!delta_yaw)return 0;
++    if(mode<0||mode>=TCP_FREEAIM_MODES)mode=0;
++    if(mode!=s->free_mode){s->free_mode=mode;s->free_pitch=s->free_yaw=0;} /* units differ between modes: start centred */
++    if(mode>=2)return freeAimDeadzone(s,mode,msec,now,prev,delta_pitch,delta_yaw,view);
++    if(mode!=1||!s->aimed)return 0;
++    /* TC:E 0.49b, FREEAIM-RECONSTRUCTION.md (cgame FUN_3000A3B0, qagame FUN_20032710): the same arithmetic as
++     * shared/tcp_math.c tcp_freeaim_step. p = op + dp/2, y = oy + dy/2; inside sqrt(p^2 + y^2/4) <= 3 the view
++     * moves by half the input, beyond it the offsets are scaled back to the ellipse and the view takes the rest.
++     * Stored trunc(2000 + 100 * offset); the view uses the unquantized value. The view change (input minus
++     * offset change) goes into delta_angles, rounded to shorts. */
+     const double dp=shortDelta(now[0],prev[0])*(360.0/65536.0),dy=shortDelta(now[1],prev[1])*(360.0/65536.0);
+     const double op=((double)(s->free_pitch+2000)-2000.0)*0.01,oy=((double)(s->free_yaw+2000)-2000.0)*0.01;
+     double p=op+0.5*dp,y=oy+0.5*dy;const double r=sqrt(p*p+0.25*y*y);
+@@ -99,10 +129,19 @@ int TCP_FreeAimFrame(tcp_aim_state *s,int enabled,const int now[2],const int pre
+     s->free_pitch=(int32_t)(2000.0+100.0*p)-2000;s->free_yaw=(int32_t)(2000.0+100.0*y)-2000;
+     return 1;
+ }
+-/* shared/tcp_pose.c tcp_weapon_angles_compose: decoded pitch/yaw added only when aimed. */
++void TCP_FreeAimOffsets(const tcp_aim_state *s,float out[2]){
++    out[0]=out[1]=0;if(!s||(!s->free_pitch&&!s->free_yaw))return;
++    if(s->free_mode>=2){out[0]=(float)s->free_pitch*(360.f/65536.f);out[1]=(float)s->free_yaw*(360.f/65536.f);return;}
++    if(!s->aimed)return;
++    out[0]=(float)(((double)(float)(s->free_pitch+2000)-2000.0)*(double)0x1.47ae14p-7f);
++    out[1]=(float)(((double)(float)(s->free_yaw+2000)-2000.0)*(double)0x1.47ae14p-7f);
++}
++/* shared/tcp_pose.c tcp_weapon_angles_compose: decoded pitch/yaw added only when aimed (TC:E mode 1). */
+ void TCP_WeaponAngles(const tcp_aim_state *s,const float view[3],float out[3]){
+     out[0]=view[0];out[1]=view[1];out[2]=view[2];
+-    if(!s||!s->aimed||(!s->free_pitch&&!s->free_yaw))return;
++    if(!s||(!s->free_pitch&&!s->free_yaw))return;
++    if(s->free_mode>=2){out[0]=view[0]+(float)s->free_pitch*(360.f/65536.f);out[1]=view[1]+(float)s->free_yaw*(360.f/65536.f);return;}
++    if(!s->aimed)return;
+     out[0]=(float)((double)view[0]+((double)(float)(s->free_pitch+2000)-2000.0)*(double)0x1.47ae14p-7f);
+     out[1]=(float)((double)view[1]+((double)(float)(s->free_yaw+2000)-2000.0)*(double)0x1.47ae14p-7f);
+ }
+diff --git a/game_src/native/tcp_game.c b/game_src/native/tcp_game.c
+index bb65c40..9238bd8 100644
+--- a/game_src/native/tcp_game.c
++++ b/game_src/native/tcp_game.c
+@@ -1478,7 +1478,7 @@ static void fireShot(int n){
+     vec3_t muzzle;memcpy(muzzle,c->ps.origin,sizeof(muzzle));muzzle[2]+=c->ps.viewheight;tcp_shot_geometry shot;
+     if(c->ps.leanf!=0){vec3_t flat={c->ps.viewangles[0],c->ps.viewangles[1],0},ax[3];TCP_Axes(flat,ax);for(int k=0;k<3;k++)muzzle[k]-=ax[1][k]*c->ps.leanf;}
+     tcp_native_gun *gun=GUN(c);
+-    float wa[3];TCP_WeaponAngles(&c->aim,c->ps.viewangles,wa); /* 0.49b weapon angles: view + free aim offsets when aimed */
++    float wa[3];TCP_WeaponAngles(&c->aim,c->ps.viewangles,wa); /* 0.49b weapon angles: view + free aim offsets (TC:E mode: when aimed) */
+     if(!TCP_GunFire(gun,lagCmdTime,wa,muzzle,&shot))return;
+     /* TC:E spread: pre-shot state copies, firing spread gain and view kick, then
+      * the recovered endpoint (hip sway offset + seeded spread, aimed = floor only). */
+@@ -1729,7 +1729,7 @@ static void userinfo(int n){
+      TCP_InfoValue(info,"cg_toggleWalk",value,sizeof(value));clients[n].toggleWalk=atoi(value)!=0;
+      TCP_InfoValue(info,"cg_body",value,sizeof(value));bodyChoice[n]=atoi(value)==1;} /* 0.38.0: body choice */
+     qolUserinfo(n,info); /* TCP_QOL: cg_holdAim */
+-    {char fa[16];TCP_InfoValue(info,"cg_freeAim",fa,sizeof(fa));clients[n].freeAim=atoi(fa)!=0;} /* 0.49b cg_freeAim (userinfo, default 0) */
++    {char fa[16];TCP_InfoValue(info,"cg_freeAim",fa,sizeof(fa));const int m=atoi(fa);clients[n].freeAim=m>=0&&m<TCP_FREEAIM_MODES?m:0;} /* cg_freeAim (userinfo): 0 off, 1 TC:E aimed, 2/3 0.39.3 deadzone */
+     snprintf(config,sizeof(config),"\\n\\%s\\t\\3\\tcp_id\\%u",name[0]?name:"Player",connectionIds[n]);SystemCall(G_SET_CONFIGSTRING,CS_PLAYERS+n,config);playerConfig(n);
+ }
+ /* tcp_loadout [primary] [secondary]: weapon id, gear tag (TH7) or specs name (m4).
+@@ -2084,7 +2084,7 @@ Q_EXPORT intptr_t vmMain(int command,intptr_t a0,intptr_t a1,intptr_t a2,intptr_
+             if(c->ps.onFireStart!=c->lastJump&&!ground)TCP_AimDisturb(&c->aim);
+             if(ground&&!c->wasGround)TCP_AimDisturb(&c->aim);
+             TCP_AimFrameAt(&c->aim,g,c->ps.commandTime,msec,now,c->lastAngles,c->ps.velocity,(c->ps.pm_flags&PMF_DUCKED)!=0,ws,&c->ps.delta_angles[0]);
+-            TCP_FreeAimFrame(&c->aim,c->freeAim,now,c->lastAngles,&c->ps.delta_angles[0],&c->ps.delta_angles[1],c->ps.viewangles); /* 0.36 combat feel: cg_freeAim */
++            TCP_FreeAimFrame(&c->aim,c->freeAim,msec,now,c->lastAngles,&c->ps.delta_angles[0],&c->ps.delta_angles[1],c->ps.viewangles); /* cg_freeAim 0-3 (0.39.3 deadzone modes) */
+             c->lastAngles[0]=now[0];c->lastAngles[1]=now[1];}
+          c->lastJump=c->ps.onFireStart;c->wasGround=ground;}
+         /* Settled lean (unchanged over a command) whenever it differs from the last report. */
+diff --git a/game_src/native/tcp_lagclient.h b/game_src/native/tcp_lagclient.h
+index 472e612..7e3d3e3 100644
+--- a/game_src/native/tcp_lagclient.h
++++ b/game_src/native/tcp_lagclient.h
+@@ -131,7 +131,9 @@ static void lagPredStep(playerState_t *p,const usercmd_t *cmd,int before,int num
+         s->clips[0]=shot.clips[0];s->clips[1]=shot.clips[1];s->pellets=shot.pellets;memcpy(s->pellet,shot.pellet,sizeof(s->pellet));
+     }
+ }
+-static void lagPredEnd(playerState_t *p){if(lagState.valid&&lagStepped)TCP_LagViewAngles(p,&lagLastCmd);}
++static void lagPredEnd(playerState_t *p){if(lagState.valid&&lagStepped){TCP_LagViewAngles(p,&lagLastCmd);
++    /* 0.39.3: the predicted free aim offsets for the view model (the snapshot copy is a round trip late). */
++    p->powerups[TCP_PW_LAG_FREEAIM]=(int)(((unsigned)(uint16_t)(int16_t)lagState.aim.free_pitch)|((unsigned)(uint16_t)(int16_t)lagState.aim.free_yaw<<16));}}
+ 
+ /* Displayed pose of a remote player, as pmAddPlayer drew it this frame. */
+ static int lagDisplayed(int n,int time,vec3_t origin,vec3_t angles){
+diff --git a/game_src/native/tcp_lagpredict.c b/game_src/native/tcp_lagpredict.c
+index 9ca1809..d03bc5f 100644
+--- a/game_src/native/tcp_lagpredict.c
++++ b/game_src/native/tcp_lagpredict.c
+@@ -19,7 +19,7 @@ void TCP_LagPack(playerState_t *ps,const tcp_lag_source *src){
+     int flags=(a->aimed?TCP_LAG_AIMED:0)|(a->duck_flag?TCP_LAG_DUCK:0)|(g->trigger_down?TCP_LAG_TRIGGER:0)|
+               (src->attackHeld?TCP_LAG_ATTACK:0)|(src->zoomHeld?TCP_LAG_ZOOM:0)|(src->reloadHeld?TCP_LAG_RELOADHELD:0)|
+               (src->wasGround?TCP_LAG_GROUND:0)|(g->single_reload?TCP_LAG_SINGLE:0)|(src->canFire?TCP_LAG_CANFIRE:0)|(g->bolt_pending?TCP_LAG_BOLT:0)|
+-              (src->freeAim?TCP_LAG_FREEAIM:0);
++              ((src->freeAim&1)?TCP_LAG_FREEAIM:0)|((src->freeAim&2)?TCP_LAG_FREEAIM2:0);
+     int burst=g->burst_left<0?0:g->burst_left>15?15:g->burst_left;
+     int *p=ps->powerups;
+     p[TCP_PW_LAG_FLAGS]=(int)((unsigned)flags|((unsigned)burst<<12)|(((unsigned)g->mode&0xffu)<<16)|(TCP_LAG_MAGIC<<24));
+@@ -42,7 +42,7 @@ int TCP_LagUnpack(tcp_lag_pred *lp,const playerState_t *ps){
+     a->aimed=(f&TCP_LAG_AIMED)!=0;a->duck_flag=(f&TCP_LAG_DUCK)!=0;a->seed=(uint32_t)p[TCP_PW_LAG_AIMSEED];
+     a->kick=(int)((unsigned)p[TCP_PW_LAG_KICKMOV]&0xffffu);a->movement=(int)((unsigned)p[TCP_PW_LAG_KICKMOV]>>16);
+     a->fire=(int)((unsigned)p[TCP_PW_LAG_FIREPH]&0xffffu);a->phase=(int)((unsigned)p[TCP_PW_LAG_FIREPH]>>16);
+-    a->free_pitch=(int16_t)((unsigned)p[TCP_PW_LAG_FREEAIM]&0xffffu);a->free_yaw=(int16_t)((unsigned)p[TCP_PW_LAG_FREEAIM]>>16);lp->freeAim=(f&TCP_LAG_FREEAIM)!=0;
++    a->free_pitch=(int16_t)((unsigned)p[TCP_PW_LAG_FREEAIM]&0xffffu);a->free_yaw=(int16_t)((unsigned)p[TCP_PW_LAG_FREEAIM]>>16);lp->freeAim=((f&TCP_LAG_FREEAIM)?1:0)|((f&TCP_LAG_FREEAIM2)?2:0);a->free_mode=lp->freeAim;
+     g->row=(unsigned)p[TCP_PW_LAG_ROWWPN]&0xffu;g->pellets=(int)(((unsigned)p[TCP_PW_LAG_ROWWPN]>>8)&0xffu);g->weapon=(int)((unsigned)p[TCP_PW_LAG_ROWWPN]>>16);
+     if(g->weapon<=0||g->weapon>=64||!tcp_weapon_ammo_rules_lookup(TCP_INVENTORY_049B,g->row,&g->rules))return 0;
+     memcpy(&g->scoped,&p[TCP_PW_LAG_SCOPED],4);
+@@ -115,7 +115,7 @@ void TCP_LagPredictCmd(tcp_lag_pred *lp,playerState_t *ps,const usercmd_t *cmd,i
+         if(ps->onFireStart!=lp->lastJump&&!ground)TCP_AimDisturb(a);
+         if(ground&&!lp->wasGround)TCP_AimDisturb(a);
+         TCP_AimFrameAt(a,g,now,msec,cur,lp->lastAngles,ps->velocity,(ps->pm_flags&PMF_DUCKED)!=0,ws,&ps->delta_angles[0]);
+-        TCP_FreeAimFrame(a,lp->freeAim,cur,lp->lastAngles,&ps->delta_angles[0],&ps->delta_angles[1],ps->viewangles);
++        TCP_FreeAimFrame(a,lp->freeAim,msec,cur,lp->lastAngles,&ps->delta_angles[0],&ps->delta_angles[1],ps->viewangles);
+         lp->lastAngles[0]=cur[0];lp->lastAngles[1]=cur[1];
+     }
+     lp->lastJump=ps->onFireStart;lp->wasGround=ground;
+@@ -139,7 +139,7 @@ void TCP_LagPredictCmd(tcp_lag_pred *lp,playerState_t *ps,const usercmd_t *cmd,i
+             TCP_GunBolt(g,attack,now);
+             if(TCP_GunTrigger(g,attack)&&now>=lp->protectUntil){
+                 float muzzle[3]={ps->origin[0],ps->origin[1],ps->origin[2]+ps->viewheight};tcp_shot_geometry shot;
+-                float wa[3];TCP_WeaponAngles(a,ps->viewangles,wa); /* free aim: view + offsets when aimed */
++                float wa[3];TCP_WeaponAngles(a,ps->viewangles,wa); /* free aim: view + offsets (TC:E mode: when aimed) */
+                 if(TCP_GunFire(g,now,wa,muzzle,&shot)){
+                     float speed=sqrtf(ps->velocity[0]*ps->velocity[0]+ps->velocity[1]*ps->velocity[1]+ps->velocity[2]*ps->velocity[2]);
+                     int crouched=(ps->pm_flags&PMF_DUCKED)!=0,prone=(ps->eFlags&EF_PRONE)!=0;
+diff --git a/game_src/native/tcp_lagpredict.h b/game_src/native/tcp_lagpredict.h
+index 233008c..60a1797 100644
+--- a/game_src/native/tcp_lagpredict.h
++++ b/game_src/native/tcp_lagpredict.h
+@@ -41,7 +41,8 @@
+ enum {
+     TCP_LAG_AIMED=0x1, TCP_LAG_DUCK=0x2, TCP_LAG_TRIGGER=0x4, TCP_LAG_ATTACK=0x8,
+     TCP_LAG_ZOOM=0x10, TCP_LAG_RELOADHELD=0x20, TCP_LAG_GROUND=0x40, TCP_LAG_SINGLE=0x80,
+-    TCP_LAG_CANFIRE=0x100, TCP_LAG_BOLT=0x200, TCP_LAG_FREEAIM=0x400 /* cg_freeAim 1 (userinfo) */
++    TCP_LAG_CANFIRE=0x100, TCP_LAG_BOLT=0x200, TCP_LAG_FREEAIM=0x400, /* cg_freeAim bit 0 (userinfo) */
++    TCP_LAG_FREEAIM2=0x800 /* 0.39.3: cg_freeAim bit 1 (2/3 = deadzone modes) */
+ };
+ /* Server-side inputs that are not part of playerState. */
+ typedef struct {
+@@ -60,7 +61,7 @@ typedef struct {
+     tcp_aim_state aim;tcp_native_gun gun;
+     int lastAngles[2],lastJump,wasGround,attackHeld,zoomHeld,reloadHeld,canFire,protectUntil;
+     int holdAim;              /* cg_holdAim (client only, not packed): aim while +zoom is held, as qolAimFlip */
+-    int freeAim;              /* the server's cg_freeAim for this player (TCP_LAG_FREEAIM) */
++    int freeAim;              /* the server's cg_freeAim for this player, 0-3 (TCP_LAG_FREEAIM | TCP_LAG_FREEAIM2) */
+     int focus,focusStart;     /* ADS focus state (holdable TCP_HOLD_FOCUS / TCP_HOLD_FOCUSTIME) */
+ } tcp_lag_pred;
+ int TCP_LagUnpack(tcp_lag_pred *lp,const playerState_t *ps);
+diff --git a/game_src/native/tcp_native_combat.h b/game_src/native/tcp_native_combat.h
+index eef936d..9a3290a 100644
+--- a/game_src/native/tcp_native_combat.h
++++ b/game_src/native/tcp_native_combat.h
+@@ -78,7 +78,9 @@ int TCP_RegionHit(tcp_region_health *health,int damage,const float impact[3],con
+ typedef struct {
+     int32_t aimed,kick,movement,fire,phase,pre_movement,pre_fire,duck_flag;
+     uint32_t seed;
+-    int32_t free_pitch,free_yaw; /* free aim offsets in 0.01 deg (0.49b ps+0x3a4/+0x3a8 store 2000 + these) */
++    int32_t free_pitch,free_yaw; /* free aim offsets: 0.01 deg in TC:E mode 1 (0.49b ps+0x3a4/+0x3a8 store 2000 + these),
++                                  * angle shorts (360/65536 deg) in the deadzone modes 2/3 */
++    int32_t free_mode;           /* 0.39.3: cg_freeAim of this player, 0 off, 1 TC:E aimed, 2 deadzone, 3 wide deadzone */
+ } tcp_aim_state;
+ typedef struct { int32_t move_decay,fire_decay,fire_gain,hip_recoil,aimed_recoil; } tcp_recoil_params;
+ int tcp_recoil_lookup(uint32_t row,tcp_recoil_params *out);
+@@ -97,11 +99,21 @@ void TCP_AimShot(tcp_aim_state *s,const tcp_native_gun *g,float speed,int crouch
+ /* Final endpoint (pre-collision) with the recovered 0.49b spread and hip offset. */
+ int TCP_AimEndpoint(const tcp_aim_state *s,const tcp_native_gun *g,const float angles[3],const float muzzle[3],
+                     int crouched,int prone,float endpoint[3]);
+-/* TC:E 0.49b free aim (cg_freeAim 1): while aimed, half of each input change moves the view and the
+- * rest the weapon, inside a 3 x 6 degree ellipse. Updates the offsets, corrects delta_angles (short
+- * units) and the view of this command. Returns 1 when it ran. */
+-int TCP_FreeAimFrame(tcp_aim_state *s,int enabled,const int angles_now[2],const int angles_prev[2],
++/* Free aim (cg_freeAim, userinfo):
++ *  1 TC:E 0.49b: while aimed, half of each input change moves the view and the rest the weapon, inside
++ *    a 3 x 6 degree ellipse.
++ *  2/3 0.39.3 deadzone: at the hip the mouse moves only the weapon inside a box (2: 2.5 deg up/down,
++ *    4 deg left/right; 3: 4 and 7 deg); pushing past the edge turns the view. Aiming down the sights
++ *    brings the sights to the weapon: the offset eases back to the centre (40 ms time constant) while
++ *    the view turns by the same amount, so the weapon keeps pointing at the same spot.
++ * msec is the command duration (deadzone modes only). Updates the offsets, corrects delta_angles
++ * (short units) and the view of this command. Returns 1 when it ran. */
++#define TCP_FREEAIM_MODES 4
++int TCP_FreeAimFrame(tcp_aim_state *s,int mode,int msec,const int angles_now[2],const int angles_prev[2],
+                      int *delta_pitch,int *delta_yaw,float view[3]);
+-/* Weapon angles: the view plus the decoded free aim offsets when aimed (noTacMode is 0 for every 0.49b firearm). */
++/* Decoded free aim offsets in degrees (pitch, yaw) for the mode; 0 when none apply. */
++void TCP_FreeAimOffsets(const tcp_aim_state *s,float out[2]);
++/* Weapon angles: the view plus the decoded free aim offsets (TC:E mode 1: when aimed; deadzone modes: always).
++ * noTacMode is 0 for every 0.49b firearm. */
+ void TCP_WeaponAngles(const tcp_aim_state *s,const float view[3],float out[3]);
+ #endif
+diff --git a/game_src/native/tcp_viewfx.h b/game_src/native/tcp_viewfx.h
+index 04bafb5..4b6c685 100644
+--- a/game_src/native/tcp_viewfx.h
++++ b/game_src/native/tcp_viewfx.h
+@@ -284,12 +284,15 @@ static void vfxGun(const refdef_t *rd,const playerState_t *p,int weapon,int kick
+     /* 0.38.1: the hip gun no longer follows the 0.49b sway ring (0.38.0 cg_gunAimPoint). The ring phase turns about six
+      * times a second while the player moves or turns (TCP_AimFrameAt, phase +50 per 8 ms tick), so the barrel and arms
+      * circled ~1.6 degrees at 6 Hz whenever the player moved. Back to the 0.37 idle drift at the hip; shots are unchanged.
+-     * Aimed: the 0.49b gun (cgame FUN_30073270) turns by the free aim offsets times the aim blend (cg_freeAim 1 only). */
++     * Aimed: the 0.49b gun (cgame FUN_30073270) turns by the free aim offsets times the aim blend (cg_freeAim 1).
++     * Deadzone free aim (cg_freeAim 2/3, 0.39.3): the gun turns by the full offsets, at the hip and aimed. */
+     {const int lag=((unsigned)p->powerups[TCP_PW_LAG_FLAGS]>>24)==TCP_LAG_MAGIC;
+      vfx.hip[0]=vfx.hip[1]=0;vfx.hipTime=time;
+      if(!aim){const float s=sinf(time*.001f)*.8f;a[0]+=s;a[1]+=s;a[2]+=s;}
+-     if(lag&&aimed>0){const unsigned fa=(unsigned)p->powerups[TCP_PW_LAG_FREEAIM];
+-         a[0]+=(int16_t)(fa&0xffffu)*.01f*aimed;a[1]+=(int16_t)(fa>>16)*.01f*aimed;}}
++     const unsigned lf=(unsigned)p->powerups[TCP_PW_LAG_FLAGS],fa=(unsigned)p->powerups[TCP_PW_LAG_FREEAIM];
++     if(lag&&(lf&TCP_LAG_FREEAIM2)){ /* 0.39.3 deadzone free aim (cg_freeAim 2/3): the gun points where the shot goes, hip and aimed */
++         a[0]+=(int16_t)(fa&0xffffu)*(360.f/65536.f);a[1]+=(int16_t)(fa>>16)*(360.f/65536.f);}
++     else if(lag&&aimed>0){a[0]+=(int16_t)(fa&0xffffu)*.01f*aimed;a[1]+=(int16_t)(fa>>16)*.01f*aimed;}}
+     /* 0.37.0: the weapon's own .weap gunViewAngles (pitch yaw roll), set by pmAddViewWeapon. TC:E authored the
+      * SIG552 view model with -5 pitch; without it the sights sat low and every shot landed above them. */
+     /* 0.37.1 weapon switch (0.49b FUN_3006f4b0, view rows DROP/RAISE): the gun drops along the view axes,
+@@ -320,7 +323,7 @@ static void vfxSoundInit(void){
+     memset(&vfxSnd,0,sizeof(vfxSnd));
+     SystemCall(CG_CVAR_REGISTER,&vfxBreathCvar,"cg_enableBreath","1",CVAR_ARCHIVE);
+     SystemCall(CG_CVAR_REGISTER,&vfxGunAimCvar,"cg_gunAimPoint","1",CVAR_ARCHIVE);  /* 0.36 combat feel; unused since 0.38.1 (kept so configs and menus stay valid) */
+-    SystemCall(CG_CVAR_REGISTER,&vfxFreeAimCvar,"cg_freeAim","0",CVAR_ARCHIVE|CVAR_USERINFO); /* TC:E 0.49b free aim, default off as 0.49b */
++    SystemCall(CG_CVAR_REGISTER,&vfxFreeAimCvar,"cg_freeAim","0",CVAR_ARCHIVE|CVAR_USERINFO); /* free aim: 0 off (default), 1 TC:E 0.49b aimed, 2 deadzone, 3 wide deadzone (0.39.3) */
+     vfxHeart=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,"sound/misc/heartbeat.wav",qfalse);
+     for(int i=0;i<2;i++){char n[48];snprintf(n,sizeof(n),"sound/misc/breathin%d.wav",i+1);vfxBreathIn[i]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,n,qfalse);
+         snprintf(n,sizeof(n),"sound/misc/breathout%d.wav",i+1);vfxBreathOut[i]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,n,qfalse);}
+diff --git a/game_src/tests/combat_feel_probe.c b/game_src/tests/combat_feel_probe.c
+index 64d30cb..75a1733 100644
+--- a/game_src/tests/combat_feel_probe.c
++++ b/game_src/tests/combat_feel_probe.c
+@@ -20,7 +20,7 @@ int main(void){
+     {struct{int dp,dy;double vp,vy;int sp,sy;}t[]={{0,0,0,0,2000,2000},{364,728,1,2,2099,2199},{3641,0,17,0,2300,2000},{0,3641,0,14,2000,2600}};
+      for(unsigned i=0;i<sizeof(t)/sizeof(t[0]);i++){
+         tcp_aim_state s;memset(&s,0,sizeof(s));s.aimed=1;int now[2]={t[i].dp,t[i].dy},prev[2]={0,0},d[2]={0,0};float view[3]={0,0,0};
+-        CHECK(TCP_FreeAimFrame(&s,1,now,prev,&d[0],&d[1],view),"step %u",i);
++        CHECK(TCP_FreeAimFrame(&s,1,8,now,prev,&d[0],&d[1],view),"step %u",i);
+         double vp=(t[i].dp+d[0])*360.0/65536,vy=(t[i].dy+d[1])*360.0/65536; /* view = input + delta_angles */
+         CHECK(fabs(vp-t[i].vp)<.02&&fabs(vy-t[i].vy)<.02,"table %u view %.4f,%.4f want %.1f,%.1f",i,vp,vy,t[i].vp,t[i].vy);
+         CHECK(abs(s.free_pitch+2000-t[i].sp)<=1&&abs(s.free_yaw+2000-t[i].sy)<=1,"table %u stored %d,%d want %d,%d",i,s.free_pitch+2000,s.free_yaw+2000,t[i].sp,t[i].sy);}}
+@@ -32,7 +32,7 @@ int main(void){
+         int dps=(int)(int16_t)(uint16_t)((now[0]-prev[0])&0xffff),dys=(int)(int16_t)(uint16_t)((now[1]-prev[1])&0xffff);
+         tcp_aim_result ref;CHECK(tcp_freeaim_step(0,0,dps*360.0/65536,dys*360.0/65536,s.free_pitch+2000,s.free_yaw+2000,1,1,0,&ref),"ref %d",i);
+         int before[2]={delta[0],delta[1]};float view[3]={0,0,0};
+-        CHECK(TCP_FreeAimFrame(&s,1,now,prev,&delta[0],&delta[1],view),"run %d",i);
++        CHECK(TCP_FreeAimFrame(&s,1,8,now,prev,&delta[0],&delta[1],view),"run %d",i);
+         CHECK(s.free_pitch+2000==ref.encoded_pitch&&s.free_yaw+2000==ref.encoded_yaw,"walk %d stored %d,%d ref %d,%d",i,s.free_pitch+2000,s.free_yaw+2000,ref.encoded_pitch,ref.encoded_yaw);
+         double vc[2]={(dps+(int16_t)(uint16_t)((delta[0]-before[0])&0xffff))*360.0/65536,(dys+(int16_t)(uint16_t)((delta[1]-before[1])&0xffff))*360.0/65536};
+         double e=fmax(fabs(vc[0]-ref.view_pitch),fabs(vc[1]-ref.view_yaw));if(e>maxView)maxView=e;
+@@ -48,8 +48,8 @@ int main(void){
+      printf("free aim walk: 20000 steps match the reference offsets; view within %.4f deg; max ellipse radius %.3f; weapon travel per command within %.4f deg of the input (0.49b storage truncation)\n",maxView,maxR,maxWeapon);}
+     /* 3. Off: cg_freeAim 0 or not aimed changes nothing. */
+     {tcp_aim_state s;memset(&s,0,sizeof(s));int now[2]={500,500},prev[2]={0,0},d[2]={7,9};float v[3]={1,2,3};
+-     CHECK(!TCP_FreeAimFrame(&s,1,now,prev,&d[0],&d[1],v)&&d[0]==7&&d[1]==9&&v[0]==1&&!s.free_pitch,"not aimed");s.aimed=1;
+-     CHECK(!TCP_FreeAimFrame(&s,0,now,prev,&d[0],&d[1],v)&&d[0]==7&&d[1]==9&&v[1]==2&&!s.free_yaw,"cg_freeAim 0");
++     CHECK(!TCP_FreeAimFrame(&s,1,8,now,prev,&d[0],&d[1],v)&&d[0]==7&&d[1]==9&&v[0]==1&&!s.free_pitch,"not aimed");s.aimed=1;
++     CHECK(!TCP_FreeAimFrame(&s,0,8,now,prev,&d[0],&d[1],v)&&d[0]==7&&d[1]==9&&v[1]==2&&!s.free_yaw,"cg_freeAim 0");
+      float w[3];TCP_WeaponAngles(&s,v,w);CHECK(w[0]==v[0]&&w[1]==v[1],"weapon angles with zero offsets");}
+     /* 4. Pack / unpack carries the offsets and the preference. */
+     {tcp_native_gun g;CHECK(TCP_GunInit(&g,100),"gun");tcp_aim_state a;memset(&a,0,sizeof(a));a.aimed=1;a.free_pitch=-287;a.free_yaw=593;
+diff --git a/game_src/tests/freeaim_deadzone_probe.c b/game_src/tests/freeaim_deadzone_probe.c
+new file mode 100644
+index 0000000..056a764
+--- /dev/null
++++ b/game_src/tests/freeaim_deadzone_probe.c
+@@ -0,0 +1,98 @@
++/* GPL-3.0-or-later. 0.39.3 free aim deadzone probe (test only): cg_freeAim 2/3. At the hip the mouse moves the
++ * weapon inside the box and the view turns only past its edge; the weapon's world direction (view + offset) is
++ * always exactly the mouse input, at every frame rate. Aiming down the sights eases the offset to the centre
++ * while the view turns by the same amount (the weapon keeps its world direction). Snapshot pack/unpack carries
++ * the mode and the offsets, so the client replay matches the server. Shots leave along view + offset.
++ * Build: -DMODLIB -I <etlegacy/src> with tcp_lagpredict.c, tcp_move.c and the combat sources. */
++#include "../native/tcp_lagpredict.h"
++#include "../native/tcp_native_combat.h"
++#include <math.h>
++#include <stdio.h>
++#include <string.h>
++#include <stdlib.h>
++#define CHECK(c,...) do{if(!(c)){printf("FAIL %s:%d ",__FILE__,__LINE__);printf(__VA_ARGS__);puts("");return 1;}}while(0)
++static unsigned rng=777;static int rnd(int lo,int hi){rng=rng*1103515245u+12345u;return lo+(int)((rng>>8)%(unsigned)(hi-lo+1));}
++static int s16(int v){return (int)(int16_t)(uint16_t)(v&0xffff);}
++/* One command as qagame runs it: input angles now (shorts), delta_angles, view from both. */
++typedef struct {tcp_aim_state a;int delta[2],prev[2],now[2];float view[3];} sim_t;
++static void simInit(sim_t *s){memset(s,0,sizeof(*s));}
++static void simStep(sim_t *s,int mode,int msec,int dp,int dy){
++    s->now[0]=s16(s->prev[0]+dp);s->now[1]=s16(s->prev[1]+dy);
++    for(int k=0;k<2;k++)s->view[k]=(float)s16(s->now[k]+s->delta[k])*(360.f/65536.f);
++    TCP_FreeAimFrame(&s->a,mode,msec,s->now,s->prev,&s->delta[0],&s->delta[1],s->view);
++    s->prev[0]=s->now[0];s->prev[1]=s->now[1];
++}
++static int viewShort(const sim_t *s,int k){return s16(s->now[k]+s->delta[k]);}
++int main(void){
++    const int boxP[4]={0,0,455,728},boxY[4]={0,0,728,1274};
++    /* 1. Hip: inside the box only the weapon moves; the weapon's world direction is the input, exactly. */
++    for(int mode=2;mode<=3;mode++){sim_t s;simInit(&s);
++        simStep(&s,mode,8,0,0);
++        simStep(&s,mode,8,100,-300);
++        CHECK(viewShort(&s,0)==0&&viewShort(&s,1)==0,"mode %d: view moved inside the box (%d,%d)",mode,viewShort(&s,0),viewShort(&s,1));
++        CHECK(s.a.free_pitch==100&&s.a.free_yaw==-300,"mode %d offsets %d %d",mode,s.a.free_pitch,s.a.free_yaw);
++        /* push past the edge: the gun stops at the edge, the view takes the rest */
++        simStep(&s,mode,8,0,-3000);
++        CHECK(s.a.free_yaw==-boxY[mode],"mode %d yaw edge %d",mode,s.a.free_yaw);
++        CHECK(viewShort(&s,1)==-3300+boxY[mode],"mode %d view yaw %d",mode,viewShort(&s,1));
++        CHECK(s.a.free_pitch==100&&viewShort(&s,0)==0,"mode %d pitch disturbed by a yaw push",mode);
++        /* back the other way: gun travels across the box before the view turns again */
++        simStep(&s,mode,8,0,boxY[mode]*2);
++        CHECK(s.a.free_yaw==boxY[mode]&&viewShort(&s,1)==-3300+boxY[mode],"mode %d return travel",mode);
++        float w[3];TCP_WeaponAngles(&s.a,s.view,w);
++        CHECK(fabsf(w[1]-(float)s16(s.now[1])*(360.f/65536.f))<1e-3f,"mode %d weapon yaw %.4f vs input %.4f",mode,w[1],(float)s16(s.now[1])*(360.f/65536.f));
++    }
++    /* 2. Random walk at 1/2/4/8 ms frames: view + offset == input on both axes after every command, the offsets
++     * never leave the box, and the view never moves while the weapon is inside the box. */
++    {int steps=0;for(int mode=2;mode<=3;mode++)for(int ms=1;ms<=8;ms*=2){sim_t s;simInit(&s);
++        for(int i=0;i<40000;i++){const int big=rnd(0,20)==0;int dp=big?rnd(-900,900):rnd(-12,12),dy=big?rnd(-1500,1500):rnd(-20,20);
++            const int op=s.a.free_pitch,oy=s.a.free_yaw,vp=viewShort(&s,0),vy=viewShort(&s,1);
++            simStep(&s,mode,ms,dp,dy);steps++;
++            CHECK(s16(viewShort(&s,0)+s.a.free_pitch-s.now[0])==0&&s16(viewShort(&s,1)+s.a.free_yaw-s.now[1])==0,
++                  "mode %d %d ms step %d: weapon %d,%d input %d,%d",mode,ms,i,viewShort(&s,0)+s.a.free_pitch,viewShort(&s,1)+s.a.free_yaw,s.now[0],s.now[1]);
++            CHECK(abs(s.a.free_pitch)<=boxP[mode]&&abs(s.a.free_yaw)<=boxY[mode],"box");
++            if(abs(op+dp)<=boxP[mode])CHECK(viewShort(&s,0)==vp,"pitch view moved inside the box");
++            if(abs(oy+dy)<=boxY[mode])CHECK(viewShort(&s,1)==vy,"yaw view moved inside the box");}}
++     printf("deadzone walk: %d commands at 1/2/4/8 ms, weapon direction == mouse input exactly, view still inside the box\n",steps);}
++    /* 3. Aimed: the offset eases to the centre, the view turns by the same amount (the weapon holds its world
++     * direction with no input), and the time to settle is about the same at every frame rate. */
++    {double t90[9]={0};for(int ms=1;ms<=8;ms*=2){sim_t s;simInit(&s);
++        simStep(&s,3,ms,0,0);simStep(&s,3,ms,600,-1200);s.a.aimed=1;
++        const int wp=viewShort(&s,0)+s.a.free_pitch,wy=viewShort(&s,1)+s.a.free_yaw;int t=0;
++        while(s.a.free_pitch||s.a.free_yaw){simStep(&s,3,ms,0,0);t+=ms;
++            CHECK(viewShort(&s,0)+s.a.free_pitch==wp&&viewShort(&s,1)+s.a.free_yaw==wy,"aimed ease moved the weapon");
++            if(!t90[ms]&&abs(s.a.free_yaw)<=120)t90[ms]=t;
++            CHECK(t<2000,"aimed ease never settles (%d ms frames)",ms);}
++        /* aimed input turns the view 1:1 */
++        const int vy=viewShort(&s,1);simStep(&s,3,ms,0,250);CHECK(viewShort(&s,1)==s16(vy+250)&&!s.a.free_yaw,"aimed input");}
++     CHECK(t90[1]>60&&t90[1]<140&&t90[8]>60&&t90[8]<140,"settle 90%% times %.0f / %.0f ms",t90[1],t90[8]);
++     printf("aimed: weapon holds its direction while the sights come to it; 90%% settled in %.0f/%.0f/%.0f/%.0f ms at 1/2/4/8 ms frames\n",t90[1],t90[2],t90[4],t90[8]);}
++    /* 4. Pack / unpack: mode 0-3 and the offsets ride the snapshot; continuing from an unpacked state gives the
++     * same result as the server's own state (client replay == server). */
++    {tcp_native_gun g;CHECK(TCP_GunInit(&g,100),"gun");
++     for(int mode=0;mode<4;mode++){sim_t s;simInit(&s);for(int i=0;i<50;i++)simStep(&s,mode,8,rnd(-60,60),rnd(-90,90));
++        tcp_lag_source src;memset(&src,0,sizeof(src));src.aim=&s.a;src.gun=&g;src.freeAim=mode;src.lastAngles[0]=s.prev[0];src.lastAngles[1]=s.prev[1];
++        playerState_t ps;memset(&ps,0,sizeof(ps));TCP_LagPack(&ps,&src);
++        tcp_lag_pred lp;CHECK(TCP_LagUnpack(&lp,&ps),"unpack");
++        CHECK(lp.freeAim==mode&&lp.aim.free_mode==mode&&lp.aim.free_pitch==s.a.free_pitch&&lp.aim.free_yaw==s.a.free_yaw,"round trip mode %d",mode);
++        sim_t c=s;c.a=lp.aim;
++        for(int i=0;i<200;i++){const int dp=rnd(-80,80),dy=rnd(-120,120),ms=rnd(1,9);simStep(&s,mode,ms,dp,dy);simStep(&c,mode,ms,dp,dy);
++            CHECK(s.delta[0]==c.delta[0]&&s.delta[1]==c.delta[1]&&s.a.free_pitch==c.a.free_pitch&&s.a.free_yaw==c.a.free_yaw,"replay diverged mode %d",mode);}}
++     puts("pack/unpack: modes 0-3 and offsets round trip; replay from the snapshot matches the server");}
++    /* 5. Mode change starts centred; off leaves the view alone. */
++    {sim_t s;simInit(&s);simStep(&s,2,8,0,0);simStep(&s,2,8,50,50);CHECK(s.a.free_pitch==50,"setup");
++     simStep(&s,0,8,10,10);CHECK(!s.a.free_pitch&&!s.a.free_yaw&&s.a.free_mode==0,"switch off");
++     float v[3]={1,2,0},w[3];TCP_WeaponAngles(&s.a,v,w);CHECK(w[0]==1&&w[1]==2,"off weapon angles");}
++    /* 6. Hip shots leave along view + offset: the mean of 400 M4 hip shots moves by exactly the offset (the hip
++     * sway point itself stays where TC:E puts it). */
++    {tcp_native_gun g;CHECK(TCP_GunInit(&g,100),"gun");float view[3]={-5,40,0},muzzle[3]={0,0,0};double mean[2][2];
++     for(int pass=0;pass<2;pass++){tcp_aim_state a;memset(&a,0,sizeof(a));a.free_mode=3;a.phase=250;if(pass){a.free_pitch=500;a.free_yaw=-1000;}
++        float w[3];TCP_WeaponAngles(&a,view,w);double m[3]={0,0,0};
++        for(int k=0;k<400;k++){g.seed=(uint32_t)(k*7919+3);float e[3];CHECK(TCP_AimEndpoint(&a,&g,w,muzzle,0,0,e),"endpoint");
++            double l=sqrt(e[0]*e[0]+e[1]*e[1]+e[2]*e[2]);for(int i=0;i<3;i++)m[i]+=e[i]/l;}
++        mean[pass][1]=atan2(m[1],m[0])*180/M_PI;mean[pass][0]=-atan2(m[2],sqrt(m[0]*m[0]+m[1]*m[1]))*180/M_PI;}
++     const double dp=mean[1][0]-mean[0][0],dy=mean[1][1]-mean[0][1],wp=500*360.0/65536,wy=-1000*360.0/65536;
++     CHECK(fabs(dp-wp)<.05&&fabs(dy-wy)<.05,"hip mean shot moved %.3f,%.3f for an offset of %.3f,%.3f",dp,dy,wp,wy);
++     printf("hip M4, offset (%.2f, %.2f) deg: mean shot moved (%.3f, %.3f) deg\n",wp,wy,dp,dy);}
++    puts("PASS: free aim deadzone");return 0;
++}

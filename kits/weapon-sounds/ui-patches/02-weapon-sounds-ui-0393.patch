@@ -1,0 +1,183 @@
+diff -ru a/analysis_scripts/platinum_audio.py b/analysis_scripts/platinum_audio.py
+--- a/analysis_scripts/platinum_audio.py	2026-11-18 23:38:32.531888000 +0000
++++ b/analysis_scripts/platinum_audio.py	2026-11-18 23:38:46.804344121 +0000
+@@ -3,6 +3,7 @@
+ Volumes: s_masterVolume (everything, voice chat and music included), s_volume (effects),
+ s_ambientVolume (map ambience loops), s_musicvolume, s_uiVolume (menu sounds).
+ 3D sound: s_alHRTF (latched, applies on snd_restart), s_alOcclusion, s_alReverb.
++Weapons: cg_weaponSounds (0.39.3: 1 Remastered recordings, 0 Original TC:E sounds).
+ Effects: cg_bulletSnap, cg_concussionMuffle, cg_tinnitus, s_alDuck, s_alDynamics.
+ Output device: s_alNextDevice steps s_alDevice through s_alAvailableDevices (ui_audioDevice
+ shows the choice); APPLY runs snd_restart. Presets: Headphones, Speakers, Night.
+@@ -40,19 +41,20 @@
+  itemDef { name "presetHp" rect 36 358 360 20 text "Headphones: binaural 3D sound. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "1" } }
+  itemDef { name "presetSp" rect 36 358 360 20 text "Speakers: plain stereo. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "2" } }
+  itemDef { name "presetNt" rect 36 358 360 20 text "Night: gunfire and blasts 6 dB lower, ambience ducks more." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "3" } }
+- MULTI(454, 170, 362, 18, "Headphone 3D audio:", .20, 14, "s_alHRTF", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, "Binaural sound for headphones; applies after APPLY")
+- YESNO(454, 194, 362, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
+- YESNO(454, 218, 362, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
+- YESNO(454, 242, 362, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
+- YESNO(454, 266, 362, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
+- MULTI(454, 290, 362, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
+- MULTI(454, 314, 362, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
+- MULTI(454, 338, 362, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
+- itemDef { name "deviceLabel" rect 454 362 120 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
+- itemDef { name "deviceName" rect 540 362 276 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
++ MULTI(454, 170, 362, 18, "Weapon sounds:", .22, 14, "cg_weaponSounds", cvarFloatList { "Remastered" 1 "Original" 0 }, "Remastered: new recordings of the real guns. Original: the classic sounds")
++ MULTI(454, 192, 362, 18, "Headphone 3D audio:", .20, 14, "s_alHRTF", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, "Binaural sound for headphones; applies after APPLY")
++ YESNO(454, 214, 362, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
++ YESNO(454, 236, 362, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
++ YESNO(454, 258, 362, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
++ YESNO(454, 280, 362, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
++ MULTI(454, 302, 362, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
++ MULTI(454, 324, 362, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
++ MULTI(454, 346, 362, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
++ itemDef { name "deviceLabel" rect 454 366 120 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
++ itemDef { name "deviceName" rect 540 366 276 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
+  BUTTON(454, 388, 176, 22, "NEXT DEVICE", .18, 16, exec "s_alNextDevice")
+  BUTTON(640, 388, 176, 22, "APPLY", .18, 16, exec "snd_restart")
+- BUTTON(36, 388, 360, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set s_alOcclusion 1; set s_alReverb 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
++ BUTTON(36, 388, 360, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set s_alOcclusion 1; set s_alReverb 1; set cg_weaponSounds 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
+ '''
+     out += text('note', 36, 414, 560, 'APPLY restarts sound and graphics once (about two seconds).', '.16')
+     out += '}\n'
+diff -ru a/release_src/platinum_ui/ui/main.menu b/release_src/platinum_ui/ui/main.menu
+--- a/release_src/platinum_ui/ui/main.menu	2026-11-18 23:38:32.533465967 +0000
++++ b/release_src/platinum_ui/ui/main.menu	2026-11-18 23:38:46.805792906 +0000
+@@ -1118,19 +1118,20 @@
+  itemDef { name "presetHp" rect 204.0 358 287.1 20 text "Headphones: binaural 3D sound. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "1" } }
+  itemDef { name "presetSp" rect 204.0 358 287.1 20 text "Speakers: plain stereo. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "2" } }
+  itemDef { name "presetNt" rect 204.0 358 287.1 20 text "Night: gunfire and blasts 6 dB lower, ambience ducks more." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "3" } }
+- MULTIACTION(537.3, 170,288.7, 18, "Headphone 3D audio:", .20, 14, "ui_audioHrtf", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, copycvar ui_audioHrtf s_alHRTF, "Binaural sound for headphones; applies after APPLY")
+- YESNO(537.3, 194,288.7, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
+- YESNO(537.3, 218,288.7, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
+- YESNO(537.3, 242,288.7, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
+- YESNO(537.3, 266,288.7, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
+- MULTI(537.3, 290,288.7, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
+- MULTI(537.3, 314,288.7, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
+- MULTI(537.3, 338,288.7, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
+- itemDef { name "deviceLabel" rect 537.3 362 95.7 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
+- itemDef { name "deviceName" rect 605.9 362 220.1 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
++ MULTI(537.3, 170,288.7, 18, "Weapon sounds:", .22, 14, "cg_weaponSounds", cvarFloatList { "Remastered" 1 "Original" 0 }, "Remastered: new recordings of the real guns. Original: the classic sounds")
++ MULTIACTION(537.3, 192,288.7, 18, "Headphone 3D audio:", .20, 14, "ui_audioHrtf", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, copycvar ui_audioHrtf s_alHRTF, "Binaural sound for headphones; applies after APPLY")
++ YESNO(537.3, 214,288.7, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
++ YESNO(537.3, 236,288.7, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
++ YESNO(537.3, 258,288.7, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
++ YESNO(537.3, 280,288.7, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
++ MULTI(537.3, 302,288.7, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
++ MULTI(537.3, 324,288.7, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
++ MULTI(537.3, 346,288.7, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
++ itemDef { name "deviceLabel" rect 537.3 366 95.7 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
++ itemDef { name "deviceName" rect 605.9 366 220.1 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
+  BUTTON(537.3, 388,140.3, 22, "NEXT DEVICE", .18, 16, exec "s_alNextDevice")
+  BUTTON(685.7, 388,140.3, 22, "APPLY", .18, 16, exec "snd_restart")
+- BUTTON(204.0, 388,287.1, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set ui_audioHrtf -1; set s_alOcclusion 1; set s_alReverb 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
++ BUTTON(204.0, 388,287.1, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set ui_audioHrtf -1; set s_alOcclusion 1; set s_alReverb 1; set cg_weaponSounds 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
+  itemDef { name "note" rect 204.0 414 446.6 24 text "APPLY restarts sound and graphics once (about two seconds)." textfont UI_FONT_COURBD_21 textscale .16 textaligny 18 forecolor .76 .82 .86 1 visible 1 decoration }
+ 
+  itemDef { name "openFade" rect -600 -300 2052 1080 style WINDOW_STYLE_FILLED background "white" backcolor .035 .043 .055 1 visible 0 decoration }
+diff -ru a/release_src/platinum_ui/ui_obj/main.menu b/release_src/platinum_ui/ui_obj/main.menu
+--- a/release_src/platinum_ui/ui_obj/main.menu	2026-11-18 23:38:32.535055531 +0000
++++ b/release_src/platinum_ui/ui_obj/main.menu	2026-11-18 23:38:46.806497262 +0000
+@@ -1118,19 +1118,20 @@
+  itemDef { name "presetHp" rect 204.0 358 287.1 20 text "Headphones: binaural 3D sound. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "1" } }
+  itemDef { name "presetSp" rect 204.0 358 287.1 20 text "Speakers: plain stereo. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "2" } }
+  itemDef { name "presetNt" rect 204.0 358 287.1 20 text "Night: gunfire and blasts 6 dB lower, ambience ducks more." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "3" } }
+- MULTIACTION(537.3, 170,288.7, 18, "Headphone 3D audio:", .20, 14, "ui_audioHrtf", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, copycvar ui_audioHrtf s_alHRTF, "Binaural sound for headphones; applies after APPLY")
+- YESNO(537.3, 194,288.7, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
+- YESNO(537.3, 218,288.7, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
+- YESNO(537.3, 242,288.7, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
+- YESNO(537.3, 266,288.7, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
+- MULTI(537.3, 290,288.7, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
+- MULTI(537.3, 314,288.7, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
+- MULTI(537.3, 338,288.7, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
+- itemDef { name "deviceLabel" rect 537.3 362 95.7 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
+- itemDef { name "deviceName" rect 605.9 362 220.1 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
++ MULTI(537.3, 170,288.7, 18, "Weapon sounds:", .22, 14, "cg_weaponSounds", cvarFloatList { "Remastered" 1 "Original" 0 }, "Remastered: new recordings of the real guns. Original: the classic sounds")
++ MULTIACTION(537.3, 192,288.7, 18, "Headphone 3D audio:", .20, 14, "ui_audioHrtf", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, copycvar ui_audioHrtf s_alHRTF, "Binaural sound for headphones; applies after APPLY")
++ YESNO(537.3, 214,288.7, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
++ YESNO(537.3, 236,288.7, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
++ YESNO(537.3, 258,288.7, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
++ YESNO(537.3, 280,288.7, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
++ MULTI(537.3, 302,288.7, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
++ MULTI(537.3, 324,288.7, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
++ MULTI(537.3, 346,288.7, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
++ itemDef { name "deviceLabel" rect 537.3 366 95.7 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
++ itemDef { name "deviceName" rect 605.9 366 220.1 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
+  BUTTON(537.3, 388,140.3, 22, "NEXT DEVICE", .18, 16, exec "s_alNextDevice")
+  BUTTON(685.7, 388,140.3, 22, "APPLY", .18, 16, exec "snd_restart")
+- BUTTON(204.0, 388,287.1, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set ui_audioHrtf -1; set s_alOcclusion 1; set s_alReverb 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
++ BUTTON(204.0, 388,287.1, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set ui_audioHrtf -1; set s_alOcclusion 1; set s_alReverb 1; set cg_weaponSounds 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
+  itemDef { name "note" rect 204.0 414 446.6 24 text "APPLY restarts sound and graphics once (about two seconds)." textfont UI_FONT_COURBD_21 textscale .16 textaligny 18 forecolor .76 .82 .86 1 visible 1 decoration }
+ 
+  itemDef { name "openFade" rect -600 -300 2052 1080 style WINDOW_STYLE_FILLED background "white" backcolor .035 .043 .055 1 visible 0 decoration }
+diff -ru a/release_src/platinum_ui/ui_robj/main.menu b/release_src/platinum_ui/ui_robj/main.menu
+--- a/release_src/platinum_ui/ui_robj/main.menu	2026-11-18 23:38:32.536809520 +0000
++++ b/release_src/platinum_ui/ui_robj/main.menu	2026-11-18 23:38:46.807150655 +0000
+@@ -1118,19 +1118,20 @@
+  itemDef { name "presetHp" rect 204.0 358 287.1 20 text "Headphones: binaural 3D sound. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "1" } }
+  itemDef { name "presetSp" rect 204.0 358 287.1 20 text "Speakers: plain stereo. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "2" } }
+  itemDef { name "presetNt" rect 204.0 358 287.1 20 text "Night: gunfire and blasts 6 dB lower, ambience ducks more." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "3" } }
+- MULTIACTION(537.3, 170,288.7, 18, "Headphone 3D audio:", .20, 14, "ui_audioHrtf", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, copycvar ui_audioHrtf s_alHRTF, "Binaural sound for headphones; applies after APPLY")
+- YESNO(537.3, 194,288.7, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
+- YESNO(537.3, 218,288.7, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
+- YESNO(537.3, 242,288.7, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
+- YESNO(537.3, 266,288.7, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
+- MULTI(537.3, 290,288.7, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
+- MULTI(537.3, 314,288.7, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
+- MULTI(537.3, 338,288.7, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
+- itemDef { name "deviceLabel" rect 537.3 362 95.7 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
+- itemDef { name "deviceName" rect 605.9 362 220.1 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
++ MULTI(537.3, 170,288.7, 18, "Weapon sounds:", .22, 14, "cg_weaponSounds", cvarFloatList { "Remastered" 1 "Original" 0 }, "Remastered: new recordings of the real guns. Original: the classic sounds")
++ MULTIACTION(537.3, 192,288.7, 18, "Headphone 3D audio:", .20, 14, "ui_audioHrtf", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, copycvar ui_audioHrtf s_alHRTF, "Binaural sound for headphones; applies after APPLY")
++ YESNO(537.3, 214,288.7, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
++ YESNO(537.3, 236,288.7, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
++ YESNO(537.3, 258,288.7, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
++ YESNO(537.3, 280,288.7, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
++ MULTI(537.3, 302,288.7, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
++ MULTI(537.3, 324,288.7, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
++ MULTI(537.3, 346,288.7, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
++ itemDef { name "deviceLabel" rect 537.3 366 95.7 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
++ itemDef { name "deviceName" rect 605.9 366 220.1 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
+  BUTTON(537.3, 388,140.3, 22, "NEXT DEVICE", .18, 16, exec "s_alNextDevice")
+  BUTTON(685.7, 388,140.3, 22, "APPLY", .18, 16, exec "snd_restart")
+- BUTTON(204.0, 388,287.1, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set ui_audioHrtf -1; set s_alOcclusion 1; set s_alReverb 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
++ BUTTON(204.0, 388,287.1, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set ui_audioHrtf -1; set s_alOcclusion 1; set s_alReverb 1; set cg_weaponSounds 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
+  itemDef { name "note" rect 204.0 414 446.6 24 text "APPLY restarts sound and graphics once (about two seconds)." textfont UI_FONT_COURBD_21 textscale .16 textaligny 18 forecolor .76 .82 .86 1 visible 1 decoration }
+ 
+  itemDef { name "openFade" rect -600 -300 2052 1080 style WINDOW_STYLE_FILLED background "white" backcolor .035 .043 .055 1 visible 0 decoration }
+diff -ru a/release_src/platinum_ui/ui_tdm/main.menu b/release_src/platinum_ui/ui_tdm/main.menu
+--- a/release_src/platinum_ui/ui_tdm/main.menu	2026-11-18 23:38:32.538351334 +0000
++++ b/release_src/platinum_ui/ui_tdm/main.menu	2026-11-18 23:38:46.807759456 +0000
+@@ -1118,19 +1118,20 @@
+  itemDef { name "presetHp" rect 204.0 358 287.1 20 text "Headphones: binaural 3D sound. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "1" } }
+  itemDef { name "presetSp" rect 204.0 358 287.1 20 text "Speakers: plain stereo. Press APPLY." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "2" } }
+  itemDef { name "presetNt" rect 204.0 358 287.1 20 text "Night: gunfire and blasts 6 dB lower, ambience ducks more." textfont UI_FONT_COURBD_21 textscale .16 textaligny 14 forecolor .4 .9 .5 1 visible 1 decoration cvarTest "ui_audioPreset" showCvar { "3" } }
+- MULTIACTION(537.3, 170,288.7, 18, "Headphone 3D audio:", .20, 14, "ui_audioHrtf", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, copycvar ui_audioHrtf s_alHRTF, "Binaural sound for headphones; applies after APPLY")
+- YESNO(537.3, 194,288.7, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
+- YESNO(537.3, 218,288.7, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
+- YESNO(537.3, 242,288.7, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
+- YESNO(537.3, 266,288.7, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
+- MULTI(537.3, 290,288.7, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
+- MULTI(537.3, 314,288.7, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
+- MULTI(537.3, 338,288.7, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
+- itemDef { name "deviceLabel" rect 537.3 362 95.7 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
+- itemDef { name "deviceName" rect 605.9 362 220.1 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
++ MULTI(537.3, 170,288.7, 18, "Weapon sounds:", .22, 14, "cg_weaponSounds", cvarFloatList { "Remastered" 1 "Original" 0 }, "Remastered: new recordings of the real guns. Original: the classic sounds")
++ MULTIACTION(537.3, 192,288.7, 18, "Headphone 3D audio:", .20, 14, "ui_audioHrtf", cvarFloatList { "Automatic" -1 "On" 1 "Off" 0 }, copycvar ui_audioHrtf s_alHRTF, "Binaural sound for headphones; applies after APPLY")
++ YESNO(537.3, 214,288.7, 18, "Wall muffling:", .22, 14, "s_alOcclusion", "Sounds behind walls are muffled")
++ YESNO(537.3, 236,288.7, 18, "Room reverb:", .22, 14, "s_alReverb", "Rooms and streets echo like the place you are in")
++ YESNO(537.3, 258,288.7, 18, "Bullet crack:", .22, 14, "cg_bulletSnap", "Hear rounds that pass close to your head")
++ YESNO(537.3, 280,288.7, 18, "Explosion muffle:", .22, 14, "cg_concussionMuffle", "Sound goes dull after a nearby blast")
++ MULTI(537.3, 302,288.7, 18, "Ringing after blasts:", .20, 14, "cg_tinnitus", cvarFloatList { "Soft ring" 1 "Original beep" 0 }, "The ringing tone while deafened by a blast")
++ MULTI(537.3, 324,288.7, 18, "Firefight ducking:", .20, 14, "s_alDuck", cvarFloatList { "Off" 0 "Normal" 1 "Strong" 2 }, "Ambience and music dip under nearby gunfire")
++ MULTI(537.3, 346,288.7, 18, "Dynamics:", .22, 14, "s_alDynamics", cvarFloatList { "Full range" 0 "Night" 1 }, "Night lowers gunfire and blasts for quiet listening")
++ itemDef { name "deviceLabel" rect 537.3 366 95.7 22 text "Output:" textfont UI_FONT_COURBD_21 textscale .20 textaligny 16 forecolor .76 .82 .86 1 visible 1 decoration }
++ itemDef { name "deviceName" rect 605.9 366 220.1 22 cvar "ui_audioDevice" textfont UI_FONT_COURBD_21 textscale .17 textaligny 16 forecolor .90 .93 .95 1 visible 1 decoration }
+  BUTTON(537.3, 388,140.3, 22, "NEXT DEVICE", .18, 16, exec "s_alNextDevice")
+  BUTTON(685.7, 388,140.3, 22, "APPLY", .18, 16, exec "snd_restart")
+- BUTTON(204.0, 388,287.1, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set ui_audioHrtf -1; set s_alOcclusion 1; set s_alReverb 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
++ BUTTON(204.0, 388,287.1, 22, "RESET AUDIO", .18, 16, exec "set s_masterVolume 1; set s_volume 0.8; set s_ambientVolume 1; set s_musicvolume 0.25; set s_uiVolume 1; set s_alHRTF -1; set ui_audioHrtf -1; set s_alOcclusion 1; set s_alReverb 1; set cg_weaponSounds 1; set cg_bulletSnap 1; set cg_concussionMuffle 1; set cg_tinnitus 1; set s_alDuck 1; set s_alDynamics 0; set s_alLimiter 1; set ui_audioPreset 0")
+  itemDef { name "note" rect 204.0 414 446.6 24 text "APPLY restarts sound and graphics once (about two seconds)." textfont UI_FONT_COURBD_21 textscale .16 textaligny 18 forecolor .76 .82 .86 1 visible 1 decoration }
+ 
+  itemDef { name "openFade" rect -600 -300 2052 1080 style WINDOW_STYLE_FILLED background "white" backcolor .035 .043 .055 1 visible 0 decoration }

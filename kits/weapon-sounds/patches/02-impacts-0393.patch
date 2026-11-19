@@ -1,0 +1,113 @@
+diff -ru a/game_src/native/tcp_audio.h b/game_src/native/tcp_audio.h
+--- a/game_src/native/tcp_audio.h	2026-11-19 00:19:35.224039290 +0000
++++ b/game_src/native/tcp_audio.h	2026-11-19 00:20:01.994947327 +0000
+@@ -61,6 +61,8 @@
+ typedef struct {int tried,fireCount,echoCount,suppressed,rCount;sfxHandle_t fire[4],echo[4],reload,rFire[4],rOwn[4];} taWeapon_t;
+ static taWeapon_t taWeapons[64];
+ static vmCvar_t taWeaponSounds;
++/* 0.39.3: true when a pak holds the file (registering a missing sound leaves a silent handle). */
++static int taFileExists(const char *path){fileHandle_t f=0;const int n=(int)SystemCall(CG_FS_FOPENFILE,path,&f,FS_READ);if(f)SystemCall(CG_FS_FCLOSEFILE,f);return n>0;}
+ 
+ /* Native modules do not link q_shared.c / q_math.c: tiny local helpers. */
+ static int taLower(int c){return c>='A'&&c<='Z'?c+32:c;}
+@@ -255,7 +257,7 @@
+  * listener's own shots never snap. One snap per shooter per 90 ms (crack) / 120 ms (whizz) and
+  * at most one every 35 ms overall, so a full-auto burst does not stack into noise. */
+ static vmCvar_t taSnapCvar;
+-static sfxHandle_t taCrack[4],taWhizz[4];
++static sfxHandle_t taCrack[12],taWhizz[12];static int taCrackN,taWhizzN,taSnapPrev[2]={-1,-1}; /* 0.39.3: 4 originals + up to 8 remastered (sound/remaster/snap) */
+ static vec3_t taEar,taShooterEye[MAX_CLIENTS],taShooterAngles[MAX_CLIENTS];
+ static int taShooterSeen[MAX_CLIENTS],taSnapLast[MAX_CLIENTS],taSnapAny,taSnapCracks,taSnapWhizzes,taSnapLimited,taAlive;
+ static void taSnapInit(void){
+@@ -263,6 +265,10 @@
+     SystemCall(CG_CVAR_REGISTER,&taSnapCvar,"cg_bulletSnap","1",CVAR_ARCHIVE);
+     for(int i=0;i<4;i++){snprintf(path,sizeof(path),"sound/platinum/crack%d.wav",i+1);taCrack[i]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);
+         snprintf(path,sizeof(path),"sound/platinum/whizz%d.wav",i+1);taWhizz[i]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);}
++    taCrackN=taWhizzN=4;
++    for(int i=5;i<=12;i++){ /* 0.39.3 Remastered: extra near-miss variations, only files the paks really hold */
++        snprintf(path,sizeof(path),"sound/remaster/snap/crack%d.wav",i);if(taFileExists(path))taCrack[taCrackN++]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);
++        snprintf(path,sizeof(path),"sound/remaster/snap/whizz%d.wav",i);if(taFileExists(path))taWhizz[taWhizzN++]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);}
+     memset(taSnapLast,0,sizeof(taSnapLast));memset(taShooterSeen,0,sizeof(taShooterSeen));taSnapAny=0;
+ }
+ /* 1 crack, 2 whizz, 0 none; radius = how close the path must pass the head. */
+@@ -287,7 +293,9 @@
+     if(!taSnapCvar.integer)return;
+     if(time-taSnapLast[shooter]<(kind==1?90:120)||time-taSnapAny<35){taSnapLimited++;return;}
+     taSnapLast[shooter]=taSnapAny=time;
+-    const sfxHandle_t s=(kind==1?taCrack:taWhizz)[rand()&3];if(!s)return;
++    const int pool=taWeaponSounds.integer?(kind==1?taCrackN:taWhizzN):4; /* Original: the four 0.38 snaps */
++    int pick=rand()%pool;if(pool>1&&pick==taSnapPrev[kind-1])pick=(pick+1)%pool;taSnapPrev[kind-1]=pick;
++    const sfxHandle_t s=(kind==1?taCrack:taWhizz)[pick];if(!s)return;
+     const int vol=(int)(127.f*(1.f-.45f*miss/radius));
+     SystemCall(CG_S_STARTSOUNDEX,at,ENTITYNUM_WORLD,CHAN_AUTO,s,SND_NOCUT|SND_PITCHVAR,vol);
+     if(kind==1)taSnapCracks++;else taSnapWhizzes++;
+diff -ru a/game_src/native/tcp_impacts.h b/game_src/native/tcp_impacts.h
+--- a/game_src/native/tcp_impacts.h	2026-11-19 00:19:35.224276422 +0000
++++ b/game_src/native/tcp_impacts.h	2026-11-19 00:20:34.888555059 +0000
+@@ -24,11 +24,19 @@
+ #ifndef TCP_IMPACTS_H
+ #define TCP_IMPACTS_H
+ 
+-enum {IM_SND_FLESH,IM_SND_METAL,IM_SND_WOOD,IM_SND_GLASS,IM_SND_STONE,IM_SND_TIN,IM_SND_FENCE,IM_SND_FOLIAGE,IM_SND_FLYBY,IM_SNDS};
++enum {IM_SND_FLESH,IM_SND_METAL,IM_SND_WOOD,IM_SND_GLASS,IM_SND_STONE,IM_SND_TIN,IM_SND_FENCE,IM_SND_FOLIAGE,IM_SND_FLYBY,IM_SND_DIRT,IM_SNDS};
+ static const char *const imSoundFiles[IM_SNDS]={"sound/weapons/impact/bullethit_flesh%i.wav","sound/weapons/impact/metal%i.wav",
+     "sound/weapons/impact/wood%i.wav","sound/weapons/impact/glass%i.wav","sound/weapons/impact/stone%i.wav","sound/weapons/impact/bullethit_tin%i.wav",
+-    "sound/weapons/impact/bullethit_fence%i.wav","sound/weapons/impact/bullethit_foliage%i.wav","sound/weapons/impact/bullethit_flyby%i.wav"};
+-static sfxHandle_t imSounds[IM_SNDS][5];
++    "sound/weapons/impact/bullethit_fence%i.wav","sound/weapons/impact/bullethit_foliage%i.wav","sound/weapons/impact/bullethit_flyby%i.wav",NULL};
++/* 0.39.3 Remastered (cg_weaponSounds 1): each set adds variations 6..12 from sound/remaster/impact/<name>%i.wav, made to
++ * sit with the five originals (same spectrum, level and length); soft ground (no TC:E sound) gets dirt1..12.
++ * Original (cg_weaponSounds 0) keeps the five originals and silent soft ground. */
++static const char *const imRemasterFiles[IM_SNDS]={"sound/remaster/impact/bullethit_flesh%i.wav","sound/remaster/impact/metal%i.wav",
++    "sound/remaster/impact/wood%i.wav","sound/remaster/impact/glass%i.wav","sound/remaster/impact/stone%i.wav","sound/remaster/impact/bullethit_tin%i.wav",
++    "sound/remaster/impact/bullethit_fence%i.wav","sound/remaster/impact/bullethit_foliage%i.wav","sound/remaster/impact/bullethit_flyby%i.wav",
++    "sound/remaster/impact/dirt%i.wav"};
++#define IM_VARIANTS 12
++static sfxHandle_t imSounds[IM_SNDS][IM_VARIANTS];static int imSoundCount[IM_SNDS],imSoundPrev[IM_SNDS];
+ enum {IM_MARK_GENERIC,IM_MARK_WALL,IM_MARK_WALL_EXIT,IM_MARK_METAL,IM_MARK_METAL_EXIT,IM_MARK_WOOD,IM_MARK_WOOD_EXIT,IM_MARK_GLASS,IM_MARK_PLASTIC,IM_MARK_PLASTIC_EXIT,IM_MARKS};
+ static const char *const imMarkShaders[IM_MARKS]={"gfx/damage/bullet_mrk","gfx/damage/bullet_wall_mrk_alpha","gfx/damage/bullet_wall_pierce_mrk_alpha",
+     "gfx/damage/bullet_metal_mrk_alpha","gfx/damage/bullet_metal_pierce_mrk_alpha","gfx/damage/bullet_wood_mrk_alpha",
+@@ -57,7 +65,12 @@
+ static vmCvar_t imMarkTime; /* 0.38.0: default 60 s (tcp_firefight_cg.h moves old saved values once) */
+ static void imInit(void){
+     char path[96];
+-    for(int s=0;s<IM_SNDS;s++)for(int i=0;i<5;i++){snprintf(path,sizeof(path),imSoundFiles[s],i+1);imSounds[s][i]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);}
++    for(int s=0;s<IM_SNDS;s++){
++        imSoundCount[s]=0;imSoundPrev[s]=-1;
++        if(imSoundFiles[s])for(int i=0;i<5;i++){snprintf(path,sizeof(path),imSoundFiles[s],i+1);imSounds[s][imSoundCount[s]++]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);}
++        for(int i=imSoundFiles[s]?6:1;i<=IM_VARIANTS&&imSoundCount[s]<IM_VARIANTS;i++){snprintf(path,sizeof(path),imRemasterFiles[s],i);
++            if(taFileExists(path))imSounds[s][imSoundCount[s]++]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);}
++    }
+     for(int i=0;i<IM_MARKS;i++)imMarks[i]=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,imMarkShaders[i]);
+     for(int i=0;i<IM_SHADERS;i++)imShaders[i]=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,imShaderNames[i]);
+     memset(imParticles,0,sizeof(imParticles));memset(imSerial,0,sizeof(imSerial));
+@@ -67,6 +80,8 @@
+     for(int i=0;i<5;i++){snprintf(path,sizeof(path),"blood_dot%d",i+1);imBloodDot[i]=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,path);}
+     char m[160];snprintf(m,sizeof(m),"TCP_NATIVE_IMPACTS media stone=%d wallmark=%d spark=%d dirt=%d blood=%d\n",imSounds[IM_SND_STONE][0],imMarks[IM_MARK_WALL],imShaders[IM_SPARK],imShaders[IM_PUFF_DIRT],imShaders[IM_BLOOD]);
+     SystemCall(CG_PRINT,m);
++    snprintf(m,sizeof(m),"TCP_NATIVE_IMPACTS variants flesh=%d metal=%d wood=%d glass=%d stone=%d tin=%d fence=%d foliage=%d flyby=%d dirt=%d\n",imSoundCount[0],imSoundCount[1],
++        imSoundCount[2],imSoundCount[3],imSoundCount[4],imSoundCount[5],imSoundCount[6],imSoundCount[7],imSoundCount[8],imSoundCount[9]);SystemCall(CG_PRINT,m);
+ }
+ static void imSpawn(int shader,const vec3_t at,const vec3_t vel,float gravity,int life,float size0,float size1,float alpha,int time){
+     if(!imShaders[shader])return;imParticle_t *p=&imParticles[imNext];imNext=(imNext+1)%IM_PARTICLES;
+@@ -95,7 +110,11 @@
+     SystemCall(CG_R_PROJECTDECAL,shader,4,points,projection,color,life,fade);imMarkCount++;
+ }
+ static void imSound(int set,const vec3_t at){
+-    const sfxHandle_t s=imSounds[set][(int)(imRand()*5.f)%5];
++    const int pool=taWeaponSounds.integer?imSoundCount[set]:(imSoundFiles[set]?5:0); /* Original: the five TC:E sounds only */
++    if(pool<=0)return;
++    int pick=(int)(imRand()*(float)pool)%pool;if(pool>1&&pick==imSoundPrev[set])pick=(pick+1)%pool; /* never the same one twice running */
++    imSoundPrev[set]=pick;
++    const sfxHandle_t s=imSounds[set][pick];
+     if(s){vec3_t p;VectorCopy(at,p);SystemCall(CG_S_STARTSOUNDEX,p,ENTITYNUM_WORLD,CHAN_AUTO,s,SND_PITCHVAR,127);}
+ }
+ /* One bullet event: kind TCP_IMPACT_WALL / _EXIT / _FLESH / _FLYBY. */
+@@ -132,6 +151,7 @@
+     else if(mat==0xc)imSound(IM_SND_GLASS,at);
+     else if(mat==0xb)imSound(IM_SND_FOLIAGE,at);
+     else if(!soft)imSound(IM_SND_STONE,at);
++    else if(mat==0x1e||mat==0x1d||mat==0xa||mat==7||mat==0xd||mat==8||mat==0x15)imSound(IM_SND_DIRT,at); /* 0.39.3 Remastered: dirt, soil, mud, gravel, snow, sand, grass */
+     if(!imEffects.integer)return;
+     /* mark */
+     float radius=1.f+imRand()*.5f;int mark=-1;
