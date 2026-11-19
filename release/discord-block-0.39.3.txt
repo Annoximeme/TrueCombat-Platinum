@@ -1,0 +1,6 @@
+<!-- discord
+chips: Sound update | Weapon sounds | Free aim
+summary: Weapon sounds | Remastered gunfire per gun, or keep Original · Up to 12 impact sounds per surface, ricochets
+summary: Sound engine | Shots echo in the shooter's room · Sound through doorways · Distant shots arrive later
+summary: Aim and animation | Free aim option, off by default · AK-47 and G3 held two-handed again
+-->
