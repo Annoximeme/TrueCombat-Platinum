@@ -111,7 +111,7 @@ diff -ru a/reference/etlegacy/src/server/sv_anticheat.c b/reference/etlegacy/src
  	{ "tcetest/zz_platinum_cqb",         "1868977007"   }, /* 0.38.0 CQB merge (optics, holes, radio, reverb); experimental */
  	{ "tcetest/cqb_map_harbour",         "-348981911"    }, /* 0.38.0 CQB map Harbour (experimental, g_experimental 1) */
  	{ "tcetest/zz_platinum_cqbweapons",  "302156147"    }, /* 0.38.0 CQB experimental weapons */
-+	{ "tcetest/zz_platinum_gunfire",     "1806898204"}, /* 0.39.3 Remastered weapon sounds: recorded fire/fp sets per weapon, impacts, snaps (client only; cg_weaponSounds) */
++	{ "tcetest/zz_platinum_gunfire",     "1365686346"}, /* 0.39.3 Remastered weapon sounds: recorded fire/fp sets per weapon, impacts, snaps (client only; cg_weaponSounds) */
  	{ "tcetest/zzzz_platinum_matv4",     "-577100092"   }, /* 0.38.0 DX12 materials v4 class maps */
  	{ "tcetest/zzzz_platinum_cqbguns",   "570685537"    }, /* 0.38.0 CQB first-person guns */
  	{ "tcetest/zzzz_platinum_cqbguns_hd", "-120980766"   }, /* 0.38.0 CQB gun textures at 1024 */

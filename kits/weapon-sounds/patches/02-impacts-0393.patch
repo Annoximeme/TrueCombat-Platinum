@@ -43,8 +43,8 @@ diff -ru a/game_src/native/tcp_audio.h b/game_src/native/tcp_audio.h
      if(kind==1)taSnapCracks++;else taSnapWhizzes++;
 diff -ru a/game_src/native/tcp_impacts.h b/game_src/native/tcp_impacts.h
 --- a/game_src/native/tcp_impacts.h	2026-11-19 00:19:35.224276422 +0000
-+++ b/game_src/native/tcp_impacts.h	2026-11-19 00:20:34.888555059 +0000
-@@ -24,11 +24,19 @@
++++ b/game_src/native/tcp_impacts.h	2026-11-19 00:53:01.701181042 +0000
+@@ -24,11 +24,22 @@
  #ifndef TCP_IMPACTS_H
  #define TCP_IMPACTS_H
  
@@ -64,10 +64,13 @@ diff -ru a/game_src/native/tcp_impacts.h b/game_src/native/tcp_impacts.h
 +    "sound/remaster/impact/dirt%i.wav"};
 +#define IM_VARIANTS 12
 +static sfxHandle_t imSounds[IM_SNDS][IM_VARIANTS];static int imSoundCount[IM_SNDS],imSoundPrev[IM_SNDS];
++/* 0.39.3 Remastered: ricochet whines (real recorded glides, sound/remaster/impact/ricochet%i.wav) after some hits on
++ * stone and metal; never on exits, rarely for pellets, at most one every 180 ms so full auto does not turn into a choir. */
++static sfxHandle_t imRicochet[IM_VARIANTS];static int imRicochetCount,imRicochetPrev=-1,imRicochetLast;
  enum {IM_MARK_GENERIC,IM_MARK_WALL,IM_MARK_WALL_EXIT,IM_MARK_METAL,IM_MARK_METAL_EXIT,IM_MARK_WOOD,IM_MARK_WOOD_EXIT,IM_MARK_GLASS,IM_MARK_PLASTIC,IM_MARK_PLASTIC_EXIT,IM_MARKS};
  static const char *const imMarkShaders[IM_MARKS]={"gfx/damage/bullet_mrk","gfx/damage/bullet_wall_mrk_alpha","gfx/damage/bullet_wall_pierce_mrk_alpha",
      "gfx/damage/bullet_metal_mrk_alpha","gfx/damage/bullet_metal_pierce_mrk_alpha","gfx/damage/bullet_wood_mrk_alpha",
-@@ -57,7 +65,12 @@
+@@ -57,7 +68,15 @@
  static vmCvar_t imMarkTime; /* 0.38.0: default 60 s (tcp_firefight_cg.h moves old saved values once) */
  static void imInit(void){
      char path[96];
@@ -78,19 +81,23 @@ diff -ru a/game_src/native/tcp_impacts.h b/game_src/native/tcp_impacts.h
 +        for(int i=imSoundFiles[s]?6:1;i<=IM_VARIANTS&&imSoundCount[s]<IM_VARIANTS;i++){snprintf(path,sizeof(path),imRemasterFiles[s],i);
 +            if(taFileExists(path))imSounds[s][imSoundCount[s]++]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);}
 +    }
++    imRicochetCount=0;imRicochetPrev=-1;imRicochetLast=0;
++    for(int i=1;i<=IM_VARIANTS;i++){snprintf(path,sizeof(path),"sound/remaster/impact/ricochet%i.wav",i);
++        if(taFileExists(path))imRicochet[imRicochetCount++]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);}
      for(int i=0;i<IM_MARKS;i++)imMarks[i]=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,imMarkShaders[i]);
      for(int i=0;i<IM_SHADERS;i++)imShaders[i]=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,imShaderNames[i]);
      memset(imParticles,0,sizeof(imParticles));memset(imSerial,0,sizeof(imSerial));
-@@ -67,6 +80,8 @@
+@@ -67,6 +86,9 @@
      for(int i=0;i<5;i++){snprintf(path,sizeof(path),"blood_dot%d",i+1);imBloodDot[i]=(qhandle_t)SystemCall(CG_R_REGISTERSHADER,path);}
      char m[160];snprintf(m,sizeof(m),"TCP_NATIVE_IMPACTS media stone=%d wallmark=%d spark=%d dirt=%d blood=%d\n",imSounds[IM_SND_STONE][0],imMarks[IM_MARK_WALL],imShaders[IM_SPARK],imShaders[IM_PUFF_DIRT],imShaders[IM_BLOOD]);
      SystemCall(CG_PRINT,m);
 +    snprintf(m,sizeof(m),"TCP_NATIVE_IMPACTS variants flesh=%d metal=%d wood=%d glass=%d stone=%d tin=%d fence=%d foliage=%d flyby=%d dirt=%d\n",imSoundCount[0],imSoundCount[1],
 +        imSoundCount[2],imSoundCount[3],imSoundCount[4],imSoundCount[5],imSoundCount[6],imSoundCount[7],imSoundCount[8],imSoundCount[9]);SystemCall(CG_PRINT,m);
++    snprintf(m,sizeof(m),"TCP_NATIVE_IMPACTS ricochets=%d\n",imRicochetCount);SystemCall(CG_PRINT,m);
  }
  static void imSpawn(int shader,const vec3_t at,const vec3_t vel,float gravity,int life,float size0,float size1,float alpha,int time){
      if(!imShaders[shader])return;imParticle_t *p=&imParticles[imNext];imNext=(imNext+1)%IM_PARTICLES;
-@@ -95,7 +110,11 @@
+@@ -95,9 +117,21 @@
      SystemCall(CG_R_PROJECTDECAL,shader,4,points,projection,color,life,fade);imMarkCount++;
  }
  static void imSound(int set,const vec3_t at){
@@ -102,11 +109,22 @@ diff -ru a/game_src/native/tcp_impacts.h b/game_src/native/tcp_impacts.h
 +    const sfxHandle_t s=imSounds[set][pick];
      if(s){vec3_t p;VectorCopy(at,p);SystemCall(CG_S_STARTSOUNDEX,p,ENTITYNUM_WORLD,CHAN_AUTO,s,SND_PITCHVAR,127);}
  }
++static void imRicochetMaybe(int metal,int pellets,int exit,const vec3_t at,int time){
++    if(!taWeaponSounds.integer||!imRicochetCount||exit)return;
++    const float chance=pellets?.04f:metal?.30f:.18f;
++    if(imRand()>=chance||(imRicochetLast&&time-imRicochetLast<180&&time>=imRicochetLast))return;
++    imRicochetLast=time;
++    int pick=(int)(imRand()*(float)imRicochetCount)%imRicochetCount;if(imRicochetCount>1&&pick==imRicochetPrev)pick=(pick+1)%imRicochetCount;imRicochetPrev=pick;
++    vec3_t p;VectorCopy(at,p);SystemCall(CG_S_STARTSOUNDEX,p,ENTITYNUM_WORLD,CHAN_AUTO,imRicochet[pick],SND_PITCHVAR,110);
++}
  /* One bullet event: kind TCP_IMPACT_WALL / _EXIT / _FLESH / _FLYBY. */
-@@ -132,6 +151,7 @@
+ static void imEvent(int kind,const vec3_t at,const vec3_t normal,int surface,int weapon,int target,int self,int time){
+     const int mat=(int)(((unsigned)surface)>>24);
+@@ -132,6 +166,8 @@
      else if(mat==0xc)imSound(IM_SND_GLASS,at);
      else if(mat==0xb)imSound(IM_SND_FOLIAGE,at);
      else if(!soft)imSound(IM_SND_STONE,at);
++    if((metal&&mat!=4)||(!soft&&!metal&&mat!=0x14&&mat!=5&&mat!=6&&mat!=0xc&&mat!=0xb))imRicochetMaybe(metal,pellets,exit,at,time); /* stone and solid metal */
 +    else if(mat==0x1e||mat==0x1d||mat==0xa||mat==7||mat==0xd||mat==8||mat==0x15)imSound(IM_SND_DIRT,at); /* 0.39.3 Remastered: dirt, soil, mud, gravel, snow, sand, grass */
      if(!imEffects.integer)return;
      /* mark */
