@@ -44,7 +44,7 @@ A private web console for the people who run the official and pickup servers, se
 | Schedule | Announcements, map changes and restarts at a set time, once or repeating |
 | Event mode | One switch for a private match: random password, no bots, no balance, no votes; switches back afterwards |
 | Live map | Top-down layout with every player's position, refreshed every two seconds; admins only, audited, and closed to anyone whose linked account is playing on that server |
-| Settings | Whitelisted server settings with labels, a full history and one-click rollback; "Keep" re-applies a value after restarts |
+| Settings | Every server setting staff may change, grouped (match, weather, weapons and CQB, movement, votes, balance, bots, voice, ping, anti-cheat, competitive), with checked values, a full history and one-click rollback; "Keep" re-applies a value after restarts |
 | Two-step sign-in | Authenticator-app codes, set up by scanning a QR code drawn by the portal itself; required for admin and owner rights |
 | Weekly report | Monday 08:00 Belgian time: bans, reports, appeals, peaks and busiest staff, in the portal and the staff channel |
 
@@ -228,3 +228,27 @@ service.
 * **Alerts:** once a minute the portal checks how many comments wait; when the number grows it raises a `comments`
   alert (and the staff Discord post) with counts only, never comment text.
 * **Audit log:** every action, as `comment.<action>`, with the author and the first 200 characters.
+
+## Server settings (1.6.0)
+
+The Settings page (admins, per server) covers the server settings added through 0.39.5, in groups, with a search box.
+Each setting has a type the portal checks before anything reaches the server: on/off, a number in the range the game
+accepts, a fixed choice, a list of known words, or the weather format. Settings the game reads only when a map loads
+carry a "next map" tag.
+
+* **Weather:** `g_weather` (random, clear, or a kind with an optional strength such as `storm:80`), `g_weatherOff`
+  (kinds left out of the roll and effects turned off, picked from the word list; needs 0.39.5 servers) and the weather
+  rolled for the current map (`tcp_wx`, read only, shown in words).
+* **Weapons and CQB:** `g_weaponPickup` (off, enemy weapons, any weapon), `g_weaponPickupTime`, `g_experimental`
+  (a Ranked server switches it back to 0 itself).
+* **Movement and combat, map vote, player votes, balance, bots, voice, ping, competitive matches:** the server
+  settings from 0.36 to 0.39 (vaulting, stamina, aim focus, hit markers, damage report, tactical map, map vote time and
+  choices, vote types and limits, bot skill and stand-ins, proximity voice, ping limits, reconnect grace, trusted slots,
+  match rounds, time-outs and more).
+* **View only:** `sv_eac` (anti-cheat) and `sv_official` are shown but never changed from the portal: they change with
+  a server deploy only.
+
+Tracer rounds and the 0.39.x sound work are client side and have no server setting. Values may use letters, digits,
+spaces, dots, commas, colons, `-` and `_` (64 characters at most). A `cvars` map in the config still replaces the list;
+settings it names that the portal does not know are shown under "Other" as free text.
+

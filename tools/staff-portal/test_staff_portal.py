@@ -52,7 +52,8 @@ class FakeGame(threading.Thread):
                         1: {"name": "[BOT] Rook^7", "guid": "", "ip": "bot", "team": 2, "muted": 0, "tk": 0,
                             "xyz": (-500.0, -900.0, 60.0)}}
         self.cvars = {"g_friendlyFire": "1", "g_password": "", "bot_minplayers": "4", "g_autoBalance": "1",
-                      "g_allowVote": "1", "sv_autoDemo": "0", "g_warmup": "20"}
+                      "g_allowVote": "1", "sv_autoDemo": "0", "g_warmup": "20", "g_weather": "random", "g_weatherOff": "",
+                      "tcp_wx": "3,60,12345,5", "sv_eac": "2", "g_weaponPickup": "1", "g_voteTypes": "kick map restart shuffle"}
 
     def answer(self, cmd: str) -> str:
         word, _, rest = cmd.partition(" ")
@@ -634,6 +635,38 @@ class PortalTest(unittest.TestCase):
         self.game.cvars["g_friendlyFire"] = "1"
         self.portal.enforce()
         self.assertEqual(self.game.cvars["g_friendlyFire"], "1")           # a rollback releases the kept value
+
+    def test_22b_new_server_settings(self):
+        """1.6.0: grouped settings with types, weather and 0.39.x settings, view-only anti-cheat."""
+        st, v = self.call("admin", "GET", "/api/cvars?server=one")
+        self.assertEqual(st, 200, v)
+        rows = {c["name"]: c for c in v["cvars"]}
+        for name in ("g_weather", "g_weatherOff", "g_weaponPickup", "g_weaponPickupTime", "g_experimental", "g_mapvoteTime",
+                     "g_voteTypes", "g_maxPing", "bot_skill", "g_voice", "sv_eac", "sv_official", "g_competitive", "tcp_wx"):
+            self.assertIn(name, rows)
+        self.assertEqual(rows["tcp_wx"]["shown"], "storm, strength 60, some effects off")
+        self.assertEqual((rows["sv_eac"]["view"], rows["g_weather"]["group"]), (True, "Weather"))
+        self.assertIn("Weather", v["groups"])
+        bad = [("sv_eac", "0"), ("tcp_wx", "0,0,1"), ("g_weather", "tornado"), ("g_weather", "storm:150"), ("g_weather", "random:5"),
+               ("g_weatherOff", "lightning bogus"), ("g_weaponPickup", "3"), ("g_mapvoteTime", "500"), ("g_mapvoteTime", "ten"),
+               ("g_experimental", "2"), ("g_voteTypes", "kick ban")]
+        for name, value in bad:
+            st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": name, "value": value})
+            self.assertEqual(st, 400, (name, value, d))
+        self.assertEqual(self.game.cvars["sv_eac"], "2")
+        st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_weather", "value": "Storm:80"})
+        self.assertEqual((st, self.game.cvars["g_weather"]), (200, "storm:80"), d)
+        self.assertIn("next map", d["note"])
+        st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_weatherOff", "value": "lightning, flash,flash"})
+        self.assertEqual((st, self.game.cvars["g_weatherOff"]), (200, "lightning flash"), d)
+        st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_weatherOff", "value": ""})
+        self.assertEqual((st, self.game.cvars["g_weatherOff"]), (200, ""), d)
+        st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_weaponPickup", "value": "2"})
+        self.assertEqual((st, self.game.cvars["g_weaponPickup"]), (200, "2"), d)
+        st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_weather", "value": "off"})
+        self.assertEqual((st, self.game.cvars["g_weather"]), (200, "clear"), d)
+        st, d = self.call("admin", "POST", "/api/cvars", {"server": "one", "cvar": "g_weather", "value": "random"})
+        self.assertEqual(st, 200, d)
 
     def test_23_live_map(self):
         self.viper_back()
