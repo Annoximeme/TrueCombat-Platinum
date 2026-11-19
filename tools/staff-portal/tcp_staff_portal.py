@@ -45,7 +45,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.5.0"
+VERSION = "1.6.0"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -138,30 +138,171 @@ DEFAULT_TEMPLATES = [
     ("close", "No action", "Checked the demo and the stats. Nothing wrong found."),
 ]
 
-# Server settings staff may change from the portal (the config editor). Override with "cvars" in the config.
-CVARS = {
-    "g_friendlyFire": "Friendly fire (0 off, 1 on)",
-    "g_warmup": "Warm-up seconds",
-    "g_antilag": "Lag compensation (0 off, 1 on)",
-    "sv_maxPing": "Highest ping allowed to join",
-    "g_mapvote": "Map vote at the end of a map",
-    "g_allowVote": "Player votes",
-    "g_reports": "In-game /report",
-    "g_fallDamage": "Fall damage",
-    "tcp_roundtime": "Round time (seconds)",
-    "g_roundlimit": "Rounds per map",
-    "sv_mapRotationTime": "Minutes per map",
-    "bot_minplayers": "Fill with bots up to",
-    "g_autoBalance": "Automatic team balance",
-    "g_autoBalanceDelay": "Seconds before auto-balance moves someone",
-    "g_balanceGap": "Player gap that triggers auto-balance",
-    "g_balanceSkill": "Balance teams by rating",
-    "sv_autoDemo": "Record a server demo of every map",
+# Server settings shown in the portal's config editor, grouped as on the Settings page. Override with "cvars" in the
+# config (a {name: label} map; settings without an entry here then show in "Other" as free text).
+# Fields: label, help, type (bool | int | choice | words | weather | text), min/max, choices [(value, label)],
+# words (the words a "words" setting accepts), next_map (the server only reads it at the next map), view (shown, never
+# changed from the portal).
+WX_KINDS = ["clear", "overcast", "rain", "storm", "afterrain", "snow", "fog", "wind", "golden"]   # tcp_weather.h order
+WX_OFF_WORDS = ["clear", "overcast", "rain", "storm", "afterrain", "snow", "wind", "lightning", "flash", "thunder",
+                "splashes", "wetground", "sky", "colour", "sounds", "gusts", "precipitation"]
+VOTE_WORDS = ["kick", "map", "restart", "shuffle"]
+OFF_ON = [("0", "Off"), ("1", "On")]
+
+CVAR_GROUPS = ["Match", "Weather", "Weapons and CQB", "Movement and combat", "Map vote", "Player votes",
+               "Teams and balance", "Bots", "Voice and chat", "Ping and connections", "Server and anti-cheat",
+               "Competitive matches", "Other"]
+
+CVAR_META = {
+    # -- match
+    "tcp_roundtime": {"group": "Match", "label": "Round time (seconds)", "type": "int", "min": 30, "max": 3600},
+    "g_roundlimit": {"group": "Match", "label": "Rounds per map", "type": "int", "min": 0, "max": 100, "help": "0 = no round limit (the map timer ends the map)."},
+    "sv_mapRotationTime": {"group": "Match", "label": "Minutes per map", "type": "int", "min": 0, "max": 240},
+    "g_warmup": {"group": "Match", "label": "Warm-up seconds", "type": "int", "min": 0, "max": 600},
+    "g_friendlyFire": {"group": "Match", "label": "Friendly fire", "type": "bool"},
+    "g_fallDamage": {"group": "Match", "label": "Fall damage", "type": "bool"},
+    # -- weather (0.39.4 random weather, 0.39.5 g_weatherOff)
+    "g_weather": {"group": "Weather", "label": "Weather", "type": "weather",
+                  "help": "random rolls a new weather every map. clear turns it off. A kind (rain, storm, afterrain, snow, "
+                          "wind, overcast) forces it, optionally with a strength: storm:80. Applies from the next map. "
+                          "Ranked servers cap rain and storm strength so nothing hides players.", "next_map": True},
+    "g_weatherOff": {"group": "Weather", "label": "Turned-off weather kinds and effects", "type": "words", "words": WX_OFF_WORDS,
+                     "help": "Kinds left out of the random roll (clear overcast rain storm afterrain snow wind) and effects "
+                             "turned off for every player (lightning flash thunder splashes wetground sky colour sounds gusts "
+                             "precipitation). Empty = everything on. A forced weather kind still wins. Needs 0.39.5 servers; "
+                             "applies from the next map.", "next_map": True},
+    "tcp_wx": {"group": "Weather", "label": "Weather on this map", "type": "text", "view": True,
+               "help": "What the server rolled for the current map (kind, strength, seed)."},
+    # -- weapons and CQB
+    "g_weaponPickup": {"group": "Weapons and CQB", "label": "Weapon pickup", "type": "choice",
+                       "choices": [("0", "Off"), ("1", "Enemy weapons only"), ("2", "Any dropped weapon")]},
+    "g_weaponPickupTime": {"group": "Weapons and CQB", "label": "Seconds a dropped weapon stays", "type": "int", "min": 5, "max": 120},
+    "g_experimental": {"group": "Weapons and CQB", "label": "Experimental CQB weapons and rules", "type": "bool",
+                       "help": "Unranked servers only: a Ranked server switches it straight back to 0.", "next_map": True},
+    # -- movement and combat
+    "g_antilag": {"group": "Movement and combat", "label": "Lag compensation", "type": "bool"},
+    "g_vault": {"group": "Movement and combat", "label": "Vaulting", "type": "bool", "next_map": True},
+    "g_sprintNeedsStamina": {"group": "Movement and combat", "label": "Sprint uses stamina", "type": "bool", "next_map": True},
+    "g_staminaRunRecover": {"group": "Movement and combat", "label": "Stamina recovers while running", "type": "bool", "next_map": True},
+    "g_adsBlocksSprint": {"group": "Movement and combat", "label": "Aiming down sights stops sprint", "type": "bool", "next_map": True},
+    "g_adsFocus": {"group": "Movement and combat", "label": "Aim focus (hold breath)", "type": "bool", "next_map": True},
+    "g_hitFeedback": {"group": "Movement and combat", "label": "Hit markers", "type": "bool", "help": "Never shown on Ranked or competitive matches."},
+    "g_damageReport": {"group": "Movement and combat", "label": "Damage report after death", "type": "bool"},
+    "sv_hudHealthNumbers": {"group": "Movement and combat", "label": "Health numbers on the HUD", "type": "bool"},
+    "g_tacticalMap": {"group": "Movement and combat", "label": "Tactical map (+tacmap)", "type": "bool"},
+    # -- map vote
+    "g_mapvote": {"group": "Map vote", "label": "Map vote at the end of a map", "type": "bool"},
+    "g_mapvoteTime": {"group": "Map vote", "label": "Map vote seconds", "type": "int", "min": 5, "max": 120},
+    "g_mapvoteChoices": {"group": "Map vote", "label": "Maps to choose from", "type": "int", "min": 2, "max": 5},
+    "g_mapvoteReplay": {"group": "Map vote", "label": "Current map can win the vote", "type": "bool"},
+    # -- player votes
+    "g_allowVote": {"group": "Player votes", "label": "Player votes", "type": "bool"},
+    "g_voteTypes": {"group": "Player votes", "label": "Votes players may call", "type": "words", "words": VOTE_WORDS},
+    "g_votePercent": {"group": "Player votes", "label": "Yes votes needed (%)", "type": "int", "min": 1, "max": 100},
+    "g_voteMinPlayers": {"group": "Player votes", "label": "Players needed to call a vote", "type": "int", "min": 1, "max": 64},
+    "g_voteLimit": {"group": "Player votes", "label": "Votes per player per map", "type": "int", "min": 0, "max": 20},
+    "g_voteTime": {"group": "Player votes", "label": "Vote seconds", "type": "int", "min": 10, "max": 120},
+    "g_reports": {"group": "Player votes", "label": "In-game /report", "type": "bool"},
+    # -- teams and balance
+    "g_autoBalance": {"group": "Teams and balance", "label": "Automatic team balance", "type": "bool"},
+    "g_autoBalanceDelay": {"group": "Teams and balance", "label": "Seconds before auto-balance moves someone", "type": "int", "min": 0, "max": 300},
+    "g_balanceGap": {"group": "Teams and balance", "label": "Rating gap that triggers a skill swap", "type": "int", "min": 0, "max": 2000, "help": "Average rating difference between the teams before the server swaps two players at round start."},
+    "g_balanceSkill": {"group": "Teams and balance", "label": "Balance teams by rating", "type": "bool"},
+    # -- bots
+    "bot_minplayers": {"group": "Bots", "label": "Fill with bots up to", "type": "int", "min": 0, "max": 32},
+    "bot_skill": {"group": "Bots", "label": "Bot skill", "type": "int", "min": 1, "max": 5},
+    "bot_adaptive": {"group": "Bots", "label": "Bots adapt to the players' level", "type": "bool"},
+    "bot_standin": {"group": "Bots", "label": "Bot stands in for a player who drops", "type": "bool"},
+    "bot_standinTime": {"group": "Bots", "label": "Seconds a stand-in bot keeps the slot", "type": "int", "min": 30, "max": 1800},
+    "bot_chat": {"group": "Bots", "label": "Bot chat", "type": "bool"},
+    # -- voice and chat
+    "g_voice": {"group": "Voice and chat", "label": "Voice chat", "type": "bool"},
+    "g_voiceLocal": {"group": "Voice and chat", "label": "Proximity voice", "type": "bool"},
+    "g_voiceLocalRange": {"group": "Voice and chat", "label": "Proximity voice range (units)", "type": "int", "min": 200, "max": 6000},
+    "g_voiceSprites": {"group": "Voice and chat", "label": "Voice icons over heads", "type": "bool"},
+    "g_combatVoice": {"group": "Voice and chat", "label": "Automatic combat callouts", "type": "bool"},
+    "g_voiceChatsAllowed": {"group": "Voice and chat", "label": "Quick voice messages before the spam limit", "type": "int", "min": 0, "max": 20},
+    # -- ping and connections
+    "sv_maxPing": {"group": "Ping and connections", "label": "Highest ping allowed to join", "type": "int", "min": 0, "max": 999, "help": "0 = no limit."},
+    "g_maxPing": {"group": "Ping and connections", "label": "Highest ping while playing", "type": "int", "min": 0, "max": 999, "help": "0 = no limit."},
+    "g_maxPingTime": {"group": "Ping and connections", "label": "Seconds above the ping limit before action", "type": "int", "min": 5, "max": 300},
+    "g_maxPingAction": {"group": "Ping and connections", "label": "Above the ping limit", "type": "choice", "choices": [("0", "Warn only"), ("1", "Kick")]},
+    "g_reconnectKeep": {"group": "Ping and connections", "label": "Seconds a dropped player keeps team and score", "type": "int", "min": 0, "max": 1800},
+    "g_trustedSlots": {"group": "Ping and connections", "label": "Slots kept for players with an account", "type": "int", "min": 0, "max": 16},
+    # -- server and anti-cheat
+    "sv_autoDemo": {"group": "Server and anti-cheat", "label": "Record a server demo of every map", "type": "bool"},
+    "sv_eac": {"group": "Server and anti-cheat", "label": "Anti-cheat", "type": "choice", "view": True,
+               "choices": [("0", "Off"), ("1", "On, unprotected players allowed"), ("2", "Required")],
+               "help": "Shown for reference. Anti-cheat is changed only with a server deploy, never from the portal."},
+    "sv_official": {"group": "Server and anti-cheat", "label": "Official server", "type": "bool", "view": True,
+                    "help": "Shown for reference (from 0.40.0). Changed only with a server deploy."},
+    # -- competitive matches
+    "g_competitive": {"group": "Competitive matches", "label": "Competitive match mode", "type": "bool"},
+    "g_matchRounds": {"group": "Competitive matches", "label": "Match rounds", "type": "int", "min": 0, "max": 60, "help": "0 = the normal round limit."},
+    "g_matchKnifeRound": {"group": "Competitive matches", "label": "Knife round for sides", "type": "bool"},
+    "g_matchHalftime": {"group": "Competitive matches", "label": "Half-time seconds", "type": "int", "min": 5, "max": 300},
+    "g_matchTimeouts": {"group": "Competitive matches", "label": "Time-outs per team", "type": "int", "min": 0, "max": 10},
+    "g_matchTimeoutTime": {"group": "Competitive matches", "label": "Time-out seconds", "type": "int", "min": 10, "max": 300},
+    "g_matchMinPlayers": {"group": "Competitive matches", "label": "Players needed to start", "type": "int", "min": 1, "max": 32},
+    "g_matchEndTime": {"group": "Competitive matches", "label": "Seconds on the result screen", "type": "int", "min": 5, "max": 300},
 }
-CVAR_VALUE = re.compile(r"^[A-Za-z0-9 ._-]{0,64}$")
+CVARS = {name: m["label"] for name, m in CVAR_META.items()}
+CVAR_VALUE = re.compile(r"^[A-Za-z0-9 ._:,-]{0,64}$")
+
+
+def cvar_check(name: str, value: str, meta: dict | None) -> str:
+    """The value as it goes to the server, or ValueError with a message for staff."""
+    if not CVAR_VALUE.match(value):
+        raise ValueError("Use letters, digits, spaces, dots, commas, colons, - or _ only (64 at most).")
+    if not meta:
+        return value
+    kind = meta.get("type", "text")
+    if kind == "bool":
+        if value not in ("0", "1"):
+            raise ValueError("Use 0 (off) or 1 (on).")
+    elif kind == "choice":
+        if value not in [c for c, _ in meta["choices"]]:
+            raise ValueError("Use one of: " + ", ".join("%s (%s)" % c for c in meta["choices"]) + ".")
+    elif kind == "int":
+        if not re.fullmatch(r"-?\d{1,6}", value):
+            raise ValueError("Use a whole number.")
+        lo, hi = meta.get("min"), meta.get("max")
+        if (lo is not None and int(value) < lo) or (hi is not None and int(value) > hi):
+            raise ValueError("Use a number from %s to %s." % (lo, hi))
+        value = str(int(value))
+    elif kind == "words":
+        words = [w for w in re.split(r"[\s,]+", value.lower()) if w]
+        bad = [w for w in words if w not in meta["words"]]
+        if bad:
+            raise ValueError("Unknown: %s. Use any of: %s." % (", ".join(bad), " ".join(meta["words"])))
+        value = " ".join(dict.fromkeys(words))
+    elif kind == "weather":
+        v = value.lower().strip()
+        if v in ("", "off"):
+            v = "clear"
+        m = re.fullmatch(r"([a-z]+)(?::(\d{1,3}))?", v)
+        if not m or (m.group(1) != "random" and m.group(1) not in WX_KINDS) or (m.group(1) == "random" and m.group(2)):
+            raise ValueError("Use random, clear, or a kind (%s), optionally with a strength such as storm:80." % ", ".join(WX_KINDS[1:]))
+        if m.group(2) and not 0 <= int(m.group(2)) <= 100:
+            raise ValueError("Strength is 0 to 100.")
+        value = v
+    return value
+
 
 # Event mode: what the server switches to, and back again afterwards. "*random*" makes a fresh password.
 EVENT_PRESET = {"g_password": "*random*", "bot_minplayers": "0", "g_autoBalance": "0", "g_allowVote": "0"}
+
+
+def weather_text(wx: str) -> str:
+    """serverinfo tcp_wx "kind,strength,seed[,off]" in words: "storm, strength 60"."""
+    parts = (wx or "").split(",")
+    try:
+        kind = WX_KINDS[int(parts[0])]
+        strength = int(parts[1])
+    except (ValueError, IndexError):
+        return wx
+    text = kind if kind == "clear" else "%s, strength %d" % (kind, strength)
+    return text + (", some effects off" if len(parts) > 3 and parts[3] not in ("", "0") else "")
 
 
 def allowed(who, perm: str) -> bool:
@@ -1123,7 +1264,9 @@ class GameServer:
 
     def cvar(self, name: str) -> str | None:
         """A cvar's current value over rcon, or None when the server does not know it."""
-        return parse_cvar(self.run(name, settle=0.06))        # one short packet: no need to wait for more
+        # One short packet (the reply fits the 240-byte redirect buffer) and every query has its own socket, so a short
+        # settle is enough: the Settings page reads 60+ of these one after the other.
+        return parse_cvar(self.run(name, settle=0.02))
 
     def set_cvar(self, name: str, value: str) -> str:
         return self.run('set %s "%s"' % (name, value), settle=0.06)
@@ -2138,17 +2281,29 @@ class Operations:
                 val = None if down else srv.cvar(name)
             except RconError:
                 val, down = None, True             # one missed answer: do not wait 1.5 s for each of the others
-            rows.append({"name": name, "label": label, "value": val, "kept": overrides.get(name, {}).get("value"),
-                         "event": name in event})
+            meta = CVAR_META.get(name, {})
+            row = {"name": name, "label": label, "value": val, "kept": overrides.get(name, {}).get("value"),
+                   "event": name in event, "group": meta.get("group", "Other"), "help": meta.get("help", ""),
+                   "type": meta.get("type", "text"), "view": bool(meta.get("view")), "next_map": bool(meta.get("next_map"))}
+            for k in ("min", "max", "words"):
+                if k in meta:
+                    row[k] = meta[k]
+            if "choices" in meta:
+                row["choices"] = [list(c) for c in meta["choices"]]
+            if name == "tcp_wx" and val:
+                row["shown"] = weather_text(val)
+            rows.append(row)
         hist = self.store.q("SELECT * FROM cvar_changes WHERE server=? ORDER BY id DESC LIMIT 60", (srv.key,))
-        return {"cvars": rows, "history": hist, "offline": down}
+        return {"cvars": rows, "history": hist, "offline": down, "groups": CVAR_GROUPS}
 
     def cvar_set(self, who: dict, srv: GameServer, name: str, value: str, keep: bool, kind: str = "set") -> dict:
-        if name not in self.cvar_list():
+        if name not in self.cvar_list() or CVAR_META.get(name, {}).get("view"):
             raise ApiError(400, "That setting cannot be changed from the portal.")
         value = str(value if value is not None else "").strip()
-        if not CVAR_VALUE.match(value):
-            raise ApiError(400, "Use letters, digits, spaces, dots, - or _ only (64 at most).")
+        try:
+            value = cvar_check(name, value, CVAR_META.get(name))
+        except ValueError as e:
+            raise ApiError(400, str(e))
         if self.store.one("SELECT server FROM events WHERE server=? AND preset LIKE ?", (srv.key, '%"' + name + '"%')):
             raise ApiError(409, "Event mode controls this setting right now. Stop the event first.")
         old = srv.cvar(name)
@@ -2166,8 +2321,10 @@ class Operations:
                            (srv.key, name, old, value, now(), who["name"], kind, 1 if keep else 0))
         self.store.audit(who, "setting " + kind, server=srv.key, target=name, detail="%s -> %s%s" % (old, value, ", kept" if keep else ""),
                          ok=now_val == value, result="now %s" % now_val)
-        return {"ok": True, "id": cid, "old": old, "value": now_val,
-                "note": "" if now_val == value else "The server reports %s. Some settings only change at the next map." % now_val}
+        note = "" if now_val == value else "The server reports %s. Some settings only change at the next map." % now_val
+        if not note and CVAR_META.get(name, {}).get("next_map"):
+            note = "%s is now %s. The server uses it from the next map." % (name, now_val or "empty")
+        return {"ok": True, "id": cid, "old": old, "value": now_val, "note": note}
 
     def cvar_rollback(self, who: dict, change_id: int) -> dict:
         c = self.store.one("SELECT * FROM cvar_changes WHERE id=?", (change_id,))

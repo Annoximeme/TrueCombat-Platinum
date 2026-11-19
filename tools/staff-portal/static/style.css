@@ -218,6 +218,16 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .toast .btn { margin-left: 12px; }
 .secret { font: 600 15px var(--f-mono); letter-spacing: .12em; word-break: break-all; background: var(--bg); border: 1px solid var(--line); padding: 10px; border-radius: var(--r); }
 .cvar-name { font: 12px var(--f-mono); color: var(--dim); }
+.cv-help { max-width: 46ch; margin-top: 2px; }
+.cv-group { margin: 18px 0 6px; }
+.cv-group:first-of-type { margin-top: 8px; }
+.cv-filter { width: 100%; margin-bottom: 4px; }
+#cv-list table { table-layout: fixed; width: 100%; }
+#cv-list th:nth-child(1) { width: 52%; }
+#cv-list th:nth-child(3) { width: 150px; }
+#cv-list td.mono { overflow-wrap: anywhere; }
+@media (max-width: 700px) { #cv-list th:nth-child(1) { width: 50%; } #cv-list th:nth-child(3) { width: 84px; } }
+.cv-words { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 2px 12px; margin-bottom: 8px; }
 .kept { color: var(--staff); }
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .tiles .card { padding: 12px 14px; }

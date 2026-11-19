@@ -1322,34 +1322,75 @@ function pageInsights(main) {
 }
 
 /* ------------------------------------------------------------------ settings (config editor) */
+function cvarShown(c) {
+  if (c.value == null) return null;
+  if (c.shown) return c.shown;
+  if (c.type === "bool") return c.value === "1" ? "On" : c.value === "0" ? "Off" : c.value;
+  if (c.type === "choice") { const h = (c.choices || []).find((x) => x[0] === c.value); return h ? h[1] : c.value; }
+  if (c.type === "words" && c.value === "") return "none";
+  return c.value === "" ? "(empty)" : c.value;
+}
+function cvarInput(c) {
+  const cur = c.kept ?? c.value ?? "";
+  if (c.type === "bool" || c.type === "choice") {
+    const opts = c.type === "bool" ? [["0", "Off"], ["1", "On"]] : c.choices;
+    return `<label>New value</label><select name="value">${opts.map(([v, l]) => `<option value="${esc(v)}"${v === cur ? " selected" : ""}>${esc(l)} (${esc(v)})</option>`).join("")}</select>`;
+  }
+  if (c.type === "int") {
+    return `<label>New value${c.min != null ? ` <span class="dim">(${c.min} to ${c.max})</span>` : ""}</label><input name="value" type="number" step="1"${c.min != null ? ` min="${c.min}" max="${c.max}"` : ""} value="${esc(cur)}" required>`;
+  }
+  if (c.type === "words") {
+    const on = new Set(String(cur).toLowerCase().split(/[\s,]+/).filter(Boolean));
+    return `<label>Pick the words</label><div class="cv-words">${c.words.map((w) => `<label class="check"><input type="checkbox" data-word="${esc(w)}"${on.has(w) ? " checked" : ""}> ${esc(w)}</label>`).join("")}</div>
+      <input type="hidden" name="value" value="${esc(cur)}">`;
+  }
+  const hint = c.type === "weather" ? ' placeholder="random, clear, rain, storm:80 …"' : "";
+  return `<label>New value</label><input name="value" maxlength="64" value="${esc(cur)}"${hint}>`;
+}
 async function pageSettings(main, key) {
-  main.innerHTML = `<div class="head"><div><p class="eyebrow"><a href="#/server/${esc(key)}">Server</a></p><h1>Settings</h1><p class="muted">Live server settings. "Keep" makes the portal put the value back after a restart or a config reload; without it the change lasts until the server restarts.</p></div></div>
-    <div class="grid grid-2"><div class="panel table-wrap" id="cv-list"></div><div class="panel"><h3>History</h3><div id="cv-hist"></div></div></div>`;
+  main.innerHTML = `<div class="head"><div><p class="eyebrow"><a href="#/server/${esc(key)}">Server</a></p><h1>Settings</h1><p class="muted">Live server settings. "Keep" makes the portal put the value back after a restart or a config reload; without it the change lasts until the server restarts. Settings marked "next map" are read when the next map loads.</p></div></div>
+    <div class="grid grid-2"><div class="panel table-wrap"><input id="cv-filter" class="cv-filter" type="search" placeholder="Find a setting" aria-label="Find a setting"><div id="cv-list"></div></div><div class="panel"><h3>History</h3><div id="cv-hist"></div></div></div>`;
+  $("#cv-filter").oninput = () => paint();
   $("#cv-list").onclick = (e) => {
     const b = e.target.closest("button[data-i]"); if (!b) return;
     const c = draw.rows[+b.dataset.i];
     if (b.dataset.do === "release") return api("cvars/release", { server: key, cvar: c.name }).then(() => { toast("No longer kept."); draw(); }).catch((err) => toast(err.message, true));
-    modal({ title: c.label, sub: c.name + " · now " + (c.value ?? "unknown"), ok: "Apply",
-      body: `<label>New value</label><input name="value" maxlength="64" value="${esc(c.kept ?? c.value ?? "")}" pattern="[A-Za-z0-9 ._-]*">
+    modal({ title: c.label, sub: c.name + " · now " + (cvarShown(c) ?? "unknown"), ok: "Apply",
+      body: `${c.help ? `<p class="dim small">${esc(c.help)}</p>` : ""}${cvarInput(c)}
         <label class="check"><input type="checkbox" name="keep"${c.kept != null ? " checked" : ""}> Keep after restarts</label>`,
       onOk: async (f) => { const r = await api("cvars", { server: key, cvar: c.name, value: f.value, keep: f.keep }); toast(r.note || c.name + " is now " + r.value + "."); draw(); } });
+    const words = $("#modal-body .cv-words");
+    if (words) words.onchange = () => { $('#modal-body input[name="value"]').value = [...words.querySelectorAll("input[data-word]:checked")].map((x) => x.dataset.word).join(" "); };
   };
   $("#cv-hist").onclick = (e) => {
     const b = e.target.closest("button[data-rb]"); if (!b) return;
     api("cvars/rollback", { id: +b.dataset.rb }).then((r) => { toast("Rolled back to " + r.value + "."); draw(); }).catch((err) => toast(err.message, true));
   };
+  function paint() {
+    const r = draw.data; if (!r) return;
+    const q = ($("#cv-filter").value || "").trim().toLowerCase();
+    const groups = [...(r.groups || []), "Other"].filter((g, i, a) => a.indexOf(g) === i);
+    const row = (c, i) => `
+      <tr><td>${esc(c.label)}${c.next_map ? ' <span class="tag" title="Read when the next map loads">next map</span>' : ""}${c.view ? ' <span class="tag" title="Shown for reference, not changed from the portal">view only</span>' : ""}<div class="cvar-name">${esc(c.name)}</div>${c.help ? `<div class="dim small cv-help">${esc(c.help)}</div>` : ""}</td>
+      <td class="mono">${c.value == null ? `<span class="dim">${r.offline ? "server not answering" : "not on this server"}</span>` : esc(cvarShown(c))}${c.kept != null ? ' <span class="kept" title="Kept after restarts">kept</span>' : ""}${c.event ? ' <span class="tag">event</span>' : ""}</td>
+      <td><div class="row-actions">${c.value != null && !c.event && !c.view ? `<button class="btn btn-small" data-i="${i}">Change</button>` : ""}${c.kept != null ? `<button class="btn btn-small" data-i="${i}" data-do="release">Stop keeping</button>` : ""}</div></td></tr>`;
+    const hit = (c) => !q || (c.label + " " + c.name + " " + (c.help || "") + " " + (c.group || "")).toLowerCase().includes(q);
+    const html = groups.map((g) => {
+      const items = r.cvars.map((c, i) => [c, i]).filter(([c]) => (c.group || "Other") === g && hit(c));
+      return items.length ? `<h3 class="cv-group">${esc(g)}</h3><table><tr><th>Setting</th><th>Value</th><th></th></tr>${items.map(([c, i]) => row(c, i)).join("")}</table>` : "";
+    }).join("");
+    $("#cv-list").innerHTML = html || '<p class="empty">No setting matches.</p>';
+  }
   async function draw() {
     let r;
     try { r = await api("cvars?server=" + encodeURIComponent(key)); } catch (e) { $("#cv-list").innerHTML = `<p class="empty">${esc(e.message)}</p>`; return; }
-    draw.rows = r.cvars;
-    $("#cv-list").innerHTML = `<table><tr><th>Setting</th><th>Value</th><th></th></tr>${r.cvars.map((c, i) => `
-      <tr><td>${esc(c.label)}<div class="cvar-name">${esc(c.name)}</div></td>
-      <td class="mono">${c.value == null ? `<span class="dim">${r.offline ? "server not answering" : "not on this server"}</span>` : esc(c.value)}${c.kept != null ? ' <span class="kept" title="Kept after restarts">kept</span>' : ""}${c.event ? ' <span class="tag">event</span>' : ""}</td>
-      <td><div class="row-actions">${c.value != null && !c.event ? `<button class="btn btn-small" data-i="${i}">Change</button>` : ""}${c.kept != null ? `<button class="btn btn-small" data-i="${i}" data-do="release">Stop keeping</button>` : ""}</div></td></tr>`).join("")}</table>`;
+    draw.rows = r.cvars; draw.data = r;
+    paint();
     $("#cv-hist").innerHTML = r.history.length ? `<ul class="list">${r.history.map((h) => `<li><span class="mono">${esc(h.cvar)}</span> ${esc(h.old)} → <b>${esc(h.new)}</b>
       <div class="dim small">${esc(h.kind)}${h.kept ? ", kept" : ""} · ${esc(h.by_name)} · ${when(h.at)}</div>
-      ${["set", "rollback"].includes(h.kind) ? `<button class="btn btn-small" data-rb="${h.id}">Roll back to ${esc(h.old)}</button>` : ""}</li>`).join("")}</ul>` : '<p class="empty">No changes yet.</p>';
+      ${["set", "rollback"].includes(h.kind) ? `<button class="btn btn-small" data-rb="${h.id}">Roll back to ${h.old === "" ? "(empty)" : esc(h.old)}</button>` : ""}</li>`).join("")}</ul>` : '<p class="empty">No changes yet.</p>';
   }
+  $("#cv-list").innerHTML = '<p class="empty">Reading the server settings…</p>';
   draw();
 }
 
