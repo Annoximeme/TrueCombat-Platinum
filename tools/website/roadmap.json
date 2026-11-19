@@ -490,6 +490,11 @@
    "en": "Launcher 3.0: server browser, friends and accessibility settings",
    "nl": "Launcher 3.0: serverbrowser, vrienden en toegankelijkheidsinstellingen",
    "version": "0.39"
+  },
+  {
+   "en": "Weather on every map: thunderstorms, rain and snow",
+   "nl": "Weer op elke map: onweer, regen en sneeuw",
+   "version": "0.39"
   }
  ]
 }
