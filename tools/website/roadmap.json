@@ -495,6 +495,11 @@
    "en": "Weather on every map: thunderstorms, rain and snow",
    "nl": "Weer op elke map: onweer, regen en sneeuw",
    "version": "0.39"
+  },
+  {
+   "en": "Sound you can place: rooms that ring true, sound through doorways and round corners, 3D headphone audio",
+   "nl": "Geluid dat je kunt plaatsen: ruimtes die echt klinken, geluid door deuren en om hoeken, 3D-koptelefoongeluid",
+   "version": "0.39"
   }
  ]
 }
