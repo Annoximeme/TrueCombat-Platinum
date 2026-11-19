@@ -1,0 +1,19 @@
+diff -ru a/analysis_scripts/platinum_quick.py b/analysis_scripts/platinum_quick.py
+--- a/analysis_scripts/platinum_quick.py	2026-11-18 23:50:03.059909790 +0000
++++ b/analysis_scripts/platinum_quick.py	2026-11-18 23:50:08.693572480 +0000
+@@ -91,13 +91,14 @@
+  SLIDER(36, 290, 360, 18, "Scope sensitivity:", .20, 14, "cg_scopeSensitivity" 1 0.05 3, "Mouse speed through a scope (x sensitivity)")
+  EDITFIELD(36, 314, 360, 18, "Exact scope value:", .20, 14, "cg_scopeSensitivity", 6, 6, "Type a value from 0.05 to 3")
+  MULTI(36, 350, 360, 18, "Aim speed:", .22, 14, "cg_aimSensMode", cvarFloatList { "Classic" 0 "Match hip feel" 1 }, "Classic: aim and scope values are plain multipliers. Match hip feel: zooming in keeps the same on-screen speed as hip fire")
++ MULTI(36, 372, 360, 18, "Free aim:", .22, 14, "cg_freeAim", cvarFloatList { "Off" 0 "Deadzone" 2 "Wide deadzone" 3 "Classic (aim only)" 1 }, "Deadzone: the weapon moves on its own before the view turns; aiming brings the sights to it. Classic: the TC:E aimed free aim")
+  SLIDER(454, 170, 362, 18, "Field of view:", .22, 14, "cg_fov" 90 80 110, "Horizontal field of view at 16:9 (wider screens see more at the sides)")
+  EDITFIELD(454, 194, 362, 18, "Exact FOV:", .20, 14, "cg_fov", 5, 5, "Type a value from 80 to 110")
+  YESNO(454, 230, 362, 18, "Mouse smoothing:", .22, 14, "m_filter", "Blend mouse input across frames")
+  SLIDER(454, 266, 362, 18, "Mouse acceleration:", .20, 14, "cl_mouseAccel" 0 0 1, "Increase sensitivity with mouse speed")
+  MULTI(454, 302, 362, 18, "Sprint key:", .22, 14, "cg_toggleSprint", cvarFloatList { "Hold" 0 "Toggle" 1 }, "Toggle sprint, or sprint only while the key is held")
+  MULTI(454, 330, 362, 18, "Walk key:", .22, 14, "cg_toggleWalk", cvarFloatList { "Hold" 0 "Toggle" 1 }, "Toggle walking, or walk only while the key is held")
+- BUTTON(454, 358, 362, 26, "RESET MOUSE & VIEW", .22, 20, exec "set sensitivity 5; set cg_adsSensitivity 1; set cg_scopeSensitivity 1; set cg_aimSensMode 0; set cg_fov 90; set m_filter 0; set cl_mouseAccel 0; set cg_toggleSprint 0; set cg_toggleWalk 0")
++ BUTTON(454, 358, 362, 26, "RESET MOUSE & VIEW", .22, 20, exec "set sensitivity 5; set cg_adsSensitivity 1; set cg_scopeSensitivity 1; set cg_aimSensMode 0; set cg_freeAim 0; set cg_fov 90; set m_filter 0; set cl_mouseAccel 0; set cg_toggleSprint 0; set cg_toggleWalk 0")
+ '''
+     out+=text('note',36,392,780,'Changes apply immediately and are saved in your profile; the launcher reads the same settings.','.18')
+     out+=text('raw',36,418,700,'The game always reads raw mouse input, without Windows pointer acceleration.','.16')+'}'+chr(10)

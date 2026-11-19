@@ -1,0 +1,117 @@
+diff -ru a/game_src/native/tcp_audio.h b/game_src/native/tcp_audio.h
+--- a/game_src/native/tcp_audio.h	2026-11-18 23:39:05.786212595 +0000
++++ b/game_src/native/tcp_audio.h	2026-11-18 23:39:05.800542184 +0000
+@@ -55,8 +55,12 @@
+ typedef struct {float cycle;int last,ground,inited;float fallSpeed;} taWalker_t;
+ static taWalker_t taWalkers[MAX_CLIENTS];
+ 
+-typedef struct {int tried,fireCount,echoCount,suppressed;sfxHandle_t fire[4],echo[4],reload;} taWeapon_t;
++/* 0.39.3 weapon sounds: rCount recorded shots per weapon (sound/remaster/weapons/<file>/fire1..4 for other players,
++ * fp1..4 for your own gun: the same shot with a per-calibre low-end kick). cg_weaponSounds 1 Remastered (default),
++ * 0 Original = the .weap flashSounds exactly as before. Both sets are registered at load, so the switch is instant. */
++typedef struct {int tried,fireCount,echoCount,suppressed,rCount;sfxHandle_t fire[4],echo[4],reload,rFire[4],rOwn[4];} taWeapon_t;
+ static taWeapon_t taWeapons[64];
++static vmCvar_t taWeaponSounds;
+ 
+ /* Native modules do not link q_shared.c / q_math.c: tiny local helpers. */
+ static int taLower(int c){return c>='A'&&c<='Z'?c+32:c;}
+@@ -92,6 +96,7 @@
+     char path[MAX_QPATH];
+     SystemCall(CG_CVAR_REGISTER,&taFootsteps,"cg_footsteps","1",CVAR_ARCHIVE);
+     SystemCall(CG_CVAR_REGISTER,&taDebug,"cg_audioDebug","0",0);
++    SystemCall(CG_CVAR_REGISTER,&taWeaponSounds,"cg_weaponSounds","1",CVAR_ARCHIVE); /* 0.39.3: Remastered / Original weapon sounds */
+     for(int s=0;s<TA_SETS;s++){
+         if(!taSetName[s])continue;
+         for(int i=0;i<4;i++){snprintf(path,sizeof(path),"sound/player/footsteps/%s%d.wav",taSetName[s],i+1);taStep[s][i]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,path,qfalse);}
+@@ -148,7 +153,20 @@
+     at=text;
+     while(w->echoCount<4&&(at=taValue(at,"flashEchoSound",value,sizeof(value))))w->echo[w->echoCount++]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,value,qfalse);
+     if(taValue(text,"reloadSound",value,sizeof(value)))w->reload=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,value,qfalse);
+-    char msg[160];snprintf(msg,sizeof(msg),"TCP_NATIVE_AUDIO weapon id=%d file=%s fire=%d echo=%d reload=%d\n",weapon,file,w->fireCount,w->echoCount,w->reload!=0);
++    /* 0.39.3: recorded set, only when the client pak carries all of it (pairs fire<n>/fp<n>, no default-sound warnings) */
++    for(int n=1;n<=4&&weapon!=TCP_PLIERS_WEAPON;n++){
++        char own[MAX_QPATH];fileHandle_t g;
++        snprintf(value,sizeof(value),"sound/remaster/weapons/%s/fire%d.wav",file,n);
++        snprintf(own,sizeof(own),"sound/remaster/weapons/%s/fp%d.wav",file,n);
++        int a=(int)SystemCall(CG_FS_FOPENFILE,value,&g,FS_READ);if(a>0)SystemCall(CG_FS_FCLOSEFILE,g);
++        int b=(int)SystemCall(CG_FS_FOPENFILE,own,&g,FS_READ);if(b>0)SystemCall(CG_FS_FCLOSEFILE,g);
++        if(a<=0||b<=0)break;
++        w->rFire[w->rCount]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,value,qfalse);
++        w->rOwn[w->rCount]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,own,qfalse);
++        if(!w->rFire[w->rCount]||!w->rOwn[w->rCount])break;
++        w->rCount++;
++    }
++    char msg[160];snprintf(msg,sizeof(msg),"TCP_NATIVE_AUDIO weapon id=%d file=%s fire=%d echo=%d reload=%d recorded=%d\n",weapon,file,w->fireCount,w->echoCount,w->reload!=0,w->rCount);
+     SystemCall(CG_PRINT,msg);
+     return w;
+ }
+@@ -156,6 +174,8 @@
+ static void taFire(int weapon,int shooter,const vec3_t muzzle,const vec3_t listener,int local,int seq,sfxHandle_t fallback){
+     const taWeapon_t *w=taGetWeapon(weapon);
+     sfxHandle_t fire=w&&w->fireCount?w->fire[(unsigned)(seq*2654435761u>>16)%(unsigned)w->fireCount]:fallback;
++    if(w&&w->rCount&&taWeaponSounds.integer){ /* 0.39.3 Remastered: same pick rule over the recorded set */
++        const unsigned k=(unsigned)(seq*2654435761u>>16)%(unsigned)w->rCount;fire=local?w->rOwn[k]:w->rFire[k];}
+     imsShotLayers(weapon,shooter,muzzle,listener,local); /* 0.38.0 immersion: near crack, far thump, room tail */
+     if(local){taLocal(fire,CHAN_WEAPON,127,SND_PITCHVAR);
+         if(taDebug.integer){char m[96];snprintf(m,sizeof(m),"TCP_NATIVE_OWN_FIRE weapon=%d sfx=%d fallback=%d\n",weapon,(int)fire,fire==fallback);SystemCall(CG_PRINT,m);} /* 0.36.0: which report an own shot played (cg_audioDebug) */
+@@ -290,7 +310,7 @@
+ 
+ /* Once per rendered frame, after the refdef is built. */
+ static void taFrame(const playerState_t *p,const snapshot_t *s,const refdef_t *rd,int time,int predictedButtons){
+-    SystemCall(CG_CVAR_UPDATE,&taFootsteps);SystemCall(CG_CVAR_UPDATE,&taDebug);SystemCall(CG_CVAR_UPDATE,&taSnapCvar);
++    SystemCall(CG_CVAR_UPDATE,&taFootsteps);SystemCall(CG_CVAR_UPDATE,&taDebug);SystemCall(CG_CVAR_UPDATE,&taWeaponSounds);SystemCall(CG_CVAR_UPDATE,&taSnapCvar);
+     taListener=p->clientNum;VectorCopy(rd->vieworg,taEar);
+     taAlive=p->stats[STAT_HEALTH]>0&&p->pm_type==PM_NORMAL&&!(p->pm_flags&PMF_FOLLOW); /* 0.37.2: suppression only for the living local player */
+     vec3_t axis[3];memcpy(axis,rd->viewaxis,sizeof(axis));
+diff -ru a/game_src/native/tcp_immersion_cg.h b/game_src/native/tcp_immersion_cg.h
+--- a/game_src/native/tcp_immersion_cg.h	2026-11-18 23:59:21.251077296 +0000
++++ b/game_src/native/tcp_immersion_cg.h	2026-11-18 23:59:21.273794443 +0000
+@@ -353,7 +353,15 @@
+  * indoorbig (rooms), indoorbig2 (halls: high or glass roof), outdoor, outdoorsnow (obj_snow). One tail per shooter per
+  * 220 ms, so full-auto fire rings instead of stacking. Same for every player; the reverb files are TC:E's (pak0) and
+  * Platinum's own outdoor_1 (zz_platinum_audio), no new sound asset. */
+-static sfxHandle_t imsTail[4][2],imsCrack[4],imsThump[2];static int imsTailAt[MAX_CLIENTS+1],imsRoomAt[MAX_CLIENTS+1],imsRoom[MAX_CLIENTS+1];
++static sfxHandle_t imsTail[4][2],imsCrack[4],imsThump[2];
++/* 0.39.3 Remastered weapon sounds (cg_weaponSounds 1): rendered tails per space set x calibre group (0 pistol/SMG,
++ * 1 rifle, 2 DMR/sniper/shotgun) x 2, from zz_platinum_gunfire (sound/remaster/reverb/<set>_<group>_<n>.wav). */
++static sfxHandle_t imsTailR[4][3][2];
++static int imsTailGroup(int weapon,const tcp_gear_weapon *g){
++    static const char *const heavy[]={"m3s90","spas12","m590c","shorty","akimbo_shorty"};
++    for(unsigned k=0;k<sizeof(heavy)/sizeof(heavy[0]);k++)if(g->file&&!strcmp(g->file,heavy[k]))return 2;
++    (void)weapon;return g->category>=5?2:g->category==4?1:0;
++}static int imsTailAt[MAX_CLIENTS+1],imsRoomAt[MAX_CLIENTS+1],imsRoom[MAX_CLIENTS+1];
+ static int imsRoomOf(int id,const vec3_t at,int time){ /* 0 outdoor, 1 room, 2 hall */
+     if(id<0||id>MAX_CLIENTS)id=MAX_CLIENTS;
+     if(imsRoomAt[id]&&time-imsRoomAt[id]<500&&time>=imsRoomAt[id])return imsRoom[id];imsRoomAt[id]=time?time:1;
+@@ -376,7 +384,9 @@
+     const int id=shooter>=0&&shooter<MAX_CLIENTS?shooter:MAX_CLIENTS;
+     if(d>2500.f||(imsTailAt[id]&&time-imsTailAt[id]<220&&time>=imsTailAt[id]))return;imsTailAt[id]=time?time:1;
+     const int room=imsRoomOf(id,muzzle,time),set=room==1?0:room==2?1:imsMapKind==1?3:2;
+-    const sfxHandle_t s=imsTail[set][rand()&1]?imsTail[set][rand()&1]:imsTail[set][0];if(!s)return;
++    sfxHandle_t s=imsTail[set][rand()&1]?imsTail[set][rand()&1]:imsTail[set][0];
++    if(taWeaponSounds.integer){const int gr=silenced?0:imsTailGroup(weapon,g);const sfxHandle_t r=imsTailR[set][gr][rand()&1];if(r)s=r;}
++    if(!s)return;
+     const int vol=(int)((silenced?40.f:local?72.f:90.f)*(1.f-d/2500.f));if(vol<6)return;
+     if(local)taLocal(s,CHAN_AUTO,vol,0);
+     else{vec3_t at;VectorCopy(muzzle,at);SystemCall(CG_S_STARTSOUNDEX,at,ENTITYNUM_WORLD,CHAN_AUTO,s,SND_NOCUT,vol);}
+@@ -497,6 +507,9 @@
+     imsSfxGull=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,"sound/world/air_gulls.wav",qfalse);
+     {static const char *const tails[4]={"indoorbig","indoorbig2","outdoor","outdoorsnow"};char n[64];
+      for(int k=0;k<4;k++)for(int j=0;j<2;j++){snprintf(n,sizeof(n),"sound/reverb/%s_%d.wav",tails[k],j+1);imsTail[k][j]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,n,qfalse);}
++     memset(imsTailR,0,sizeof(imsTailR)); /* 0.39.3: only when the pak has them (no default-sound warnings) */
++     for(int k=0;k<4;k++)for(int gr=0;gr<3;gr++)for(int j=0;j<2;j++){fileHandle_t f;snprintf(n,sizeof(n),"sound/remaster/reverb/%s_%d_%d.wav",tails[k],gr,j+1);
++         if((int)SystemCall(CG_FS_FOPENFILE,n,&f,FS_READ)>0){SystemCall(CG_FS_FCLOSEFILE,f);imsTailR[k][gr][j]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,n,qfalse);}}
+      for(int k=0;k<4;k++){snprintf(n,sizeof(n),"sound/platinum/crack%d.wav",k+1);imsCrack[k]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,n,qfalse);}
+      for(int k=0;k<2;k++){snprintf(n,sizeof(n),"sound/platinum/thump%d.wav",k+1);imsThump[k]=(sfxHandle_t)SystemCall(CG_S_REGISTERSOUND,n,qfalse);}
+      memset(imsTailAt,0,sizeof(imsTailAt));memset(imsRoomAt,0,sizeof(imsRoomAt));}
+diff -ru a/reference/etlegacy/src/server/sv_anticheat.c b/reference/etlegacy/src/server/sv_anticheat.c
+--- a/reference/etlegacy/src/server/sv_anticheat.c	2026-11-18 23:40:18.746200505 +0000
++++ b/reference/etlegacy/src/server/sv_anticheat.c	2026-11-18 23:59:34.885598782 +0000
+@@ -361,6 +361,7 @@
+ 	{ "tcetest/zz_platinum_cqb",         "1868977007"   }, /* 0.38.0 CQB merge (optics, holes, radio, reverb); experimental */
+ 	{ "tcetest/cqb_map_harbour",         "-348981911"    }, /* 0.38.0 CQB map Harbour (experimental, g_experimental 1) */
+ 	{ "tcetest/zz_platinum_cqbweapons",  "302156147"    }, /* 0.38.0 CQB experimental weapons */
++	{ "tcetest/zz_platinum_gunfire",     "1806898204"}, /* 0.39.3 Remastered weapon sounds: recorded fire/fp sets per weapon, impacts, snaps (client only; cg_weaponSounds) */
+ 	{ "tcetest/zzzz_platinum_matv4",     "-577100092"   }, /* 0.38.0 DX12 materials v4 class maps */
+ 	{ "tcetest/zzzz_platinum_cqbguns",   "570685537"    }, /* 0.38.0 CQB first-person guns */
+ 	{ "tcetest/zzzz_platinum_cqbguns_hd", "-120980766"   }, /* 0.38.0 CQB gun textures at 1024 */
