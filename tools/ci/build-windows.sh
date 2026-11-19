@@ -13,6 +13,7 @@
 #   RUN_PROBES   1 = run the native probes under wine (default 1 if wine exists)
 #   JOBS         parallel jobs (default: nproc)
 #   QUIET        1 = never print compiler output (public CI logs of unreleased code)
+#   ENGINE_CMAKE_EXTRA  extra engine CMake flags, e.g. -DFEATURE_PROFILER=ON for a development build
 set -euo pipefail
 SRC=$(cd "$1" && pwd); OUT=$(mkdir -p "$2" && cd "$2" && pwd)
 : "${LLVM_MINGW:?set LLVM_MINGW}"
@@ -117,7 +118,7 @@ step engine-configure cmake -S "$E" -B "$BUILD/engine" -G Ninja -DCMAKE_TOOLCHAI
   -DFEATURE_AUTOUPDATE=OFF -DFEATURE_THEORA=OFF -DFEATURE_OPENAL=ON -DBUNDLED_OPENAL=OFF \
   "-DOPENAL_INCLUDE_DIR=$E/libs/openal/include" "-DOPENAL_LIBRARY=$BUILD/openal/libOpenAL32.dll.a" \
   -DFEATURE_OGG_VORBIS=ON -DFEATURE_LUA=OFF -DFEATURE_LUAJIT=OFF -DFEATURE_OMNIBOT=OFF -DINSTALL_EXTRA=OFF \
-  -DFEATURE_WINDOWS_CONSOLE=ON -DFEATURE_WINDOWS_PDB=ON -DCROSS_COMPILE32=OFF "${EOS_FLAGS[@]}"
+  -DFEATURE_WINDOWS_CONSOLE=ON -DFEATURE_WINDOWS_PDB=ON -DCROSS_COMPILE32=OFF "${EOS_FLAGS[@]}" ${ENGINE_CMAKE_EXTRA:-}
 step engine-build cmake --build "$BUILD/engine" --parallel "$JOBS" --target etl etlded renderer_dx12 renderer1 ui
 
 # Game modules, probes, launcher, installer, master server: same flags as the PC.

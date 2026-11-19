@@ -4,6 +4,7 @@
 # Output: <out>/server/platinum-server.x86_64 and <out>/tcetest/qagame.mp.x86_64.so
 # EOS_SDK_DIR=<folder with Include/eos_sdk.h> builds the Easy Anti-Cheat server
 # (official servers only; the public kit never has it).
+# GAME_EXTRA adds sources/flags to the game module link (tools/feelcheck uses it for its deterministic clock).
 set -eu
 SRC=$(cd "$1" && pwd); OUT=$(mkdir -p "$2" && cd "$2" && pwd)
 E="$SRC/reference/etlegacy"; G="$SRC/game_src"
@@ -22,6 +23,6 @@ clang -std=gnu11 -O2 -g -Wall -Wextra -Wno-unused-parameter -Wno-implicit-const-
   "$G/shared/tcp_firing.c" "$G/shared/tcp_spread.c" "$G/shared/tcp_shotgun.c" "$G/shared/tcp_specs.c" "$G/shared/tcp_weapon_rules.c" \
   "$G/shared/tcp_damage.c" "$G/shared/tcp_math.c" "$G/shared/tcp_regions.c" "$G/shared/tcp_penetration.c" \
   "$G/native/monocypher/monocypher.c" "$G/native/monocypher/monocypher-ed25519.c" \
-  -lm -Wl,-z,defs -o "$OUT/tcetest/qagame.mp.x86_64.so"
+  ${GAME_EXTRA:-} -lm -Wl,-z,defs -o "$OUT/tcetest/qagame.mp.x86_64.so"
 strip "$OUT/server/platinum-server.x86_64" "$OUT/tcetest/qagame.mp.x86_64.so"
 rm -rf "$OUT/build"
