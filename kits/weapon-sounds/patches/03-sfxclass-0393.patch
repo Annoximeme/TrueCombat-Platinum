@@ -1,0 +1,23 @@
+diff -ru a/reference/etlegacy/src/client/snd_openal.c b/reference/etlegacy/src/client/snd_openal.c
+--- a/reference/etlegacy/src/client/snd_openal.c	2026-11-19 01:08:41.111648104 +0000
++++ b/reference/etlegacy/src/client/snd_openal.c	2026-11-19 01:08:41.127359644 +0000
+@@ -247,6 +247,19 @@
+ 	{
+ 		return TCPC_SNAP;
+ 	}
++	// 0.39.3 Remastered weapon sounds (zz_platinum_gunfire): same classes as the sounds they stand in for
++	if (strstr(n, "remaster/snap/"))
++	{
++		return TCPC_SNAP;
++	}
++	if (strstr(n, "remaster/impact/"))
++	{
++		return strstr(n, "bullethit_flyby") ? TCPC_SNAP : TCPC_IMPACT;
++	}
++	if (strstr(n, "remaster/weapons/"))
++	{
++		return TCPC_GUNFIRE;    // fire1-4 (others) and fp1-4 (own gun)
++	}
+ 	if (strstr(n, "platinum/thump") || strstr(n, "grenade/m67") || strstr(n, "grenade/m84") || strstr(n, "grenade/mk3a2")
+ 	    || strstr(n, "dynamite_expl"))
+ 	{

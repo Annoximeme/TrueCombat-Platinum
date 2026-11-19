@@ -66,9 +66,19 @@ Gianni: impacts must "seamlessly integrate with the originals", with more variat
 - New: soft ground (dirt, soil, mud, gravel, snow, sand, grass), silent in TC:E, gets `dirt1..12` at a quiet
   level (foliage + 4 dB, low-passed). Original mode keeps it silent.
 - Near-miss snaps: crack and whizz go from 4 to 12 (`sound/remaster/snap/crack5..12`, `whizz5..12`).
+- Ricochets (new): 12 whines (`sound/remaster/impact/ricochet1..12.wav`) cleaned out of real recorded glides
+  (Pole Position Warfare Library). After a hit on stone or solid metal: 18 % stone, 30 % metal, 4 % pellets,
+  never on exits, at most one every 180 ms. Console: `TCP_NATIVE_IMPACTS ricochets=12`.
 - Original mode (cg_weaponSounds 0) plays only the original sounds, as before.
 - Console line `TCP_NATIVE_IMPACTS variants ...` shows how many per surface loaded (expect 12, dirt 12).
 - Builder: /mnt/project-files/weapon-sound-overhaul/tools/build_impacts.py; REPORT-impacts.json.
 
 PC look additions: shoot concrete, metal, wood, glass, a fence, a bush and dirt on obj_village and obj_snow with
 Remastered on and off; listen that the new ones are indistinguishable in character from the originals.
+
+## Engine: sound classes for the remastered files (patch 03-sfxclass-0393.patch)
+
+snd_openal.c TCP_SfxClass classes sounds by path. `sound/remaster/weapons/` did not match `sound/weapons/`, so
+Remastered gunfire was class OTHER (lower source priority, no ducking, no night-mode cut). Now
+`remaster/weapons/` = GUNFIRE, `remaster/impact/` = IMPACT (fly-bys SNAP), `remaster/snap/` = SNAP, the same as
+the originals they replace.
