@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/nl/devlog"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog</id>
-  <updated>2026-11-18T12:00:00Z</updated>
+  <updated>2026-11-19T12:00:00Z</updated>
+  <entry>
+    <title>Hoor het gevecht</title>
+    <link href="https://truecombat.eu/nl/devlog-sound-update"/>
+    <id>https://truecombat.eu/nl/devlog-sound-update</id>
+    <published>2026-11-19T12:00:00Z</published>
+    <updated>2026-11-19T12:00:00Z</updated>
+    <category term="Update"/>
+    <summary>Elk wapen krijgt een eigen stem, inslagen krijgen twaalf variaties per oppervlak en de geluidsengine leert over kamers, deuropeningen en afstand. Plus free aim en AK's weer met twee handen. Het volledige verhaal van update 0.39.3.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Aan het front</title>
     <link href="https://truecombat.eu/nl/devlog-front-lines"/>
