@@ -5,7 +5,7 @@
 #
 # <base> is a release tag, a source zip or a source folder (as kit-gate.sh). The kit folder holds
 # patches/*.patch and optionally files/ (as kit-gate.sh); "-" checks the base against itself.
-# Both trees get feeltrace.patch (engine) and fakeclock.c (game module), are built as Linux dedicated
+# Both trees get the trace hook (feeltrace.py, engine) and fakeclock.c (game module), are built as Linux dedicated
 # servers, and play the same seeded bot match on each map with every server frame at exactly 8 ms of
 # game time. The base plays twice first: if those two runs differ the test itself is not trustworthy
 # on that map and it fails as "not deterministic". Then the kit build's trace must match the base
@@ -38,7 +38,7 @@ compose() {  # <out dir> [kit]
     done
     [ -d "$kit/files" ] && cp -r "$kit/files/." "$out/"
   fi
-  (cd "$out" && git apply --whitespace=nowarn "$HERE/feeltrace.patch") || { echo "feeltrace.patch does not apply"; return 1; }
+  python3 "$HERE/feeltrace.py" "$out" || return 1
 }
 build() {  # <src> <out>
   GAME_EXTRA="$HERE/fakeclock.c -Wl,--wrap=clock_gettime -Wl,--wrap=time" \
