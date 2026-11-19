@@ -1,0 +1,25 @@
+diff --git a/game_src/native/tcp_anim_script.h b/game_src/native/tcp_anim_script.h
+index b06876f..df7caa9 100644
+--- a/game_src/native/tcp_anim_script.h
++++ b/game_src/native/tcp_anim_script.h
+@@ -121,7 +121,10 @@ static void asParse(char *buf){
+         else if(p[0]=='/'&&p[1]=='*'){*p++=' ';*p++=' ';while(*p&&!(p[0]=='*'&&p[1]=='/')){if(*p!='\n')*p=' ';p++;}if(!*p)break;*p++=' ';*p=' ';}
+     }
+     enum {SEC_NONE,SEC_DEFINES,SEC_ANIMS,SEC_EVENTS} sec=SEC_NONE;
+-    int depth=0,state=0,list=-1;asList_t *target=NULL;char pending[256]="";asItem_t *item=NULL;
++    /* 0.39.3: lines up to 1023 chars. With 256, TC:E's long "set weapons" lines were cut, so two_handed_weapons lost
++     * id 33 (AK-47, G3, G3A3: strafe, run, walk back, crouch idle and jumps fell to the one-handed pistol rows, the rifle
++     * looked held out in one hand) and the Mobile MG42 / K43 / scoped ids; 0.49b's own parser has no line limit. */
++    int depth=0,state=0,list=-1;asList_t *target=NULL;char pending[1024]="";asItem_t *item=NULL;
+     for(char *p=buf;*p;){
+         /* Next token: a brace or a line segment up to newline/brace. */
+         while(*p==' '||*p=='\t'||*p=='\r'||*p=='\n')p++;
+@@ -149,7 +152,7 @@ static void asParse(char *buf){
+             continue;
+         }
+         char *e=p;while(*e&&*e!='\n'&&*e!='{'&&*e!='}')e++;
+-        const char keep=*e;*e=0;char line[256];snprintf(line,sizeof(line),"%s",p);*e=keep;p=e;asTrim(line);
++        const char keep=*e;*e=0;char line[1024];snprintf(line,sizeof(line),"%s",p);*e=keep;p=e;asTrim(line);
+         if(!line[0])continue;
+         if(depth==0){
+             if(!strcmp(line,"DEFINES")){sec=SEC_DEFINES;continue;}
