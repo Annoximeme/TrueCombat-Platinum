@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Front|lines.
-text=Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound and body language across every map.
+title=Hear the|fight.
+text=Every gun gets its own voice, impacts get twelve variations per surface, and the sound engine learns about rooms, doorways and distance. Plus free aim and two-handed AKs.
 button=Read the devlog
-url=https://truecombat.eu/devlog-front-lines.html
+url=https://truecombat.eu/devlog-sound-update.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/7Dg4yhhvGF
 [news]
 tag=Devlog
-title=Front lines
-text=Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound…
-url=https://truecombat.eu/devlog-front-lines.html
+title=Hear the fight
+text=Every gun gets its own voice, impacts get twelve variations per surface, and the sound engine learns about rooms, doorways and distance.
+url=https://truecombat.eu/devlog-sound-update.html
 [news]
 tag=Community
 title=Weekend ranked ladder
