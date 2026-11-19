@@ -15,8 +15,8 @@ tools/feelcheck/feel-check.sh <base> <kit folder | -> ["obj_village obj_snow"] [
 
 ## How it works
 
-1. Both trees get `feeltrace.patch` (engine, `sv_main.c`) and `fakeclock.c` (linked into the game
-   module) and are built as Linux dedicated servers. Neither file ever goes into a release build.
+1. Both trees get the trace hook (`feeltrace.py` puts `feeltrace.c` into `sv_main.c`, found by code so
+   it still applies after engine kits change that file) and `fakeclock.c` (linked into the game module) and are built as Linux dedicated servers. Neither file ever goes into a release build.
 2. Each build plays the same seeded bot match per map (`bot_seed`, fixed weather, 12 bots, 128 Hz).
    With `sv_feelTrace` set, every server frame is exactly 8 ms of game time and the game module's
    clock advances per call instead of in real time, so a run no longer depends on how fast the
