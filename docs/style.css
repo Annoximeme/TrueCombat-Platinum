@@ -1291,6 +1291,7 @@ html { scrollbar-color: #2e3747 var(--bg); }
 .built-list li { display: grid; grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
 .built-list b { font: 700 1.05rem/1.2 var(--f-display); text-transform: uppercase; letter-spacing: .06em; }
 .built-list span { color: var(--muted); font-size: .92rem; }
+.built-note { margin: 18px 0 0; color: var(--muted); font-size: .92rem; max-width: 62rem; }
 @media (max-width: 860px) { .built { grid-template-columns: 1fr; } .built-list li { grid-template-columns: 1fr; gap: 2px; } }
 
 /* support page */

@@ -1981,7 +1981,7 @@ TABLES = {'LABELS': {'banners': 'Banery serwerów', 'maps': 'Mapy',
             'rss': 'Informacje o wersjach (RSS)',
             'legal1': 'TrueCombat: Elite stworzył Team Terminator. Wolfenstein: Enemy Territory to dzieło Splash Damage i id Software, wydane przez Activision. TrueCombat: Platinum jest projektem '
                       'fanowskim, niepowiązanym z nimi i przez nich niewspieranym.',
-            'legal2': 'Kod silnika jest udostępniony na licencji GPL. Oryginalne dane i grafiki gry zachowują pierwotne warunki; zobacz folder licenses w każdym pobranym pakiecie.'},
+            'legal2': 'Platinum Engine powstał na bazie ET: Legacy i kodu źródłowego Wolfenstein: Enemy Territory od id Software i jest udostępniony na licencji GNU GPL v3. Oryginalne dane i grafiki gry zachowują pierwotne warunki; zobacz folder licenses w każdym pobranym pakiecie.'},
  'GAME_DESC': 'TrueCombat: Elite, realistyczna strzelanka taktyczna, odbudowana za darmo jako natywna 64-bitowa gra na DirectX 12 dla Windows 10 i 11.',
  'TEAM': {'specops': 'SpecOps', 'terror': 'Terroryści', 'both': 'Obie drużyny'},
  'WL': {'damage': 'Obrażenia',

@@ -30,11 +30,21 @@ the same version.
 The full patch notes for every release are on the
 [news page](https://truecombat.eu/news.html) and the release pages.
 
+## Built on
+
+The Platinum Engine is built on [ET: Legacy](https://www.etlegacy.com) by the
+ET: Legacy team, which continues the Wolfenstein: Enemy Territory engine source
+code released by id Software. Wolfenstein: Enemy Territory is by Splash Damage
+and id Software. TrueCombat: Elite, the game Platinum rebuilds, was created by
+Team Terminator. The engine is released under the GNU GPL v3, like the code it
+grew from.
+
 ## Source code
 
 Each release includes its patch notes, a READ-ME and the matching game source
-code (`source/native-sandbox-source.zip`). Original game data and artwork keep
-their original terms; see the `licenses` folder in the download.
+code (`source/native-sandbox-source.zip`), with the GNU GPL v3 and the third-party license
+notices in the `licenses` folder. Original game data and
+artwork keep their original terms.
 
 ## In this repository
 
