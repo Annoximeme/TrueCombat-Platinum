@@ -45,7 +45,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.6.0"
+VERSION = "1.7.1"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -497,7 +497,51 @@ def bug_fields(j: dict) -> tuple:
             shot = b""
         if len(shot) > 1024 * 1024 or not shot.startswith(b"\xff\xd8\xff"):
             shot = b""
+    for k, pat in (("kid", r"[0-9a-f]{40}"), ("hwid", None)):
+        v = j.get(k)
+        if k == "kid" and isinstance(v, str) and re.fullmatch(pat, v.strip().lower()):
+            d["kid"] = v.strip().lower()
+        if k == "hwid":
+            hw = hw_ids(v)
+            if hw:
+                d["hwid"] = hw
     return d, shot
+
+
+# --- whole-game bans ------------------------------------------------------------------------
+# A whole-game ban holds on every identity the portal has for the player: the stats id (from the game's
+# cl_guid), the anti-cheat account (EOS PUID), the PC's account key id (eacid.key), hardware hashes (made
+# on the PC, salted, never the raw serials) and, when staff tick it, a keyed tag of the IP address. The
+# game asks /api/gamecheck at start; any match keeps it from starting, and the new identities that came
+# with a strong match are added to the ban, so a fresh install or a new name on the same PC stays banned.
+GAMEBAN_KINDS = {"pid": r"[0-9a-f]{16}", "puid": r"[0-9a-f]{32}", "kid": r"[0-9a-f]{40}", "hw": r"[0-9a-f]{32,64}",
+                 "ip": r"[0-9a-f]{12}"}
+STRONG_KINDS = ("pid", "puid", "kid", "hw")     # an IP match alone blocks, but never spreads the ban
+
+
+def hw_ids(v) -> list:
+    """Up to 6 hardware hashes as sent by the game or launcher (lower-case hex), invalid ones dropped."""
+    if not isinstance(v, list):
+        return []
+    out = []
+    for x in v[:6]:
+        x = str(x or "").strip().lower()
+        if re.fullmatch(GAMEBAN_KINDS["hw"], x) and x not in out and x.strip("0"):
+            out.append(x)
+    return out
+
+
+def id_pairs(pid: str = "", puid: str = "", kid: str = "", hw=(), iptag: str = "") -> list:
+    """Valid (kind, value) pairs from whatever identities are known."""
+    out = []
+    for kind, v in (("pid", pid), ("puid", puid), ("kid", kid), ("ip", iptag)):
+        v = str(v or "").strip().lower()
+        if v and re.fullmatch(GAMEBAN_KINDS[kind], v):
+            out.append((kind, v))
+    for h in hw or ():
+        if re.fullmatch(GAMEBAN_KINDS["hw"], str(h)):
+            out.append(("hw", str(h)))
+    return out
 
 
 # --- QR code (for the authenticator setup) -----------------------------------------------------
@@ -868,6 +912,11 @@ def ed25519_verify(public: bytes, msg: bytes, sig: bytes) -> bool:
 STAFF_CERT_TAG = "TCPSTAFFCERT1"
 
 
+def gamecheck_message(nonce: str, play: bool, t: int) -> bytes:
+    """What a start-check answer signs: the game's own random nonce, so an old or forged answer never passes."""
+    return ("TCP-GAMECHECK-1\n%s\n%s\n%d" % (nonce, "play" if play else "banned", t)).encode()
+
+
 def staff_cert_message(root_id: str, kid: str, role: int, issued: int, expires: int, pub_hex: str, name_hex: str) -> bytes:
     return ("TCP-STAFF-CERT-1\n%s\n%s\n%d\n%d\n%d\n%s\n%s" % (root_id, kid, role, issued, expires, pub_hex, name_hex)).encode()
 
@@ -1176,6 +1225,14 @@ CREATE TABLE IF NOT EXISTS ac_queue(id INTEGER PRIMARY KEY AUTOINCREMENT, kind T
   detail TEXT, score INTEGER DEFAULT 0, status TEXT DEFAULT 'open', by_name TEXT, resolved INTEGER, note TEXT);
 CREATE INDEX IF NOT EXISTS ac_queue_status ON ac_queue(status, at);
 CREATE INDEX IF NOT EXISTS ac_queue_pid ON ac_queue(pid, kind);
+CREATE TABLE IF NOT EXISTS ban_ids(ban_id INTEGER, kind TEXT, value TEXT, added INTEGER, via TEXT,
+  PRIMARY KEY(ban_id, kind, value));
+CREATE INDEX IF NOT EXISTS ban_ids_value ON ban_ids(kind, value);
+CREATE TABLE IF NOT EXISTS devices(id INTEGER PRIMARY KEY AUTOINCREMENT, ids TEXT UNIQUE, pid TEXT, kid TEXT, puid TEXT,
+  hw TEXT, iptag TEXT, name TEXT, build TEXT, first_seen INTEGER, last_seen INTEGER, checks INTEGER DEFAULT 0, blocked INTEGER DEFAULT 0);
+CREATE INDEX IF NOT EXISTS devices_pid ON devices(pid);
+CREATE INDEX IF NOT EXISTS devices_name ON devices(name);
+CREATE INDEX IF NOT EXISTS devices_seen ON devices(last_seen);
 """
 
 # Columns added after 1.0.0, applied to an existing database on start.
@@ -1187,6 +1244,7 @@ MIGRATIONS = [
     "CREATE INDEX IF NOT EXISTS bans_code ON bans(appeal_code)",
     "ALTER TABLE staff ADD COLUMN perms_add TEXT",
     "ALTER TABLE staff ADD COLUMN perms_remove TEXT",
+    "ALTER TABLE bans ADD COLUMN game INTEGER DEFAULT 0",     # 1.7.0: banned from the whole game, not only our servers
 ]
 
 
@@ -1473,11 +1531,14 @@ class Moderation:
         return str(self.cfg.get("appeal_url") or self.cfg.get("public_url", "https://staff.truecombat.eu").rstrip("/") + "/appeal")
 
     def ban_player(self, who: dict, target: dict, minutes: int, reason: str, ip_ban: bool = True,
-                   srv: GameServer | None = None, slot: int | None = None, via: str = "") -> dict:
-        """target: pid, guid, ip, puid, name. Applies the ban on every server; srv/slot also kicks the player now."""
+                   srv: GameServer | None = None, slot: int | None = None, via: str = "", game: bool = False) -> dict:
+        """target: pid, guid, ip, puid, name (and iptag, kid, hw). Applies the ban on every server; srv/slot also kicks
+        the player now. game: banned from the whole game, on every identity the portal knows for the player."""
         reason = safe_arg(reason, 100)
         if not reason:
             raise ApiError(400, "Give a reason. The player sees it.")
+        if game and not allowed(who.get("role"), "ban.perm") and who.get("role") != "system":
+            raise ApiError(403, "Only admins can ban a player from the whole game.")
         if minutes > MOD_BAN_LIMIT or minutes == 0:
             if not allowed(who.get("role"), "ban.perm") and who.get("role") != "system":
                 raise ApiError(403, "Moderators can ban for up to 24 hours. Ask an admin for longer bans.")
@@ -1490,6 +1551,15 @@ class Moderation:
                            "VALUES(?,?,?,?,?,?,?,?,?,?,?)",
                            (b["pid"], b["guid"], b["ip"], b["puid"], b["name"], reason, now(), b["expires"],
                             who.get("discord_id", ""), who["name"], code))
+        ids = []
+        if game:
+            self.store.x("UPDATE bans SET game=1 WHERE id=?", (bid,))
+            ids = self.ban_identities(target, ip_ban)
+            for kind, value in ids:
+                self.store.x("INSERT OR IGNORE INTO ban_ids(ban_id,kind,value,added,via) VALUES(?,?,?,?,'staff')",
+                             (bid, kind, value, now()))
+            self.store.x("UPDATE devices SET blocked=1 WHERE pid=? OR kid IN (SELECT value FROM ban_ids WHERE ban_id=? AND kind='kid')",
+                         (b["pid"], bid))
         results = {}
         for key in self.order:
             server = self.servers[key]
@@ -1498,24 +1568,159 @@ class Moderation:
                 results[key] = plain(" ".join(out)).strip()[:200] or "ok"
             except RconError as e:
                 results[key] = "offline, applied at the next sync: %s" % e
-        aid = self.store.audit(who, "ban", server=srv.key if srv else "", target=b["name"], pid=b["pid"],
-                               detail="%s, %s%s" % (engine_length(minutes) or "permanent", reason, via), result=json.dumps(results))
+        aid = self.store.audit(who, "game ban" if game else "ban", server=srv.key if srv else "", target=b["name"], pid=b["pid"],
+                               detail="%s, %s%s%s" % (engine_length(minutes) or "permanent", reason, via,
+                                                      ", whole game, %d identities" % len(ids) if game else ""),
+                               result=json.dumps(results))
         self.undoable(aid, "ban", bid, who)
         if who.get("role") == "moderator":
             self.alert("mod_ban", "Ban by a moderator", "%s banned **%s** for %s: %s" % (
                 who["name"], b["name"], human_length(minutes), reason), pid=b["pid"])
         self.watch_cache.clear()
-        return {"id": bid, "servers": results, "audit_id": aid, "appeal_code": code}
+        return {"id": bid, "servers": results, "audit_id": aid, "appeal_code": code, "identities": len(ids), "game": game}
 
     def ban_target(self, pid: str) -> dict:
-        """Identity of a player who is not online, from what the portal has seen."""
+        """Identity of a player who is not online, from what the portal has seen: servers, bug reports, game starts."""
         if not PID.match(pid or ""):
             raise ApiError(400, "Pick a player.")
         last = self.store.one("SELECT * FROM sightings WHERE pid=? ORDER BY last_seen DESC LIMIT 1", (pid,))
-        if not last:
-            raise ApiError(404, "The portal has never seen this player on a server, so it has nothing to ban.")
-        puid = self.store.one("SELECT puid FROM sightings WHERE pid=? AND puid<>'' ORDER BY last_seen DESC LIMIT 1", (pid,))
-        return {"pid": pid, "guid": last["guid"], "ip": last["ip"], "puid": puid["puid"] if puid else "", "name": last["name"]}
+        if last:
+            puid = self.store.one("SELECT puid FROM sightings WHERE pid=? AND puid<>'' ORDER BY last_seen DESC LIMIT 1", (pid,))
+            return {"pid": pid, "guid": last["guid"], "ip": last["ip"], "puid": puid["puid"] if puid else "", "name": last["name"]}
+        t = {"pid": pid, "guid": "", "ip": "", "puid": "", "name": ""}
+        for r in self.store.q("SELECT data, target_name FROM reports WHERE target_pid=? ORDER BY id DESC LIMIT 50", (pid,)):
+            d = json.loads(r["data"] or "{}")
+            t["name"] = t["name"] or r["target_name"] or d.get("name", "")
+            t["puid"] = t["puid"] or str(d.get("puid") or "")
+        dev = self.store.one("SELECT * FROM devices WHERE pid=? ORDER BY last_seen DESC LIMIT 1", (pid,))
+        if dev:
+            t["name"] = t["name"] or dev["name"]
+            t["puid"] = t["puid"] or dev["puid"]
+        if not t["name"] and not dev and not self.store.one("SELECT id FROM reports WHERE target_pid=?", (pid,)):
+            raise ApiError(404, "The portal has never seen this player: not on a server, in a bug report or starting the game.")
+        t["name"] = t["name"] or "player " + pid[:8]
+        return t
+
+    def report_target(self, report_id: int) -> dict:
+        """The sender of a bug report, as a ban target (works when the report carries no player id too)."""
+        r = self.store.one("SELECT * FROM reports WHERE id=? AND source='bug'", (report_id,))
+        if not r:
+            raise ApiError(404, "No such bug report.")
+        d = json.loads(r["data"] or "{}")
+        if r["target_pid"]:
+            t = self.ban_target(r["target_pid"])
+        else:
+            t = {"pid": "", "guid": "", "ip": "", "puid": str(d.get("puid") or ""), "name": d.get("name") or "bug reporter #%d" % r["id"]}
+        t["iptag"] = d.get("from", "")
+        t["kid"] = d.get("kid", "")
+        t["hw"] = d.get("hwid") or []
+        return t
+
+    def ban_identities(self, target: dict, ip_ban: bool) -> list:
+        """Every identity the portal links to this player, one hop out through shared PC keys and hardware."""
+        pid = target.get("pid", "")
+        ids = set(id_pairs(pid, target.get("puid", ""), target.get("kid", ""), target.get("hw") or (),
+                           target.get("iptag", "") or (self.ip_tag(target["ip"]) if target.get("ip") else "")))
+        if pid:
+            for r in self.store.q("SELECT DISTINCT ip, puid FROM sightings WHERE pid=?", (pid,)):
+                ids.update(id_pairs(puid=r["puid"], iptag=self.ip_tag(r["ip"]) if r["ip"] else ""))
+            for r in self.store.q("SELECT data FROM reports WHERE source='bug' AND target_pid=?", (pid,)):
+                d = json.loads(r["data"] or "{}")
+                ids.update(id_pairs(puid=d.get("puid", ""), kid=d.get("kid", ""), hw=d.get("hwid") or (), iptag=d.get("from", "")))
+        for _ in range(2):                       # devices: the same PC key or hardware under other names and installs
+            kids = [v for k, v in ids if k == "kid"]
+            hws = [v for k, v in ids if k == "hw"]
+            pids = [v for k, v in ids if k == "pid"]
+            for dev in self.devices_matching(pids, kids, hws):
+                ids.update(id_pairs(dev["pid"], dev["puid"], dev["kid"], json.loads(dev["hw"] or "[]"), dev["iptag"]))
+        if not ip_ban:
+            ids = {x for x in ids if x[0] != "ip"}
+        return sorted(ids)
+
+    def devices_matching(self, pids: list, kids: list, hws: list) -> list:
+        out = {}
+        for col, vals in (("pid", pids), ("kid", kids)):
+            for i in range(0, len(vals), 200):
+                part = vals[i:i + 200]
+                for r in self.store.q("SELECT * FROM devices WHERE %s IN (%s)" % (col, ",".join("?" * len(part))), part):
+                    out[r["id"]] = r
+        for h in hws[:50]:
+            for r in self.store.q("SELECT * FROM devices WHERE hw LIKE ?", ('%"' + h + '"%',)):
+                out[r["id"]] = r
+        return list(out.values())
+
+    def game_ban_for(self, pairs: list, learn: bool = True, via: str = "game") -> dict | None:
+        """The active whole-game ban that any of these identities falls under. learn: a match on a strong identity
+        adds the other identities to that ban (a new install, name or anti-cheat account on a banned PC)."""
+        if not pairs:
+            return None
+        cond = " OR ".join("(i.kind=? AND i.value=?)" for _ in pairs)
+        args = [x for p in pairs for x in p]
+        rows = self.store.q("SELECT b.*, i.kind hit FROM ban_ids i JOIN bans b ON b.id=i.ban_id WHERE b.active=1 AND b.game=1 "
+                            "AND (b.expires=0 OR b.expires>?) AND (%s) ORDER BY b.id" % cond, [now()] + args)
+        if not rows:
+            return None
+        strong = [r for r in rows if r["hit"] in STRONG_KINDS]
+        b = (strong or rows)[0]
+        if learn and strong:
+            count = "SELECT COUNT(*) n FROM ban_ids WHERE ban_id=?"
+            before = self.store.one(count, (b["id"],))["n"]
+            for kind, value in pairs:
+                if kind == "ip" and not self.store.one("SELECT 1 FROM ban_ids WHERE ban_id=? AND kind='ip'", (b["id"],)):
+                    continue                     # the ban was made without the IP: do not start banning addresses now
+                self.store.x("INSERT OR IGNORE INTO ban_ids(ban_id,kind,value,added,via) VALUES(?,?,?,?,?)",
+                             (b["id"], kind, value, now(), via))
+            added = self.store.one(count, (b["id"],))["n"] - before
+            if added:
+                self.alert("dodger", "Banned player tried again",
+                           "**%s** (ban #%d) came back with %d new identit%s; the ban now covers them too." % (
+                               b["name"], b["id"], added, "y" if added == 1 else "ies"),
+                           key="gameban-learn:%d" % b["id"], window=3600, pid=b["pid"])
+        return b
+
+    def gamecheck(self, j: dict, ip: str) -> dict:
+        """POST /api/gamecheck from the launcher and the game at start: may this PC play?"""
+        guid = clean_text(j.get("guid"), 64).strip()
+        pid = player_pid(guid) if guid else ""
+        puid = clean_text(j.get("puid"), 64).strip().lower()
+        kid = clean_text(j.get("kid"), 64).strip().lower()
+        hw = hw_ids(j.get("hwid"))
+        iptag = self.ip_tag(ip)
+        pairs = id_pairs(pid, puid, kid, hw, iptag)
+        strong = [p for p in pairs if p[0] in STRONG_KINDS]
+        name = re.sub(r"\^[^^]", "", clean_text(j.get("name"), 64)).strip()
+        build = clean_text(j.get("build"), 64).strip()
+        b = self.game_ban_for(pairs)
+        if strong:
+            key = hashlib.sha256(json.dumps(sorted(strong)).encode()).hexdigest()[:32]
+            self.store.x("INSERT INTO devices(ids,pid,kid,puid,hw,iptag,name,build,first_seen,last_seen,checks,blocked) "
+                         "VALUES(?,?,?,?,?,?,?,?,?,?,1,?) ON CONFLICT(ids) DO UPDATE SET iptag=excluded.iptag, name=excluded.name, "
+                         "build=excluded.build, last_seen=excluded.last_seen, checks=checks+1, blocked=excluded.blocked",
+                         (key, pid, kid if re.fullmatch(GAMEBAN_KINDS["kid"], kid) else "",
+                          puid if re.fullmatch(GAMEBAN_KINDS["puid"], puid) else "", json.dumps(hw), iptag, name, build,
+                          now(), now(), 1 if b else 0))
+        out = {"play": True} if not b else {
+            "play": False, "reason": b["reason"], "expires": b["expires"] or 0,
+            "appeal_url": self.appeal_url() if b["appeal_code"] else "", "appeal_code": b["appeal_code"] or ""}
+        nonce = str(j.get("nonce") or "").lower()
+        key = self.gamecheck_key()
+        if key and re.fullmatch(r"[0-9a-f]{32}", nonce):
+            out["time"] = now()
+            out["sig"] = ed25519_sign(key[0], gamecheck_message(nonce, out["play"], out["time"])).hex()
+        return out
+
+    def gamecheck_key(self):
+        """(seed, public) that signs start-check answers, derived from the staff root (one secret to keep and
+        back up); None without a root, and the answers then go out unsigned (the 0.39.8 game refuses those)."""
+        if not hasattr(self, "_gc_key"):
+            if not hasattr(self, "_staff_root"):
+                self._staff_root, self._staff_certs = load_staff_root(self.cfg), {}
+            root = self._staff_root
+            self._gc_key = None
+            if root:
+                seed = hmac.new(root[1], b"tcp-gamecheck-key-1", hashlib.sha256).digest()
+                self._gc_key = (seed, ed25519_public(seed))
+        return self._gc_key
 
     def lift_ban(self, who: dict, b: dict, reason: str, action: str = "unban") -> dict:
         res = self._lift_everywhere(b)
@@ -3947,6 +4152,7 @@ class Portal(Moderation, Watchers, Operations, Overview, Casework, Team):
         self.store.x("DELETE FROM peaks WHERE day<?", (time.strftime("%Y-%m-%d", time.gmtime(cut)),))
         self.store.x("DELETE FROM suspicion WHERE updated<?", (cut,))
         self.store.x("DELETE FROM reports WHERE source='bug' AND status='closed' AND updated<?", (cut,))
+        self.store.x("DELETE FROM devices WHERE blocked=0 AND last_seen<?", (now() - int(self.cfg.get("device_days", 90)) * 86400,))
         self.store.x("DELETE FROM staff_key_codes WHERE expires<?", (now(),))
         self.store.x("DELETE FROM samples WHERE at<?", (now() - int(self.cfg.get("history_days", 90)) * 86400,))
         self.store.x("DELETE FROM player_sessions WHERE joined<? AND left_at IS NOT NULL", (cut,))
@@ -4035,6 +4241,13 @@ class Portal(Moderation, Watchers, Operations, Overview, Casework, Team):
                 rows[link["pid"]] = {"pid": link["pid"], "stats_name": link.get("name") or "", "discord": True}
         for r in self.store.q(sql, params):
             rows[r["pid"]] = {"pid": r["pid"], "last_seen": r["last_seen"], "first_seen": r["first_seen"]}
+        guid_pid = player_pid(q) if re.fullmatch(r"[0-9A-Fa-f]{32}", q) else ""
+        for r in self.store.q("SELECT target_pid pid, MAX(received) at FROM reports WHERE target_pid<>'' AND (target_name LIKE ? "
+                              "OR target_pid=? OR target_pid=?) GROUP BY target_pid ORDER BY at DESC LIMIT 50", (like, q.lower(), guid_pid)):
+            rows.setdefault(r["pid"], {"pid": r["pid"], "seen_in": "bug reports"})
+        for r in self.store.q("SELECT pid, name, MAX(last_seen) at FROM devices WHERE pid<>'' AND (name LIKE ? OR pid=? OR pid=? "
+                              "OR kid=? OR puid=?) GROUP BY pid ORDER BY at DESC LIMIT 50", (like, q.lower(), guid_pid, q.lower(), q.lower())):
+            rows.setdefault(r["pid"], {"pid": r["pid"], "stats_name": r["name"], "seen_in": "game starts", "last_seen": r["at"]})
         found = self.stats("search.json", q=q) or {}
         for r in found.get("players", []):
             if PID.match(str(r.get("id", ""))):
@@ -4043,7 +4256,12 @@ class Portal(Moderation, Watchers, Operations, Overview, Casework, Team):
         for pid, r in list(rows.items())[:50]:
             names = self.store.q("SELECT name, MAX(last_seen) at FROM sightings WHERE pid=? GROUP BY name ORDER BY at DESC LIMIT 5", (pid,))
             r["names"] = [n["name"] for n in names] or ([r["stats_name"]] if r.get("stats_name") else [])
-            r["banned"] = bool(self.store.one("SELECT id FROM bans WHERE pid=? AND active=1", (pid,)))
+            if not r["names"]:
+                rep = self.store.one("SELECT target_name FROM reports WHERE target_pid=? AND target_name<>'' ORDER BY id DESC", (pid,))
+                r["names"] = [rep["target_name"]] if rep else []
+            ban = self.store.one("SELECT game FROM bans WHERE pid=? AND active=1 ORDER BY game DESC", (pid,))
+            r["banned"] = bool(ban)
+            r["game_banned"] = bool(ban and ban["game"])
             out.append(r)
         return out
 
@@ -4074,8 +4292,16 @@ class Portal(Moderation, Watchers, Operations, Overview, Casework, Team):
                 for r in self.store.q("SELECT DISTINCT pid FROM sightings WHERE ip=? AND pid<>?", (ip, pid)):
                     alts.add(r["pid"])
             out["shared_ip"] = sorted(alts)[:20]
-        out["bans"] = self.store.q("SELECT id,name,reason,created,expires,by_name,active,lifted,lifted_by,lift_reason "
+        out["bans"] = self.store.q("SELECT id,name,reason,created,expires,by_name,active,lifted,lifted_by,lift_reason,game "
                                    "FROM bans WHERE pid=? ORDER BY id DESC", (pid,))
+        if not out["names"]:                     # never on a server: names from bug reports and game starts
+            for r in self.store.q("SELECT target_name name, MIN(received) f, MAX(received) l FROM reports WHERE target_pid=? "
+                                  "AND target_name<>'' GROUP BY target_name UNION SELECT name, MIN(first_seen), MAX(last_seen) "
+                                  "FROM devices WHERE pid=? AND name<>'' GROUP BY name", (pid, pid)):
+                out["names"].append({"name": r["name"], "first_seen": r["f"], "last_seen": r["l"]})
+            out["names"].sort(key=lambda n: -(n["last_seen"] or 0))
+        dev = self.store.one("SELECT MAX(last_seen) at, COUNT(*) n FROM devices WHERE pid=?", (pid,))
+        out["game_starts"] = {"last": dev["at"], "installs": dev["n"]} if dev and dev["n"] else None
         out["mutes"] = self.store.q("SELECT id,name,reason,created,expires,by_name,active FROM mutes WHERE pid=? ORDER BY id DESC", (pid,))
         out["warnings"] = self.store.q("SELECT id,name,text,created,by_name,server FROM warnings WHERE pid=? ORDER BY id DESC", (pid,))
         out["notes"] = self.store.q("SELECT id,text,created,by_name FROM notes WHERE pid=? ORDER BY id DESC", (pid,))
@@ -4616,6 +4842,11 @@ def make_handler(portal: Portal):
                     return self.auth(method, path, qs)
                 if path == "/api/bugreport" and method == "POST":
                     return self.bugreport()
+                if path == "/api/gamecheck" and method == "POST":
+                    return self.gamecheck()
+                if path == "/api/gamecheck/public" and method == "GET":
+                    k = portal.gamecheck_key()
+                    return self.json({"public": k[1].hex() if k else ""})
                 if path == "/api/staffkey/claim" and method == "POST":
                     return self.staffkey_claim()
                 if path == "/api/staffcert" and method == "GET":
@@ -4755,6 +4986,19 @@ def make_handler(portal: Portal):
             c = portal.staff_cert(kid)
             self.json(dict({"id": kid, "name": row["name"]}, **({"cert": c["cert"], "expires": c["expires"]} if c else {})), 201)
 
+        # -- public start check: the launcher and the game ask before they let the player in (0.39.8+)
+        def gamecheck(self) -> None:
+            ip = self.client_ip()
+            if portal.limited("gc:" + ip, int(cfg.get("gamecheck_per_hour", 600)), 3600):
+                raise ApiError(429, "Too many checks from this address. Try again later.")
+            try:
+                j = json.loads(self.body(limit=8 * 1024).decode("utf-8"))
+            except (ValueError, UnicodeDecodeError) as e:
+                raise ApiError(400, "Bad JSON.") from e
+            if not isinstance(j, dict) or j.get("format") != "tcp-gamecheck/1":
+                raise ApiError(400, "Unknown check format.")
+            self.json(portal.gamecheck(j, ip))
+
         # -- public bug report intake: F12 in game (0.36.0+) posts JSON "tcp-bugreport/1"; older tools post plain text
         def bugreport(self) -> None:
             ip = self.client_ip()
@@ -4782,6 +5026,11 @@ def make_handler(portal: Portal):
                 raise ApiError(400, "The report is empty.")
             data["summary"] = next((ln for ln in text.splitlines() if ln.strip()), "")[:120]
             data["from"] = portal.ip_tag(ip)
+            if portal.game_ban_for(id_pairs(data.get("pid", ""), data.get("puid", ""), data.get("kid", ""),
+                                            data.get("hwid") or (), data["from"]), via="bug report"):
+                portal.store.x("INSERT INTO meta(key,value) VALUES('bugreports_dropped','1') ON CONFLICT(key) DO UPDATE "
+                               "SET value=CAST(value AS INTEGER)+1")
+                return self.json({"ok": True, "id": key}, 201)   # banned from the game: dropped, and nothing tells the sender
             if shot and portal.bugshots_bytes() + len(shot) > int(cfg.get("bugshot_max_mb", 500)) * 1024 * 1024:
                 shot = b""                       # disk guard: the report still arrives, without its picture
                 data["shot_dropped"] = True
@@ -4865,7 +5114,7 @@ def make_handler(portal: Portal):
                 show = qs.get("show", "active")
                 where = "active=1" if show == "active" else "1=1"
                 bans = portal.store.q("SELECT id,pid,name,reason,created,expires,by_name,active,lifted,lifted_by,lift_reason,appeal_code,"
-                                      "guid<>'' has_guid, ip<>'' has_ip, puid<>'' has_puid, (SELECT audit_id FROM undo WHERE kind='ban' "
+                                      "guid<>'' has_guid, ip<>'' has_ip, puid<>'' has_puid, game, (SELECT COUNT(*) FROM ban_ids WHERE ban_id=bans.id) identities, (SELECT audit_id FROM undo WHERE kind='ban' "
                                       "AND ref=bans.id AND done=0 AND expires>? AND (by_id=? OR ?)) undo FROM bans WHERE %s "
                                       "ORDER BY id DESC LIMIT 500" % where, (now(), s["discord_id"], 1 if allowed(s, "ban.remove") else 0))
                 return self.json({"bans": bans})
@@ -5743,10 +5992,15 @@ def make_handler(portal: Portal):
                 if p["bot"]:
                     raise ApiError(400, "That is a bot.")
                 target = p
+            elif d.get("report"):
+                target = portal.report_target(int(d.get("report") or 0))
             else:
                 target = portal.ban_target(str(d.get("pid", "")))
-            r = portal.ban_player(who, target, minutes, d.get("reason", ""), ip_ban=bool(d.get("ip_ban", True)), srv=srv, slot=slot)
-            self.json({"ok": True, "id": r["id"], "servers": r["servers"], "undo": r["audit_id"], "appeal_code": r["appeal_code"]})
+            game = bool(d.get("game"))
+            r = portal.ban_player(who, target, minutes, d.get("reason", ""), ip_ban=bool(d.get("ip_ban", True)), srv=srv, slot=slot,
+                                  game=game, via=" (from bug report #%d)" % int(d["report"]) if d.get("report") else "")
+            self.json({"ok": True, "id": r["id"], "servers": r["servers"], "undo": r["audit_id"], "appeal_code": r["appeal_code"],
+                       "game": game, "identities": r["identities"]})
 
         def unban(self, s: dict | None, d: dict) -> None:
             who = self.need(s, "ban.remove")
