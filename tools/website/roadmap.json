@@ -510,6 +510,16 @@
    "en": "Cinematic kill cam: a slow-motion replay of the round's final kill",
    "nl": "Filmische killcam: een slow-motion herhaling van de laatste kill van de ronde",
    "version": "0.39"
+  },
+  {
+   "en": "Hold-to-plant bombs: kneel and arm the charge, seen by everyone nearby",
+   "nl": "Bom planten door vast te houden: knielen en de lading activeren, zichtbaar voor iedereen in de buurt",
+   "version": "0.39"
+  },
+  {
+   "en": "Change your loadout in Deployment right after spawning",
+   "nl": "Je uitrusting wijzigen in Deployment vlak na het spawnen",
+   "version": "0.39"
   }
  ]
 }
