@@ -500,6 +500,16 @@
    "en": "Sound you can place: rooms that ring true, sound through doorways and round corners, 3D headphone audio",
    "nl": "Geluid dat je kunt plaatsen: ruimtes die echt klinken, geluid door deuren en om hoeken, 3D-koptelefoongeluid",
    "version": "0.39"
+  },
+  {
+   "en": "Weapon balance: every gun with its own damage, range, recoil and handling",
+   "nl": "Wapenbalans: elk wapen met eigen schade, bereik, terugslag en handling",
+   "version": "0.39"
+  },
+  {
+   "en": "Cinematic kill cam: a slow-motion replay of the round's final kill",
+   "nl": "Filmische killcam: een slow-motion herhaling van de laatste kill van de ronde",
+   "version": "0.39"
   }
  ]
 }
