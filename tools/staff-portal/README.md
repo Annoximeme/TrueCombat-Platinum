@@ -252,3 +252,9 @@ Tracer rounds and the 0.39.x sound work are client side and have no server setti
 spaces, dots, commas, colons, `-` and `_` (64 characters at most). A `cvars` map in the config still replaces the list;
 settings it names that the portal does not know are shown under "Other" as free text.
 
+
+## Whole-game bans (1.7.0)
+
+Admins can ban any player the portal has seen (on our servers, in a bug report, or starting the game) from the whole
+game: Bans > Ban a player, Ban on a player page, or Ban sender on a bug report. The launcher and the game ask
+`POST /api/gamecheck` at start. Details are in the private dev notes.
