@@ -214,8 +214,8 @@
    "engines": 69,
    "analysed": "2026-11-20T08:27:47Z",
    "flagged_by": [],
-   "checked": "2026-11-20T08:33:36Z",
-   "settle": true
+   "checked": "2026-11-20T15:10:38Z",
+   "settle": false
   },
   "1f25d3ff4f30faaa1040f60a55e3daf9ae42638aae278794af7beb5fab7dd756": {
    "name": "qagame_mp_x64.dll",
@@ -688,8 +688,8 @@
    "engines": 70,
    "analysed": "2026-11-20T08:28:51Z",
    "flagged_by": [],
-   "checked": "2026-11-20T08:34:08Z",
-   "settle": true
+   "checked": "2026-11-20T15:11:10Z",
+   "settle": false
   },
   "5698c38e722318681f215c9fe68e45b9bedd51378acc699d8eee26e961e57770": {
    "name": "sl.pcl.dll",
@@ -1015,8 +1015,8 @@
    "engines": 71,
    "analysed": "2026-11-20T08:29:24Z",
    "flagged_by": [],
-   "checked": "2026-11-20T08:34:24Z",
-   "settle": true
+   "checked": "2026-11-20T15:11:26Z",
+   "settle": false
   },
   "74fda10b1c51640faec7c2272ea256580cec437cff8b9bfe96dfd5cfad004762": {
    "name": "ui_mp_x64.dll",
@@ -1111,8 +1111,8 @@
    "engines": 70,
    "analysed": "2026-11-20T08:29:56Z",
    "flagged_by": [],
-   "checked": "2026-11-20T08:34:40Z",
-   "settle": true
+   "checked": "2026-11-20T15:11:43Z",
+   "settle": false
   },
   "7e9236840d0845c7dbf1b3a88137c94d58b7bf49ebcaed3c5134423717416aef": {
    "name": "renderer_opengl1_x64.dll",
@@ -1167,8 +1167,8 @@
    "engines": 71,
    "analysed": "2026-11-20T08:27:16Z",
    "flagged_by": [],
-   "checked": "2026-11-20T08:33:20Z",
-   "settle": true
+   "checked": "2026-11-20T15:10:22Z",
+   "settle": false
   },
   "8a55a5be73f81c0525faecb764f1e7f0501daf5a41e309ae26d515b7c9befa9b": {
    "name": "platinum-engine.bin",
@@ -1327,8 +1327,8 @@
    "engines": 71,
    "analysed": "2026-11-20T08:28:19Z",
    "flagged_by": [],
-   "checked": "2026-11-20T08:33:52Z",
-   "settle": true
+   "checked": "2026-11-20T15:10:54Z",
+   "settle": false
   },
   "9b366989fff1ab27a35f926099817eb46674f2c28aac0eac38ab1e8d570a63d3": {
    "name": "qagame_mp_x64.dll",
@@ -1959,8 +1959,8 @@
     "Bkav: W32.Malware.A8BD330",
     "Elastic: malicious (high confidence)"
    ],
-   "checked": "2026-11-20T08:32:48Z",
-   "settle": true
+   "checked": "2026-11-20T15:09:50Z",
+   "settle": false
   },
   "e0e13d8e4350082a8ab1a2cf2873a07e25df1a89753cb8174a77b0d0e187491e": {
    "name": "renderer_opengl1_x64.dll",
@@ -2168,8 +2168,8 @@
    "engines": 71,
    "analysed": "2026-11-20T08:26:44Z",
    "flagged_by": [],
-   "checked": "2026-11-20T08:33:04Z",
-   "settle": true
+   "checked": "2026-11-20T15:10:06Z",
+   "settle": false
   },
   "fbc8e61aa6a7ed6b5b3dfb75e2fc21c5a600d01ec5a2e5d918156b290b5523cb": {
    "name": "ui_mp_x64.dll",
