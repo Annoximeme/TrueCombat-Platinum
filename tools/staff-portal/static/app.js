@@ -531,11 +531,13 @@ function banDialog(target) {
     sub: "The ban holds on every official and pickup server and covers the player's identity, anti-cheat account and address." + (perm ? "" : " Moderators can ban for up to 24 hours."),
     body: `<label>Length</label><select name="length">${options.map((l) => `<option value="${l[0]}"${l[0] === "1d" ? " selected" : ""}>${l[1]}</option>`).join("")}</select>
       ${tplSelect("ban", "reason")}<label>Reason</label><input name="reason" maxlength="100" placeholder="Cheating (aimbot), see report #12">
-      <label class="check"><input type="checkbox" name="ip_ban" checked> Also ban the IP address (uncheck for shared connections)</label>`,
+      <label class="check"><input type="checkbox" name="ip_ban" checked> Also ban the IP address (uncheck for shared connections)</label>
+      ${perm ? `<label class="check"><input type="checkbox" name="game"${target.game ? " checked" : ""}> Ban from the whole game: the player cannot start TrueCombat at all, not even offline or on other servers, on any PC or account linked to them</label>` : ""}`,
     onOk: async (f) => {
-      const r = await api("bans", Object.assign({ length: f.length, reason: f.reason, ip_ban: f.ip_ban }, target.pid ? { pid: target.pid } : { server: target.server, slot: target.slot, name: target.name }));
+      const who = target.report ? { report: target.report } : target.pid ? { pid: target.pid } : { server: target.server, slot: target.slot, name: target.name };
+      const r = await api("bans", Object.assign({ length: f.length, reason: f.reason, ip_ban: f.ip_ban, game: !!f.game }, who));
       const offline = Object.entries(r.servers).filter(([, v]) => v.startsWith("offline")).map(([k]) => k);
-      toast("Banned " + target.name + (offline.length ? ". Offline now, applied at the next sync: " + offline.join(", ") : " on every server."), false, r.undo);
+      toast("Banned " + target.name + (r.game ? " from the whole game (" + r.identities + " identities)" : "") + (offline.length ? ". Offline now, applied at the next sync: " + offline.join(", ") : r.game ? "." : " on every server."), false, r.undo);
       if (target.server) drawServer(target.server); else route();
     } });
 }
@@ -588,6 +590,8 @@ function pageReports(main) {
   $("#r-list").onclick = async (e) => {
     const demo = e.target.closest("button[data-demo]");
     if (demo) return showDemo(demo);
+    const bb = e.target.closest("button[data-bugban]");
+    if (bb) return banDialog({ report: +bb.dataset.bugban, name: bb.dataset.name, game: can("ban.perm") });
     const bug = e.target.closest("button[data-bug]");
     if (bug) return bugDetails(+bug.dataset.bug).catch((err) => toast(err.message, true));
     const ap = e.target.closest("button[data-appeal]");
@@ -634,7 +638,8 @@ function reportCard(r) {
       d.match ? ["Match", esc(d.match)] : null,
       d.puid ? ["Anti-cheat id", `<span class="mono">${esc(d.puid)}</span>`] : null,
     ].filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
-    const extra = d.has_console ? `<button class="btn btn-small" data-bug="${r.id}">Console and hardware</button>` : "";
+    const extra = (d.has_console ? `<button class="btn btn-small" data-bug="${r.id}">Console and hardware</button>` : "") +
+      (can("ban.temp") ? `<button class="btn btn-small btn-danger" data-bugban="${r.id}" data-name="${esc(d.name || r.target_name || "this player")}">Ban sender</button>` : "");
     return `<div class="panel"><div class="head"><div><div class="tags">${status}<span class="tag">${esc(d.category || "Bug")}</span>${d.server_name ? `<span class="tag">${esc(d.server_name)}</span>` : ""}</div>
       <h2>${esc(d.summary || "Bug report")}</h2><span class="muted">${who ? "From " + who + " · " : ""}received ${when(r.received)}</span></div><div class="actions">${buttons}</div></div>
       <div class="report-body">${esc(d.text || "")}</div>
@@ -667,7 +672,7 @@ async function bugDetails(id) {
 function pagePlayers(main) {
   main.innerHTML = `<div class="head"><div><p class="eyebrow">Lookup</p><h1>Players</h1></div></div>
     <form class="search" id="lookup"><input name="q" placeholder="Name, player id${can("lookup.ip") ? " or IP address" : ""}" autocomplete="off"><button class="btn btn-primary">Search</button></form>
-    <div class="panel" id="results"><p class="empty">Search by any name a player has used on our servers.</p></div>`;
+    <div class="panel" id="results"><p class="empty">Search by any name a player has used on our servers, in a bug report or when starting the game.</p></div>`;
   const form = $("#lookup");
   const last = sessionStorage.getItem("lookup") || "";
   form.q.value = last;
@@ -681,7 +686,7 @@ function pagePlayers(main) {
     $("#results").innerHTML = r.players.length ? `<table><tr><th>Player</th><th>Also known as</th><th>Last seen</th><th></th></tr>${r.players.map((p) => `
       <tr><td class="pname"><a href="#/player/${esc(p.pid)}">${esc(p.names[0] || p.pid)}</a> <span class="mono dim">${esc(p.pid)}</span></td>
       <td>${esc(p.names.slice(1).join(", "))}</td><td>${p.last_seen ? ago(p.last_seen) : '<span class="dim">stats only</span>'}</td>
-      <td>${p.banned ? '<span class="tag bad">Banned</span>' : ""}</td></tr>`).join("")}</table>` : '<p class="empty">No player matches that.</p>';
+      <td>${p.game_banned ? '<span class="tag bad">Banned from the game</span>' : p.banned ? '<span class="tag bad">Banned</span>' : ""}${p.seen_in && !p.last_seen ? ` <span class="dim">${esc(p.seen_in)}</span>` : ""}</td></tr>`).join("")}</table>` : '<p class="empty">No player matches that.</p>';
   };
   if (last.length >= 2) form.requestSubmit();
 }
@@ -694,7 +699,7 @@ async function pagePlayer(main, pid) {
   const activeBan = p.bans.find((b) => b.active);
   main.innerHTML = `<div class="head"><div><p class="eyebrow"><a href="#/players">Players</a></p><h1>${esc(name)}</h1>
       <div class="tags">${p.online.map((o) => `<a class="tag ok" href="#/server/${esc(o.server)}">Online on ${esc(o.server)}</a>`).join("")}
-      ${activeBan ? `<span class="tag bad">Banned · ${esc(until(activeBan.expires))}</span>` : ""}<span class="tag mono">${esc(pid)}</span></div></div>
+      ${activeBan ? `<span class="tag bad">${activeBan.game ? "Banned from the game" : "Banned"} · ${esc(until(activeBan.expires))}</span>` : ""}<span class="tag mono">${esc(pid)}</span></div></div>
     <div class="actions"><a class="btn" href="${esc(p.profile_url)}" target="_blank" rel="noopener">Public profile</a>
       ${can("watch") ? `<button class="btn" id="p-watch">${p.watch ? "Stop watching" : "Watch"}</button>` : ""}
       ${can("cases") ? '<button class="btn" id="p-case">Open a case</button>' : ""}
@@ -757,10 +762,12 @@ async function pagePlayer(main, pid) {
 function pageBans(main) {
   let show = "active";
   main.innerHTML = `<div class="head"><div><p class="eyebrow">Enforcement</p><h1>Bans</h1></div>
-    <div class="actions">${can("ban.remove") ? '<button class="btn" id="b-sync">Check every server now</button><button class="btn" id="b-server">Bans set in game</button>' : ""}</div></div>
+    <div class="actions">${can("ban.temp") ? '<button class="btn btn-danger" id="b-new">Ban a player</button>' : ""}${can("ban.remove") ? '<button class="btn" id="b-sync">Check every server now</button><button class="btn" id="b-server">Bans set in game</button>' : ""}</div></div>
     <div class="tabs" id="b-tabs"><button class="btn btn-small on" data-v="active">Active</button><button class="btn btn-small" data-v="all">History</button></div>
     <div class="panel table-wrap" id="b-list"></div><div id="b-extra"></div>`;
   $("#b-tabs").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; for (const x of $("#b-tabs").children) x.classList.toggle("on", x === b); show = b.dataset.v; draw(); };
+  const nb = $("#b-new");
+  if (nb) nb.onclick = () => findToBan();
   const sync = $("#b-sync");
   if (sync) sync.onclick = async () => {
     try { const r = await api("bans/sync", {}); toast(Object.entries(r.result).map(([k, v]) => k + ": " + v).join(" · ")); } catch (e) { toast(e.message, true); }
@@ -783,11 +790,33 @@ function pageBans(main) {
     const r = await api("bans?show=" + show).catch((e) => { toast(e.message, true); return null; });
     if (!r) return;
     $("#b-list").innerHTML = r.bans.length ? `<table><tr><th>Player</th><th>Reason</th><th>By</th><th>Since</th><th>Status</th><th></th></tr>${r.bans.map((b) => `
-      <tr><td class="pname">${b.pid ? `<a href="#/player/${esc(b.pid)}">${esc(b.name)}</a>` : esc(b.name)}</td><td>${esc(b.reason)}</td><td>${esc(b.by_name)}</td><td>${when(b.created)}</td>
+      <tr><td class="pname">${b.pid ? `<a href="#/player/${esc(b.pid)}">${esc(b.name)}</a>` : esc(b.name)}${b.game ? ` <span class="tag bad" title="${b.identities} identities covered">Whole game</span>` : ""}</td><td>${esc(b.reason)}</td><td>${esc(b.by_name)}</td><td>${when(b.created)}</td>
       <td>${b.active ? `<span class="tag bad">${esc(until(b.expires))}</span>` : `<span class="tag">Lifted${b.lifted_by ? " · " + esc(b.lifted_by) : ""}</span>`}</td>
       <td><div class="row-actions">${b.active && b.undo ? `<button class="btn btn-small" data-undo="${b.undo}">Undo</button>` : ""}${b.active && can("ban.remove") ? `<button class="btn btn-small" data-lift="${b.id}" data-name="${esc(b.name)}">Lift</button>` : ""}</div></td></tr>`).join("")}</table>` : '<p class="empty">No bans.</p>';
   }
   every(draw, 30000, "bans", ["action"]);
+}
+
+function findToBan() {
+  modal({ title: "Ban a player", sub: "Finds anyone the portal has seen: on our servers, in a bug report or starting the game. Search by name, player id, GUID or anti-cheat id.", ok: "Close",
+    body: '<div class="search"><input id="fb-q" placeholder="Name or id" autocomplete="off"><button type="button" class="btn" id="fb-go">Search</button></div><div id="fb-list" class="list"></div>',
+    onOk: () => {} });
+  const input = $("#fb-q");
+  input.focus();
+  input.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); find(); } };
+  $("#fb-go").onclick = () => find();
+  const find = async () => {
+    const q = input.value.trim();
+    if (q.length < 2) return;
+    const r = await api("lookup?q=" + encodeURIComponent(q)).catch((err) => { toast(err.message, true); return null; });
+    if (!r) return;
+    $("#fb-list").innerHTML = r.players.length ? r.players.map((p) => `<div class="row-actions"><span class="pname">${esc(p.names[0] || p.pid)} <span class="mono dim">${esc(p.pid)}</span> ${p.game_banned ? '<span class="tag bad">Banned from the game</span>' : p.banned ? '<span class="tag bad">Banned</span>' : ""}</span>${p.game_banned ? "" : `<button class="btn btn-small btn-danger" data-pid="${esc(p.pid)}" data-name="${esc(p.names[0] || p.pid)}">Ban</button>`}</div>`).join("") : '<p class="empty">Nobody matches that.</p>';
+  };
+  $("#fb-list").onclick = (e) => {
+    const b = e.target.closest("button[data-pid]"); if (!b) return;
+    closeModal();
+    banDialog({ pid: b.dataset.pid, name: b.dataset.name, game: can("ban.perm") });
+  };
 }
 
 /* ------------------------------------------------------------------ audit */

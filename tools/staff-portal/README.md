@@ -252,3 +252,21 @@ Tracer rounds and the 0.39.x sound work are client side and have no server setti
 spaces, dots, commas, colons, `-` and `_` (64 characters at most). A `cvars` map in the config still replaces the list;
 settings it names that the portal does not know are shown under "Other" as free text.
 
+
+## Whole-game bans (1.7.0)
+
+Admins can ban any player the portal has seen (on our servers, in an F12 bug report, or starting the game) from the
+whole game: Bans > Ban a player, the Ban button on a player page, or Ban sender on a bug report. A whole-game ban
+covers every identity linked to the player: stats id (from cl_guid), EOS PUID, account key id (eacid.key), salted
+hardware hashes and, when ticked, a keyed tag of the IP address. Linked game starts that share a PC key or hardware
+hash are folded in at ban time, and when a banned player comes back on a new identity that matches any strong one
+(not the IP alone), the new identities join the ban and staff get a "Banned player tried again" alert.
+
+* `POST /api/gamecheck` (public, 60/hour per address): `{"format":"tcp-gamecheck/1","nonce":"<32 hex>","guid","puid",
+  "kid","hwid":[<hex>...],"name","build"}` -> `{"play":true}` or `{"play":false,"reason","expires","appeal_url",
+  "appeal_code"}`, plus `"time"` and `"sig"`: Ed25519 over `TCP-GAMECHECK-1\n<nonce>\n<play|banned>\n<time>`. The
+  signing key is derived from the staff root (HMAC-SHA256(seed, "tcp-gamecheck-key-1")); its public key is at
+  `GET /api/gamecheck/public`. Without a root the answers are unsigned, and clients that require a signature refuse.
+* Bug reports from a game-banned identity are answered 201 and dropped (count in meta `bugreports_dropped`).
+* `devices` keeps the identities of each game start for `device_days` (90) days; rows tied to a ban are kept.
+* Never describe this mechanism in public writing.
