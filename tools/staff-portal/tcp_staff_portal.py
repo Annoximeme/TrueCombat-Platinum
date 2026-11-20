@@ -45,7 +45,7 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-VERSION = "1.7.0"
+VERSION = "1.7.1"
 STAFF_KEY_LINK_SECONDS = 600
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
@@ -4989,7 +4989,7 @@ def make_handler(portal: Portal):
         # -- public start check: the launcher and the game ask before they let the player in (0.39.8+)
         def gamecheck(self) -> None:
             ip = self.client_ip()
-            if portal.limited("gc:" + ip, int(cfg.get("gamecheck_per_hour", 60)), 3600):
+            if portal.limited("gc:" + ip, int(cfg.get("gamecheck_per_hour", 600)), 3600):
                 raise ApiError(429, "Too many checks from this address. Try again later.")
             try:
                 j = json.loads(self.body(limit=8 * 1024).decode("utf-8"))
