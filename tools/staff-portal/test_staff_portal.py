@@ -1605,6 +1605,87 @@ class PortalTest(unittest.TestCase):
         self.portal.cfg.pop("staff_root_file", None)
         del self.portal._staff_root
 
+    def test_36_whole_game_ban(self):
+        """1.7.0: ban a player who only ever sent bug reports from the whole game; reports drop, start checks refuse."""
+        guid2 = "FEDCBA9876543210FEDCBA9876543210"
+        pid2 = tsp.player_pid(guid2)
+        puid2 = "a" * 32
+        hw_a, hw_b = "1" * 64, "2" * 64
+
+        def post(path, body):
+            for k in [k for k in self.portal.rate if k.startswith(("bug:", "gc:"))]:
+                self.portal.rate.pop(k, None)
+            c = http.client.HTTPConnection("127.0.0.1", self.port)
+            c.request("POST", path, body=json.dumps(body), headers={"Content-Type": "application/json"})
+            r = c.getresponse()
+            out = r.status, json.loads(r.read() or b"{}")
+            c.close()
+            return out
+
+        def check(**kw):
+            body = {"format": "tcp-gamecheck/1", "nonce": "ab" * 16}
+            body.update(kw)
+            return post("/api/gamecheck", body)
+
+        bug = {"format": "tcp-bugreport/1", "category": "bug", "text": "spam spam spam spam spam", "name": "Spammer",
+               "guid": guid2, "puid": puid2, "kid": "c" * 40, "hwid": [hw_a]}
+        st, d = post("/api/bugreport", bug)
+        self.assertEqual(st, 201)
+        rep = self.portal.store.one("SELECT id FROM reports WHERE file=?", (d["id"],))["id"]
+        # a player who never played on a server: findable and bannable
+        st, found = self.call("owner", "GET", "/api/lookup?q=Spammer")
+        self.assertEqual(st, 200, found)
+        self.assertIn(pid2, [p["pid"] for p in found["players"]])
+        self.assertEqual(self.call("owner", "GET", "/api/player/" + pid2)[1]["names"][0]["name"], "Spammer")
+        # unbanned PCs may play; the answer is signed when a root is set up
+        rootfile = Path(self.tmp.name) / "staff-root-gc"
+        rootfile.write_text("TCPSTAFFROOT1 g1 %s\n" % ("33" * 32))
+        self.portal.cfg["staff_root_file"] = str(rootfile)
+        for attr in ("_staff_root", "_staff_certs", "_gc_key"):
+            if hasattr(self.portal, attr):
+                delattr(self.portal, attr)
+        st, ok = check(guid=guid2, hwid=[hw_a])
+        self.assertTrue(ok["play"])
+        pub = bytes.fromhex(self.call(None, "GET", "/api/gamecheck/public")[1]["public"])
+        self.assertTrue(tsp.ed25519_verify(pub, tsp.gamecheck_message("ab" * 16, True, ok["time"]), bytes.fromhex(ok["sig"])))
+        self.assertFalse(tsp.ed25519_verify(pub, tsp.gamecheck_message("ab" * 16, False, ok["time"]), bytes.fromhex(ok["sig"])))
+        # moderators cannot ban from the whole game
+        self.assertEqual(self.call("moderator", "POST", "/api/bans", {"report": rep, "length": "1d", "reason": "x", "game": True})[0], 403)
+        st, b = self.call("owner", "POST", "/api/bans", {"report": rep, "length": "0", "reason": "Abusing bug reports",
+                                                          "game": True, "ip_ban": False})
+        self.assertEqual(st, 200)
+        self.assertTrue(b["game"])
+        kinds = {r["kind"] for r in self.portal.store.q("SELECT kind FROM ban_ids WHERE ban_id=?", (b["id"],))}
+        self.assertEqual(kinds, {"pid", "puid", "kid", "hw"})                 # no IP: staff unticked it
+        # his reports are dropped without telling him
+        n = self.portal.store.one("SELECT COUNT(*) n FROM reports")["n"]
+        self.assertEqual(post("/api/bugreport", bug)[0], 201)
+        self.assertEqual(self.portal.store.one("SELECT COUNT(*) n FROM reports")["n"], n)
+        # the start check refuses him on any one identity: new guid on the same hardware, or a new PC with the old guid
+        st, no = check(guid="00112233445566778899AABBCCDDEEFF", hwid=[hw_a, hw_b])
+        self.assertFalse(no["play"])
+        self.assertEqual(no["reason"], "Abusing bug reports")
+        self.assertTrue(tsp.ed25519_verify(pub, tsp.gamecheck_message("ab" * 16, False, no["time"]), bytes.fromhex(no["sig"])))
+        # ...and the new identities joined the ban: the second hardware hash alone is now enough
+        self.assertFalse(check(hwid=[hw_b])[1]["play"])
+        self.assertFalse(check(guid="00112233445566778899AABBCCDDEEFF")[1]["play"])
+        self.assertTrue(self.portal.store.one("SELECT id FROM alerts WHERE key=?", ("gameban-learn:%d" % b["id"],)))
+        self.assertTrue(check(guid="0" * 31 + "1", hwid=["9" * 64])[1]["play"])  # somebody else plays on
+        self.assertTrue(check(hwid=["0" * 64])[1]["play"])                       # an empty hardware id never matches
+        self.assertEqual(post("/api/gamecheck", {"format": "x"})[0], 400)
+        bans = self.call("owner", "GET", "/api/bans")[1]["bans"]
+        row = [x for x in bans if x["id"] == b["id"]][0]
+        self.assertEqual(row["game"], 1)
+        self.assertGreaterEqual(row["identities"], 6)
+        # lifting the ban lets him play again
+        self.assertEqual(self.call("owner", "POST", "/api/bans/lift", {"id": b["id"], "reason": "test"})[0], 200)
+        self.assertTrue(check(hwid=[hw_b])[1]["play"])
+        self.assertEqual(self.call("owner", "GET", "/api/player/" + "0123456789abcdef")[0], 200)
+        self.portal.cfg.pop("staff_root_file", None)
+        for attr in ("_staff_root", "_gc_key"):
+            if hasattr(self.portal, attr):
+                delattr(self.portal, attr)
+
 
 class Ed25519Test(unittest.TestCase):
     def test_rfc8032_vectors(self):
