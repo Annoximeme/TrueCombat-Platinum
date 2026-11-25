@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Van de grond af · TrueCombat: Platinum</title>
+<meta name="description" content="Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-ground-up">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-ground-up">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="Van de grond af">
+<meta property="og:description" content="Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-ground-up.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-ground-up.jpg">
+<meta property="article:published_time" content="2026-11-25">
+<meta property="article:section" content="Update">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Van de grond af","description":"Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het spel, een gloednieuwe map genaamd Lockgate en een lange lijst wijzigingen op basis van jullie feedback. Het volledige verhaal van update 0.40.0, onze grootste tot nu toe.","datePublished":"2026-11-25","dateModified":"2026-11-25","inLanguage":"nl","articleSection":"Update","timeRequired":"PT16M","image":"https://truecombat.eu/img/og-devlog-ground-up.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-ground-up","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Van de grond af">
+<meta name="twitter:description" content="Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"Van de grond af","item":"https://truecombat.eu/nl/devlog-ground-up"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-ground-up">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-ground-up">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-ground-up">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=70654d70a5">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav tb">
+  <div class="wrap">
+    <a class="tb-brand" href="./" aria-label="TrueCombat: Platinum home"><img class="tb-wm" src="../img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40"><i class="tb-shine" aria-hidden="true"></i></a>
+    <nav class="tg-row" aria-label="Onderdelen">
+      <div class="tg" data-g="play"><button type="button" aria-expanded="false" aria-controls="tp-play">Spelen<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-play"><div class="wrap"><div class="tp-list"><a class="pi" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span><b>Download</b><small>Gratis Windows-installatie</small></span></a><a class="pi" href="guide"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/></svg><span><b>Gids</b><small>Besturing, modi en tactiek</small></span></a><a class="pi" href="servers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span><b>Servers</b><small>Live servers, meedoen in één klik</small></span></a><a class="pi" href="faq"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span><b>Vragen</b><small>Antwoorden op veelgestelde vragen</small></span></a><a class="pi" href="truecombat-elite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span><b>TrueCombat: Elite</b><small>Waar het allemaal begon</small></span></a></div><div class="tp-art tp-play"><a class="pt pt-big" href="download"><img src="../img/hero-village-rooftop.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>v0.39.7 · Gratis</em><strong>TrueCombat: Platinum</strong><u>Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="servers"><img src="../img/hero-northport-gashouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Servers</span></a><a class="pt pt-sm" href="guide"><img src="../img/hero-railhouse-overlook-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Gids</span></a></div><div class="tp-foot"><span>Gratis · Windows 10 en 11, 64-bit</span><a href="download">Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg" data-g="game"><button type="button" aria-expanded="false" aria-controls="tp-game">Het spel<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-game"><div class="wrap"><div class="tp-list"><a class="pi" href="maps"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span><b>Maps</b><small>Elke map, met plattegronden in 3D</small></span></a><a class="pi" href="weapons"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg><span><b>Wapens</b><small>Het volledige arsenaal, vergeleken</small></span></a><a class="pi" href="./#graphics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span><b>Graphics</b><small>Low, High en Ultra naast elkaar</small></span></a><a class="pi" href="./#gallery"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg><span><b>Galerij</b><small>Screenshots uit het spel</small></span></a></div><div class="tp-art tp-game"><div class="pt-maps"><a class="pt" href="map-delta"><img src="../img/map-delta-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Delta</span></a><a class="pt" href="map-northport"><img src="../img/map-northport-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Northport</span></a><a class="pt" href="map-railhouse"><img src="../img/map-railhouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Railhouse</span></a><a class="pt" href="map-snow"><img src="../img/map-snow-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Snow</span></a><a class="pt" href="map-stadtrand"><img src="../img/map-stadtrand-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Stadtrand</span></a><a class="pt" href="map-village"><img src="../img/map-village-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Village</span></a></div></div><div class="tp-foot"><span>6 maps · 32 wapens</span><a href="maps">Maps <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg" data-g="compete"><button type="button" aria-expanded="false" aria-controls="tp-compete">Competitie<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-compete"><div class="wrap"><div class="tp-list"><a class="pi" href="leaderboards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Ranglijsten</b><small>Ratings, rangen en topspelers</small></span></a><a class="pi" href="competitive"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span><b>Competitief</b><small>Ranked spelen en de regels</small></span></a><a class="pi" href="account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span><b>Account</b><small>Je profiel, statistieken en vrienden</small></span></a></div><div class="tp-art tp-compete"><a class="pt pt-big" href="leaderboards"><img src="../img/hero-delta-night.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Ranked</em><strong>Ranglijsten</strong><u>Ranglijsten <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="competitive"><img src="../img/hero-stadtrand-canal-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Competitief</span></a><a class="pt pt-sm" href="account"><img src="../img/hero-snow-warehouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Account</span></a></div><div class="tp-foot"><span>Ranked spelen op de officiële servers</span><a href="leaderboards">Ranglijsten <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg on" data-g="community"><button type="button" aria-expanded="false" aria-controls="tp-community">Community<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-community"><div class="wrap"><div class="tp-list"><a class="pi" href="devlog" aria-current="page" data-devlog-new="2026-11-25" data-new="Nieuw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg><span><b>Devlog<em>Nieuw</em></b><small>Hoe het spel gebouwd wordt</small></span></a><a class="pi" href="news"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/></svg><span><b>Nieuws</b><small>Patchnotes van elke release</small></span></a><a class="pi" href="media"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Media</b><small>Trailers, screenshots en wallpapers</small></span></a><a class="pi" href="https://discord.gg/7Dg4yhhvGF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/></svg><span><b>Discord</b><small>Zoek een potje, praat met het team</small></span></a><a class="pi" href="banners"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="2" y="7" width="20" height="10"/><path d="M6 12h.01M9 10.5h6M9 13.5h4M18 10v4"/></svg><span><b>Serverbanners</b><small>Live spelersaantallen voor je pagina</small></span></a><a class="pi" href="studio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/></svg><span><b>Studio</b><small>Het team achter het spel</small></span></a><a class="pi" href="press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/></svg><span><b>Perskit</b><small>Logo&#x27;s, key art en feiten</small></span></a></div><div class="tp-art tp-community"><a class="pt pt-big" href="devlog-ground-up"><img src="../img/devlog/ground-up-teaser-clean.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Nieuwe devlog · Update 0.40.0</em><strong>Van de grond af</strong><u>Lees de devlog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="news"><img src="../img/hero-snow-yard-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>v0.39.7</em>Nieuws</span></a><a class="pt pt-sm" href="https://discord.gg/7Dg4yhhvGF"><img src="../img/hero-village-contact-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Discord</em>Word lid van de Discord</span></a></div><div class="tp-foot"><span>Al 31 devlogartikelen</span><a href="devlog">Devlog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+    </nav>
+    <div class="tl" data-img="../img/" data-maps="delta northport railhouse snow stadtrand village"><button class="tl-btn" type="button" aria-expanded="false" aria-controls="tl-pop" aria-label="Live servers" data-tpl-live="{p} spelers · {s} servers" data-tpl-idle="{s} servers online"><i></i><b>Servers</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="tl-pop" id="tl-pop"><b class="tl-h">Live servers</b><div class="tl-list"></div><a class="tl-all" href="servers">Alle servers <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div>
+    <div class="tu">
+      <button type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg><kbd>Ctrl K</kbd></button>
+      <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-ground-up" hreflang="en" lang="en">English</a></div></details>
+      <a class="tu-heart" href="support" aria-label="Steun ons" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></a>
+      <a href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    </div>
+    <a class="btn btn-play tb-dl" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span>Download</span><small>v0.39.7</small></a>
+    <button class="tb-burger" type="button" aria-expanded="false" aria-controls="ms" aria-label="Menu"><i></i><i></i><i></i></button>
+  </div>
+  <div class="tb-scrim" hidden></div>
+  <div class="ms" id="ms" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+    <div class="ms-top"><a class="tb-brand" href="./" aria-label="TrueCombat: Platinum home"><img class="tb-wm" src="../img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40"><i class="tb-shine" aria-hidden="true"></i></a><button type="button" class="ms-search" data-search-open aria-label="Zoeken"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button><button type="button" class="ms-x" aria-label="Menu sluiten"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <a class="ms-live" href="servers"><i></i><b>Servers</b><u>Alle servers <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></a>
+    <a class="ms-dev" href="devlog-ground-up"><img src="../img/devlog/ground-up-teaser-clean-640.webp" alt="" loading="lazy" decoding="async"><span><em>Nieuwe devlog</em>Van de grond af</span></a>
+    <details class="ms-g"><summary>Spelen<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span><b>Download</b><small>Gratis Windows-installatie</small></span></a><a class="pi" href="guide"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/></svg><span><b>Gids</b><small>Besturing, modi en tactiek</small></span></a><a class="pi" href="servers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span><b>Servers</b><small>Live servers, meedoen in één klik</small></span></a><a class="pi" href="faq"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span><b>Vragen</b><small>Antwoorden op veelgestelde vragen</small></span></a><a class="pi" href="truecombat-elite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span><b>TrueCombat: Elite</b><small>Waar het allemaal begon</small></span></a></details><details class="ms-g"><summary>Het spel<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="ms-maps"><a href="map-delta"><img src="../img/map-delta-640.webp" alt="" loading="lazy" decoding="async"><span>Delta</span></a><a href="map-northport"><img src="../img/map-northport-640.webp" alt="" loading="lazy" decoding="async"><span>Northport</span></a><a href="map-railhouse"><img src="../img/map-railhouse-640.webp" alt="" loading="lazy" decoding="async"><span>Railhouse</span></a><a href="map-snow"><img src="../img/map-snow-640.webp" alt="" loading="lazy" decoding="async"><span>Snow</span></a><a href="map-stadtrand"><img src="../img/map-stadtrand-640.webp" alt="" loading="lazy" decoding="async"><span>Stadtrand</span></a><a href="map-village"><img src="../img/map-village-640.webp" alt="" loading="lazy" decoding="async"><span>Village</span></a></div><a class="pi" href="maps"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span><b>Maps</b><small>Elke map, met plattegronden in 3D</small></span></a><a class="pi" href="weapons"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg><span><b>Wapens</b><small>Het volledige arsenaal, vergeleken</small></span></a><a class="pi" href="./#graphics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span><b>Graphics</b><small>Low, High en Ultra naast elkaar</small></span></a><a class="pi" href="./#gallery"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg><span><b>Galerij</b><small>Screenshots uit het spel</small></span></a></details><details class="ms-g"><summary>Competitie<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="leaderboards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Ranglijsten</b><small>Ratings, rangen en topspelers</small></span></a><a class="pi" href="competitive"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span><b>Competitief</b><small>Ranked spelen en de regels</small></span></a><a class="pi" href="account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span><b>Account</b><small>Je profiel, statistieken en vrienden</small></span></a></details><details class="ms-g" open><summary>Community<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="devlog" aria-current="page" data-devlog-new="2026-11-25" data-new="Nieuw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg><span><b>Devlog<em>Nieuw</em></b><small>Hoe het spel gebouwd wordt</small></span></a><a class="pi" href="news"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/></svg><span><b>Nieuws</b><small>Patchnotes van elke release</small></span></a><a class="pi" href="media"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Media</b><small>Trailers, screenshots en wallpapers</small></span></a><a class="pi" href="https://discord.gg/7Dg4yhhvGF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/></svg><span><b>Discord</b><small>Zoek een potje, praat met het team</small></span></a><a class="pi" href="banners"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="2" y="7" width="20" height="10"/><path d="M6 12h.01M9 10.5h6M9 13.5h4M18 10v4"/></svg><span><b>Serverbanners</b><small>Live spelersaantallen voor je pagina</small></span></a><a class="pi" href="studio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/></svg><span><b>Studio</b><small>Het team achter het spel</small></span></a><a class="pi" href="press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/></svg><span><b>Perskit</b><small>Logo&#x27;s, key art en feiten</small></span></a></details>
+    <div class="ms-langs"><b>NL</b><a href="../devlog-ground-up" hreflang="en" lang="en">EN</a><a class="ms-heart" href="support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>Steun ons</a></div>
+    <div class="ms-foot"><a class="btn btn-play" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg>Download <small>v0.39.7</small></a></div>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="ground-up" data-min="16">
+  <header class="page-head post-head cine-post">
+    <div class="head-art" style="--art: url(../img/devlog/ground-up-teaser-clean-1920.webp); --art-s: url(../img/devlog/ground-up-teaser-clean-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <span class="cine-kicker">Update 0.40.0</span>
+      <p class="post-meta"><span class="tag">Update</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-25">25 nov 2026</time><span>16 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="ground-up" hidden></span><span class="post-cmts" data-post-cmts="ground-up" hidden></span></p>
+      <h1>Van de grond af</h1>
+      <p class="lede">Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het spel, een gloednieuwe map genaamd Lockgate en een lange lijst wijzigingen op basis van jullie feedback. Het volledige verhaal van update 0.40.0, onze grootste tot nu toe.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#een-interface-gemaakt-voor-dit-spel">Een interface gemaakt voor dit spel</a></li>
+          <li><a href="#een-nieuwe-generatie-licht">Een nieuwe generatie licht</a></li>
+          <li><a href="#remastered-of-classic-jij-kiest">Remastered of Classic: jij kiest</a></li>
+          <li><a href="#season-1">Season 1</a></li>
+          <li><a href="#locatiepings">Locatiepings</a></li>
+          <li><a href="#cqb-wordt-deel-van-het-spel">CQB wordt deel van het spel</a></li>
+          <li><a href="#jullie-feedback">Jullie feedback</a></li>
+          <li><a href="#een-nieuwe-map-lockgate">Een nieuwe map: Lockgate</a></li>
+          <li><a href="#geluid">Geluid</a></li>
+          <li><a href="#bots">Bots</a></li>
+          <li><a href="#nieuwe-spelers">Nieuwe spelers</a></li>
+          <li><a href="#launcher-3-2">Launcher 3.2</a></li>
+          <li><a href="#credits">Credits</a></li>
+          <li><a href="#servers-en-beveiliging">Servers en beveiliging</a></li>
+          <li><a href="#wat-volgt">Wat volgt</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<figure class="wide">
+  <img src="../img/devlog/ground-up-teaser.webp" alt="Key art voor update 0.40.0: Ground Up" width="1280" height="720" loading="lazy">
+  <figcaption>Update 0.40.0: Ground Up. Village, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<p>Toen we 0.40.0 begonnen te plannen, was de opdracht kort: maak er een mijlpaal van. Geen patch met een lange lijst eraan, maar een update die verandert hoe TrueCombat: Platinum eruitziet, klinkt en aanvoelt, van het moment dat je de launcher opent tot de laatste ronde van een match.</p>
+<p>Dat betekende dat we bijna alles moesten aanpakken. Elk menu is opnieuw ontworpen. Achter de belichting zit een nieuwe generatie effecten. De soldaten, de maps en de geluiden zijn geremasterd, en voor het eerst kies je zelf of je met die nieuwe laag speelt of met het spel zoals het er twintig jaar geleden uitzag. Season 1 komt eraan, zodat elke match iets krijgt om naartoe te spelen. Locatiepings geven elk team een stem, ook zonder microfoon. En close quarters combat, dat twee updates lang achter een experimentele schakelaar zat, wordt een vast onderdeel van het spel.</p>
+<p>Laat in de ontwikkeling lazen we ook een ronde feedback van de community over richten, terugslag en sniperen, en besloten we dat die verbeteringen niet tot een volgende release konden wachten. Ook die zitten in 0.40.0.</p>
+<p>0.40.0 zit nu in de laatste testfase en komt binnenkort. Dit is de lange versie, met alles wat we veranderd hebben en waarom, zodat je alles kunt lezen voor je speelt.</p>
+<h2 id="een-interface-gemaakt-voor-dit-spel">Een interface gemaakt voor dit spel</h2>
+<p>De menu's die Platinum erfde, waren gemaakt voor een ander tijdperk: kleine vaste schermen, veel tekst en lay-outs die uitgingen van een 4:3-monitor. Ze werkten, maar ze voelden nooit als deel van een moderne tactische shooter. Voor 0.40.0 hebben we ze allemaal opnieuw gebouwd.</p>
+<p>Het hoofdmenu, Opties, Deployment, de serverbrowser, het laadscherm en de matchschermen delen nu één ontwerptaal: strakke panelen, duidelijke letters en een vaste manier om te tonen waar je bent en wat een instelling doet. Opties is ingedeeld zoals jij erover nadenkt, niet zoals de engine het opslaat. Grafische presets zetten met één klik een goed vertrekpunt, en elke afzonderlijke instelling staat er nog steeds onder als je die wilt.</p>
+<figure class="wide">
+  <img src="../img/devlog/ground-up-menu.webp" alt="Het nieuwe hoofdmenu" width="1280" height="720" loading="lazy">
+  <figcaption>Het nieuwe hoofdmenu.</figcaption>
+</figure>
+<p>De serverbrowser kreeg filters, dus een volle Ranked-server of een lege om te oefenen vinden betekent niet langer door een lange lijst scrollen. Meldingen houden je op de hoogte zonder het scherm over te nemen. Achter elk paneel zit een zachte achtergrondvervaging, zodat de wereld die je net verliet zichtbaar blijft.</p>
+<h3>Een HUD die niet in de weg zit</h3>
+<p>Ook de HUD in het spel is nieuw, en die staat nu standaard op 70 procent van zijn oude grootte. Op een moderne breedbeeldmonitor nam de oude HUD meer ruimte in dan nodig. De nieuwe schaalt correct mee met je resolutie en houdt het midden van het scherm vrij voor waar het om draait: het gevecht. Wil je hem groter, dan gaat de schuifregelaar in Opties helemaal terug.</p>
+<figure class="wide">
+  <img src="../img/devlog/ground-up-hud.webp" alt="De nieuwe HUD" width="1280" height="720" loading="lazy">
+  <figcaption>De nieuwe HUD op de standaardgrootte, met het death recap rechts.</figcaption>
+</figure>
+<h3>Weten wat er gebeurde</h3>
+<p>Twee schermen vertellen je meer over elke ronde en elke match dan het spel ooit deed. Het death recap toont wie je raakte, met welk wapen en van waar, zodat een dood iets is waar je van leert in plaats van iets waar je naar raadt. Aan het einde van een match vat het post-match-scherm je spel samen.</p>
+<p>Callouts verschijnen nu op het scherm terwijl je door een map beweegt, en het zijn dezelfde namen die je team ziet in pings en op de minimap. Als iemand "Pump hall" of "North street" zegt, bedoelt iedereen dezelfde plek.</p>
+<h2 id="een-nieuwe-generatie-licht">Een nieuwe generatie licht</h2>
+<p>Het engine-werk in 0.40.0 is de grootste stap voor de renderer van Platinum sinds DirectX 12. Het doel was niet om de maps op een ander spel te laten lijken. Het doel was dat licht zich gedraagt zoals je oog verwacht, zodat een gang, een binnenplaats of een mondingsvuur in een fractie van een seconde juist leest.</p>
+<h3>Licht dat beweegt</h3>
+<p>Mondingsvuur en explosies verlichten nu de wereld rondom. Vuur een geweer af in een donkere trappenhal en de muren flikkeren mee. Een granaat die om de hoek ontploft, werpt een korte gloed over de vloer nog voor het geluid je bereikt. Deze dynamische lichten zijn snel genoeg voor elke preset die ze heeft, en ze verraden precies zoveel als ze moeten: een vuurgevecht in een donkere kamer zie je vanuit de deuropening.</p>
+<figure class="wide">
+  <img src="../img/devlog/ground-up-dynamic-light.webp" alt="Dynamisch licht van een mondingsvuur" width="1280" height="720" loading="lazy">
+  <figcaption>Een salvo uit een M4 verlicht het metselwerk van een donkere hal, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<h3>Lucht en hemel</h3>
+<p>Op DirectX 12 heeft elke map nu een atmosfeer. Zonverlichte nevel bouwt zich op over lange zichtlijnen, en de hemel past bij het tijdstip van elke map in plaats van erachter te hangen als een geschilderd decor. Bounce light laat zonbeschenen oppervlakken zachte kleur afgeven aan kamers en hoeken in de buurt, zodat een interieur naast een felle binnenplaats niet langer egaal donker is.</p>
+<p>Lampen werpen nu schaduwen. Mist wordt verlicht door de lichten erin. Armaturen werpen poelen van licht op de vloer eronder, wat samen met de donkerdere belichting uit 0.39 echt contrast geeft tussen verlichte en donkere ruimtes.</p>
+<h3>Elke inslag</h3>
+<p>Kogelgaten en brandplekken hebben nu diepte in plaats van platte stickers op een muur te zijn. Een nieuw deeltjessysteem stuurt inslagen, rook, vonken en puin aan, zodat een salvo in beton stof en scherven opwerpt die zich ook zo gedragen. Rookgranaten zijn dichter, en lege hulzen blijven na een vuurgevecht op de vloer liggen.</p>
+<figure class="wide">
+  <img src="../img/devlog/ground-up-impacts.webp" alt="Inslagen op beton" width="1280" height="720" loading="lazy">
+  <figcaption>Een kogelgat met echte diepte in baksteen, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<p>De kill cam, die in 0.39.6 zijn filmische camera kreeg, voegt tijdens de herhaling op DirectX 12 nu scherptediepte en een kleurgrading toe.</p>
+<h3>Sneller, op meer pc's</h3>
+<p>Nieuwe effecten betekenen niets als het spel er moeilijker door draait. Dankzij een shadercache laden maps sneller na de eerste keer, en een slimmer texturebudget houdt kaarten met minder videogeheugen soepel in plaats van te haperen als de textures van een map niet passen. Na een mapwissel blijven de schaduwen en belichting van de vorige map niet meer achter, wat sommigen van jullie zagen als donkere rechthoeken die op muren zweefden.</p>
+<h2 id="remastered-of-classic-jij-kiest">Remastered of Classic: jij kiest</h2>
+<p>TrueCombat:Elite heeft een look die velen van jullie nog precies voor zich zien. We wilden het spel vooruit helpen zonder dat van iemand af te nemen, dus 0.40.0 voegt één schakelaar toe in Opties: Remastered of Classic.</p>
+<p>Remastered geeft je de nieuwe laag waar we al maanden aan bouwen. De maps krijgen geremasterde materialen en props, trouw aan de originelen: dezelfde lay-outs, dezelfde silhouetten en dezelfde plekken die je kent, met oppervlakken die standhouden op een modern scherm. De Special Forces en Terrorists zijn geremasterd met nieuwe vesten en uitrusting, je handen in first person zijn ronder en beter gevormd, en de spullen die je draagt zijn ook geremasterd. Voor wie op een krachtige pc speelt, biedt de launcher op Ultra een optioneel HD-texturepakket van ongeveer 1 GB aan.</p>
+<p>Classic geeft je de originele look van TrueCombat, zoals hij was.</p>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="../img/devlog/ground-up-remastered.webp" alt="Remastered: Dezelfde plek in Classic en Remastered, Ultra-preset, DirectX 12." width="1280" height="720" loading="lazy">
+    <img class="top" src="../img/devlog/ground-up-classic.webp" alt="Classic: Dezelfde plek in Classic en Remastered, Ultra-preset, DirectX 12." width="1280" height="720" loading="lazy">
+    <span class="tag l">Classic</span>
+    <span class="tag r">Remastered</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Dezelfde plek in Classic en Remastered, Ultra-preset, DirectX 12.: positie van de vergelijkingslijn">
+  </div>
+  <figcaption>Dezelfde plek in Classic en Remastered, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<p>De schakelaar verandert alleen wat je ziet. Hitboxen, zichtlijnen, beweging en geluid zijn in beide modi identiek, dus geen van beide keuzes geeft een voordeel. Elk team heeft nu ook één soldatenmodel, zodat elke speler er in een vuurgevecht hetzelfde uitziet: een vijand is in één oogopslag een vijand, wat je ook gekozen hebt.</p>
+<p>In Deployment maak je je soldaat eigen met vijf camo's per team, en Terrorists kunnen kiezen voor een pet, een hoofddoek of een bivakmuts.</p>
+<figure class="wide">
+  <img src="../img/devlog/ground-up-soldiers.webp" alt="Een geremasterde soldaat" width="1280" height="720" loading="lazy">
+  <figcaption>Een geremasterde soldaat met het nieuwe vest en de nieuwe uitrusting, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<h2 id="season-1">Season 1</h2>
+<p>0.40.0 legt de basis voor Season 1, en de launcher toont je seizoenskaart al op het startscherm. Zodra het seizoen begint, telt elke match mee: rangen van Rookie tot Platinum, die je verdient door te spelen, en elke week drie nieuwe contracten met duidelijke doelen, in Ranked en Unranked.</p>
+<p>Voor als je liever alleen speelt, krijgen twee solo-uitdagingen elk hun eigen leaderboard: de Range Run, een parcours op tijd op de schietbaan, en een uitdaging tegen bots. Iedereen die in het lanceringsseizoen speelt, krijgt de Frontline-badge. We kondigen de start van het seizoen aan op Discord en hier in de devlog.</p>
+<h2 id="locatiepings">Locatiepings</h2>
+<p>Niet iedereen speelt met een microfoon, en in een snelle ronde is er zelden tijd om te typen. Het nieuwe pingwiel geeft elke speler een stem: Go, Enemy, Danger, Watch, Help, Bomb, Acknowledge en Clear.</p>
+<p>Pings gebruiken de callout-namen van de map zelf en verschijnen als stippen op de minimap, dus "Enemy, Pump hall" is een volledige zin die je team meteen begrijpt. Ook bots reageren op je pings: markeer een plek om naartoe te gaan en je bot-teamgenoten trekken met je mee.</p>
+<h2 id="cqb-wordt-deel-van-het-spel">CQB wordt deel van het spel</h2>
+<p>Close quarters combat begon in 0.38.0 als experiment, met eigen wapens, vizieren, geluiden en regels achter een aparte serverinstelling. De reacties waren duidelijk genoeg: het wordt nu een vast onderdeel van het spel.</p>
+<p>CQB-wapens, -vizieren en -geluiden zitten op elke server, zonder experimentele instelling. De map Harbour komt in de mappool, en CQB Rules wordt een gewone Unranked-modus. De G3 krijgt een semi-automatische stand, en de M110 is gerepareerd.</p>
+<p>CQB-wapens komen ook in Ranked, met twee uitzonderingen. De Shorty-shotguns en de akimbo M1911 blijven voorlopig in Unranked, omdat ze op korte afstand sterk genoeg zijn dat we meer gegevens willen voor ze ranked matches beslissen.</p>
+<h2 id="jullie-feedback">Jullie feedback</h2>
+<p>Kort voor deze update klaar was, kwam er een ronde feedback van de community binnen over hoe richten, terugslag en sniperen aanvoelen. In plaats van de antwoorden voor de volgende release te bewaren, hebben we ze in 0.40.0 gestoken.</p>
+<h3>Richten via het vizier</h3>
+<p>Als je richtte via het vizier, zat het wapen te ver van je oog. Het vizier was klein en op sommige geweren moeilijk te onderscheiden tegen een drukke achtergrond. Elk wapen komt nu dichterbij als je richt, per wapen afgesteld, zodat het vizier groter en beter leesbaar is en toch gecentreerd blijft op je richtpunt. De AK-47 komt iets minder dichtbij dan de rest, zodat zijn stofkap het vizier niet verdringt.</p>
+<p>We hebben ook opgeruimd wat er op het scherm gebeurt als kogels inslaan. Als je geraakt wordt, blijft je eigen bloedeffect nu weg uit het midden van het scherm in plaats van over je vizier te spoelen. Bloed op een doelwit is kleiner en verdwijnt sneller, en de hitmarker is slanker, zodat je ziet of je doelwit nog overeind staat.</p>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="../img/devlog/ground-up-ads-after.webp" alt="0.40.0: Richten via het vizier voor en na, Ultra-preset." width="1280" height="720" loading="lazy">
+    <img class="top" src="../img/devlog/ground-up-ads-before.webp" alt="0.39: Richten via het vizier voor en na, Ultra-preset." width="1280" height="720" loading="lazy">
+    <span class="tag l">0.39</span>
+    <span class="tag r">0.40.0</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Richten via het vizier voor en na, Ultra-preset.: positie van de vergelijkingslijn">
+  </div>
+  <figcaption>Richten via het vizier voor en na, Ultra-preset.</figcaption>
+</figure>
+<h3>Een optionele red dot</h3>
+<p>Tien geweren en machinepistolen kunnen nu een M68-red dot dragen: de M4, M16, SIG 552, SG 552, SCAR, REC7, MP5, MP5SD, UMP45 en MP9. Je zet hem per wapen aan in Deployment, en andere spelers zien hem in third person op je wapen.</p>
+<p>De red dot verandert wat je ziet, niet hoe het wapen zich gedraagt. Gezichtsveld, spreiding en terugslag blijven precies hetzelfde als met het standaardvizier, dus het is een kwestie van smaak en geen voordeel. Op de M4, M16 en REC7 zit de dot op een kleine verhoging, zodat de korrel van het vizier er net onder blijft uitlijnen.</p>
+<figure class="wide">
+  <img src="../img/devlog/ground-up-reddot.webp" alt="De M68-red dot" width="1280" height="720" loading="lazy">
+  <figcaption>De optionele M68-red dot op de M4, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<h3>Terugslag onder controle</h3>
+<p>De terugslag klom en kwam nooit helemaal terug. Na een salvo bleef je zicht iets hoger dan waar je begon, en over een paar salvo's liep dat op, het ergst bij de AK-familie. We vonden de oorzaak: het spel gaf maar een deel van de kick van elk schot terug, en het willekeurige deel van de klim kwam nooit terug.</p>
+<p>Nu komt de hele kick terug. Tussen salvo's zakt je zicht in ruim minder dan een halve seconde terug naar waar je richtte, de willekeurige extra klim is gehalveerd en de AK-47 trapt iets minder. In onze tests liet een AK-47 na tien kogels het zicht ongeveer tien graden hoger staan dan het eerste schot. Nu keert het terug naar het begin. Terugslag kost je nog steeds iets terwijl je vuurt. Hij volgt je alleen niet meer naar je volgende doelwit. Dit geldt met Tactical-balans, die standaard op elke server draait.</p>
+<h3>Sniperscopes</h3>
+<p>Sniperscopes zoomden in en uit volgens een trage curve die bijna een seconde nodig had om tot rust te komen. Ze zoomen nu sneller in en veel sneller uit, zodat je van je scope af kunt en op iemand dichtbij kunt reageren zonder op het beeld te wachten. Het standaardvizier houdt zijn huidige timing.</p>
+<p>We hebben ook een hardnekkig probleem opgelost dat sommigen van jullie meldden met de R93: schoten door de scope terwijl je leunde, konden een doelwit missen dat pal in het midden van het dradenkruis stond. Als je leunt, kantelt de camera en zit je oog iets lager, maar het schot vertrok nog vanuit de rechtopstaande positie, enkele centimeters te hoog. Schoten, granaatworpen en de controle op een geblokkeerde loop vertrekken nu allemaal van waar je oog echt is, aan beide kanten.</p>
+<h3>Raakbevestiging</h3>
+<p>Een treffer moet als een treffer aanvoelen. De Remastered-hitgeluiden zijn nieuw: een zware, vlezige klap bij lichaamstreffers, een scherpe botkraak bij headshots en een zwaardere bevestiging bij een kill. We maakten ze van echte opnames in plaats van synthetische tonen, omdat de eerste versies mechanisch klonken, en een treffer die je hoort zonder te kijken is veel waard in een vuurgevecht. Classic houdt de originele set.</p>
+<p>Hitgeluiden en hitmarkers blijven je eigen keuze op Unranked-servers. Op Ranked staan ze altijd uit, omdat we in een competitieve match willen dat je een gevecht met je eigen ogen beoordeelt. Opties vertelt je dat terwijl je Ranked speelt, en het spel verandert nooit je eigen instelling: als je terugkeert naar Unranked, staat alles zoals je het achterliet.</p>
+<h3>Mondingsvuur bij daglicht</h3>
+<p>Mondingsvuur in first person was bij fel daglicht makkelijk te missen, en bij sommige wapens begon het net achter het einde van de loop. Het is nu duidelijk zichtbaar op een zonnige map en begint precies aan de loopmonding, ook bij pistolen en akimbo-pistolen.</p>
+<h3>Spawnen aan de juiste kant</h3>
+<p>Als de spawnpunten van een team vol stonden, kon het spel een speler in de vijandelijke helft van de map plaatsen. Dat kan niet meer. Is je eigen kant vol, dan spawn je zo dicht mogelijk bij die kant als de map toelaat.</p>
+<h2 id="een-nieuwe-map-lockgate">Een nieuwe map: Lockgate</h2>
+<p>0.40.0 brengt een map die van de grond af voor Platinum gebouwd is. Lockgate is een drooggelegde kanaalsluis in een oude industriewijk: een pomphuis aan de westkant, de sluiskolk met zijn loopbruggen in het midden en een draaibrug voor het spoor in het oosten. De Terrorists starten in een bakstenen brouwerijwijk in het noorden, de Special Forces in de betonnen douanegebouwen in het zuiden.</p>
+<p>We hebben Lockgate in de eerste plaats eerlijk ontworpen. De map is gespiegeld over het kanaal, dus beide teams hebben identieke routes, identieke dekking en identieke timings: beide kanten doen er even lang over om elk van de drie lanes te bereiken, en aanvallers bereiken elke bomsite in ongeveer vijftien seconden. Elke lane speelt anders. Het pomphuis is close quarters met een galerij erboven, de sluis is een gevecht op middellange afstand over en in de kolk, en de draaibrug biedt de langste zichtlijn van de map voor wie liever een hoek vasthoudt. Geen enkele spawn kijkt in een andere.</p>
+<p>Lockgate speelt in elke modus: Bomb, Team Elimination, Team Deathmatch, Flag Capture en Capture Point. Voor hij bij jullie terechtkwam, speelden bots hem keer op keer in alle vijf, om zeker te zijn dat niets vastloopt en dat elke bomsite geplant en verdedigd kan worden.</p>
+<figure class="wide">
+  <img src="../img/devlog/ground-up-lockgate.webp" alt="Lockgate" width="1280" height="720" loading="lazy">
+  <figcaption>De bakstenen en betonnen oever staan tegenover elkaar langs een lane, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="../img/devlog/ground-up-lockgate-lock.webp" alt="Het pomphuis op Lockgate" width="1280" height="720" loading="lazy">
+  <figcaption>Het dak van het pomphuis, met de schoorsteen van de brouwerij erachter, Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<h2 id="geluid">Geluid</h2>
+<p>Elke map heeft nu zijn eigen omgevingsgeluid, dus een stil moment op Railhouse klinkt anders dan een stil moment op Snow. Geweervuur verandert met de afstand, van een scherpe knal dichtbij tot een verre dreun aan de andere kant van de map, waardoor je beter inschat hoe ver een vuurgevecht is. Voetstappen klinken gevarieerder op elk oppervlak.</p>
+<p>Onder de motorkap is de audiobibliotheek bijgewerkt voor zuiver, stabiel geluid bij hoge samplerates.</p>
+<h3>Betere 3D-audio op een hoofdtelefoon</h3>
+<p>Speel je met de 3D-hoofdtelefoonmodus, dan komen geluiden nu uit veel overtuigendere richtingen. Het nieuwe profiel is gebaseerd op metingen van een professioneel binauraal kunsthoofd, het soort dat gebruikt wordt voor opnames die klinken alsof je in de kamer staat. Dat geeft een duidelijker voor en achter en een beter gevoel voor hoogte. Voetstappen boven je klinken boven je.</p>
+<p>Het profiel komt van het SADIE-project van de University of York, dat we graag vermelden in het spel. This product includes data developed at The Audio Lab, University of York, UK (Cal Armstrong, Lewis Thresh, Gavin Kearney) as part of the SADIE Project.</p>
+<h2 id="bots">Bots</h2>
+<p>Bots spelen nu met duidelijke rollen en kiezen wapens die bij de map passen, zodat een team bots er niet langer uitziet als vijf kopieën van dezelfde soldaat. Ze springen over obstakels en klimmen uit lastige plekken in plaats van vast te lopen, en we hebben probleemplekken op Chlite, Villa en Shozen opgelost. Op servers die ze gebruiken, vullen bots lege plaatsen en vertrekken ze vlot zodra echte spelers binnenkomen, zodat een server nooit leeg en nooit overvol aanvoelt.</p>
+<h2 id="nieuwe-spelers">Nieuwe spelers</h2>
+<p>Het eerste uur in een spel beslist of een nieuwe speler blijft. Boot Camp is een trainingsterrein van tien minuten dat je station per station door de basis loodst: hurken, kruipen en leunen op een hindernisbaan, springen en klimmen, de schietbaan, granaten, de wapenkamer, de bom planten en tot slot een huis met scherp vuur tegen bots. Bij de eerste start voert het spel een korte benchmark uit en kiest het de juiste grafische preset voor je pc, zodat een nieuwe speler begint met een spel dat er goed uitziet en vlot draait, in plaats van met een instellingenmenu.</p>
+<h2 id="launcher-3-2">Launcher 3.2</h2>
+<p>De launcher regelt de nieuwe optionele downloads: de Remastered-inhoud en het HD-texturepakket, met hervatten en herstel per bestand, zodat een onderbroken download verdergaat waar hij stopte en een beschadigd bestand vanzelf vervangen wordt. Hij merkt het als je van grafische kaart wisselt en biedt aan je instellingen voor de nieuwe af te stemmen. Het startscherm toont je Season 1-kaart, en een nieuwe pagina Credits en licenties noemt iedereen op wiens werk het spel voortbouwt.</p>
+<h2 id="credits">Credits</h2>
+<p>Platinum staat op de schouders van anderen, en dat willen we zichtbaar maken. De credits in het spel en de launcher noemen nu het ET: Legacy-team en id Software, op wiens opensourcewerk de Platinum-engine gebouwd is, naast het SADIE-project voor het hoofdtelefoonprofiel en elke community-mapmaker van wie werk met het spel meekomt.</p>
+<p>Het spellogo is het originele logo van TrueCombat: Platinum, nu in hoge resolutie in de launcher en de menu's.</p>
+<h2 id="servers-en-beveiliging">Servers en beveiliging</h2>
+<p>Officiële servers gebruiken nu aan het einde van elke match een mapstemming van 20 seconden, zodat de volgende map snel gekozen wordt, door de spelers op de server.</p>
+<p>We hebben onze beveiligingsmaatregelen aangescherpt en uitgebreid.</p>
+<h2 id="wat-volgt">Wat volgt</h2>
+<p>0.40.0 is een mijlpaal, geen eindstreep. Met de nieuwe interface, de nieuwe renderer en de remaster-schakelaar op hun plaats kunnen de volgende updates voortbouwen op een veel sterkere basis. Zoals altijd staan in de patch notes op Discord alle wijzigingen, en we lezen elke melding.</p>
+<p>Bedankt om te spelen, voor elke bugmelding en voor alle feedback die deze update mee vormgaf. Tot op het front.</p>
+      </div>
+      <div class="post-rate" data-rate="ground-up" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <p class="rate-sum" hidden></p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/7Dg4yhhvGF">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <section class="cmt" id="comments" data-cmt="ground-up" data-comments="on" aria-label="Reacties" hidden></section>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-sound-update"><small>Vorig artikel</small>Hoor het gevecht</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Update">
+        <a class="post-art" href="devlog-sound-update" tabindex="-1" aria-hidden="true"><img src="../img/devlog/front-lines-blast-courtyard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Update</span><span class="state shipped">Uitgebracht in v0.39.3</span><time datetime="2026-11-19">19 nov 2026</time><span>8 min lezen</span><span class="post-stat" data-post-stat="sound-update" hidden></span><span class="post-cmts" data-post-cmts="sound-update" hidden></span></p>
+          <h2><a href="devlog-sound-update">Hoor het gevecht</a></h2>
+          <p>Elk wapen krijgt een eigen stem, inslagen krijgen twaalf variaties per oppervlak en de geluidsengine leert over kamers, deuropeningen en afstand. Plus free aim en AK&#x27;s weer met twee handen. Het volledige verhaal van update 0.39.3.</p>
+          <a class="more" href="devlog-sound-update">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Update">
+        <a class="post-art" href="devlog-front-lines" tabindex="-1" aria-hidden="true"><img src="../img/devlog/front-lines-teaser-clean-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Update</span><span class="state shipped">Uitgebracht in v0.39.0</span><time datetime="2026-11-18">18 nov 2026</time><span>19 min lezen</span><span class="post-stat" data-post-stat="front-lines" hidden></span><span class="post-cmts" data-post-cmts="front-lines" hidden></span></p>
+          <h2><a href="devlog-front-lines">Aan het front</a></h2>
+          <p>Bots die luisteren, plannen en samen terugnemen, vier klassieke community-maps, een volledig vernieuwde launcher met vrienden, en een nieuwe laag licht, weer, geluid en lichaamstaal op elke map. Het volledige verhaal van update 0.39.0.</p>
+          <a class="more" href="devlog-front-lines">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/7Dg4yhhvGF" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/7Dg4yhhvGF">Discord</a><a href="banners">Serverbanners</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De Platinum Engine is gebouwd op ET: Legacy en de broncode van Wolfenstein: Enemy Territory van id Software, en wordt uitgebracht onder de GNU GPL v3. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=db22699235"></script>
+</body>
+</html>

@@ -80,6 +80,7 @@
 
 ## Devlog
 
+- [Ground up](https://truecombat.eu/devlog-ground-up): A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a brand-new map called Lockgate and a long list of changes shaped by your feedback. The full story of update 0.40.0, our biggest yet.
 - [Hear the fight](https://truecombat.eu/devlog-sound-update): Every gun gets its own voice, impacts get twelve variations per surface, and the sound engine learns about rooms, doorways and distance. Plus free aim and two-handed AKs. The full story of update 0.39.3.
 - [Front lines](https://truecombat.eu/devlog-front-lines): Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound and body language across every map. The full story of update 0.39.0.
 - [Remodelled, on the road to 0.40](https://truecombat.eu/devlog-remodelled): We are rebuilding TrueCombat: Platinum from the inside out, one model at a time. A first look at the new weapon models, the redesigned interface and the lighting work heading for 0.40, with every before and after we have so far.
