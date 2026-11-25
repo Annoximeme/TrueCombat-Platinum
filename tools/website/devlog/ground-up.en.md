@@ -1,7 +1,7 @@
 ---
 title: Ground up
 date: 2026-11-25
-summary: A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game and a long list of changes shaped by your feedback. The full story of update 0.40.0, our biggest yet.
+summary: A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a brand-new map called Lockgate and a long list of changes shaped by your feedback. The full story of update 0.40.0, our biggest yet.
 image: img/devlog/ground-up-teaser-clean.webp
 tag: Update
 kicker: Update 0.40.0
@@ -154,6 +154,16 @@ First-person muzzle flashes were easy to miss in bright daylight, and on some we
 ### Spawning on the right side
 
 When a team's spawn points were crowded, the game could place a player in the enemy half of the map. That can no longer happen. If your own side is full, you spawn as close to it as the map allows.
+
+## A new map: Lockgate
+
+0.40.0 brings a map built from the ground up for Platinum. Lockgate is a drained canal lock in an old industrial quarter: a pump house on the west side, the lock chamber and its gate catwalks in the middle and a rail swing bridge to the east. The Terrorists start in a brick brewery quarter to the north, the Special Forces in the concrete customs buildings to the south.
+
+We designed Lockgate to be fair before anything else. The map is mirrored across the canal, so both teams have identical routes, identical cover and identical timings: it takes both sides the same time to reach each of the three lanes, and attackers reach either bomb site in about fifteen seconds. Each lane plays differently. The pump house is close quarters with a gallery above, the lock is a mid-range fight across and down into the chamber, and the swing bridge offers the map's longest sightline for those who prefer to hold an angle. No spawn can see into another.
+
+Lockgate plays in every mode: Bomb, Team Elimination, Team Deathmatch, Flag Capture and Capture Point. Before it reached you, it was played by bots in all five, over and over, to make sure nothing gets stuck and every bomb site can be planted and defended.
+
+![Lockgate](img/devlog/ground-up-lockgate.webp "Lockgate, Ultra preset, DirectX 12.")
 
 ## Sound
 
