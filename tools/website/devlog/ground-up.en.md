@@ -31,7 +31,7 @@ The server browser gained filters, so finding a full Ranked server or an empty o
 
 The in-game HUD is new as well, and it now defaults to 70 percent of its old size. On a modern widescreen monitor the old HUD took more room than it needed. The new one scales correctly for your resolution and keeps the centre of the screen clear for what matters, which is the fight. If you prefer it larger, the slider in Options goes all the way back.
 
-![The new in-game HUD](img/devlog/ground-up-hud.webp "The new in-game HUD at its default size.")
+![The new in-game HUD](img/devlog/ground-up-hud.webp "The new in-game HUD at its default size, with the death recap on the right.")
 
 ### Knowing what happened
 
@@ -47,21 +47,17 @@ The engine work in 0.40.0 is the largest single step in Platinum's renderer sinc
 
 Muzzle flashes and explosions now light up the world around them. Fire a rifle in a dark stairwell and the walls flicker with it. A grenade going off around a corner throws a brief glow across the floor before the sound reaches you. These dynamic lights are fast enough to run on every preset that has them, and they give away exactly as much as they should: a firefight in a dark room is visible from the doorway.
 
-![Dynamic light from a muzzle flash](img/devlog/ground-up-dynamic-light.webp "A muzzle flash lights the walls of a corridor.")
-
 ### Air and sky
 
 On DirectX 12, every map now has an atmosphere. Sunlit haze builds up over long sightlines, and the sky matches each map's time of day instead of sitting behind it like a painted backdrop. Bounce light lets sunlit surfaces spill soft colour into nearby rooms and corners, so an interior beside a bright courtyard is no longer uniformly dark.
 
 Lamps now cast shadows. Fog is lit by the lights inside it. Fittings throw pools of light onto the floor beneath them, which, together with the darker lighting we introduced in 0.39, gives interiors real contrast between lit and unlit space.
 
-!compare(img/devlog/ground-up-light-before.webp | 0.39 | img/devlog/ground-up-light-after.webp | 0.40.0 | Atmosphere, bounce light and lamp shadows, Ultra preset, DirectX 12.)
-
 ### Every impact
 
 Bullet holes and scorch marks now have depth instead of being flat stickers on a wall. A new particle system drives impacts, smoke, sparks and debris, so a burst into concrete kicks up dust and chips that behave like dust and chips. Smoke grenades are denser, and spent brass stays on the floor after a firefight.
 
-![Impacts on concrete](img/devlog/ground-up-impacts.webp "Impacts, debris and decal relief on concrete.")
+![Impacts on concrete](img/devlog/ground-up-impacts.webp "A bullet hole with real depth in brick, Ultra preset, DirectX 12.")
 
 The kill cam, which got its cinematic camera in 0.39.6, now adds depth of field and a colour grade during the replay on DirectX 12.
 
@@ -90,8 +86,6 @@ In Deployment you can make your soldier your own with five camos per team, and T
 0.40.0 lays the foundation for Season 1, and the launcher already shows your season card on its home screen. When the season starts, every match counts towards something: ranks from Rookie to Platinum, earned by playing, and three new contracts every week with clear goals to work towards, in Ranked and Unranked alike.
 
 For the times you want to play alone, two solo challenges get their own leaderboards: the Range Run, a timed course on the firing range, and a bot challenge. Everyone who plays during the launch season receives the Frontline badge. We will announce the start of the season on Discord and here on the devlog.
-
-![Season 1 ranks](img/devlog/ground-up-season.webp "Season 1 ranks, from Rookie to Platinum.")
 
 ## Location pings
 
@@ -163,7 +157,9 @@ We designed Lockgate to be fair before anything else. The map is mirrored across
 
 Lockgate plays in every mode: Bomb, Team Elimination, Team Deathmatch, Flag Capture and Capture Point. Before it reached you, it was played by bots in all five, over and over, to make sure nothing gets stuck and every bomb site can be planted and defended.
 
-![Lockgate](img/devlog/ground-up-lockgate.webp "Lockgate, Ultra preset, DirectX 12.")
+![Lockgate](img/devlog/ground-up-lockgate.webp "Across the lock towards the customs quarter, Ultra preset, DirectX 12.")
+
+![The pump house on Lockgate](img/devlog/ground-up-lockgate-lock.webp "The pump house across the lock, Ultra preset, DirectX 12.")
 
 ## Sound
 

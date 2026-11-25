@@ -31,7 +31,7 @@ De serverbrowser kreeg filters, dus een volle Ranked-server of een lege om te oe
 
 Ook de HUD in het spel is nieuw, en die staat nu standaard op 70 procent van zijn oude grootte. Op een moderne breedbeeldmonitor nam de oude HUD meer ruimte in dan nodig. De nieuwe schaalt correct mee met je resolutie en houdt het midden van het scherm vrij voor waar het om draait: het gevecht. Wil je hem groter, dan gaat de schuifregelaar in Opties helemaal terug.
 
-![De nieuwe HUD](img/devlog/ground-up-hud.webp "De nieuwe HUD op de standaardgrootte.")
+![De nieuwe HUD](img/devlog/ground-up-hud.webp "De nieuwe HUD op de standaardgrootte, met het death recap rechts.")
 
 ### Weten wat er gebeurde
 
@@ -47,21 +47,17 @@ Het engine-werk in 0.40.0 is de grootste stap voor de renderer van Platinum sind
 
 Mondingsvuur en explosies verlichten nu de wereld rondom. Vuur een geweer af in een donkere trappenhal en de muren flikkeren mee. Een granaat die om de hoek ontploft, werpt een korte gloed over de vloer nog voor het geluid je bereikt. Deze dynamische lichten zijn snel genoeg voor elke preset die ze heeft, en ze verraden precies zoveel als ze moeten: een vuurgevecht in een donkere kamer zie je vanuit de deuropening.
 
-![Dynamisch licht van een mondingsvuur](img/devlog/ground-up-dynamic-light.webp "Een mondingsvuur verlicht de muren van een gang.")
-
 ### Lucht en hemel
 
 Op DirectX 12 heeft elke map nu een atmosfeer. Zonverlichte nevel bouwt zich op over lange zichtlijnen, en de hemel past bij het tijdstip van elke map in plaats van erachter te hangen als een geschilderd decor. Bounce light laat zonbeschenen oppervlakken zachte kleur afgeven aan kamers en hoeken in de buurt, zodat een interieur naast een felle binnenplaats niet langer egaal donker is.
 
 Lampen werpen nu schaduwen. Mist wordt verlicht door de lichten erin. Armaturen werpen poelen van licht op de vloer eronder, wat samen met de donkerdere belichting uit 0.39 echt contrast geeft tussen verlichte en donkere ruimtes.
 
-!compare(img/devlog/ground-up-light-before.webp | 0.39 | img/devlog/ground-up-light-after.webp | 0.40.0 | Atmosfeer, bounce light en lampschaduwen, Ultra-preset, DirectX 12.)
-
 ### Elke inslag
 
 Kogelgaten en brandplekken hebben nu diepte in plaats van platte stickers op een muur te zijn. Een nieuw deeltjessysteem stuurt inslagen, rook, vonken en puin aan, zodat een salvo in beton stof en scherven opwerpt die zich ook zo gedragen. Rookgranaten zijn dichter, en lege hulzen blijven na een vuurgevecht op de vloer liggen.
 
-![Inslagen op beton](img/devlog/ground-up-impacts.webp "Inslagen, puin en kogelgaten met diepte op beton.")
+![Inslagen op beton](img/devlog/ground-up-impacts.webp "Een kogelgat met echte diepte in baksteen, Ultra-preset, DirectX 12.")
 
 De kill cam, die in 0.39.6 zijn filmische camera kreeg, voegt tijdens de herhaling op DirectX 12 nu scherptediepte en een kleurgrading toe.
 
@@ -90,8 +86,6 @@ In Deployment maak je je soldaat eigen met vijf camo's per team, en Terrorists k
 0.40.0 legt de basis voor Season 1, en de launcher toont je seizoenskaart al op het startscherm. Zodra het seizoen begint, telt elke match mee: rangen van Rookie tot Platinum, die je verdient door te spelen, en elke week drie nieuwe contracten met duidelijke doelen, in Ranked en Unranked.
 
 Voor als je liever alleen speelt, krijgen twee solo-uitdagingen elk hun eigen leaderboard: de Range Run, een parcours op tijd op de schietbaan, en een uitdaging tegen bots. Iedereen die in het lanceringsseizoen speelt, krijgt de Frontline-badge. We kondigen de start van het seizoen aan op Discord en hier in de devlog.
-
-![Season 1-rangen](img/devlog/ground-up-season.webp "De rangen van Season 1, van Rookie tot Platinum.")
 
 ## Locatiepings
 
@@ -163,7 +157,9 @@ We hebben Lockgate in de eerste plaats eerlijk ontworpen. De map is gespiegeld o
 
 Lockgate speelt in elke modus: Bomb, Team Elimination, Team Deathmatch, Flag Capture en Capture Point. Voor hij bij jullie terechtkwam, speelden bots hem keer op keer in alle vijf, om zeker te zijn dat niets vastloopt en dat elke bomsite geplant en verdedigd kan worden.
 
-![Lockgate](img/devlog/ground-up-lockgate.webp "Lockgate, Ultra-preset, DirectX 12.")
+![Lockgate](img/devlog/ground-up-lockgate.webp "Over de sluis naar de douanewijk, Ultra-preset, DirectX 12.")
+
+![Het pomphuis op Lockgate](img/devlog/ground-up-lockgate-lock.webp "Het pomphuis aan de overkant van de sluis, Ultra-preset, DirectX 12.")
 
 ## Geluid
 
