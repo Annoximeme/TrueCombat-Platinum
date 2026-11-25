@@ -77,6 +77,11 @@ bots soak. It writes `kit-gate/SUMMARY.md` with the base tag and the kit's check
 next to the kit manifest. The integrator accepts only kits whose summary passed on the current base and
 matches the kit's checksum.
 
+The base can also be a checkout of the development repository: `build-windows.sh` then copies the
+shipped renderer files from `experiments/dlss/source` into the engine first, as the PC candidate build
+does. Set `BUILD_CACHE=<folder>` to share a compiler cache (ccache) between gate runs; a second gate in
+another work folder reuses almost every object.
+
 ## What still needs the PC
 
 - In-game tests with a real GPU (DX12 and OpenGL screenshots, feel, audio devices).

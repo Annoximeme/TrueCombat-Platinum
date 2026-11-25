@@ -19,7 +19,7 @@
 # Put the SUMMARY.md next to the kit manifest; the integrator only accepts kits with a passing summary
 # that names the same base tag and kit checksum.
 #
-# Environment: as build-windows.sh (LLVM_MINGW, SL_SDK, EOS_INCLUDE); TOOLCHAIN (default ~/toolchain) is set up
+# Environment: as build-windows.sh (LLVM_MINGW, SL_SDK, EOS_INCLUDE, BUILD_CACHE); TOOLCHAIN (default ~/toolchain) is set up
 # on first use with setup-toolchain.sh. SKIP="windows bots" skips steps (the summary then says NOT a full gate).
 set -uo pipefail
 BASE=${1:?base tag (v0.38.0-sandbox34) or a source zip/folder}; KIT=$(cd "${2:?kit folder}" && pwd); MAPS=${3:-"obj_village obj_snow"}; MIN=${4:-3}
