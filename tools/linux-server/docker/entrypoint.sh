@@ -20,7 +20,7 @@ set tcp_roundtime ${ROUND_TIME:-300}
 set g_roundlimit ${ROUND_LIMIT:-10}
 set sv_mapRotationTime ${MAP_TIME:-20}
 set sv_mapRotation "$(clean "${MAP_ROTATION:-obj_village obj_railhouse obj_snow obj_delta obj_northport obj_stadtrand}" 400)"
-set sv_fps 40
+set sv_fps 128
 set g_antilag 1
 set sv_timeout 20
 set bot_minplayers ${BOTS:-0}
