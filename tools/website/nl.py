@@ -206,7 +206,7 @@ PAGES["press"] = [
     ('<h1>Writing about TrueCombat: Platinum?</h1>', '<h1>Schrijf je over TrueCombat: Platinum?</h1>'),
     ('<p class="lede">Everything you need in one download: logos, unedited DirectX 12 screenshots and a fact sheet. Use them freely to cover the game.</p>',
      "<p class=\"lede\">Alles wat je nodig hebt in één download: logo's, onbewerkte DirectX 12-screenshots en een factsheet. Gebruik ze vrij om over het spel te berichten.</p>"),
-    ('<span class="big">Press kit</span><span class="small">ZIP · 15 MB · logos, 19 screenshots, fact sheet</span>', "<span class=\"big\">Perskit</span><span class=\"small\">ZIP · 15 MB · logo's, 19 screenshots, factsheet</span>"),
+    ('<span class="big">Press kit</span><span class="small">ZIP · 28 MB · logos, 19 screenshots, fact sheet</span>', "<span class=\"big\">Perskit</span><span class=\"small\">ZIP · 28 MB · logo's, 19 screenshots, factsheet</span>"),
     (' Contact on Discord</a>', ' Contact via Discord</a>'),
     ('<span class="eyebrow">Fact sheet</span>', '<span class="eyebrow">Factsheet</span>'),
     ('<h2>At a glance</h2>', '<h2>In het kort</h2>'),
