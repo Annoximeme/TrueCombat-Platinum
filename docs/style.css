@@ -561,6 +561,11 @@ footer { background: #090b0f; border-top: 1px solid var(--line); padding-block: 
 .logo-pack figcaption { display: grid; gap: 4px; }
 .logo-pack figcaption b { color: var(--fg); font-size: var(--step-0); }
 @media (max-width: 760px) { .logo-grid { grid-template-columns: 1fr; } }
+.wp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.wp-card { padding: 10px; gap: 10px; }
+.wp-card img { width: 100%; height: auto; max-height: none; border-radius: 4px; }
+.wp-dl { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+@media (max-width: 760px) { .wp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .press-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 .press-shot { display: grid; gap: 8px; text-decoration: none; color: var(--muted); font-size: .85rem; }
 .press-shot img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); transition: border-color .2s; }
