@@ -110,6 +110,10 @@ def page_body(rel, rels, posts, gh_repo):
 <section class="band band-alt rel-notes">
   <div class="wrap">
 {notes}
+    <aside class="post-sign rel-sign" aria-label="Team Terminus">
+      <img src="img/team-terminus-horizontal.webp" alt="Team Terminus" width="900" height="257" loading="lazy">
+      <div><span class="eyebrow">Released by Team Terminus</span><p>Built, tested and shipped by the studio behind TrueCombat: Platinum. Found a problem? Tell us on Discord.</p><a href="studio.html">Meet the team</a></div>
+    </aside>
     <nav class="rel-pager" aria-label="Other releases">{''.join(pager)}</nav>
   </div>
 </section>
