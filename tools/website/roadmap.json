@@ -312,11 +312,6 @@
    "version": "0.35"
   },
   {
-   "en": "Shadows from muzzle flashes and explosions",
-   "nl": "Schaduwen van mondingsvuur en explosies",
-   "version": null
-  },
-  {
    "en": "Redesigned launcher with Quick Play and server filters",
    "nl": "Vernieuwde launcher met Quick Play en serverfilters",
    "version": "0.34"
@@ -520,6 +515,46 @@
    "en": "Change your loadout in Deployment right after spawning",
    "nl": "Je uitrusting wijzigen in Deployment vlak na het spawnen",
    "version": "0.39"
+  },
+  {
+   "en": "A rebuilt interface: main menu, Options, Deployment, server browser and match screens",
+   "nl": "Een herbouwde interface: hoofdmenu, Opties, Deployment, serverbrowser en matchschermen",
+   "version": "0.40"
+  },
+  {
+   "en": "Light from muzzle flashes and explosions",
+   "nl": "Licht van mondingsvuur en explosies",
+   "version": "0.40"
+  },
+  {
+   "en": "Remastered or Classic: choose the look you play with",
+   "nl": "Remastered of Classic: kies zelf de look waarmee je speelt",
+   "version": "0.40"
+  },
+  {
+   "en": "A ping wheel with the map's own callouts, answered by bots",
+   "nl": "Een pingwiel met de eigen namen van de map, ook opgevolgd door bots",
+   "version": "0.40"
+  },
+  {
+   "en": "CQB joins the core game, Harbour joins the map pool",
+   "nl": "CQB wordt deel van het hoofdspel, Harbour komt in de mappool",
+   "version": "0.40"
+  },
+  {
+   "en": "Lockgate: a new mirrored map built for Platinum",
+   "nl": "Lockgate: een nieuwe, gespiegelde map gebouwd voor Platinum",
+   "version": "0.40"
+  },
+  {
+   "en": "Season 1 groundwork: ranks, weekly contracts and solo challenges",
+   "nl": "Basis voor Seizoen 1: rangen, wekelijkse contracten en solo-uitdagingen",
+   "version": "0.40"
+  },
+  {
+   "en": "Optional red dot sight for rifles and SMGs",
+   "nl": "Optioneel red dot-vizier voor geweren en SMG's",
+   "version": "0.40"
   }
  ]
 }
