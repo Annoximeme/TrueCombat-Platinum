@@ -15,7 +15,8 @@
 # (apart from llvmpipe rounding noise: a few dozen pixels off by 1 or 2 levels, see compare_images.py).
 # compare_images.py reports every frame that differs, with numbers and a highlighted difference picture.
 #
-# Env: WORK (default ./render-check), DATA_TAG (game data release, default latest), DATA (game data folder, reused),
+# Env: RC_FX=1 (an explosion and an M83 on every camera spot, for particle work), RC_WEATHER (g_weather for the
+#   recording, default clear), WORK (default ./render-check), DATA_TAG (game data release, default latest), DATA (game data folder, reused),
 # SPOTS (camera spots per map, default 6), BOTS (default 8), SEED (default 1), FPS (default 20), EVERY (default 15),
 # EXPECT=changes (a kit that is meant to change the picture: differences are reported, not failed).
 # Result: $WORK/SUMMARY.md and $WORK/report/; exit 0 when every map is deterministic and (unless EXPECT=changes)
@@ -66,7 +67,7 @@ record() {  # <map>: base build records $W/demos/<map>.dm_84
   rm -rf "$home"; mkdir -p "$home/tcetest" "$W/demos" "$W/logs"
   python3 "$HERE/scenes.py" "$DATA" "$map" "$SPOTS" > "$home/tcetest/rcscenes.cfg" || return 1
   game "$W/build-base" opengl1 "$home" +set sv_pure 0 +set bot_minplayers "$BOTS" +set bot_seed "$SEED" \
-    +set g_weather clear +set sv_master1 "" +set sv_master2 "" +set sv_master3 "" +devmap "$map" +exec rcscenes.cfg \
+    +set g_weather "${RC_WEATHER:-clear}" +set sv_master1 "" +set sv_master2 "" +set sv_master3 "" +devmap "$map" +exec rcscenes.cfg \
     > "$W/logs/$map.record.log" 2>&1
   local demo; demo=$(ls "$home"/tcetest/demos/rc.dm_* 2>/dev/null | head -1)
   [ -n "$demo" ] && cp "$demo" "$W/demos/$map.${demo##*.}"
