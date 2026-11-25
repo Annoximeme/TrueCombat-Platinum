@@ -991,6 +991,12 @@ body.has-compare footer { padding-bottom: 320px; }
 .post-meta .post-stat { color: var(--muted); }
 .post-meta .post-stat b { color: var(--amber); font-weight: 600; }
 .post-meta .post-stat .top { font: 600 .72rem/1 var(--f-display); text-transform: uppercase; letter-spacing: .12em; color: var(--amber); background: rgba(231,167,60,.12); border: 1px solid rgba(231,167,60,.4); border-radius: 3px; padding: 4px 7px; margin-right: 8px; }
+.post-sign { grid-column: 1; max-width: 720px; display: grid; grid-template-columns: 168px 1fr; gap: 22px; align-items: center; padding: 22px 24px; margin: 6px 0 22px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--accent, #D7193A); border-radius: 6px; }
+.rel-sign { margin: 34px 0 26px; }
+.post-sign img { width: 168px; height: auto; display: block; }
+.post-sign p { margin: 6px 0 8px; color: var(--muted); font-size: var(--step--1); }
+.post-sign a { font-weight: 600; }
+@media (max-width: 560px) { .post-sign { grid-template-columns: 1fr; gap: 14px; } .post-sign img { width: 150px; } }
 .post-end { max-width: 720px; border-top: 1px solid var(--line); padding-top: 26px; display: grid; gap: 14px; }
 .post-end p { margin: 0; color: var(--muted); }
 .post-end button.btn { color: var(--fg); }
