@@ -48,7 +48,7 @@ import tcp_comments
 import tcp_friends
 import tcp_webauthn as webauthn
 
-VERSION = "1.3.0"
+VERSION = "1.4.0"
 log = logging.getLogger("tcp-accounts")
 
 LINK_TAG = b"TrueCombat account link v1\n"
