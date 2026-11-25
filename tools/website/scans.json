@@ -460,8 +460,8 @@
    "malicious": 0,
    "suspicious": 0,
    "engines": 70,
-   "analysed": "2026-11-24T15:50:35Z",
-   "checked": "2026-11-24T18:22:32Z",
+   "analysed": "2026-11-25T13:31:39Z",
+   "checked": "2026-11-25T17:38:49Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1144,8 +1144,8 @@
    "malicious": 0,
    "suspicious": 0,
    "engines": 70,
-   "analysed": "2026-11-24T18:15:40Z",
-   "checked": "2026-11-24T18:21:44Z",
+   "analysed": "2026-11-25T16:12:31Z",
+   "checked": "2026-11-25T17:38:33Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1560,8 +1560,8 @@
    "suspicious": 0,
    "engines": 65,
    "analysed": "2026-11-24T15:55:43Z",
-   "checked": "2026-11-24T18:20:56Z",
-   "settle": true,
+   "checked": "2026-11-25T17:38:17Z",
+   "settle": false,
    "flagged_by": []
   },
   "ab60531fb21ad67b9da39481593c3325bfc0d0dac8cc9d906bbda5e4f8b45657": {
@@ -2134,13 +2134,15 @@
   "ed2663093fcc507db2c4231309e52f502d89d6cc87845fa57bff6b0a70dea2f3": {
    "name": "TrueCombatPlatinum.exe",
    "bytes": 5528064,
-   "malicious": 0,
+   "malicious": 1,
    "suspicious": 0,
-   "engines": 71,
-   "analysed": "2026-11-19T00:24:54Z",
-   "flagged_by": [],
-   "checked": "2026-11-22T14:54:29Z",
-   "settle": false
+   "engines": 70,
+   "analysed": "2026-11-25T13:56:48Z",
+   "flagged_by": [
+    "Kaspersky: Backdoor.Win32.Remcos.adjj"
+   ],
+   "checked": "2026-11-25T17:38:00Z",
+   "settle": true
   },
   "ef84fce7c54dcbde57d563eef811491d2e23251b23e93cd48bc3925216c40665": {
    "name": "renderer_opengl1_x64.dll",
