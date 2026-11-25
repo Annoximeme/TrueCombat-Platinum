@@ -26,7 +26,7 @@ PAGES = {
     "news": ("map-railhouse.webp", "Patch notes", "Every update since the first public build"),
     "devlog": ("map-stadtrand.webp", "Devlog", "How TrueCombat: Platinum gets built"),
     "press": ("map-snow.webp", "Press kit", "Logos, unedited screenshots and a fact sheet"),
-    "studio": ("map-village.webp", "Team Terminus", "The studio behind TrueCombat: Platinum"),
+    "studio": ("map-village.webp", "The studio", "The team behind TrueCombat: Platinum"),
     "support": ("map-snow.webp", "Support", "Free to play, no store, no pay-to-win"),
     "download": ("map-northport.webp", "Download", "Free for Windows 10 and 11"),
     "faq": ("hero-stadtrand-canal.webp", "Questions", "Install, online play, graphics and the project"),
@@ -70,6 +70,11 @@ def main():
     logo = logo.resize((300, round(300 * logo.height / logo.width)), Image.LANCZOS)
     title_f = font("saira-condensed-800-latin.woff2", 132)
     sub_f = font("ibm-plex-sans-latin.woff2", 34)
+    # Team Terminus brand (2026-11-25): the horizontal lockup signs every card, the stacked one fronts the studio card
+    tt_h = Image.open(DOCS / "img" / "team-terminus-horizontal.webp").convert("RGBA")
+    tt_h = tt_h.resize((210, round(210 * tt_h.height / tt_h.width)), Image.LANCZOS)
+    tt_s = Image.open(DOCS / "img" / "team-terminus-stacked.webp").convert("RGBA")
+    tt_s = tt_s.resize((round(380 * tt_s.width / tt_s.height), 380), Image.LANCZOS)
     for page, (art, title, sub) in {**PAGES, **devlog_pages()}.items():
         bg = cover(Image.open(DOCS / "img" / art).convert("RGB")).filter(ImageFilter.GaussianBlur(1.2))
         shade = Image.new("L", (W, H))
@@ -81,6 +86,10 @@ def main():
         dark = Image.new("RGB", (W, H), (13, 16, 22))
         img = Image.composite(dark, bg, shade).convert("RGBA")
         img.alpha_composite(logo, (64, 52))
+        if page == "studio":
+            img.alpha_composite(tt_s, (W - 110 - tt_s.width, (H - tt_s.height) // 2 + 10))
+        else:
+            img.alpha_composite(tt_h, (W - 64 - tt_h.width, 548 - tt_h.height // 2 - 6))
         d = ImageDraw.Draw(img)
         d.rectangle((64, 322, 128, 328), fill=(230, 72, 72))
         d.text((58, 290), title.upper(), font=title_f, fill=(240, 242, 246))
