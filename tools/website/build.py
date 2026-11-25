@@ -1673,7 +1673,7 @@ def search_index(lang, posts):
 
 
 def llms_txt(posts):
-    """A plain-text summary of the site for AI assistants and answer engines (llmstxt.org)."""
+    """A plain-text summary of the site for search and answer engines (llmstxt.org)."""
     v = release_values()
     def line(page, note):
         return "- [%s](%s): %s" % (LABELS["en"].get(page, page).replace("FAQ", "Questions and answers"), url("en", page), note)

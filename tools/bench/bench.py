@@ -21,12 +21,13 @@ Options
     --home <dir> --out <dir>          private profiles and results (default under the current folder)
     --ports 28310                     server UDP port; the client uses the next one
     --tools <project root>            folder with analysis_scripts/integration/candidate_common.py
+                                      (required, or set TCP_PROJECT_ROOT)
 
 Output: <out>/results.csv (one row per case, median of the repeats), <out>/runs/*.json (every run),
 <out>/SUMMARY.md. Run it through the PC job queue under suite.lock, like every other game test.
 """
 from pathlib import Path
-import argparse, csv, ctypes, ctypes.wintypes as wt, json, re, shutil, statistics, subprocess, sys, time
+import argparse, csv, ctypes, ctypes.wintypes as wt, json, os, re, shutil, statistics, subprocess, sys, time
 
 OFFICIAL = 'obj_village,obj_snow,obj_northport,obj_railhouse,obj_delta,obj_stadtrand'
 PRESETS = {'low': 0, 'high': 1, 'ultra': 2}
@@ -49,8 +50,10 @@ ap.add_argument('--profile', action='store_true')
 ap.add_argument('--home', type=Path, default=Path('bench-home'))
 ap.add_argument('--out', type=Path, default=Path('bench-results'))
 ap.add_argument('--ports', type=int, default=28310)
-ap.add_argument('--tools', type=Path, default=Path(r'C:\Users\gooss\.codex\visualizations\2026\11\01\01a196c9-ad93-7f33-8bcb-6423a577c8a4'))
+ap.add_argument('--tools', type=Path, default=Path(os.environ['TCP_PROJECT_ROOT']) if os.environ.get('TCP_PROJECT_ROOT') else None)
 A = ap.parse_args()
+if A.tools is None:
+    ap.error('pass --tools <project root> or set TCP_PROJECT_ROOT')
 GAME, HOME, OUT = A.game.resolve(), A.home.resolve(), A.out.resolve()
 SERVER_PORT, CLIENT_PORT = A.ports, A.ports + 1
 sys.path.insert(0, str(A.tools / 'analysis_scripts/integration'))

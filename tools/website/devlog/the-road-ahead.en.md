@@ -193,7 +193,7 @@ The Easy Anti-Cheat integration is in the engine and switched off. One check rem
 
 We get asked about this, so here is the honest state of it.
 
-Platinum already supports DLSS upscaling, DLAA, Frame Generation and Reflex. DLSS 5 is a different kind of technology: instead of sharpening or adding frames, it uses a neural network to re-light and refine the finished image. On a game with lighting from this era, that is potentially the largest visual step available.
+Platinum already supports DLSS upscaling, DLAA, Frame Generation and Reflex. DLSS 5 is a different kind of technology: instead of sharpening or adding frames, it re-lights and refines the finished image. On a game with lighting from this era, that is potentially the largest visual step available.
 
 Our plan is to build it into the DirectX 12 renderer as a proper, native feature. The renderer already produces the motion and depth information this kind of technique needs, so nothing has to be bolted on from outside the game.
 

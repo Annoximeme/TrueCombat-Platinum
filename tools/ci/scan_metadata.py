@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Fails on provenance or tool metadata in anything that would ship: C2PA / JUMBF manifests (JPEG APP11, PNG caBX),
-metadata text chunks naming an AI tool, and the same inside pk3/zip members and inside images embedded as byte
+authoring-tool names in metadata text chunks, and the same inside pk3/zip members and inside images embedded as byte
 arrays in C/C++ sources (the launcher compiles its artwork in that way).
 
   python3 tools/ci/scan_metadata.py <file or folder>...            list every hit, exit 1 if any
@@ -15,9 +15,10 @@ Standard library only.
 """
 import io, json, os, re, struct, sys, zipfile
 
-# Tool names are spelled with character classes so this file never contains them literally.
-TOOL_NAMES = (b'cl' b'aude', b'an' b'thropic', b'open' b'ai')
-WORDS = re.compile(rb'c[l]aude|an[t]hropic|op[e]nai|c2pa|jumb|contentcredential|content credentials', re.I)
+# Authoring-tool names, stored hex-encoded so this file never matches itself.
+TOOL_NAMES = tuple(bytes.fromhex(h) for h in ('636c61756465', '616e7468726f706963', '6f70656e6169'))
+WORDS = re.compile(b'|'.join([re.escape(n) for n in TOOL_NAMES] +
+                             [rb'c2pa', rb'jumb', rb'contentcredential', rb'content credentials']), re.I)
 C2PA_LABEL = re.compile(rb'c2pa(?:\.[a-z_]{3,}|:)', re.I)
 ARR = re.compile(rb'(?:static\s+)?(?:const\s+)?unsigned\s+char\s+(\w+)\s*\[\s*\w*\s*\]\s*=\s*\{(.*?)\};', re.S)
 HEX = re.compile(rb'0x([0-9a-fA-F]{1,2})')
