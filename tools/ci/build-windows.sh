@@ -93,6 +93,11 @@ CMAKE
 # Snapshot fix-ups, the same ones build_candidate.py makes in its frozen copy.
 # Source snapshots up to 0.37.3 leave out the engine icon the .rc file needs.
 [ -f "$E/misc/platinum.ico" ] || { mkdir -p "$E/misc"; cp "$(dirname "$0")/platinum.ico" "$E/misc/platinum.ico"; echo "note: engine icon missing from snapshot, used tools/ci/platinum.ico" | tee -a "$OUT/options.txt"; }
+# The installer's artwork header is generated: build_setup.py on the PC regenerates it when it is missing (a kit
+# that changes release_src/setup_art deletes it), so do the same here.
+if [ ! -f "$R/platinum_setup_art.h" ] && [ -f "$SRC/analysis_scripts/make_setup_art.py" ]; then
+  python3 "$SRC/analysis_scripts/make_setup_art.py" > /dev/null && echo "note: platinum_setup_art.h regenerated from release_src/setup_art" | tee -a "$OUT/options.txt"
+fi
 # Development repository layout: put the shipped renderer files into the engine tree (build_candidate.py does
 # the same). A release snapshot already has them in place and has no experiments/ folder.
 DLSS_PRIVATE="$SRC/experiments/dlss/source"; DLSS_MANIFEST="$SRC/analysis_scripts/dlss/patch-manifest.json"
