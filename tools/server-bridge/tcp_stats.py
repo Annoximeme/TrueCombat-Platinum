@@ -43,6 +43,8 @@ import sqlite3
 import threading
 import time
 
+import tcp_season
+
 # Any ET colour code: ^ and one printable character other than ^ (ColorIndex = (c - 48) & 31,
 # so ^: ^< ^= ^> ^? ^@ are colours too, not only digits and letters).
 COLOR = re.compile(r"\^[^\^\s]")
@@ -141,6 +143,10 @@ def _int(v, lo=0, hi=1 << 30):
 
 class Rejected(Exception):
     pass
+
+
+class RetryLater(Rejected):
+    """Refused for now only: the sender keeps the item and tries again later (HTTP 429)."""
 
 
 def sanitize(report, trusted=False, allow_cheats=False):
@@ -552,11 +558,20 @@ CREATE TABLE IF NOT EXISTS guid_keys(old TEXT NOT NULL, new TEXT NOT NULL, at TE
 CREATE TABLE IF NOT EXISTS aliases(pid TEXT NOT NULL, canonical TEXT NOT NULL, since TEXT, until TEXT);
 CREATE INDEX IF NOT EXISTS aliases_pid ON aliases(pid);
 CREATE TABLE IF NOT EXISTS voided(kind TEXT, id TEXT, reason TEXT, created TEXT, PRIMARY KEY(kind, id));
+CREATE TABLE IF NOT EXISTS season_players(season TEXT, pid TEXT, rating REAL, rated INTEGER DEFAULT 0, wins INTEGER DEFAULT 0,
+  matches INTEGER DEFAULT 0, xp INTEGER DEFAULT 0, tier INTEGER, peak_tier INTEGER, peak_rating REAL, last_seen TEXT,
+  PRIMARY KEY(season, pid));
+CREATE TABLE IF NOT EXISTS contract_progress(week TEXT, cid TEXT, pid TEXT, progress INTEGER, done TEXT,
+  PRIMARY KEY(week, cid, pid));
+CREATE INDEX IF NOT EXISTS contract_progress_pid ON contract_progress(pid, week);
+CREATE TABLE IF NOT EXISTS solo_runs(id TEXT PRIMARY KEY, board TEXT, week TEXT, season TEXT, kid TEXT, pid TEXT, name TEXT,
+  score INTEGER, received TEXT, run TEXT, void INTEGER DEFAULT 0);
+CREATE INDEX IF NOT EXISTS solo_runs_board ON solo_runs(board, week, score);
 """
 
 
 class StatsStore:
-    def __init__(self, path=":memory:", allow_cheats=False, min_matches=3, require_anticheat=False):
+    def __init__(self, path=":memory:", allow_cheats=False, min_matches=3, require_anticheat=False, seasons=None):
         self.db = sqlite3.connect(path, check_same_thread=False, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.lock = threading.RLock()
@@ -566,6 +581,8 @@ class StatsStore:
         self.ranked_accounts_only = os.environ.get("TCP_STATS_RANKED_ACCOUNTS_ONLY", "") == "1"
         self.require_anticheat = require_anticheat   # refuse reports without Easy Anti-Cheat on (live service)
         self.rate_window = {}
+        # seasons (0.40.0): built-in Season 1, or TCP_STATS_SEASONS=<file.json> to move dates without a code change
+        self.seasons = seasons if seasons is not None else tcp_season.load_seasons(os.environ.get("TCP_STATS_SEASONS", ""))
         with self.lock:
             self.db.execute("PRAGMA journal_mode=WAL")
             self.db.executescript(DDL)
@@ -774,9 +791,12 @@ class StatsStore:
                    (server, m["id"], m["ended"], m["map"], m["mode"], m["duration"], m["rounds"], m["winner"],
                     len(m["players"]), received or now_iso(), json.dumps(_original(m), separators=(",", ":")), match_pub(server, m["id"]),
                     ranked, int(bool(m.get("verified"))), int(m.get("bots") or 0)))
+        season = tcp_season.season_at(self.seasons, m["ended"]) if self.seasons else None
+        factor = tcp_season.xp_factor(season, m["ended"])
         for i, p in enumerate(m["players"]):
             pid = p["id"]
-            xp = match_xp(p, m["duration"])
+            xp = match_xp(p, m["duration"]) * factor
+            xp += self._contracts(m, pid, detail[i], factor)
             detail[i]["xp"] = xp
             db.executemany("INSERT INTO match_stats VALUES(?,?,?,?,?,?,?)",
                            [(server, m["id"], pid, m["ended"], ranked, k, v) for k, v in detail[i].items() if v])
@@ -817,6 +837,8 @@ class StatsStore:
                     kills=kills+excluded.kills, headshots=headshots+excluded.headshots,
                     shots=shots+excluded.shots, hits=hits+excluded.hits""",
                            (pid, w, ws["kills"], ws["headshots"], ws["shots"], ws["hits"]))
+        if season:
+            self._season_apply(season, m, detail, ratings)
         if len(m["players"]) == 2:
             # two players who keep meeting alone: worth a look (stat padding between friends)
             a, b = m["players"][0]["id"], m["players"][1]["id"]
@@ -829,6 +851,263 @@ class StatsStore:
                     db.execute("INSERT OR IGNORE INTO review VALUES(?,?,?,?,?)",
                                (server, m["id"], pid, "%d two-player matches with the same opponent in 14 days" % n, now_iso()))
 
+    # ------------------------------------------------------------ seasons, contracts, solo boards (0.40.0)
+    def _now(self):
+        return getattr(self, "clock", None)() if getattr(self, "clock", None) else dt.datetime.now(dt.timezone.utc)
+
+    def _contracts(self, m, pid, stats, factor):
+        """Adds this match to the player's weekly contracts; returns the XP the contracts it finished pay."""
+        if not self.seasons or m["ended"] < self.seasons[0]["start"]:
+            return 0
+        week = tcp_season.week_key(m["ended"])
+        cs = tcp_season.contracts_for_week(week)
+        rows = {r["cid"]: r for r in self.db.execute(
+            "SELECT cid, progress, done FROM contract_progress WHERE week=? AND pid=?", (week, pid))}
+        xp, finished = 0, 0
+        for c in cs:
+            r = rows.get(c["id"])
+            if r and r["done"]:
+                finished += 1
+                continue
+            add = tcp_season.contract_amount(c, stats, m["mode"], m["ranked"])
+            if not add:
+                continue
+            prog = (r["progress"] if r else 0) + add
+            done = m["ended"] if prog >= c["target"] else None
+            self.db.execute("INSERT INTO contract_progress VALUES(?,?,?,?,?) ON CONFLICT(week, cid, pid) DO UPDATE SET "
+                            "progress=excluded.progress, done=excluded.done", (week, c["id"], pid, prog, done))
+            if done:
+                finished += 1
+                xp += tcp_season.CONTRACT_XP * factor
+                if finished == len(cs):
+                    xp += tcp_season.CONTRACT_BONUS_XP * factor
+        return xp
+
+    def _season_apply(self, season, m, detail, career):
+        """Season rating, tier and season XP for one stored match inside a season."""
+        db, sid = self.db, season["id"]
+        pids = [p["id"] for p in m["players"]]
+        rows = {r["pid"]: r for r in db.execute(
+            "SELECT * FROM season_players WHERE season=? AND pid IN (%s)" % ",".join("?" * len(pids)), [sid] + pids)}
+        sr, sc = {}, {}
+        for pid in pids:
+            r = rows.get(pid)
+            sr[pid] = r["rating"] if r and r["rating"] is not None else tcp_season.soft_reset(career.get(pid, RATING_START))
+            sc[pid] = r["rated"] if r else 0
+        deltas = rate(m, sr, sc) if m["ranked"] else {}
+        for i, p in enumerate(m["players"]):
+            pid, r = p["id"], rows.get(p["id"])
+            if r is None:
+                db.execute("INSERT INTO season_players(season, pid, rated, wins, matches, xp, last_seen) VALUES(?,?,0,0,0,0,?)",
+                           (sid, pid, m["ended"]))
+            if pid in deltas:
+                new = sr[pid] + deltas[pid]
+                rated = sc[pid] + 1
+                tier = tcp_season.tier_for(new, rated, r["tier"] if r else None)
+                db.execute("UPDATE season_players SET rating=?, rated=?, wins=wins+?, tier=?, peak_tier=MAX(COALESCE(peak_tier, 0), ?), "
+                           "peak_rating=MAX(COALESCE(peak_rating, 0), ?) WHERE season=? AND pid=?",
+                           (new, rated, int(p["won"]), tier, tier, new, sid, pid))
+            db.execute("UPDATE season_players SET matches=matches+1, xp=xp+?, last_seen=MAX(last_seen, ?) WHERE season=? AND pid=?",
+                       (detail[i].get("xp", 0), m["ended"], sid, pid))
+
+    def _season_row_json(self, season, r):
+        out = {"season": season["id"], "seasonName": season["name"], "matches": r["matches"] or 0,
+               "rankedMatches": r["rated"] or 0, "xp": r["xp"] or 0}
+        if r["tier"]:
+            t = tcp_season.tier_json(r["tier"])
+            out.update({"tier": t["tier"], "tierName": t["name"], "tierShort": t["short"], "emblem": t["emblem"],
+                        "rating": int(round(r["rating"])), "progress": tcp_season.tier_progress(r["rating"], r["tier"]),
+                        "peakTier": r["peak_tier"], "wins": r["wins"] or 0})
+        return out
+
+    def _season_of(self, pid):
+        """The player's tier in the running (or last finished) season, or None."""
+        if not self.seasons:
+            return None
+        season, state = tcp_season.current_or_next(self.seasons, self._now())
+        if state not in ("live", "ended"):
+            return None
+        r = self.db.execute("SELECT * FROM season_players WHERE season=? AND pid=?", (season["id"], pid)).fetchone()
+        return self._season_row_json(season, r) if r else None
+
+    def frontline(self, pid=None):
+        """Player ids with a season badge (Frontline: one counted match inside the badge window) -> badge ids."""
+        out = {}
+        for s in self.seasons or []:
+            for b in s.get("badges") or []:
+                one = " AND pid=?" if pid else ""
+                rows = self.db.execute("SELECT DISTINCT pid FROM match_players WHERE ended >= ? AND ended < ?" + one + " AND pid NOT IN "
+                                       "(SELECT id FROM voided WHERE kind='player')", (b["start"], b["end"]) + ((pid,) if pid else ())).fetchall()
+                for (pid,) in rows:
+                    out.setdefault(pid, []).append(b["id"])
+        return out
+
+    def season(self, sid="", limit=100):
+        """tcp-season/1: the season, its tiers, this week's contracts and solo setup, and the season rating board."""
+        now = self._now()
+        if sid:
+            season = next((s for s in self.seasons if s["id"] == sid), None)
+            if not season:
+                return None
+            state = "live" if tcp_season.season_at([season], now) else ("upcoming" if tcp_season.parse(season["start"]) > now else "ended")
+        else:
+            season, state = tcp_season.current_or_next(self.seasons, now)
+        week = tcp_season.week_key(now)
+        nxt = tcp_season.week_key(now + dt.timedelta(days=7))
+        out = {"schema": "tcp-season/1", "updated": now_iso(), "state": state, "tiers": tcp_season.tiers_json(),
+               "rules": {"softReset": "1000 + half the distance from 1000", "demoteMargin": tcp_season.DEMOTE_MARGIN,
+                         "platinumMatches": tcp_season.PLATINUM_MATCHES, "contractXp": tcp_season.CONTRACT_XP,
+                         "contractBonusXp": tcp_season.CONTRACT_BONUS_XP},
+               "week": {"id": week, "contracts": tcp_season.contracts_for_week(week), "solo": tcp_season.solo_week(week)},
+               "nextWeek": {"id": nxt, "contracts": tcp_season.contracts_for_week(nxt)},
+               "season": None, "players": []}
+        if not season:
+            return out
+        out["season"] = {k: season.get(k) for k in ("id", "number", "name", "start", "end", "xpMultiplier", "badges")}
+        with self.lock:
+            rows = self.db.execute(
+                "SELECT sp.*, p.name FROM season_players sp JOIN players p ON p.pid=sp.pid WHERE sp.season=? AND sp.rated > 0 "
+                "AND sp.pid NOT IN (SELECT id FROM voided WHERE kind='player') ORDER BY sp.rating DESC LIMIT ?",
+                (season["id"], max(1, min(500, _int(limit, 1, 500))))).fetchall()
+        for i, r in enumerate(rows):
+            p = self._season_row_json(season, r)
+            p.update({"id": r["pid"], "name": r["name"], "position": i + 1})
+            out["players"].append(p)
+        return out
+
+    def contracts(self, pid, week=""):
+        """tcp-contracts/1: one player's three contracts of a week (default this week) with progress."""
+        pid = str(pid or "").lower()
+        if not re.fullmatch(r"[0-9a-f]{16}", pid):
+            return None
+        week = week if tcp_season.week_bounds(week) else tcp_season.week_key(self._now())
+        cs = tcp_season.contracts_for_week(week)
+        with self.lock:
+            rows = {r["cid"]: r for r in self.db.execute(
+                "SELECT cid, progress, done FROM contract_progress WHERE week=? AND pid=?", (week, pid))}
+        b = tcp_season.week_bounds(week)
+        out = []
+        for c in cs:
+            r = rows.get(c["id"])
+            out.append({"id": c["id"], "text": c["text"], "difficulty": c["difficulty"], "target": c["target"], "xp": c["xp"],
+                        "progress": min(c["target"], r["progress"]) if r else 0, "done": r["done"] if r else None})
+        return {"schema": "tcp-contracts/1", "player": pid, "week": week, "opens": tcp_season.iso(b[0]), "closes": tcp_season.iso(b[1]),
+                "bonusXp": tcp_season.CONTRACT_BONUS_XP, "contracts": out, "allDone": all(c["done"] for c in out)}
+
+    def solo_submit(self, upload):
+        """A signed practice run: {"run": "<tcp-solo/1 JSON text>", "key": "<public hex>", "sig": "<Ed25519 hex>"}, the
+        signature over "tcp-solo/1\n" + that text. Returns (status, info); raises Rejected for anything refused."""
+        if not isinstance(upload, dict) or not isinstance(upload.get("run"), str):
+            raise Rejected("not a run upload")
+        pub, sig, raw = str(upload.get("key", "")).lower(), str(upload.get("sig", "")).lower(), upload["run"]
+        if not (re.fullmatch(r"[0-9a-f]{64}", pub) and re.fullmatch(r"[0-9a-f]{128}", sig)):
+            raise Rejected("run must carry the identity key and its signature")
+        if not tcp_season.ed25519_verify(bytes.fromhex(pub), tcp_season.run_message(raw), bytes.fromhex(sig)):
+            raise Rejected("bad signature")
+        try:
+            run = json.loads(raw)
+        except ValueError:
+            raise Rejected("run is not JSON")
+        now = self._now()
+        week = tcp_season.solo_week(tcp_season.week_key(now))
+        score, why = tcp_season.check_run(run, week)
+        if why:
+            raise Rejected(why)
+        kid = hashlib.sha256(bytes.fromhex(pub)).hexdigest()[:40]
+        pid = player_id("key:" + kid)
+        with self.lock:
+            a = self.db.execute("SELECT canonical FROM aliases WHERE pid=? AND until IS NULL", (pid,)).fetchone()
+            pid = a["canonical"] if a else pid
+            if self.db.execute("SELECT 1 FROM voided WHERE kind='player' AND id=?", (pid,)).fetchone():
+                raise Rejected("player removed from the boards")
+            rid = hashlib.sha256(sig.encode()).hexdigest()[:16]
+            if self.db.execute("SELECT 1 FROM solo_runs WHERE id=?", (rid,)).fetchone():
+                return "duplicate", {"id": rid}
+            # one upload a minute per key keeps the table small
+            last = self.db.execute("SELECT received FROM solo_runs WHERE kid=? ORDER BY received DESC LIMIT 1", (kid,)).fetchone()
+            if last and (now - tcp_season.parse(last["received"])).total_seconds() < 60:
+                raise RetryLater("one run a minute")
+            row = self.db.execute("SELECT name FROM players WHERE pid=?", (pid,)).fetchone()
+            name = row["name"] if row else (clean(run.get("name")) or "Player")
+            season = tcp_season.season_at(self.seasons, now) if self.seasons else None
+            self.db.execute("INSERT INTO solo_runs VALUES(?,?,?,?,?,?,?,?,?,?,0)",
+                            (rid, run["board"], week["week"], season["id"] if season else "", kid, pid, name, score,
+                             tcp_season.iso(now), raw))
+            # keep full shot logs only for each board's weekly top 10; the rest keep their score
+            better = tcp_season.SOLO_BOARDS[run["board"]]["better"] == "low"
+            keep = [r[0] for r in self.db.execute(
+                "SELECT id FROM solo_runs WHERE board=? AND week=? AND void=0 ORDER BY score %s LIMIT 10" % ("ASC" if better else "DESC"),
+                (run["board"], week["week"]))]
+            self.db.execute("UPDATE solo_runs SET run=NULL WHERE board=? AND week=? AND id NOT IN (%s)" % ",".join("?" * len(keep)),
+                            [run["board"], week["week"]] + keep)
+        return "stored", {"id": rid, "score": score, "board": run["board"], "week": week["week"]}
+
+    def solo(self, board, period="week", week="", limit=50):
+        """tcp-solo-board/1: best run per player on a board, this week (or a given week) or this season."""
+        if board not in tcp_season.SOLO_BOARDS:
+            return None
+        meta = tcp_season.SOLO_BOARDS[board]
+        agg = "MIN" if meta["better"] == "low" else "MAX"
+        now = self._now()
+        if period == "season":
+            season, state = tcp_season.current_or_next(self.seasons, now)
+            where, args, label = "season=?", [season["id"] if season else ""], season["id"] if season else ""
+        else:
+            week = week if tcp_season.week_bounds(week) else tcp_season.week_key(now)
+            where, args, label = "week=?", [week], week
+        with self.lock:
+            rows = self.db.execute(
+                "SELECT pid, name, %s(score) best, COUNT(*) runs FROM solo_runs WHERE board=? AND void=0 AND %s "
+                "AND pid NOT IN (SELECT id FROM voided WHERE kind='player') GROUP BY pid ORDER BY best %s LIMIT ?"
+                % (agg, where, "ASC" if meta["better"] == "low" else "DESC"),
+                [board] + args + [max(1, min(200, _int(limit, 1, 200)))]).fetchall()
+        return {"schema": "tcp-solo-board/1", "updated": now_iso(), "board": board, "name": meta["name"], "unit": meta["unit"],
+                "better": meta["better"], "period": "season" if period == "season" else "week", "window": label,
+                "practice": True, "setup": tcp_season.solo_week(tcp_season.week_key(now)),
+                "players": [{"position": i + 1, "id": r["pid"], "name": r["name"], "score": r["best"], "runs": r["runs"]}
+                            for i, r in enumerate(rows)]}
+
+    def void_run(self, rid, on=True):
+        with self.lock:
+            return self.db.execute("UPDATE solo_runs SET void=? WHERE id=?", (int(bool(on)), rid)).rowcount
+
+    def export_ranks(self, path):
+        """ranks.txt for game servers (scoreboard emblems, post-match rank): 'TCPRANKS1 <unix time> <season id>', then
+        '<pid> <tier> <progress 0-99> [badges]' for every id the game may look a player up by (like ratings.txt). The
+        file always exists, so a server can tell 'no season yet' from 'no file'. Atomic. Returns the line count."""
+        with self.lock:
+            season, state = tcp_season.current_or_next(self.seasons, self._now()) if self.seasons else (None, "none")
+            tiers = {}
+            if season and state in ("live", "ended"):
+                for r in self.db.execute("SELECT pid, rating, tier FROM season_players WHERE season=? AND tier IS NOT NULL", (season["id"],)):
+                    tiers[r["pid"]] = (r["tier"], tcp_season.tier_progress(r["rating"], r["tier"]))
+            badges = self.frontline()
+            links = self._id_links()
+        lines = {}
+        for pid in set(tiers) | set(badges):
+            t, prog = tiers.get(pid, (0, 0))
+            lines[pid] = "%s %d %d%s" % (pid, t, prog, (" " + ",".join(sorted(badges[pid]))) if pid in badges else "")
+        for pid, to in links.items():
+            if to in lines and pid not in lines:
+                lines[pid] = pid + lines[to][len(to):]
+        tmp = str(path) + ".tmp"
+        with open(tmp, "w", encoding="ascii") as fh:
+            fh.write("TCPRANKS1 %d %s\n" % (int(time.time()), season["id"] if season and state in ("live", "ended") else "-"))
+            for pid in sorted(lines):
+                fh.write(lines[pid] + "\n")
+        os.replace(tmp, path)
+        return len(lines)
+
+    def _id_links(self):
+        """Every other id the game may know a player by -> the id the stats keep (accounts and identity keys)."""
+        current = {r["pid"]: r["canonical"] for r in self.db.execute("SELECT pid, canonical FROM aliases WHERE until IS NULL")}
+        links = dict(current)
+        for (gid,) in self.db.execute("SELECT DISTINCT old FROM guid_keys").fetchall():
+            key, _ = self._guid_target(gid)
+            if key:
+                links[gid] = current.get(key, key)
+        return links
+
     def recompute(self):
         """Rebuilds every total, XP and rating from the stored reports, oldest first."""
         with self.lock:
@@ -836,7 +1115,8 @@ class StatsStore:
                       self.db.execute("SELECT server, received, report FROM matches ORDER BY ended, received")]
             self.db.execute("BEGIN")
             try:
-                for t in ("matches", "match_players", "players", "player_weapons", "match_stats", "match_weapons", "match_vs", "review"):
+                for t in ("matches", "match_players", "players", "player_weapons", "match_stats", "match_weapons", "match_vs", "review",
+                          "season_players", "contract_progress"):
                     self.db.execute("DELETE FROM " + t)
                 void = {r[0] for r in self.db.execute("SELECT id FROM voided WHERE kind='match'")}
                 for server, received, m in stored:
@@ -875,6 +1155,9 @@ class StatsStore:
                "headshots": r["headshots"], "wins": r["wins"], "roundsWon": r["rounds_won"],
                "objectives": r["objectives"], "timePlayed": r["time_played"],
                "rating": int(round(r["rating"])), "rank": rank_for(r["xp"] or 0)}
+        season = self._season_of(r["pid"])
+        if season:
+            out["season"] = season
         if extra:
             out["topWeapon"] = r["top_weapon"] or ""
         return out
@@ -998,6 +1281,8 @@ class StatsStore:
                                 "headshots": x["headshots"], "xp": x["xp"],
                                 "ratingChange": int(round(x["rating_after"] - x["rating_before"]))} for x in recent]})
         out["topWeapon"] = weapons[0]["weapon"] if weapons and weapons[0]["kills"] else ""
+        with self.lock:
+            out["seasonBadges"] = self.frontline(pid).get(pid, [])
         return out
 
     def _window(self, period, scope, map_="", mode="", alias="x"):
@@ -1638,6 +1923,15 @@ def handle_get(store, path, query):
         return 200, store.recap(q.get("days", 7))
     if path == "/ranks.json":
         return 200, store.ranks()
+    if path == "/season.json":
+        r = store.season(q.get("season", ""), q.get("limit", 100))
+        return (200, r) if r else (404, {"error": "unknown season"})
+    if path == "/contracts.json":
+        r = store.contracts(q.get("id"), q.get("week", ""))
+        return (200, r) if r else (404, {"error": "unknown player"})
+    if path == "/solo.json":
+        r = store.solo(q.get("board", "range"), q.get("period", "week"), q.get("week", ""), q.get("limit", 50))
+        return (200, r) if r else (404, {"error": "unknown board"})
     if path == "/netstats.json":
         return 200, store.netstats(q.get("days", 30))
     for route, kind in (("/medals.json", "medals"), ("/career.json", "career"), ("/rivals.json", "rivals"),
@@ -1649,6 +1943,19 @@ def handle_get(store, path, query):
 
 
 def handle_post(store, path, headers, body):
+    if path == "/api/v1/solo":
+        # practice runs from the launcher: signed by the player's identity key, never by a server
+        if len(body) > tcp_season.MAX_RUN_BYTES:
+            return 413, {"error": "run too large"}
+        try:
+            status, info = store.solo_submit(json.loads(body.decode("utf-8")))
+        except (ValueError, UnicodeDecodeError):
+            return 400, {"error": "not JSON"}
+        except RetryLater as exc:
+            return 429, {"error": str(exc)}
+        except Rejected as exc:
+            return 422, {"error": str(exc)}
+        return (200 if status == "stored" else 409), dict(info, status=status)
     if path != "/api/v1/match":
         return None
     if len(body) > MAX_BODY:
@@ -1728,6 +2035,14 @@ def handle_staff(store, method, path, headers, client, body, token):
         except (ValueError, AttributeError) as exc:
             return 400, {"error": str(exc)}
         return 200, {"ok": True, "rebuilt": n}
+    if method == "POST" and path in ("/staff/solo/void", "/staff/solo/unvoid"):
+        try:
+            ident = str(json.loads(body or b"{}").get("id", ""))
+        except (ValueError, AttributeError):
+            ident = ""
+        if not re.fullmatch(r"[0-9a-f]{16}", ident):
+            return 400, {"error": "solo/void <16-character run id>"}
+        return 200, {"ok": True, "changed": store.void_run(ident, path.endswith("/void"))}
     return 404, {"error": "not found"}
 
 
@@ -1803,6 +2118,8 @@ def main(argv=None):
     s.add_argument("--import-dir", default="", help="also import this folder every minute (trusted)")
     s.add_argument("--ratings-file", action="append", default=[],
                    help="keep this ratings.txt current for skill-based team balance (repeatable)")
+    s.add_argument("--ranks-file", action="append", default=[],
+                   help="keep this ranks.txt current for season tiers and badges on the scoreboard (repeatable)")
     a = sub.add_parser("add-server")
     a.add_argument("name")
     sub.add_parser("list-servers")
@@ -1813,6 +2130,9 @@ def main(argv=None):
     i.add_argument("folder")
     sub.add_parser("recompute")
     sub.add_parser("export-ratings").add_argument("file")
+    sub.add_parser("export-ranks").add_argument("file")
+    for name in ("void-run", "unvoid-run"):
+        sub.add_parser(name).add_argument("id")
     sub.add_parser("review")
     for name in ("void", "unvoid"):
         v = sub.add_parser(name)
@@ -1843,8 +2163,12 @@ def main(argv=None):
         print("restored; rebuilt", store.unvoid(args.kind, args.id), "matches")
     elif args.cmd == "export-ratings":
         print("exported", store.export_ratings(args.file), "ratings")
+    elif args.cmd == "export-ranks":
+        print("exported", store.export_ranks(args.file), "ranks")
+    elif args.cmd in ("void-run", "unvoid-run"):
+        print("changed", store.void_run(args.id, args.cmd == "void-run"))
     elif args.cmd == "serve":
-        if args.import_dir or args.ratings_file:
+        if args.import_dir or args.ratings_file or args.ranks_file:
             def loop():
                 while True:
                     try:
@@ -1852,6 +2176,8 @@ def main(argv=None):
                             store.import_dir(args.import_dir)
                         for f in args.ratings_file:
                             store.export_ratings(f)
+                        for f in args.ranks_file:
+                            store.export_ranks(f)
                     except Exception as exc:
                         print("import failed:", exc, flush=True)
                     time.sleep(60)
