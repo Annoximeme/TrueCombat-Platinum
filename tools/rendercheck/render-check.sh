@@ -18,7 +18,9 @@
 # Env: RC_FX=1 (an explosion and an M83 on every camera spot, for particle work), RC_WEATHER (g_weather for the
 #   recording, default clear), WORK (default ./render-check), DATA_TAG (game data release, default latest), DATA (game data folder, reused),
 # SPOTS (camera spots per map, default 6), BOTS (default 8), SEED (default 1), FPS (default 20), EVERY (default 15),
-# EXPECT=changes (a kit that is meant to change the picture: differences are reported, not failed).
+# EXPECT=changes (a kit that is meant to change the picture: differences are reported, not failed),
+# DEMOS (folder with <map>.dm_* demos to play instead of recording new ones, so runs on different days show the
+# same moments; a map without one there is recorded as usual, and $WORK/demos keeps the demos each run used).
 # Result: $WORK/SUMMARY.md and $WORK/report/; exit 0 when every map is deterministic and (unless EXPECT=changes)
 # identical.
 set -uo pipefail
@@ -62,8 +64,10 @@ game() {  # <build dir> <renderer> <home> <args...>: the client headless, game d
     +set cl_renderer "$r" +set r_mode -1 +set r_customwidth 1280 +set r_customheight 720 +set r_fullscreen 0 \
     +set s_initsound 0 +set in_mouse 0 +set com_introplayed 1 +set cl_allowdownload 0 +setu tcp_native_protocol "$PROTOCOL" "$@")
 }
-record() {  # <map>: base build records $W/demos/<map>.dm_84
-  local map=$1 home="$W/home-rec-$1"
+record() {  # <map>: base build records $W/demos/<map>.dm_84 (or takes $DEMOS/<map>.dm_*)
+  local map=$1 home="$W/home-rec-$1" given
+  given=$(ls "${DEMOS:-/nonexistent}"/"$map".dm_* 2>/dev/null | head -1)
+  if [ -n "$given" ]; then mkdir -p "$W/demos"; rm -f "$W"/demos/"$map".dm_*; cp "$given" "$W/demos/"; echo "demo for $map from $DEMOS"; return 0; fi
   rm -rf "$home"; mkdir -p "$home/tcetest" "$W/demos" "$W/logs"
   python3 "$HERE/scenes.py" "$DATA" "$map" "$SPOTS" > "$home/tcetest/rcscenes.cfg" || return 1
   game "$W/build-base" opengl1 "$home" +set sv_pure 0 +set bot_minplayers "$BOTS" +set bot_seed "$SEED" \
