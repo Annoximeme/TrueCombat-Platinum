@@ -160,9 +160,32 @@ def _header(d: ImageDraw.ImageDraw, w: int, kicker: str, title: str, accent=RED,
     return 120
 
 
+_TT_MARK: Image.Image | None = None
+
+
+def _tt_mark(size: int) -> Image.Image | None:
+    """The Team Terminus plate mark (brand kit, small-size cut), or None if the asset is missing."""
+    global _TT_MARK
+    if _TT_MARK is None:
+        p = ASSETS / "team-terminus-mark.png"
+        if not p.is_file():
+            return None
+        _TT_MARK = Image.open(p).convert("RGBA")
+    return _TT_MARK.resize((size, size), Image.LANCZOS)
+
+
 def _footer(d: ImageDraw.ImageDraw, w: int, h: int, left: str = "truecombat.eu"):
     d.line((40, h - 46, w - 40, h - 46), fill=LINE, width=1)
-    d.text((40, h - 36), "TRUECOMBAT: PLATINUM", font=font("head", 20), fill=MUTED)
+    head = font("head", 20)
+    d.text((40, h - 36), "TRUECOMBAT: PLATINUM", font=head, fill=MUTED)
+    # the studio signature: plate mark + TEAM TERMINUS after the game name
+    x = 40 + head.getlength("TRUECOMBAT: PLATINUM") + 18
+    mark = _tt_mark(22)
+    img = getattr(d, "_image", None)
+    if mark is not None and img is not None:
+        img.paste(mark, (int(x), h - 35), mark)
+        x += 22 + 8
+    d.text((x, h - 36), "TEAM TERMINUS", font=head, fill=MUTED)
     f = font("mono", 16)
     d.text((w - 40 - f.getlength(left), h - 33), left, font=f, fill=AMBER)
 

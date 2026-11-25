@@ -32,6 +32,8 @@ TEAM_COLOURS = {"specops": ORANGE, "terrorists": RED, "blue": BLUE, "red": RED}
 FOOTER = "TrueCombat: Platinum"
 # The studio crest, used as the small icon on every card's footer.
 SITE_ICON = "https://truecombat.eu/img/icon-192.png"
+# The Team Terminus plate mark (brand kit, 128 px), signing release posts and the devlog.
+STUDIO_ICON = "https://truecombat.eu/img/team-terminus-icon-128.png"
 
 
 def _now():
@@ -417,7 +419,9 @@ def release_announcement(cfg, rel: dict) -> discord.Embed:
                 "installer](%s) · [full patch notes](%s)" % (release_download(rel) or cfg.site + "/download",
                                                               notes_url),
                 inline=False)
-    return _brand(e, "Version %s" % version)
+    _brand(e, "Version %s" % version)
+    e.set_footer(text="Version %s · Released by Team Terminus" % version, icon_url=STUDIO_ICON)
+    return e
 
 
 DEVLOG_COLOURS = {"roadmap": GOLD, "community": BLUE, "bots": GREEN, "gunplay": RED, "engine": RED,
@@ -475,7 +479,7 @@ def devlog_post(cfg, article: dict, meta: dict | str | None = None) -> discord.E
         e.add_field(name="Status", value=meta["state"], inline=True)
     if meta.get("image"):
         e.set_image(url=meta["image"])
-    e.set_footer(text="Team Terminus · truecombat.eu/devlog", icon_url=site_icon(cfg))
+    e.set_footer(text="Team Terminus · truecombat.eu/devlog", icon_url=STUDIO_ICON)
     e.timestamp = _published(article.get("published", "")) or _now()
     return e
 
