@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Hear the|fight.
-text=Every gun gets its own voice, impacts get twelve variations per surface, and the sound engine learns about rooms, doorways and distance. Plus free aim and two-handed AKs.
+title=Ground|up.
+text=A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a brand-new map called Lockgate and a long list…
 button=Read the devlog
-url=https://truecombat.eu/devlog-sound-update.html
+url=https://truecombat.eu/devlog-ground-up.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/7Dg4yhhvGF
 [news]
 tag=Devlog
-title=Hear the fight
-text=Every gun gets its own voice, impacts get twelve variations per surface, and the sound engine learns about rooms, doorways and distance.
-url=https://truecombat.eu/devlog-sound-update.html
+title=Ground up
+text=A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core…
+url=https://truecombat.eu/devlog-ground-up.html
 [news]
 tag=Community
 title=Weekend ranked ladder

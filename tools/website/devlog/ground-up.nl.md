@@ -7,7 +7,7 @@ tag: Update
 kicker: Update 0.40.0
 version: 0.40.0
 ---
-![Key art voor update 0.40.0: Ground Up](img/devlog/ground-up-teaser.webp "Update 0.40.0: Ground Up. Ultra-preset, DirectX 12.")
+![Key art voor update 0.40.0: Ground Up](img/devlog/ground-up-teaser.webp "Update 0.40.0: Ground Up. Village, Ultra-preset, DirectX 12.")
 
 Toen we 0.40.0 begonnen te plannen, was de opdracht kort: maak er een mijlpaal van. Geen patch met een lange lijst eraan, maar een update die verandert hoe TrueCombat: Platinum eruitziet, klinkt en aanvoelt, van het moment dat je de launcher opent tot de laatste ronde van een match.
 
@@ -15,7 +15,7 @@ Dat betekende dat we bijna alles moesten aanpakken. Elk menu is opnieuw ontworpe
 
 Laat in de ontwikkeling lazen we ook een ronde feedback van de community over richten, terugslag en sniperen, en besloten we dat die verbeteringen niet tot een volgende release konden wachten. Ook die zitten in 0.40.0.
 
-Dit is de lange versie, met alles wat we veranderd hebben en waarom.
+0.40.0 zit nu in de laatste testfase en komt binnenkort. Dit is de lange versie, met alles wat we veranderd hebben en waarom, zodat je alles kunt lezen voor je speelt.
 
 ## Een interface gemaakt voor dit spel
 
@@ -94,8 +94,6 @@ Voor als je liever alleen speelt, krijgen twee solo-uitdagingen elk hun eigen le
 Niet iedereen speelt met een microfoon, en in een snelle ronde is er zelden tijd om te typen. Het nieuwe pingwiel geeft elke speler een stem: Go, Enemy, Danger, Watch, Help, Bomb, Acknowledge en Clear.
 
 Pings gebruiken de callout-namen van de map zelf en verschijnen als stippen op de minimap, dus "Enemy, Pump hall" is een volledige zin die je team meteen begrijpt. Ook bots reageren op je pings: markeer een plek om naartoe te gaan en je bot-teamgenoten trekken met je mee.
-
-![Het pingwiel](img/devlog/ground-up-pings.webp "Het pingwiel en de callout-namen.")
 
 ## CQB wordt deel van het spel
 

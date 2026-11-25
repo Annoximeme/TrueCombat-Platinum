@@ -7,7 +7,7 @@ tag: Update
 kicker: Update 0.40.0
 version: 0.40.0
 ---
-![Update 0.40.0 key art: Ground Up](img/devlog/ground-up-teaser.webp "Update 0.40.0: Ground Up. Ultra preset, DirectX 12.")
+![Update 0.40.0 key art: Ground Up](img/devlog/ground-up-teaser.webp "Update 0.40.0: Ground Up. Village, Ultra preset, DirectX 12.")
 
 When we started planning 0.40.0, the brief was short: make it a milestone. Not a patch with a long list attached, but an update that changes how TrueCombat: Platinum looks, sounds and feels from the moment you open the launcher to the moment the last round ends.
 
@@ -15,7 +15,7 @@ That meant touching almost everything. Every menu has been redesigned. The light
 
 Late in development we also read through a round of community feedback about aiming, recoil and sniping, and decided those fixes could not wait for another release. They are in 0.40.0 too.
 
-This is the long version, with everything we changed and why.
+0.40.0 is in final testing now and arrives soon. This is the long version, with everything we changed and why, so you can read up before you play.
 
 ## An interface built for this game
 
@@ -94,8 +94,6 @@ For the times you want to play alone, two solo challenges get their own leaderbo
 Not everyone plays with a microphone, and in a fast round there is rarely time to type. The new ping wheel gives every player a voice: Go, Enemy, Danger, Watch, Help, Bomb, Acknowledge and Clear.
 
 Pings use the map's own callout names and show up as dots on the minimap, so "Enemy, Pump hall" is a complete sentence your team understands instantly. Bots respond to your pings as well: mark a place to go and your bot teammates will move with you.
-
-![The ping wheel](img/devlog/ground-up-pings.webp "The ping wheel and callout names.")
 
 ## CQB joins the core game
 
