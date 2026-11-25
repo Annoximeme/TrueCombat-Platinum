@@ -417,3 +417,22 @@ a.tile:hover { border-color: var(--line-hi); }
 .cm-who { margin-top: 6px; }
 .cm-on { font: 400 13px var(--f-body); text-transform: none; letter-spacing: 0; }
 .cm-text { margin: 12px 0 0; padding: 12px 14px; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); font-size: 15px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* 1.7.2 polish: contrast, nav badges, dashboard tiles, touch screens */
+.btn-primary { color: #fff; }
+.btn-primary:hover { background: #c43131; border-color: var(--red-hi); }
+#nav a .count { margin-left: auto; }
+#nav a .count ~ .key { margin-left: 8px; }
+.search-btn span:nth-child(2) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.home-tiles { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+@media (max-width: 600px) {
+  .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tile { min-height: 92px; padding: 12px; }
+  .tile .note { font-size: 11px; }
+}
+@media (hover: none), (max-width: 900px) {
+  .search-btn kbd, .head .btn kbd, #nav a .key { display: none; }
+}
+/* the history page's map list reuses .bar: keep the label rows clear of the meter styling */
+.bars .bar { height: auto; background: none; border-radius: 0; overflow: visible; margin-top: 0; }
+.bars .bar > span { display: block; height: auto; background: none; }
