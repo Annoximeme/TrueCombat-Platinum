@@ -7,7 +7,7 @@ Reads the map's spawn points (info_player_deathmatch, team spawns, intermission)
 picks <count> of them spread over the map (farthest point first). Writes a console script for the recording
 client: start a demo, put the player on each spot for a while (tcp_place, devmap only), stop, quit.
 """
-import re, struct, sys, zipfile
+import math, os, re, struct, sys, zipfile
 from pathlib import Path
 
 data, mapname, count = Path(sys.argv[1]), sys.argv[2], int(sys.argv[3])
@@ -36,8 +36,18 @@ while len(chosen) < min(count, len(spots)):
     chosen.append(far)
 print('wait 200')
 print('record rc')
+# RC_FX=1: an effects scene on every spot (particle work): a frag blast 220 u ahead and an M83 thrown forward,
+# so the demo holds blast debris, dust and smoke for every renderer to draw (tcp_testblast needs devmap cheats)
+fx = os.environ.get('RC_FX') == '1'
+if fx:
+    print('set tcp_testblast_live 1')
 for x, y, z, yaw in chosen:
-    print(f'wait 5; tcp_place 0 at {x:.0f} {y:.0f} {z + 24:.0f} {yaw:.0f}; wait {FRAMES_PER_SPOT}')
+    if fx:
+        dx, dy = math.cos(math.radians(yaw)) * 220, math.sin(math.radians(yaw)) * 220
+        print(f'wait 5; tcp_place 0 at {x:.0f} {y:.0f} {z + 24:.0f} {yaw:.0f}; wait 10; tcp_testblast 0 {dx:.0f} {dy:.0f} 0; '
+              f'wait 5; cmd tcp_smoke; wait {FRAMES_PER_SPOT + 60}')
+    else:
+        print(f'wait 5; tcp_place 0 at {x:.0f} {y:.0f} {z + 24:.0f} {yaw:.0f}; wait {FRAMES_PER_SPOT}')
 print('stoprecord')
 print('wait 10')
 print('quit')
