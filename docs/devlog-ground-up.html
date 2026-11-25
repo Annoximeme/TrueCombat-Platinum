@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ground up · TrueCombat: Platinum</title>
+<meta name="description" content="A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/devlog-ground-up">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/devlog-ground-up">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Ground up">
+<meta property="og:description" content="A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-ground-up.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-ground-up.jpg">
+<meta property="article:published_time" content="2026-11-25">
+<meta property="article:section" content="Update">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Ground up","description":"A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a brand-new map called Lockgate and a long list of changes shaped by your feedback. The full story of update 0.40.0, our biggest yet.","datePublished":"2026-11-25","dateModified":"2026-11-25","inLanguage":"en","articleSection":"Update","timeRequired":"PT16M","image":"https://truecombat.eu/img/og-devlog-ground-up.jpg","mainEntityOfPage":"https://truecombat.eu/devlog-ground-up","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="Ground up">
+<meta name="twitter:description" content="A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/devlog"},{"@type":"ListItem","position":3,"name":"Ground up","item":"https://truecombat.eu/devlog-ground-up"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-ground-up">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-ground-up">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-ground-up">
+<link rel="alternate" type="application/atom+xml" title="Patch notes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="stylesheet" href="style.css?v=70654d70a5">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Skip to content</a>
+<header class="nav tb">
+  <div class="wrap">
+    <a class="tb-brand" href="./" aria-label="TrueCombat: Platinum home"><img class="tb-wm" src="img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40"><i class="tb-shine" aria-hidden="true"></i></a>
+    <nav class="tg-row" aria-label="Sections">
+      <div class="tg" data-g="play"><button type="button" aria-expanded="false" aria-controls="tp-play">Play<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-play"><div class="wrap"><div class="tp-list"><a class="pi" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span><b>Download</b><small>Free Windows installer</small></span></a><a class="pi" href="guide"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/></svg><span><b>Guide</b><small>Controls, modes and tactics</small></span></a><a class="pi" href="servers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span><b>Servers</b><small>Live servers, join in one click</small></span></a><a class="pi" href="faq"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span><b>FAQ</b><small>Answers to common questions</small></span></a><a class="pi" href="truecombat-elite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span><b>TrueCombat: Elite</b><small>Where it all began</small></span></a></div><div class="tp-art tp-play"><a class="pt pt-big" href="download"><img src="img/hero-village-rooftop.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>v0.39.7 · Free</em><strong>TrueCombat: Platinum</strong><u>Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="servers"><img src="img/hero-northport-gashouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Servers</span></a><a class="pt pt-sm" href="guide"><img src="img/hero-railhouse-overlook-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Guide</span></a></div><div class="tp-foot"><span>Free · Windows 10 and 11, 64-bit</span><a href="download">Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg" data-g="game"><button type="button" aria-expanded="false" aria-controls="tp-game">Game<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-game"><div class="wrap"><div class="tp-list"><a class="pi" href="maps"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span><b>Maps</b><small>Every map, with plans in 3D</small></span></a><a class="pi" href="weapons"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg><span><b>Weapons</b><small>The full arsenal, compared</small></span></a><a class="pi" href="./#graphics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span><b>Graphics</b><small>Low, High and Ultra side by side</small></span></a><a class="pi" href="./#gallery"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg><span><b>Gallery</b><small>In-game screenshots</small></span></a></div><div class="tp-art tp-game"><div class="pt-maps"><a class="pt" href="map-delta"><img src="img/map-delta-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Delta</span></a><a class="pt" href="map-northport"><img src="img/map-northport-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Northport</span></a><a class="pt" href="map-railhouse"><img src="img/map-railhouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Railhouse</span></a><a class="pt" href="map-snow"><img src="img/map-snow-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Snow</span></a><a class="pt" href="map-stadtrand"><img src="img/map-stadtrand-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Stadtrand</span></a><a class="pt" href="map-village"><img src="img/map-village-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Village</span></a></div></div><div class="tp-foot"><span>6 maps · 32 weapons</span><a href="maps">Maps <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg" data-g="compete"><button type="button" aria-expanded="false" aria-controls="tp-compete">Compete<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-compete"><div class="wrap"><div class="tp-list"><a class="pi" href="leaderboards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Leaderboards</b><small>Ratings, ranks and stat leaders</small></span></a><a class="pi" href="competitive"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span><b>Competitive</b><small>Ranked play and its rules</small></span></a><a class="pi" href="account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span><b>Account</b><small>Your profile, stats and friends</small></span></a></div><div class="tp-art tp-compete"><a class="pt pt-big" href="leaderboards"><img src="img/hero-delta-night.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Ranked</em><strong>Leaderboards</strong><u>Leaderboards <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="competitive"><img src="img/hero-stadtrand-canal-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Competitive</span></a><a class="pt pt-sm" href="account"><img src="img/hero-snow-warehouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Account</span></a></div><div class="tp-foot"><span>Ranked play on the official servers</span><a href="leaderboards">Leaderboards <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg on" data-g="community"><button type="button" aria-expanded="false" aria-controls="tp-community">Community<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-community"><div class="wrap"><div class="tp-list"><a class="pi" href="devlog" aria-current="page" data-devlog-new="2026-11-25" data-new="New"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg><span><b>Devlog<em>New</em></b><small>How the game is being built</small></span></a><a class="pi" href="news"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/></svg><span><b>News</b><small>Patch notes for every release</small></span></a><a class="pi" href="media"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Media</b><small>Trailers, screenshots and wallpapers</small></span></a><a class="pi" href="https://discord.gg/7Dg4yhhvGF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/></svg><span><b>Discord</b><small>Find a match, talk to the team</small></span></a><a class="pi" href="banners"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="2" y="7" width="20" height="10"/><path d="M6 12h.01M9 10.5h6M9 13.5h4M18 10v4"/></svg><span><b>Server banners</b><small>Live player counts for your page</small></span></a><a class="pi" href="studio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/></svg><span><b>Studio</b><small>The team behind the game</small></span></a><a class="pi" href="press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/></svg><span><b>Press kit</b><small>Logos, key art and facts</small></span></a></div><div class="tp-art tp-community"><a class="pt pt-big" href="devlog-ground-up"><img src="img/devlog/ground-up-teaser-clean.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>New devlog · Update 0.40.0</em><strong>Ground up</strong><u>Read the devlog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="news"><img src="img/hero-snow-yard-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>v0.39.7</em>News</span></a><a class="pt pt-sm" href="https://discord.gg/7Dg4yhhvGF"><img src="img/hero-village-contact-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Discord</em>Join the Discord</span></a></div><div class="tp-foot"><span>31 devlog posts so far</span><a href="devlog">Devlog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+    </nav>
+    <div class="tl" data-img="img/" data-maps="delta northport railhouse snow stadtrand village"><button class="tl-btn" type="button" aria-expanded="false" aria-controls="tl-pop" aria-label="Live servers" data-tpl-live="{p} playing · {s} servers" data-tpl-idle="{s} servers online"><i></i><b>Servers</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="tl-pop" id="tl-pop"><b class="tl-h">Live servers</b><div class="tl-list"></div><a class="tl-all" href="servers">All servers <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div>
+    <div class="tu">
+      <button type="button" data-search-open aria-label="Search" title="Search (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg><kbd>Ctrl K</kbd></button>
+      <details class="nav-langs"><summary aria-label="Language" title="Language">EN</summary><div><a href="nl/devlog-ground-up" hreflang="nl" lang="nl">Nederlands</a></div></details>
+      <a class="tu-heart" href="support" aria-label="Support" title="Support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></a>
+      <a href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    </div>
+    <a class="btn btn-play tb-dl" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span>Download</span><small>v0.39.7</small></a>
+    <button class="tb-burger" type="button" aria-expanded="false" aria-controls="ms" aria-label="Menu"><i></i><i></i><i></i></button>
+  </div>
+  <div class="tb-scrim" hidden></div>
+  <div class="ms" id="ms" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+    <div class="ms-top"><a class="tb-brand" href="./" aria-label="TrueCombat: Platinum home"><img class="tb-wm" src="img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40"><i class="tb-shine" aria-hidden="true"></i></a><button type="button" class="ms-search" data-search-open aria-label="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button><button type="button" class="ms-x" aria-label="Close the menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <a class="ms-live" href="servers"><i></i><b>Servers</b><u>All servers <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></a>
+    <a class="ms-dev" href="devlog-ground-up"><img src="img/devlog/ground-up-teaser-clean-640.webp" alt="" loading="lazy" decoding="async"><span><em>New devlog</em>Ground up</span></a>
+    <details class="ms-g"><summary>Play<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span><b>Download</b><small>Free Windows installer</small></span></a><a class="pi" href="guide"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/></svg><span><b>Guide</b><small>Controls, modes and tactics</small></span></a><a class="pi" href="servers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span><b>Servers</b><small>Live servers, join in one click</small></span></a><a class="pi" href="faq"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span><b>FAQ</b><small>Answers to common questions</small></span></a><a class="pi" href="truecombat-elite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span><b>TrueCombat: Elite</b><small>Where it all began</small></span></a></details><details class="ms-g"><summary>Game<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="ms-maps"><a href="map-delta"><img src="img/map-delta-640.webp" alt="" loading="lazy" decoding="async"><span>Delta</span></a><a href="map-northport"><img src="img/map-northport-640.webp" alt="" loading="lazy" decoding="async"><span>Northport</span></a><a href="map-railhouse"><img src="img/map-railhouse-640.webp" alt="" loading="lazy" decoding="async"><span>Railhouse</span></a><a href="map-snow"><img src="img/map-snow-640.webp" alt="" loading="lazy" decoding="async"><span>Snow</span></a><a href="map-stadtrand"><img src="img/map-stadtrand-640.webp" alt="" loading="lazy" decoding="async"><span>Stadtrand</span></a><a href="map-village"><img src="img/map-village-640.webp" alt="" loading="lazy" decoding="async"><span>Village</span></a></div><a class="pi" href="maps"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span><b>Maps</b><small>Every map, with plans in 3D</small></span></a><a class="pi" href="weapons"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg><span><b>Weapons</b><small>The full arsenal, compared</small></span></a><a class="pi" href="./#graphics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span><b>Graphics</b><small>Low, High and Ultra side by side</small></span></a><a class="pi" href="./#gallery"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg><span><b>Gallery</b><small>In-game screenshots</small></span></a></details><details class="ms-g"><summary>Compete<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="leaderboards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Leaderboards</b><small>Ratings, ranks and stat leaders</small></span></a><a class="pi" href="competitive"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span><b>Competitive</b><small>Ranked play and its rules</small></span></a><a class="pi" href="account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span><b>Account</b><small>Your profile, stats and friends</small></span></a></details><details class="ms-g" open><summary>Community<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="devlog" aria-current="page" data-devlog-new="2026-11-25" data-new="New"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg><span><b>Devlog<em>New</em></b><small>How the game is being built</small></span></a><a class="pi" href="news"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/></svg><span><b>News</b><small>Patch notes for every release</small></span></a><a class="pi" href="media"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Media</b><small>Trailers, screenshots and wallpapers</small></span></a><a class="pi" href="https://discord.gg/7Dg4yhhvGF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/></svg><span><b>Discord</b><small>Find a match, talk to the team</small></span></a><a class="pi" href="banners"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="2" y="7" width="20" height="10"/><path d="M6 12h.01M9 10.5h6M9 13.5h4M18 10v4"/></svg><span><b>Server banners</b><small>Live player counts for your page</small></span></a><a class="pi" href="studio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/></svg><span><b>Studio</b><small>The team behind the game</small></span></a><a class="pi" href="press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/></svg><span><b>Press kit</b><small>Logos, key art and facts</small></span></a></details>
+    <div class="ms-langs"><b>EN</b><a href="nl/devlog-ground-up" hreflang="nl" lang="nl">NL</a><a class="ms-heart" href="support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>Support</a></div>
+    <div class="ms-foot"><a class="btn btn-play" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg>Download <small>v0.39.7</small></a></div>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="ground-up" data-min="16">
+  <header class="page-head post-head cine-post">
+    <div class="head-art" style="--art: url(img/devlog/ground-up-teaser-clean-1920.webp); --art-s: url(img/devlog/ground-up-teaser-clean-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">All devlog posts</a>
+      <span class="cine-kicker">Update 0.40.0</span>
+      <p class="post-meta"><span class="tag">Update</span><span class="state testing">Next update · in testing</span><time datetime="2026-11-25">25 Nov 2026</time><span>16 min read</span><span>Team Terminus</span><span class="post-stat" data-post-stat="ground-up" hidden></span><span class="post-cmts" data-post-cmts="ground-up" hidden></span></p>
+      <h1>Ground up</h1>
+      <p class="lede">A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a brand-new map called Lockgate and a long list of changes shaped by your feedback. The full story of update 0.40.0, our biggest yet.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In this post">
+        <span class="eyebrow">In this post</span>
+        <ol>
+          <li><a href="#an-interface-built-for-this-game">An interface built for this game</a></li>
+          <li><a href="#a-new-generation-of-light">A new generation of light</a></li>
+          <li><a href="#remastered-or-classic-your-choice">Remastered or Classic: your choice</a></li>
+          <li><a href="#season-1">Season 1</a></li>
+          <li><a href="#location-pings">Location pings</a></li>
+          <li><a href="#cqb-joins-the-core-game">CQB joins the core game</a></li>
+          <li><a href="#your-feedback">Your feedback</a></li>
+          <li><a href="#a-new-map-lockgate">A new map: Lockgate</a></li>
+          <li><a href="#sound">Sound</a></li>
+          <li><a href="#bots">Bots</a></li>
+          <li><a href="#new-players">New players</a></li>
+          <li><a href="#launcher-3-2">Launcher 3.2</a></li>
+          <li><a href="#credits">Credits</a></li>
+          <li><a href="#servers-and-security">Servers and security</a></li>
+          <li><a href="#what-is-next">What is next</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<figure class="wide">
+  <img src="img/devlog/ground-up-teaser.webp" alt="Update 0.40.0 key art: Ground Up" width="1280" height="720" loading="lazy">
+  <figcaption>Update 0.40.0: Ground Up. Village, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<p>When we started planning 0.40.0, the brief was short: make it a milestone. Not a patch with a long list attached, but an update that changes how TrueCombat: Platinum looks, sounds and feels from the moment you open the launcher to the moment the last round ends.</p>
+<p>That meant touching almost everything. Every menu has been redesigned. The lighting has a new generation of effects behind it. The soldiers, the maps and the sounds have been remastered, and for the first time you decide whether you play with that new layer or with the game exactly as it looked twenty years ago. Season 1 is on its way, so every match will have something to play towards. Location pings give every team a voice, even without a microphone. And close quarters combat, which spent two updates behind an experimental switch, graduates into the core game.</p>
+<p>Late in development we also read through a round of community feedback about aiming, recoil and sniping, and decided those fixes could not wait for another release. They are in 0.40.0 too.</p>
+<p>0.40.0 is in final testing now and arrives soon. This is the long version, with everything we changed and why, so you can read up before you play.</p>
+<h2 id="an-interface-built-for-this-game">An interface built for this game</h2>
+<p>The menus Platinum inherited were built for a different era: small fixed screens, dense text and layouts that assumed a 4:3 monitor. They worked, but they never felt like part of a modern tactical shooter. For 0.40.0 we rebuilt all of them.</p>
+<p>The main menu, Options, Deployment, the server browser, the loading screen and the match screens all share one design language now: clean panels, clear type and a consistent way of telling you where you are and what a setting does. Options is grouped the way you think about it rather than the way the engine stores it. Graphics presets set a sensible starting point in one click, and every individual setting is still there underneath if you want it.</p>
+<figure class="wide">
+  <img src="img/devlog/ground-up-menu.webp" alt="The new main menu" width="1280" height="720" loading="lazy">
+  <figcaption>The new main menu.</figcaption>
+</figure>
+<p>The server browser gained filters, so finding a full Ranked server or an empty one to practise on no longer means scrolling a long list. Notification toasts keep you informed without taking over the screen. Behind every panel sits a soft background blur, so the world you just left stays visible.</p>
+<h3>A HUD that stays out of the way</h3>
+<p>The in-game HUD is new as well, and it now defaults to 70 percent of its old size. On a modern widescreen monitor the old HUD took more room than it needed. The new one scales correctly for your resolution and keeps the centre of the screen clear for what matters, which is the fight. If you prefer it larger, the slider in Options goes all the way back.</p>
+<figure class="wide">
+  <img src="img/devlog/ground-up-hud.webp" alt="The new in-game HUD" width="1280" height="720" loading="lazy">
+  <figcaption>The new in-game HUD at its default size, with the death recap on the right.</figcaption>
+</figure>
+<h3>Knowing what happened</h3>
+<p>Two screens tell you more about each round and each match than the game ever has. The death recap shows who got you, with which weapon and from where, so a death is something you learn from rather than something you guess at. At the end of a match, the post-match screen sums up your game.</p>
+<p>Map callouts now appear on screen as you move through a map, and they are the same names your team sees in pings and on the minimap. When someone says "Pump hall" or "North street", everyone means the same place.</p>
+<h2 id="a-new-generation-of-light">A new generation of light</h2>
+<p>The engine work in 0.40.0 is the largest single step in Platinum's renderer since DirectX 12 arrived. The goal was not to make the maps look like a different game. It was to make light behave the way your eye expects it to, so that a corridor, a courtyard or a muzzle flash reads correctly in a split second.</p>
+<h3>Light that moves</h3>
+<p>Muzzle flashes and explosions now light up the world around them. Fire a rifle in a dark stairwell and the walls flicker with it. A grenade going off around a corner throws a brief glow across the floor before the sound reaches you. These dynamic lights are fast enough to run on every preset that has them, and they give away exactly as much as they should: a firefight in a dark room is visible from the doorway.</p>
+<figure class="wide">
+  <img src="img/devlog/ground-up-dynamic-light.webp" alt="Dynamic light from a muzzle flash" width="1280" height="720" loading="lazy">
+  <figcaption>A burst from an M4 lights up the brickwork of a dark hall, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<h3>Air and sky</h3>
+<p>On DirectX 12, every map now has an atmosphere. Sunlit haze builds up over long sightlines, and the sky matches each map's time of day instead of sitting behind it like a painted backdrop. Bounce light lets sunlit surfaces spill soft colour into nearby rooms and corners, so an interior beside a bright courtyard is no longer uniformly dark.</p>
+<p>Lamps now cast shadows. Fog is lit by the lights inside it. Fittings throw pools of light onto the floor beneath them, which, together with the darker lighting we introduced in 0.39, gives interiors real contrast between lit and unlit space.</p>
+<h3>Every impact</h3>
+<p>Bullet holes and scorch marks now have depth instead of being flat stickers on a wall. A new particle system drives impacts, smoke, sparks and debris, so a burst into concrete kicks up dust and chips that behave like dust and chips. Smoke grenades are denser, and spent brass stays on the floor after a firefight.</p>
+<figure class="wide">
+  <img src="img/devlog/ground-up-impacts.webp" alt="Impacts on concrete" width="1280" height="720" loading="lazy">
+  <figcaption>A bullet hole with real depth in brick, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<p>The kill cam, which got its cinematic camera in 0.39.6, now adds depth of field and a colour grade during the replay on DirectX 12.</p>
+<h3>Faster, on more machines</h3>
+<p>New effects mean nothing if they make the game harder to run. A shader cache means maps load faster after the first time, and a smarter texture budget keeps cards with less video memory running smoothly instead of stuttering when a map's textures do not fit. A change of map no longer leaves the previous map's shadows and lighting behind, which some of you saw as dark rectangles floating on walls.</p>
+<h2 id="remastered-or-classic-your-choice">Remastered or Classic: your choice</h2>
+<p>TrueCombat:Elite has a look that many of you remember exactly. We wanted to bring the game forward without taking that away from anyone, so 0.40.0 adds a single switch in Options: Remastered or Classic.</p>
+<p>Remastered gives you the new layer we have been building for months. The maps get remastered materials and props, faithful to the originals: the same layouts, the same silhouettes and the same spots you know, with surfaces that hold up on a modern display. The Special Forces and Terrorist soldiers have been remastered with new vests and gear, your first-person hands are rounder and better formed, and the items you carry have been remastered too. For players on high-end machines, the launcher offers an optional HD texture pack of about 1 GB when you play on Ultra.</p>
+<p>Classic gives you the original look of TrueCombat, as it was.</p>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/ground-up-remastered.webp" alt="Remastered: The same spot in Classic and Remastered, Ultra preset, DirectX 12." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/ground-up-classic.webp" alt="Classic: The same spot in Classic and Remastered, Ultra preset, DirectX 12." width="1280" height="720" loading="lazy">
+    <span class="tag l">Classic</span>
+    <span class="tag r">Remastered</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="The same spot in Classic and Remastered, Ultra preset, DirectX 12.: comparison divider position">
+  </div>
+  <figcaption>The same spot in Classic and Remastered, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<p>The switch only changes what you see. Hitboxes, sightlines, movement and sound are identical in both modes, so there is no advantage in either choice. Each team now also fields one soldier model, so every player reads the same in a firefight: an enemy is an enemy at a glance, whatever you picked.</p>
+<p>In Deployment you can make your soldier your own with five camos per team, and Terrorists can choose a cap, a headscarf or a balaclava.</p>
+<figure class="wide">
+  <img src="img/devlog/ground-up-soldiers.webp" alt="A remastered soldier" width="1280" height="720" loading="lazy">
+  <figcaption>A remastered soldier with the new vest and gear, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<h2 id="season-1">Season 1</h2>
+<p>0.40.0 lays the foundation for Season 1, and the launcher already shows your season card on its home screen. When the season starts, every match counts towards something: ranks from Rookie to Platinum, earned by playing, and three new contracts every week with clear goals to work towards, in Ranked and Unranked alike.</p>
+<p>For the times you want to play alone, two solo challenges get their own leaderboards: the Range Run, a timed course on the firing range, and a bot challenge. Everyone who plays during the launch season receives the Frontline badge. We will announce the start of the season on Discord and here on the devlog.</p>
+<h2 id="location-pings">Location pings</h2>
+<p>Not everyone plays with a microphone, and in a fast round there is rarely time to type. The new ping wheel gives every player a voice: Go, Enemy, Danger, Watch, Help, Bomb, Acknowledge and Clear.</p>
+<p>Pings use the map's own callout names and show up as dots on the minimap, so "Enemy, Pump hall" is a complete sentence your team understands instantly. Bots respond to your pings as well: mark a place to go and your bot teammates will move with you.</p>
+<h2 id="cqb-joins-the-core-game">CQB joins the core game</h2>
+<p>Close quarters combat started as an experiment in 0.38.0, with its own weapons, optics, sounds and rules on a separate server switch. The response to it has been clear enough that it now joins the core game.</p>
+<p>CQB weapons, optics and sounds are part of every server, with no experimental setting needed. The Harbour map joins the map pool, and CQB Rules becomes a regular Unranked mode. The G3 gains a semi-automatic mode, and the M110 has been fixed.</p>
+<p>CQB weapons also enter Ranked, with two exceptions. The Shorty shotguns and the akimbo M1911 stay in Unranked for now, because at close range they are strong enough that we want more data before they decide ranked matches.</p>
+<h2 id="your-feedback">Your feedback</h2>
+<p>Shortly before this update was finished, a round of feedback from the community arrived about how aiming, recoil and sniping feel. Rather than hold the answers for the next release, we built them into 0.40.0.</p>
+<h3>Aiming down sights</h3>
+<p>When you aimed down sights, the weapon sat too far from your eye. The iron sight was small, and on some rifles it was hard to pick out against a busy background. Every weapon now sits closer when you aim, tuned per weapon, so the sight is larger and easier to read while it stays centred on the point of aim. The AK-47 moves in a little less than the others, so its dust cover does not crowd the sight.</p>
+<p>We also cleaned up what happens on screen when bullets land. When you are hit, your own blood effect now stays away from the centre of the screen instead of washing over your sights. Blood on a target is smaller and clears faster, and the hit marker is slimmer, so you can see whether your target is still standing.</p>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="img/devlog/ground-up-ads-after.webp" alt="0.40.0: Aiming down sights before and after, Ultra preset." width="1280" height="720" loading="lazy">
+    <img class="top" src="img/devlog/ground-up-ads-before.webp" alt="0.39: Aiming down sights before and after, Ultra preset." width="1280" height="720" loading="lazy">
+    <span class="tag l">0.39</span>
+    <span class="tag r">0.40.0</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Aiming down sights before and after, Ultra preset.: comparison divider position">
+  </div>
+  <figcaption>Aiming down sights before and after, Ultra preset.</figcaption>
+</figure>
+<h3>An optional red dot</h3>
+<p>Ten rifles and submachine guns can now carry an M68 red dot: the M4, M16, SIG 552, SG 552, SCAR, REC7, MP5, MP5SD, UMP45 and MP9. You switch it on per weapon in Deployment, and other players see it on your gun in third person.</p>
+<p>The red dot changes what you see, not how the weapon behaves. Field of view, spread and recoil stay exactly the same as with iron sights, so it is a matter of taste rather than an advantage. On the M4, M16 and REC7 the dot sits on a small riser, so the iron sight's front post still lines up just below it.</p>
+<figure class="wide">
+  <img src="img/devlog/ground-up-reddot.webp" alt="The M68 red dot" width="1280" height="720" loading="lazy">
+  <figcaption>The optional M68 red dot on the M4, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<h3>Recoil you can control</h3>
+<p>Recoil climbed and never fully came back. After a burst, your view stayed a little higher than where you started, and over a few bursts that drift added up, worst of all on the AK family. We found the cause: the game only returned part of each shot's kick, and the random part of the climb was never returned at all.</p>
+<p>Now the whole kick comes back. Between bursts the view settles back to where you were aiming in well under half a second, the random extra climb is halved and the AK-47 kicks a little less. In our tests, ten rounds from an AK-47 used to leave the view about ten degrees higher than the first shot. Now it comes back to the start. Recoil still has a cost while you fire. It simply no longer follows you to the next target. This applies with Tactical balance, which runs by default on every server.</p>
+<h3>Sniper scopes</h3>
+<p>Sniper scopes zoomed in and out on a slow curve that took the better part of a second to settle. They now zoom in faster and zoom out much faster, so you can come off the scope and react to someone close without waiting for the view. Iron sights keep their current timing.</p>
+<p>We also fixed a long-standing issue that some of you reported with the R93: scoped shots fired while leaning could miss a target that was dead centre in the crosshair. When you lean, the camera rolls and your eye sits slightly lower, but the shot was still fired from the upright position, a few centimetres too high. Shots, grenade throws and the check for a blocked muzzle now all start from where your eye really is, on both sides.</p>
+<h3>Hit confirmation</h3>
+<p>A hit should feel like a hit. The Remastered hit sounds are new: a heavy, fleshy thwack on body hits, a sharp bone crack on headshots and a heavier confirmation on a kill. We built them from real recordings rather than synthesised tones, because the first versions sounded mechanical, and a hit you can hear without looking is worth a lot in a firefight. Classic keeps the original set.</p>
+<p>Hit sounds and hit markers stay your choice on Unranked servers. On Ranked they are always off, because in a competitive match we want you to judge a fight with your own eyes. Options tells you so while you play Ranked, and the game never changes your own setting: when you return to Unranked, everything is as you left it.</p>
+<h3>Muzzle flashes in daylight</h3>
+<p>First-person muzzle flashes were easy to miss in bright daylight, and on some weapons they started a little behind the end of the barrel. They are now clearly visible on a sunny map and start exactly at the muzzle, including on pistols and akimbo pistols.</p>
+<h3>Spawning on the right side</h3>
+<p>When a team's spawn points were crowded, the game could place a player in the enemy half of the map. That can no longer happen. If your own side is full, you spawn as close to it as the map allows.</p>
+<h2 id="a-new-map-lockgate">A new map: Lockgate</h2>
+<p>0.40.0 brings a map built from the ground up for Platinum. Lockgate is a drained canal lock in an old industrial quarter: a pump house on the west side, the lock chamber and its gate catwalks in the middle and a rail swing bridge to the east. The Terrorists start in a brick brewery quarter to the north, the Special Forces in the concrete customs buildings to the south.</p>
+<p>We designed Lockgate to be fair before anything else. The map is mirrored across the canal, so both teams have identical routes, identical cover and identical timings: it takes both sides the same time to reach each of the three lanes, and attackers reach either bomb site in about fifteen seconds. Each lane plays differently. The pump house is close quarters with a gallery above, the lock is a mid-range fight across and down into the chamber, and the swing bridge offers the map's longest sightline for those who prefer to hold an angle. No spawn can see into another.</p>
+<p>Lockgate plays in every mode: Bomb, Team Elimination, Team Deathmatch, Flag Capture and Capture Point. Before it reached you, it was played by bots in all five, over and over, to make sure nothing gets stuck and every bomb site can be planted and defended.</p>
+<figure class="wide">
+  <img src="img/devlog/ground-up-lockgate.webp" alt="Lockgate" width="1280" height="720" loading="lazy">
+  <figcaption>The brick and concrete banks face each other down a lane, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<figure class="wide">
+  <img src="img/devlog/ground-up-lockgate-lock.webp" alt="The pump house on Lockgate" width="1280" height="720" loading="lazy">
+  <figcaption>The pump house roof, with the brewery chimney behind it, Ultra preset, DirectX 12.</figcaption>
+</figure>
+<h2 id="sound">Sound</h2>
+<p>Every map now has its own ambience bed, so a quiet moment on Railhouse sounds different from a quiet moment on Snow. Gunfire changes with distance, from a sharp crack close by to a distant rumble across the map, which makes it easier to judge how far away a firefight is. Footsteps have more variety on every surface.</p>
+<p>Under the hood, the audio library has been updated for clean, stable sound at high sample rates.</p>
+<h3>Better 3D audio on headphones</h3>
+<p>If you play with the 3D headphone mode, sounds should now come from much more convincing directions. The new profile is based on measurements of a professional binaural dummy head, the kind used to make recordings that sound as if you were in the room, which gives clearer front and back and a better sense of height. Footsteps above you sound above you.</p>
+<p>The profile comes from the SADIE project at the University of York, whose data we are glad to credit in the game. This product includes data developed at The Audio Lab, University of York, UK (Cal Armstrong, Lewis Thresh, Gavin Kearney) as part of the SADIE Project.</p>
+<h2 id="bots">Bots</h2>
+<p>Bots play with distinct roles now and choose weapons that suit the map, so a team of bots no longer looks like five copies of the same soldier. They vault obstacles and climb out of awkward spots instead of getting stuck, and we fixed problem areas on Chlite, Villa and Shozen. On servers that use them, bots fill empty slots and leave smoothly as real players join, so a server never feels empty and never feels crowded.</p>
+<h2 id="new-players">New players</h2>
+<p>The first hour in a game decides whether a new player stays. Boot Camp is a ten-minute training ground that takes you through the basics station by station: crouching, going prone and leaning through an obstacle lane, vaulting and climbing, the firing range, grenades, the armoury, planting the bomb and, to finish, a live-fire house against bots. On first launch the game runs a short benchmark and picks the right graphics preset for your PC, so a new player starts with a game that looks good and runs well instead of a settings menu.</p>
+<h2 id="launcher-3-2">Launcher 3.2</h2>
+<p>The launcher handles the new optional downloads: the Remastered content and the HD texture pack, with resume and per-file repair, so an interrupted download picks up where it stopped and a damaged file is replaced on its own. It notices when you change graphics card and offers to tune your settings for the new one. The home screen shows your Season 1 card, and a new Credits and licences page names everyone whose work the game builds on.</p>
+<h2 id="credits">Credits</h2>
+<p>Platinum is built on the shoulders of others, and we want that to be visible. The credits in the game and the launcher now name the ET: Legacy team and id Software, whose open-source work the Platinum engine is built on, alongside the SADIE project for the headphone profile and every community map author whose work ships with the game.</p>
+<p>The game logo is the original TrueCombat: Platinum logo, now in high resolution in the launcher and menus.</p>
+<h2 id="servers-and-security">Servers and security</h2>
+<p>Official servers now use a 20-second map vote at the end of each match, so the next map is chosen quickly and by the players on the server.</p>
+<p>We've tightened and expanded our security measures.</p>
+<h2 id="what-is-next">What is next</h2>
+<p>0.40.0 is a milestone, not a finish line. With the new interface, the new renderer features and the remaster switch in place, the next updates can build on a much stronger base. As always, the patch notes on Discord list every change, and we read every report.</p>
+<p>Thank you for playing, for every bug report and for every piece of feedback that shaped this update. See you on the front line.</p>
+      </div>
+      <div class="post-rate" data-rate="ground-up" data-thanks="Thanks for rating. You can change your rating until the end of the day." data-fail="Your rating could not be sent. Please try again later." hidden>
+        <p class="rate-q" id="rate-q">Was this worth the read?</p>
+        <p class="rate-sum" hidden></p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 star"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 stars"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 stars"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anonymous. No account, no cookies.</p>
+      </div>
+      <div class="post-end">
+        <p>Questions about this post? Ask the team on Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/7Dg4yhhvGF">Discuss on Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link copied">Copy link</button>
+        </div>
+      </div>
+      <section class="cmt" id="comments" data-cmt="ground-up" data-comments="on" aria-label="Comments" hidden></section>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-sound-update"><small>Older post</small>Hear the fight</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">More from the devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Update">
+        <a class="post-art" href="devlog-sound-update" tabindex="-1" aria-hidden="true"><img src="img/devlog/front-lines-blast-courtyard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Update</span><span class="state shipped">Shipped in v0.39.3</span><time datetime="2026-11-19">19 Nov 2026</time><span>8 min read</span><span class="post-stat" data-post-stat="sound-update" hidden></span><span class="post-cmts" data-post-cmts="sound-update" hidden></span></p>
+          <h2><a href="devlog-sound-update">Hear the fight</a></h2>
+          <p>Every gun gets its own voice, impacts get twelve variations per surface, and the sound engine learns about rooms, doorways and distance. Plus free aim and two-handed AKs. The full story of update 0.39.3.</p>
+          <a class="more" href="devlog-sound-update">Read the post</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Update">
+        <a class="post-art" href="devlog-front-lines" tabindex="-1" aria-hidden="true"><img src="img/devlog/front-lines-teaser-clean-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Update</span><span class="state shipped">Shipped in v0.39.0</span><time datetime="2026-11-18">18 Nov 2026</time><span>20 min read</span><span class="post-stat" data-post-stat="front-lines" hidden></span><span class="post-cmts" data-post-cmts="front-lines" hidden></span></p>
+          <h2><a href="devlog-front-lines">Front lines</a></h2>
+          <p>Bots that listen, plan and retake together, four classic community maps, a rebuilt launcher with friends, and a new layer of light, weather, sound and body language across every map. The full story of update 0.39.0.</p>
+          <a class="more" href="devlog-front-lines">Read the post</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum is developed by RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/7Dg4yhhvGF" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patch notes (RSS)" title="Patch notes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Footer" class="foot-cols">
+        <div><p class="foot-h">Game</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Weapons</a><a href="guide">Guide</a><a href="media">Media</a><a href="faq">FAQ</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Play</p><a href="servers">Servers</a><a href="leaderboards">Leaderboards</a><a href="competitive">Competitive</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">News</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Press kit</a><a href="support">Support</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/7Dg4yhhvGF">Discord</a><a href="banners">Server banners</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patch notes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite was created by Team Terminator. Wolfenstein: Enemy Territory is by Splash Damage and id Software, published by Activision. TrueCombat: Platinum is a fan project and is not affiliated with or endorsed by them.</p>
+      <p>The Platinum Engine is built on ET: Legacy and the Wolfenstein: Enemy Territory source code by id Software, and is released under the GNU GPL v3. Original game data and artwork keep their original terms; see the licenses folder in each download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="js/site.js?v=db22699235"></script>
+</body>
+</html>

@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/devlog"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog</id>
-  <updated>2026-11-19T12:00:00Z</updated>
+  <updated>2026-11-25T12:00:00Z</updated>
+  <entry>
+    <title>Ground up</title>
+    <link href="https://truecombat.eu/devlog-ground-up"/>
+    <id>https://truecombat.eu/devlog-ground-up</id>
+    <published>2026-11-25T12:00:00Z</published>
+    <updated>2026-11-25T12:00:00Z</updated>
+    <category term="Update"/>
+    <summary>A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a brand-new map called Lockgate and a long list of changes shaped by your feedback. The full story of update 0.40.0, our biggest yet.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Hear the fight</title>
     <link href="https://truecombat.eu/devlog-sound-update"/>

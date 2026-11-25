@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/nl/devlog"/>
   <link rel="self" href="https://truecombat.eu/nl/devlog.xml"/>
   <id>https://truecombat.eu/nl/devlog</id>
-  <updated>2026-11-19T12:00:00Z</updated>
+  <updated>2026-11-25T12:00:00Z</updated>
+  <entry>
+    <title>Van de grond af</title>
+    <link href="https://truecombat.eu/nl/devlog-ground-up"/>
+    <id>https://truecombat.eu/nl/devlog-ground-up</id>
+    <published>2026-11-25T12:00:00Z</published>
+    <updated>2026-11-25T12:00:00Z</updated>
+    <category term="Update"/>
+    <summary>Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het spel, een gloednieuwe map genaamd Lockgate en een lange lijst wijzigingen op basis van jullie feedback. Het volledige verhaal van update 0.40.0, onze grootste tot nu toe.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Hoor het gevecht</title>
     <link href="https://truecombat.eu/nl/devlog-sound-update"/>
