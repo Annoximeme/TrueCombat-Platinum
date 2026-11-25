@@ -1,7 +1,7 @@
 ---
 title: Van de grond af
 date: 2026-11-25
-summary: Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het spel en een lange lijst wijzigingen op basis van jullie feedback. Het volledige verhaal van update 0.40.0, onze grootste tot nu toe.
+summary: Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het spel, een gloednieuwe map genaamd Lockgate en een lange lijst wijzigingen op basis van jullie feedback. Het volledige verhaal van update 0.40.0, onze grootste tot nu toe.
 image: img/devlog/ground-up-teaser-clean.webp
 tag: Update
 kicker: Update 0.40.0
@@ -154,6 +154,16 @@ Mondingsvuur in first person was bij fel daglicht makkelijk te missen, en bij so
 ### Spawnen aan de juiste kant
 
 Als de spawnpunten van een team vol stonden, kon het spel een speler in de vijandelijke helft van de map plaatsen. Dat kan niet meer. Is je eigen kant vol, dan spawn je zo dicht mogelijk bij die kant als de map toelaat.
+
+## Een nieuwe map: Lockgate
+
+0.40.0 brengt een map die van de grond af voor Platinum gebouwd is. Lockgate is een drooggelegde kanaalsluis in een oude industriewijk: een pomphuis aan de westkant, de sluiskolk met zijn loopbruggen in het midden en een draaibrug voor het spoor in het oosten. De Terrorists starten in een bakstenen brouwerijwijk in het noorden, de Special Forces in de betonnen douanegebouwen in het zuiden.
+
+We hebben Lockgate in de eerste plaats eerlijk ontworpen. De map is gespiegeld over het kanaal, dus beide teams hebben identieke routes, identieke dekking en identieke timings: beide kanten doen er even lang over om elk van de drie lanes te bereiken, en aanvallers bereiken elke bomsite in ongeveer vijftien seconden. Elke lane speelt anders. Het pomphuis is close quarters met een galerij erboven, de sluis is een gevecht op middellange afstand over en in de kolk, en de draaibrug biedt de langste zichtlijn van de map voor wie liever een hoek vasthoudt. Geen enkele spawn kijkt in een andere.
+
+Lockgate speelt in elke modus: Bomb, Team Elimination, Team Deathmatch, Flag Capture en Capture Point. Voor hij bij jullie terechtkwam, speelden bots hem keer op keer in alle vijf, om zeker te zijn dat niets vastloopt en dat elke bomsite geplant en verdedigd kan worden.
+
+![Lockgate](img/devlog/ground-up-lockgate.webp "Lockgate, Ultra-preset, DirectX 12.")
 
 ## Geluid
 
