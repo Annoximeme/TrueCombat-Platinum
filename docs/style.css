@@ -1164,8 +1164,8 @@ html { scrollbar-color: #2e3747 var(--bg); }
 .studio-hero .live[hidden] { display: none; }
 .studio-crest { position: relative; justify-self: center; width: min(320px, 100%); aspect-ratio: 1; display: grid; place-items: center; }
 .studio-crest::before { content: ""; position: absolute; inset: 6%; border-radius: 50%; background: radial-gradient(circle, rgba(214,59,59,.32), rgba(214,59,59,0) 68%); filter: blur(10px); }
-.studio-crest::after { content: ""; position: absolute; inset: -4%; border-radius: 50%; border: 1px dashed rgba(239,80,80,.28); animation: crest-spin 60s linear infinite; }
-.studio-crest img { position: relative; width: 82%; height: auto; filter: drop-shadow(0 18px 40px rgba(0,0,0,.6)); animation: crest-float 7s ease-in-out infinite; }
+.studio-crest::after { content: none; }
+.studio-crest img { position: relative; width: 76%; height: auto; filter: drop-shadow(0 18px 40px rgba(0,0,0,.6)); animation: crest-float 7s ease-in-out infinite; }
 @keyframes crest-spin { to { transform: rotate(360deg); } }
 @keyframes crest-float { 50% { transform: translateY(-8px); } }
 @media (prefers-reduced-motion: reduce) { .studio-crest::after, .studio-crest img { animation: none; } }
