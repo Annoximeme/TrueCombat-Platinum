@@ -47,6 +47,8 @@ The engine work in 0.40.0 is the largest single step in Platinum's renderer sinc
 
 Muzzle flashes and explosions now light up the world around them. Fire a rifle in a dark stairwell and the walls flicker with it. A grenade going off around a corner throws a brief glow across the floor before the sound reaches you. These dynamic lights are fast enough to run on every preset that has them, and they give away exactly as much as they should: a firefight in a dark room is visible from the doorway.
 
+![Dynamic light from a muzzle flash](img/devlog/ground-up-dynamic-light.webp "A burst from an M4 lights up the brickwork of a dark hall, Ultra preset, DirectX 12.")
+
 ### Air and sky
 
 On DirectX 12, every map now has an atmosphere. Sunlit haze builds up over long sightlines, and the sky matches each map's time of day instead of sitting behind it like a painted backdrop. Bounce light lets sunlit surfaces spill soft colour into nearby rooms and corners, so an interior beside a bright courtyard is no longer uniformly dark.
@@ -79,7 +81,7 @@ The switch only changes what you see. Hitboxes, sightlines, movement and sound a
 
 In Deployment you can make your soldier your own with five camos per team, and Terrorists can choose a cap, a headscarf or a balaclava.
 
-![Remastered Special Forces](img/devlog/ground-up-soldiers.webp "The remastered Special Forces, Ultra preset.")
+![A remastered soldier](img/devlog/ground-up-soldiers.webp "A remastered soldier with the new vest and gear, Ultra preset, DirectX 12.")
 
 ## Season 1
 
@@ -121,7 +123,7 @@ Ten rifles and submachine guns can now carry an M68 red dot: the M4, M16, SIG 55
 
 The red dot changes what you see, not how the weapon behaves. Field of view, spread and recoil stay exactly the same as with iron sights, so it is a matter of taste rather than an advantage. On the M4, M16 and REC7 the dot sits on a small riser, so the iron sight's front post still lines up just below it.
 
-![The M68 red dot](img/devlog/ground-up-reddot.webp "The optional M68 red dot, Ultra preset.")
+![The M68 red dot](img/devlog/ground-up-reddot.webp "The optional M68 red dot on the M4, Ultra preset, DirectX 12.")
 
 ### Recoil you can control
 

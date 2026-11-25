@@ -47,6 +47,8 @@ Het engine-werk in 0.40.0 is de grootste stap voor de renderer van Platinum sind
 
 Mondingsvuur en explosies verlichten nu de wereld rondom. Vuur een geweer af in een donkere trappenhal en de muren flikkeren mee. Een granaat die om de hoek ontploft, werpt een korte gloed over de vloer nog voor het geluid je bereikt. Deze dynamische lichten zijn snel genoeg voor elke preset die ze heeft, en ze verraden precies zoveel als ze moeten: een vuurgevecht in een donkere kamer zie je vanuit de deuropening.
 
+![Dynamisch licht van een mondingsvuur](img/devlog/ground-up-dynamic-light.webp "Een salvo uit een M4 verlicht het metselwerk van een donkere hal, Ultra-preset, DirectX 12.")
+
 ### Lucht en hemel
 
 Op DirectX 12 heeft elke map nu een atmosfeer. Zonverlichte nevel bouwt zich op over lange zichtlijnen, en de hemel past bij het tijdstip van elke map in plaats van erachter te hangen als een geschilderd decor. Bounce light laat zonbeschenen oppervlakken zachte kleur afgeven aan kamers en hoeken in de buurt, zodat een interieur naast een felle binnenplaats niet langer egaal donker is.
@@ -79,7 +81,7 @@ De schakelaar verandert alleen wat je ziet. Hitboxen, zichtlijnen, beweging en g
 
 In Deployment maak je je soldaat eigen met vijf camo's per team, en Terrorists kunnen kiezen voor een pet, een hoofddoek of een bivakmuts.
 
-![Geremasterde Special Forces](img/devlog/ground-up-soldiers.webp "De geremasterde Special Forces, Ultra-preset.")
+![Een geremasterde soldaat](img/devlog/ground-up-soldiers.webp "Een geremasterde soldaat met het nieuwe vest en de nieuwe uitrusting, Ultra-preset, DirectX 12.")
 
 ## Season 1
 
@@ -121,7 +123,7 @@ Tien geweren en machinepistolen kunnen nu een M68-red dot dragen: de M4, M16, SI
 
 De red dot verandert wat je ziet, niet hoe het wapen zich gedraagt. Gezichtsveld, spreiding en terugslag blijven precies hetzelfde als met het standaardvizier, dus het is een kwestie van smaak en geen voordeel. Op de M4, M16 en REC7 zit de dot op een kleine verhoging, zodat de korrel van het vizier er net onder blijft uitlijnen.
 
-![De M68-red dot](img/devlog/ground-up-reddot.webp "De optionele M68-red dot, Ultra-preset.")
+![De M68-red dot](img/devlog/ground-up-reddot.webp "De optionele M68-red dot op de M4, Ultra-preset, DirectX 12.")
 
 ### Terugslag onder controle
 
