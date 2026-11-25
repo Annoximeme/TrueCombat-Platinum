@@ -21,6 +21,8 @@
 #
 # Environment: as build-windows.sh (LLVM_MINGW, SL_SDK, EOS_INCLUDE, BUILD_CACHE); TOOLCHAIN (default ~/toolchain) is set up
 # on first use with setup-toolchain.sh. SKIP="windows bots" skips steps (the summary then says NOT a full gate).
+# SCAN_CHANGED=1 scans only the files the kit changes (for a base that already passed a full scan); DATA
+# shares the soak game data between runs (downloaded once).
 set -uo pipefail
 BASE=${1:?base tag (v0.38.0-sandbox34) or a source zip/folder}; KIT=$(cd "${2:?kit folder}" && pwd); MAPS=${3:-"obj_village obj_snow"}; MIN=${4:-3}
 HERE=$(cd "$(dirname "$0")" && pwd); REPO=$(cd "$HERE/../.." && pwd)
@@ -60,6 +62,12 @@ compose() {
   [ -d "$KIT/files" ] && cp -r "$KIT/files/." "$W/src/"
   git status --short | wc -l | sed 's/^/files changed by the kit: /'
 }
+scan_changed() {  # the kit's files only: the base passed a full scan before
+  (cd "$W/src" && git add -A >/dev/null && git diff --cached --name-only --diff-filter=d -z) > "$W/changed.lst" || return 1
+  echo "scan of the $(tr -cd '\0' < "$W/changed.lst" | wc -c) files the kit changes (base scanned in full before)"
+  [ -s "$W/changed.lst" ] || return 0
+  (cd "$W/src" && xargs -0 python3 "$HERE/scan_metadata.py" < "$W/changed.lst")
+}
 toolchain() {
   [ -x "$TOOLCHAIN/llvm-mingw/bin/x86_64-w64-mingw32-clang" ] || "$HERE/setup-toolchain.sh" "$TOOLCHAIN" || return 1
   command -v wine >/dev/null || echo "wine missing: probes will not run (apt-get install wine64)"
@@ -69,7 +77,11 @@ windows() {
 }
 
 step compose compose && {
-  step scan python3 "$HERE/scan_metadata.py" "$W/src"
+  if [ "${SCAN_CHANGED:-0}" = 1 ]; then
+    step scan scan_changed
+  else
+    step scan python3 "$HERE/scan_metadata.py" "$W/src"
+  fi
   step toolchain toolchain && step windows windows && step scan-built python3 "$HERE/scan_metadata.py" "$W/win/game"
   step linux "$REPO/tools/linux-server/build-linux-server.sh" "$W/src" "$W/linux" && \
     step bots env LOGS="$W/soak-logs" DATA="${DATA:-$W/soak-data}" "$HERE/bots-soak.sh" "$W/linux" "$DATA_TAG" "$MAPS" "$MIN"
