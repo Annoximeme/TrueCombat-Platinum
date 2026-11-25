@@ -11,7 +11,7 @@ runs on the VPS, so the live game servers are never slowed down.
 | `linux` | Linux dedicated server (public kit build) | ~5 min |
 | `eac` | Linux dedicated server with Easy Anti-Cheat, as used on the official servers | ~5 min |
 | `bots` | Headless soak: the Linux build runs each map with a full server of bots; fails on a crash, a fatal error, a hang or bots that never join. Records the server's CPU per map (average and worst 15 s window) | 2-20 min per map |
-| `scan` | Provenance / tool metadata scan of the whole source tree: C2PA and JUMBF manifests, metadata naming an AI tool, inside pk3 members and inside images compiled into the launcher as byte arrays. The `windows` job scans the built game the same way | ~1 min |
+| `scan` | Provenance / tool metadata scan of the whole source tree: C2PA and JUMBF manifests, authoring-tool metadata, inside pk3 members and inside images compiled into the launcher as byte arrays. The `windows` job scans the built game the same way | ~1 min |
 
 ## Privacy
 
