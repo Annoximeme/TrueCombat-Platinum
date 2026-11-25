@@ -982,7 +982,11 @@ body.has-compare footer { padding-bottom: 320px; }
   .post-body { grid-template-columns: minmax(0, 720px) 250px; justify-content: space-between; column-gap: 56px; }
   .post-toc { grid-column: 2; grid-row: 1 / span 3; align-self: start; position: sticky; top: 96px; }
   .post-body > .prose, .post-rate, .post-end, .post-pager { grid-column: 1; }
+  /* everything except the contents box stays in the reading column (comments, studio card and anything added later) */
+  .post-body > :not(.post-toc) { grid-column: 1; min-width: 0; }
 }
+.post-end, .cmt { align-self: start; }
+.post-end .news-tools { align-items: center; }
 /* devlog star rating (tools/server-bridge/tcp_devlog.py) */
 .post-rate { max-width: 720px; display: grid; gap: 10px; padding: 20px 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
 .post-rate[hidden] { display: none; }
