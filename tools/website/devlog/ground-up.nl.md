@@ -157,9 +157,9 @@ We hebben Lockgate in de eerste plaats eerlijk ontworpen. De map is gespiegeld o
 
 Lockgate speelt in elke modus: Bomb, Team Elimination, Team Deathmatch, Flag Capture en Capture Point. Voor hij bij jullie terechtkwam, speelden bots hem keer op keer in alle vijf, om zeker te zijn dat niets vastloopt en dat elke bomsite geplant en verdedigd kan worden.
 
-![Lockgate](img/devlog/ground-up-lockgate.webp "Over de sluis naar de douanewijk, Ultra-preset, DirectX 12.")
+![Lockgate](img/devlog/ground-up-lockgate.webp "De bakstenen en betonnen oever staan tegenover elkaar langs een lane, Ultra-preset, DirectX 12.")
 
-![Het pomphuis op Lockgate](img/devlog/ground-up-lockgate-lock.webp "Het pomphuis aan de overkant van de sluis, Ultra-preset, DirectX 12.")
+![Het pomphuis op Lockgate](img/devlog/ground-up-lockgate-lock.webp "Het dak van het pomphuis, met de schoorsteen van de brouwerij erachter, Ultra-preset, DirectX 12.")
 
 ## Geluid
 

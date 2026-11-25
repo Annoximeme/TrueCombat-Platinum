@@ -157,9 +157,9 @@ We designed Lockgate to be fair before anything else. The map is mirrored across
 
 Lockgate plays in every mode: Bomb, Team Elimination, Team Deathmatch, Flag Capture and Capture Point. Before it reached you, it was played by bots in all five, over and over, to make sure nothing gets stuck and every bomb site can be planted and defended.
 
-![Lockgate](img/devlog/ground-up-lockgate.webp "Across the lock towards the customs quarter, Ultra preset, DirectX 12.")
+![Lockgate](img/devlog/ground-up-lockgate.webp "The brick and concrete banks face each other down a lane, Ultra preset, DirectX 12.")
 
-![The pump house on Lockgate](img/devlog/ground-up-lockgate-lock.webp "The pump house across the lock, Ultra preset, DirectX 12.")
+![The pump house on Lockgate](img/devlog/ground-up-lockgate-lock.webp "The pump house roof, with the brewery chimney behind it, Ultra preset, DirectX 12.")
 
 ## Sound
 
