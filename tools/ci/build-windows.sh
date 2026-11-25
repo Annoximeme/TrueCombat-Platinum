@@ -14,6 +14,11 @@
 #   JOBS         parallel jobs (default: nproc)
 #   QUIET        1 = never print compiler output (public CI logs of unreleased code)
 #   ENGINE_CMAKE_EXTRA  extra engine CMake flags, e.g. -DFEATURE_PROFILER=ON for a development build
+#   BUILD_CACHE  ccache folder shared between builds (default: off); same sources in another folder still hit
+#
+# Accepts both source layouts: a release source snapshot, and a checkout of the development repository, where
+# the shipped renderer files listed in analysis_scripts/dlss/patch-manifest.json live in
+# experiments/dlss/source/ and are copied into the engine first, as the PC candidate build does.
 set -euo pipefail
 SRC=$(cd "$1" && pwd); OUT=$(mkdir -p "$2" && cd "$2" && pwd)
 : "${LLVM_MINGW:?set LLVM_MINGW}"
@@ -88,6 +93,26 @@ CMAKE
 # Snapshot fix-ups, the same ones build_candidate.py makes in its frozen copy.
 # Source snapshots up to 0.37.3 leave out the engine icon the .rc file needs.
 [ -f "$E/misc/platinum.ico" ] || { mkdir -p "$E/misc"; cp "$(dirname "$0")/platinum.ico" "$E/misc/platinum.ico"; echo "note: engine icon missing from snapshot, used tools/ci/platinum.ico" | tee -a "$OUT/options.txt"; }
+# Development repository layout: put the shipped renderer files into the engine tree (build_candidate.py does
+# the same). A release snapshot already has them in place and has no experiments/ folder.
+DLSS_PRIVATE="$SRC/experiments/dlss/source"; DLSS_MANIFEST="$SRC/analysis_scripts/dlss/patch-manifest.json"
+if [ -d "$DLSS_PRIVATE/src" ] && [ -f "$DLSS_MANIFEST" ]; then
+  n=0
+  for f in $(python3 -c 'import json,sys; print(" ".join(json.load(open(sys.argv[1]))["files"]))' "$DLSS_MANIFEST"); do
+    [ -f "$DLSS_PRIVATE/$f" ] || { echo "repo layout: $f missing from experiments/dlss/source" >&2; exit 1; }
+    mkdir -p "$(dirname "$E/$f")"; cp "$DLSS_PRIVATE/$f" "$E/$f"; n=$((n + 1))
+  done
+  echo "note: development repository layout, $n renderer files taken from experiments/dlss/source" | tee -a "$OUT/options.txt"
+fi
+CACHE_FLAGS=()
+if [ -n "${BUILD_CACHE:-}" ] && command -v ccache >/dev/null; then
+  mkdir -p "$BUILD_CACHE"
+  # paths under the common parent of source and output are hashed relative, so another work folder still hits
+  export CCACHE_DIR="$BUILD_CACHE" CCACHE_NOHASHDIR=1
+  CCACHE_BASEDIR=$(python3 -c 'import os,sys; print(os.path.commonpath(sys.argv[1:]))' "$SRC" "$OUT"); export CCACHE_BASEDIR CCACHE_MAXSIZE=${CCACHE_MAXSIZE:-5G}
+  CACHE_FLAGS=(-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache)
+  ccache -z >/dev/null
+fi
 DLSS=OFF
 if [ -n "${SL_SDK:-}" ] && [ -f "$SRC/analysis_scripts/dlss/overlay.cmake" ]; then
   DLSS=ON
@@ -99,10 +124,10 @@ if [ -n "${EOS_INCLUDE:-}" ] && [ -f "$EOS_INCLUDE/eos_sdk.h" ]; then
   EAC=ON; mkdir -p "$BUILD/eos"; ln -sfn "$EOS_INCLUDE" "$BUILD/eos/Include"
   EOS_FLAGS=(-DFEATURE_EAC=ON "-DEOS_SDK_DIR=$BUILD/eos")
 fi
-echo "Options: DLSS=$DLSS EAC=$EAC probes=$RUN_PROBES jobs=$JOBS" | tee -a "$OUT/options.txt"
+echo "Options: DLSS=$DLSS EAC=$EAC probes=$RUN_PROBES jobs=$JOBS cache=${CACHE_FLAGS:+on}" | tee -a "$OUT/options.txt"
 
 # OpenAL Soft (engine/OpenAL64.dll at run time).
-step openal-configure cmake -S "$E/libs/openal" -B "$BUILD/openal" -G Ninja -DCMAKE_TOOLCHAIN_FILE="$TC" \
+step openal-configure cmake -S "$E/libs/openal" -B "$BUILD/openal" -G Ninja -DCMAKE_TOOLCHAIN_FILE="$TC" "${CACHE_FLAGS[@]}" \
   -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_BUILD_TYPE=Release -DLIBTYPE=SHARED -DALSOFT_UTILS=OFF \
   -DALSOFT_NO_CONFIG_UTIL=ON -DALSOFT_EXAMPLES=OFF -DALSOFT_TESTS=OFF -DALSOFT_CONFIG=OFF \
   -DALSOFT_HRTF_DEFS=OFF -DALSOFT_AMBDEC_PRESETS=OFF -DALSOFT_INSTALL=OFF -DALSOFT_BUILD_IMPORT_LIB=OFF \
@@ -110,7 +135,7 @@ step openal-configure cmake -S "$E/libs/openal" -B "$BUILD/openal" -G Ninja -DCM
 step openal-build cmake --build "$BUILD/openal" --parallel "$JOBS"
 
 # Engine: client, dedicated server, DX12 + OpenGL renderers, native UI.
-step engine-configure cmake -S "$E" -B "$BUILD/engine" -G Ninja -DCMAKE_TOOLCHAIN_FILE="$TC" \
+step engine-configure cmake -S "$E" -B "$BUILD/engine" -G Ninja -DCMAKE_TOOLCHAIN_FILE="$TC" "${CACHE_FLAGS[@]}" \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_POLICY_VERSION_MINIMUM=3.10 \
   -DBUILD_CLIENT=ON -DBUILD_SERVER=ON -DBUILD_MOD=ON -DBUILD_CLIENT_MOD=ON -DBUILD_SERVER_MOD=OFF -DBUILD_MOD_PK3=OFF \
   -DFEATURE_RENDERER1=ON -DFEATURE_RENDERER2=OFF -DFEATURE_RENDERER_DX12=ON -DFEATURE_RENDERER_DLSS=$DLSS \
@@ -155,5 +180,9 @@ done
 cp "$BUILD/openal/OpenAL32.dll" "$GAME/engine/OpenAL64.dll"
 cp "$(find "$BUILD/engine" -name ui_mp_x64.dll | head -1)" "$GAME/tcetest/"
 ( cd "$OUT" && find game probes -type f \( -name '*.exe' -o -name '*.dll' \) -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt )
-{ echo; echo "Options: DLSS=$DLSS, EAC=$EAC, probes run=$RUN_PROBES"; echo; echo '```'; cat "$OUT/SHA256SUMS.txt"; echo '```'; } >> "$SUMMARY"
+CACHE_NOTE=""
+if [ ${#CACHE_FLAGS[@]} -gt 0 ]; then
+  CACHE_NOTE=", cache $(ccache --print-stats 2>/dev/null | awk -F'\t' '/^direct_cache_hit|^preprocessed_cache_hit/{h+=$2} /^cache_miss/{m+=$2} END{printf "%d hits / %d misses", h, m}')"
+fi
+{ echo; echo "Options: DLSS=$DLSS, EAC=$EAC, probes run=$RUN_PROBES$CACHE_NOTE"; echo; echo '```'; cat "$OUT/SHA256SUMS.txt"; echo '```'; } >> "$SUMMARY"
 echo "All Windows builds passed."
