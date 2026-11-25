@@ -1851,7 +1851,7 @@ h1 .acct-tick { width: .6em; height: .6em; vertical-align: .08em; }
 .m3d-stage canvas:active { cursor: grabbing; }
 .m3d-stage canvas:focus-visible { box-shadow: inset 0 0 0 2px var(--amber); }
 .m3d-open { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 2; display: inline-flex; gap: 8px; align-items: baseline; }
-.m3d-open small { font: 500 .78rem/1 var(--f-mono); opacity: .8; text-transform: none; letter-spacing: 0; }
+.m3d-open small { font: 500 .78rem/1 var(--f-mono); text-transform: none; letter-spacing: 0; }
 .m3d-status { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; margin: 0; color: var(--muted); font-size: .9rem; z-index: 2; pointer-events: none; }
 .m3d-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
 .m3d-l { position: absolute; left: 0; top: 0; white-space: nowrap; font: 600 .74rem/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase;
