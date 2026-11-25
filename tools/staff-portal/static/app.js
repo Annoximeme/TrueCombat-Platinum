@@ -160,6 +160,7 @@ async function boot() {
   every(refreshCommentCount, 60000);
   every(refreshDuty, 60000);
   liveSetup();
+  await loadServers().catch(() => {});
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
   route();
 }
@@ -341,6 +342,13 @@ async function loadServers() {
   S.servers = r.servers;
   return r.servers;
 }
+// Shows a server's display name ("Official #1") instead of its config key; unknown keys stay as they are.
+function srvName(key) {
+  if (key === "*") return "every server";
+  const s = S.servers.find((x) => x.key === key);
+  return s && s.name ? s.name : key;
+}
+const plural = (n, one, many) => `${n} ${n === 1 ? one : (many || one + "s")}`;
 function eacTag(s) {
   return s.eac === "required" ? '<span class="tag ok">EAC required</span>' : s.eac === "on" ? '<span class="tag warn">EAC on</span>' : '<span class="tag bad">EAC off</span>';
 }
@@ -360,7 +368,7 @@ function pageServers(main) {
             ${s.ranked ? '<span class="tag staff">Ranked</span>' : ""}${s.needpass ? '<span class="tag">Password</span>' : ""}</div>
           <div class="title"><span class="dot ${s.online ? "on" : "off"}"></span>${esc(s.name)}</div>
           <div class="meta">${s.online ? esc(s.map) + (s.mode ? " · " + esc(s.mode) : "") : "Offline · " + esc(s.error || "no answer")}</div>
-          <div class="big">${s.online ? s.humans : "–"}<small> players${s.bots ? " · " + s.bots + " bots" : ""} · ${s.max_players || "?"} slots</small></div>
+          <div class="big">${s.online ? s.humans : "–"}<small> ${s.online && s.humans === 1 ? "player" : "players"}${s.bots ? " · " + plural(s.bots, "bot") : ""} · ${s.max_players || "?"} slots</small></div>
         </a>`).join("") || '<p class="empty">No servers configured.</p>';
     } catch (e) { toast(e.message, true); }
   }, 5000, "servers", ["servers"]);
@@ -411,7 +419,7 @@ async function drawServer(key) {
   if (!s) { $("#main").innerHTML = '<p class="empty">Unknown server.</p>'; return; }
   $("#srv-title").innerHTML = `<span class="dot ${s.online ? "on" : "off"}"></span>${esc(s.name)}`;
   $("#srv-meta").innerHTML = s.online
-    ? `${esc(s.map)}${s.mode ? " · " + esc(s.mode) : ""} · ${s.humans} players${s.bots ? ", " + s.bots + " bots" : ""} of ${s.max_players} · ${eacTag(s)} <span class="mono dim">${esc(s.address)}</span>`
+    ? `${esc(s.map)}${s.mode ? " · " + esc(s.mode) : ""} · ${plural(s.humans, "player")}${s.bots ? ", " + plural(s.bots, "bot") : ""} of ${s.max_players} · ${eacTag(s)} <span class="mono dim">${esc(s.address)}</span>`
     : `<span class="error">Offline: ${esc(s.error || "no answer")}</span>`;
   const extra = s.staff_commands && s.staff_commands.length;
   const rows = (s.players || []).slice().sort((a, b) => (a.team || 9) - (b.team || 9) || b.score - a.score);
@@ -466,7 +474,7 @@ function addChat(lines, showServer) {
     S.chatAfter = Math.max(S.chatAfter, l.id);
     const div = document.createElement("div");
     div.className = "chat-line " + (l.kind || "") + (l.flag ? " flagged" : "");
-    const srv = showServer ? `<span class="srv">${esc(l.server)}</span>` : "";
+    const srv = showServer ? `<span class="srv">${esc(srvName(l.server))}</span>` : "";
     const who = l.pid ? `<a class="who" href="#/player/${esc(l.pid)}">${esc(l.name)}:</a>` : `<span class="who">${esc(l.name)}:</span>`;
     div.innerHTML = `<time>${clock(l.at)}</time>${srv}${who} ${esc(l.text)}${l.flag ? `<span class="flag">${esc(l.flag)}</span>` : ""}`;
     log.appendChild(div);
@@ -478,7 +486,7 @@ function addChat(lines, showServer) {
 function pageChat(main) {
   main.innerHTML = `<div class="head"><div><p class="eyebrow">Live</p><h1>Chat, all servers</h1></div></div>
     <div class="panel chat chat-page"><div class="chat-log" id="chat-log"></div>
-    ${can("chat.reply") ? '<form class="chat-form" id="chat-form"><select name="server" id="chat-target"></select><input name="text" maxlength="200" placeholder="Reply as staff" autocomplete="off"><button class="btn btn-primary">Send</button></form>' : ""}</div>`;
+    ${can("chat.reply") ? '<form class="chat-form" id="chat-form"><select name="server" id="chat-target" aria-label="Server to reply on"></select><input name="text" maxlength="200" placeholder="Reply as staff" aria-label="Message" autocomplete="off"><button class="btn btn-primary">Send</button></form>' : ""}</div>`;
   S.chatAfter = 0;
   const form = $("#chat-form");
   if (form) {
@@ -650,7 +658,7 @@ function reportCard(r) {
   const who = d.reported || {}, by = d.reporter || {};
   const acc = who.shots ? Math.round((100 * who.hits) / who.shots) + "%" : "–";
   const name = r.target_pid ? `<a href="#/player/${esc(r.target_pid)}">${esc(r.target_name)}</a>` : esc(r.target_name);
-  return `<div class="panel"><div class="head"><div><div class="tags">${status}<span class="tag${r.source === "auto" ? " bad" : ""}">${r.source === "auto" ? "Automatic flag" : "Player report"}</span><span class="tag">${esc(r.server)}</span></div>
+  return `<div class="panel"><div class="head"><div><div class="tags">${status}<span class="tag${r.source === "auto" ? " bad" : ""}">${r.source === "auto" ? "Automatic flag" : "Player report"}</span><span class="tag">${esc(srvName(r.server))}</span></div>
       <h2>${name}</h2><span class="muted">${esc(d.map || "")} · ${when(r.received)}${r.source === "auto" ? "" : " · reported by " + esc(by.name || "unknown")}</span></div>
       <div class="actions">${buttons}</div></div>
     <p>“${esc(d.reason || "No reason given")}”</p>
@@ -698,7 +706,7 @@ async function pagePlayer(main, pid) {
   const st = p.stats;
   const activeBan = p.bans.find((b) => b.active);
   main.innerHTML = `<div class="head"><div><p class="eyebrow"><a href="#/players">Players</a></p><h1>${esc(name)}</h1>
-      <div class="tags">${p.online.map((o) => `<a class="tag ok" href="#/server/${esc(o.server)}">Online on ${esc(o.server)}</a>`).join("")}
+      <div class="tags">${p.online.map((o) => `<a class="tag ok" href="#/server/${esc(o.server)}">Online on ${esc(o.server_name || srvName(o.server))}</a>`).join("")}
       ${activeBan ? `<span class="tag bad">${activeBan.game ? "Banned from the game" : "Banned"} · ${esc(until(activeBan.expires))}</span>` : ""}<span class="tag mono">${esc(pid)}</span></div></div>
     <div class="actions"><a class="btn" href="${esc(p.profile_url)}" target="_blank" rel="noopener">Public profile</a>
       ${can("watch") ? `<button class="btn" id="p-watch">${p.watch ? "Stop watching" : "Watch"}</button>` : ""}
@@ -721,7 +729,7 @@ async function pagePlayer(main, pid) {
         ${st ? `<dt>Rating</dt><dd>${st.ranked ? esc(st.rating) + (st.position ? " · #" + esc(st.position) : "") : "not ranked yet"} · ${esc(st.matches)} matches</dd><dt>Career</dt><dd>${esc(st.kills)} K · ${esc(st.deaths)} D · ${esc(st.teamKills ?? 0)} TK</dd>` : ""}
       </dl></div>
       ${p.alts && p.alts.length ? `<div class="panel"><h3>Possible other accounts</h3><ul class="list">${p.alts.map((a) => `<li><a href="#/player/${esc(a.pid)}">${esc(a.name)}</a> ${a.banned ? '<span class="tag bad">Banned</span>' : ""} <span class="dim">· same ${esc(a.why)}</span></li>`).join("")}</ul></div>` : ""}
-      ${p.flags && p.flags.length ? `<div class="panel"><h3>Flags</h3><ul class="list">${p.flags.slice(0, 15).map((f) => `<li><span class="tag ${f.kind === "ban dodger" ? "bad" : "warn"}">${esc(f.kind)}</span> ${esc(f.detail)} <span class="dim">· ${esc(f.server)} · ${when(f.at)}</span></li>`).join("")}</ul></div>` : ""}
+      ${p.flags && p.flags.length ? `<div class="panel"><h3>Flags</h3><ul class="list">${p.flags.slice(0, 15).map((f) => `<li><span class="tag ${f.kind === "ban dodger" ? "bad" : "warn"}">${esc(f.kind)}</span> ${esc(f.detail)} <span class="dim">· ${esc(srvName(f.server))} · ${when(f.at)}</span></li>`).join("")}</ul></div>` : ""}
       <div class="panel"><h3>Names used</h3><ul class="list">${p.names.map((n) => `<li>${esc(n.name)} <span class="dim">· ${ago(n.last_seen)}</span></li>`).join("") || '<li class="dim">None recorded.</li>'}</ul></div>
       ${p.ips ? `<div class="panel"><h3>Addresses (admin only)</h3><ul class="list">${p.ips.map((i) => `<li class="mono">${esc(i.ip)} <span class="dim">· ${ago(i.last_seen)}</span></li>`).join("") || '<li class="dim">None.</li>'}</ul>
         ${p.shared_ip && p.shared_ip.length ? `<p class="muted">Other players seen on these addresses: ${p.shared_ip.map((x) => `<a class="mono" href="#/player/${esc(x)}">${esc(x)}</a>`).join(", ")}</p>` : ""}</div>` : ""}
@@ -738,7 +746,7 @@ async function pagePlayer(main, pid) {
   const pc = $("#p-case");
   if (pc) pc.onclick = () => newCaseDialog({ pid, name });
   const chat = $("#p-chat");
-  chat.innerHTML = p.chat.map((l) => `<div class="chat-line ${esc(l.kind)}"><time>${when(l.at)}</time><span class="srv">${esc(l.server)}</span><span class="who">${esc(l.name)}:</span> ${esc(l.text)}</div>`).join("") || '<p class="empty">No chat recorded.</p>';
+  chat.innerHTML = p.chat.map((l) => `<div class="chat-line ${esc(l.kind)}"><time>${when(l.at)}</time><span class="srv">${esc(srvName(l.server))}</span><span class="who">${esc(l.name)}:</span> ${esc(l.text)}</div>`).join("") || '<p class="empty">No chat recorded.</p>';
   $("#p-note").onsubmit = async (e) => {
     e.preventDefault();
     const text = e.target.text.value.trim();
@@ -830,7 +838,7 @@ function pageAudit(main) {
     if (!r) return;
     $("#a-list").innerHTML = r.entries.length ? `<table><tr><th>When</th><th>Staff</th><th>Action</th><th>Server</th><th>Target</th><th>Detail</th></tr>${r.entries.map((a) => `
       <tr><td>${when(a.at)}</td><td>${esc(a.staff)} <span class="role">${esc(a.role)}</span></td><td>${a.ok ? "" : '<span class="tag bad">failed</span> '}${esc(a.action)}</td>
-      <td>${esc(a.server)}</td><td>${a.target_pid ? `<a href="#/player/${esc(a.target_pid)}">${esc(a.target)}</a>` : esc(a.target)}</td><td>${esc(a.detail)}</td></tr>`).join("")}</table>` : '<p class="empty">Nothing logged yet.</p>';
+      <td>${esc(srvName(a.server))}</td><td>${a.target_pid ? `<a href="#/player/${esc(a.target_pid)}">${esc(a.target)}</a>` : esc(a.target)}</td><td>${esc(a.detail)}</td></tr>`).join("")}</table>` : '<p class="empty">Nothing logged yet.</p>';
   };
   $("#a-form").onsubmit = (e) => { e.preventDefault(); draw(); };
   every(draw, 30000, "audit");
@@ -1142,7 +1150,7 @@ function pageSchedule(main) {
     api("schedule/cancel", { id: +b.dataset.cancel }).then(() => { toast("Cancelled."); draw(); }).catch((err) => toast(err.message, true));
   };
   const label = { say: "Announce", restart: "Restart match", map: "Change map", nextmap: "Next map" };
-  const row = (j, live) => `<tr><td>${esc(label[j.action] || j.action)}</td><td>${esc(j.server === "*" ? "every server" : j.server)}</td><td>${esc(j.arg || "")}</td>
+  const row = (j, live) => `<tr><td>${esc(label[j.action] || j.action)}</td><td>${esc(srvName(j.server))}</td><td>${esc(j.arg || "")}</td>
     <td>${live ? when(j.next_at) : j.last_run ? when(j.last_run) : "–"}${j.every_min ? `<div class="dim small">every ${j.every_min} min${j.until ? " until " + when(j.until) : ""}</div>` : ""}</td>
     <td>${esc(j.by_name)}</td><td>${j.runs ? j.runs + "×" : ""}${j.last_result ? `<div class="dim small">${esc(j.last_result)}</div>` : ""}</td>
     <td>${live ? `<button class="btn btn-small" data-cancel="${j.id}">Cancel</button>` : ""}</td></tr>`;
@@ -1194,7 +1202,7 @@ function pageFilter(main) {
       <tr><td><span class="mono">${esc(f.pattern)}</span> ${f.kind === "regex" ? '<span class="tag">pattern</span>' : ""}${f.active ? "" : ' <span class="tag">off</span>'}<div class="dim small">${esc(f.note || "")}</div></td>
       <td>${esc(f.action)}${f.action === "mute" ? " " + f.minutes + " min" : ""}</td><td class="num">${f.hits}</td>
       <td>${admin ? `<div class="row-actions"><button class="btn btn-small" data-i="${i}">Change</button><button class="btn btn-small btn-danger" data-i="${i}" data-do="delete">Delete</button></div>` : ""}</td></tr>`).join("")}</table>` : '<p class="empty">No filters yet.</p>';
-    $("#f-flagged").innerHTML = r.flagged.map((l) => `<div class="chat-line flagged"><time>${when(l.at)}</time><span class="srv">${esc(l.server)}</span>${l.pid ? `<a class="who" href="#/player/${esc(l.pid)}">${esc(l.name)}:</a>` : `<span class="who">${esc(l.name)}:</span>`} ${esc(l.text)}<span class="flag">${esc(l.flag)}</span></div>`).join("") || '<p class="empty">Nothing flagged.</p>';
+    $("#f-flagged").innerHTML = r.flagged.map((l) => `<div class="chat-line flagged"><time>${when(l.at)}</time><span class="srv">${esc(srvName(l.server))}</span>${l.pid ? `<a class="who" href="#/player/${esc(l.pid)}">${esc(l.name)}:</a>` : `<span class="who">${esc(l.name)}:</span>`} ${esc(l.text)}<span class="flag">${esc(l.flag)}</span></div>`).join("") || '<p class="empty">Nothing flagged.</p>';
   }
   draw();
 }
@@ -1519,7 +1527,7 @@ function paletteLocal(q) {
   if (/^(case|new c)/.test(low) && can("cases")) out.push({ kind: "Command", label: "Open a new case", sub: "", act: () => newCaseDialog({}) });
   if (/^(short|keys|help)/.test(verb)) out.push({ kind: "Command", label: "Keyboard shortcuts", sub: "?", act: shortcutHelp });
   for (const e of pageEntries()) if (!low || e.label.toLowerCase().includes(low) || e.sub.toLowerCase().includes(low)) out.push(e);
-  for (const s of S.servers) if (!low || s.name.toLowerCase().includes(low) || s.key.includes(low)) out.push({ kind: "Server", label: s.name, sub: s.online ? `${s.map} · ${s.humans} players` : "offline", href: "#/server/" + s.key });
+  for (const s of S.servers) if (!low || s.name.toLowerCase().includes(low) || s.key.includes(low)) out.push({ kind: "Server", label: s.name, sub: s.online ? `${s.map} · ${plural(s.humans, "player")}` : "offline", href: "#/server/" + s.key });
   return low ? out.slice(0, 10) : out.slice(0, 14);
 }
 async function paletteSearch() {
@@ -1615,9 +1623,9 @@ function pageHome(main) {
     if (openAge > 3600) attn.push(["bad", `<a href="#/reports">A report has waited ${esc(ago(r.oldest_open).replace(" ago", ""))}</a>`, `${r.open} open`]);
     else if (r.open) attn.push(["", `<a href="#/reports">${r.open} open report${r.open > 1 ? "s" : ""}</a>`, "take one"]);
     if (d.appeals_open) attn.push(["", `<a href="#/reports">${d.appeals_open} ban appeal${d.appeals_open > 1 ? "s" : ""} waiting</a>`, ""]);
-    for (const w of d.watch_online) attn.push(["", `<a href="#/player/${esc(w.pid)}">Watched: <b>${esc(w.name)}</b> is on ${esc(w.server)}</a>`, esc(w.reason || "")]);
-    for (const x of d.suspicion.filter((y) => y.score >= 60)) attn.push(["bad", `<a href="#/player/${esc(x.pid)}"><b>${esc(x.name)}</b> scores ${x.score}</a>`, esc(x.server)]);
-    for (const e of d.events) attn.push(["ok", `<a href="#/server/${esc(e.server)}">Event mode on ${esc(e.server)}</a>`, esc(e.note || e.by_name)]);
+    for (const w of d.watch_online) attn.push(["", `<a href="#/player/${esc(w.pid)}">Watched: <b>${esc(w.name)}</b> is on ${esc(srvName(w.server))}</a>`, esc(w.reason || "")]);
+    for (const x of d.suspicion.filter((y) => y.score >= 60)) attn.push(["bad", `<a href="#/player/${esc(x.pid)}"><b>${esc(x.name)}</b> scores ${x.score}</a>`, esc(srvName(x.server))]);
+    for (const e of d.events) attn.push(["ok", `<a href="#/server/${esc(e.server)}">Event mode on ${esc(srvName(e.server))}</a>`, esc(e.note || e.by_name)]);
     if (d.backup && d.backup.stale) attn.push(["bad", `<a href="#/health">The nightly database snapshot is ${d.backup.at ? "old" : "missing"}</a>`, esc(d.backup.error || "")]);
     if ((d.disk_used_pct || 0) > 85) attn.push(["bad", `<a href="#/health">Disk ${d.disk_used_pct}% full</a>`, ""]);
     if (S.me.mfa_required && !S.me.mfa_on) attn.push(["bad", '<a href="#" data-mfa>Turn on two-step sign-in to unlock admin tools</a>', ""]);
@@ -1627,14 +1635,14 @@ function pageHome(main) {
     if (m) m.onclick = (e) => { e.preventDefault(); accountDialog(); };
     $("#h-servers").innerHTML = d.servers.map((s) => `<a class="srv-row" href="#/server/${esc(s.key)}"><span class="n"><span class="dot ${s.online ? "on" : "off"}"></span>${esc(s.name)}</span>
       <span class="p">${s.online ? s.humans : "–"}<small> / ${s.max_players || "?"}</small></span>
-      <span class="m">${s.online ? esc(s.map) + (s.mode ? " · " + esc(s.mode) : "") + (s.bots ? " · " + s.bots + " bots" : "") : "offline"}${s.needpass ? " · password" : ""}</span></a>`).join("");
+      <span class="m">${s.online ? esc(s.map) + (s.mode ? " · " + esc(s.mode) : "") + (s.bots ? " · " + plural(s.bots, "bot") : "") : "offline"}${s.needpass ? " · password" : ""}</span></a>`).join("");
     $("#h-alerts").innerHTML = d.alerts.map((a) => `<li><time>${clock(a.at)}</time><span>${a.pid ? `<a href="#/player/${esc(a.pid)}">${esc(a.title)}</a>` : esc(a.title)}</span></li>`).join("") || '<li><span></span><span class="dim">No alerts in the last 24 hours.</span></li>';
     $("#h-sus-wrap").hidden = !d.suspicion.length;
-    $("#h-sus").innerHTML = d.suspicion.map((x) => `<li><span>${susTag(x.score) || x.score}</span><span><a href="#/player/${esc(x.pid)}">${esc(x.name)}</a> <span class="dim small">· ${esc(x.server)}</span><div class="dim small">${esc(x.reasons.join(" · "))}</div></span></li>`).join("");
-    $("#h-act").innerHTML = d.activity.map((a) => `<li><time>${clock(a.at)}</time><span><b>${esc(a.staff)}</b> ${esc(ACTION_WORD[a.action] || a.action)} ${a.target_pid ? `<a href="#/player/${esc(a.target_pid)}">${esc(a.target)}</a>` : esc(a.target)}${a.server ? ` <span class="dim small">· ${esc(a.server)}</span>` : ""}</span></li>`).join("") || '<li><span></span><span class="dim">No staff actions yet.</span></li>';
+    $("#h-sus").innerHTML = d.suspicion.map((x) => `<li><span>${susTag(x.score) || x.score}</span><span><a href="#/player/${esc(x.pid)}">${esc(x.name)}</a> <span class="dim small">· ${esc(srvName(x.server))}</span><div class="dim small">${esc(x.reasons.join(" · "))}</div></span></li>`).join("");
+    $("#h-act").innerHTML = d.activity.map((a) => `<li><time>${clock(a.at)}</time><span><b>${esc(a.staff)}</b> ${esc(ACTION_WORD[a.action] || a.action)} ${a.target_pid ? `<a href="#/player/${esc(a.target_pid)}">${esc(a.target)}</a>` : esc(a.target)}${a.server ? ` <span class="dim small">· ${esc(srvName(a.server))}</span>` : ""}</span></li>`).join("") || '<li><span></span><span class="dim">No staff actions yet.</span></li>';
     const label = { say: "Announcement", restart: "Match restart", map: "Map change", nextmap: "Next map" };
     $("#h-up-wrap").hidden = !d.schedule.length;
-    $("#h-up").innerHTML = d.schedule.map((j) => `<li><time>${clock(j.next_at)}</time><span>${esc(label[j.action] || j.action)} <span class="dim small">· ${esc(j.server === "*" ? "every server" : j.server)}</span><div class="dim small">${esc(j.arg || "")}</div></span></li>`).join("");
+    $("#h-up").innerHTML = d.schedule.map((j) => `<li><time>${clock(j.next_at)}</time><span>${esc(label[j.action] || j.action)} <span class="dim small">· ${esc(srvName(j.server))}</span><div class="dim small">${esc(j.arg || "")}</div></span></li>`).join("");
   }, 10000, "home", ["alert", "reports", "action", "cases", "servers"]);
 }
 
@@ -1786,7 +1794,7 @@ async function drawTimeline(pid) {
     $("#p-tl").innerHTML = list.slice(0, shown).map((e) => {
       const head = e.link ? `<a href="${esc(e.link)}">${esc(e.title)}</a>` : esc(e.title);
       const extra = e.kind === "session" ? ` <span class="dim">· ${e.until ? dur(e.minutes * 60) : "playing now"}${e.chat ? " · " + e.chat + " chat line" + (e.chat === 1 ? "" : "s") : ""}</span>` : "";
-      return `<li class="${esc(e.tone || "")} ${e.kind === "session" ? "session" : ""}"><div class="when">${when(e.at)}${e.server && e.kind !== "session" ? " · " + esc(e.server) : ""}${e.by ? " · " + esc(e.by) : ""}</div>
+      return `<li class="${esc(e.tone || "")} ${e.kind === "session" ? "session" : ""}"><div class="when">${when(e.at)}${e.server && e.kind !== "session" ? " · " + esc(srvName(e.server)) : ""}${e.by ? " · " + esc(e.by) : ""}</div>
         <div><span class="what">${head}</span>${extra}</div>${e.detail ? `<div class="det">${esc(e.detail)}</div>` : ""}</li>`;
     }).join("") || '<li class="dim">Nothing recorded.</li>';
     $("#p-tl-more").hidden = list.length <= shown;
@@ -1830,7 +1838,7 @@ async function evidencePanel(el, { caseId = 0, pid = "", list = null }) {
     const chat = e.target.closest("button[data-ev-chat]");
     if (chat) {
       const ev = list.find((x) => x.id === +chat.dataset.evChat);
-      return modal({ title: ev.title, ok: "Close", body: `<div class="chat-log chat-excerpt">${(ev.text || []).map((l) => `<div class="chat-line ${esc(l.kind)}"><time>${clock(l.at)}</time><span class="srv">${esc(l.server)}</span><span class="who">${esc(l.name)}:</span> ${esc(l.text)}</div>`).join("")}</div>`, onOk: () => {} });
+      return modal({ title: ev.title, ok: "Close", body: `<div class="chat-log chat-excerpt">${(ev.text || []).map((l) => `<div class="chat-line ${esc(l.kind)}"><time>${clock(l.at)}</time><span class="srv">${esc(srvName(l.server))}</span><span class="who">${esc(l.name)}:</span> ${esc(l.text)}</div>`).join("")}</div>`, onOk: () => {} });
     }
     if (del) return modal({ title: "Remove evidence", sub: "The file is deleted for good. The audit log keeps that you removed it.", ok: "Remove", danger: true,
       body: '<label>Why</label><input name="reason" maxlength="200">', onOk: async (f) => { await api("evidence/delete", { id: +del.dataset.evDel, reason: f.reason }); reload(); } });

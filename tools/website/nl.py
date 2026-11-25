@@ -961,7 +961,6 @@ COMMON = [
     ('data-media-count>25 screenshots<', 'data-media-count>25 screenshots<'),
 ] + COMMON
 PAGES['index'] = [
-    ('<span>The full TC:E arsenal, all seven game modes, the original movement, Ultra visuals, a live minimap, hit and suppression feedback, optional player accounts and two official EU servers are live. In development for 0.38: picking up weapons from fallen players, vaulting over low cover, more immersive firefights and smarter bots. <a href="#roadmap">See the roadmap</a></span>', '<span>Het volledige TC:E-arsenaal, alle zeven spelmodi, de originele beweging, Ultra-graphics, een live minimap, treffer- en onderdrukkingsfeedback, optionele spelersaccounts en twee officiële EU-servers zijn live. In ontwikkeling voor 0.38: wapens oppakken van gevallen spelers, over lage dekking springen, intensere vuurgevechten en slimmere bots. <a href="#roadmap">Bekijk de roadmap</a></span>'),
     ('<div><h3>Is this complete TC:E?</h3><p>Yes, and more. Every weapon, all seven game modes, the original movement speed, leaning, ladders, swimming, ledge climbing and the sniper scope are in, joined by additions such as the live minimap and a competitive match mode. The <a href="#roadmap">roadmap</a> shows what follows.</p></div>', '<div><h3>Is dit de complete TC:E?</h3><p>Ja, en meer. Elk wapen, alle zeven spelmodi, de originele bewegingssnelheid, leunen, ladders, zwemmen, klimmen op randen en het sluipschuttersvizier zitten erin, aangevuld met nieuwe onderdelen zoals de live minimap en een competitieve wedstrijdmodus. De <a href="#roadmap">roadmap</a> laat zien wat daarna volgt.</p></div>'),
 ] + PAGES['index']
 
@@ -1023,3 +1022,8 @@ COMMON = [
     ('<p class="yt-note">The video plays from YouTube in privacy-enhanced mode. Nothing loads from YouTube until you press play.</p>',
      '<p class="yt-note">De video speelt af via YouTube in de privacyvriendelijke modus. Er wordt niets van YouTube geladen tot je op afspelen drukt.</p>'),
 ] + COMMON
+
+# 2026-11-25 audit: home status line for 0.40.0
+PAGES['index'] = [
+    ('<span>The full TC:E arsenal, all seven game modes, the original movement, Ultra visuals with live weather, a rebuilt sound engine, optional player accounts and two official EU servers are live. Update 0.40.0 rebuilds the interface and brings a new generation of light, the choice between Remastered and Classic, location pings and a brand-new map, Lockgate. <a href="#roadmap">See the roadmap</a></span>', '<span>Het volledige TC:E-arsenaal, alle zeven spelmodi, de originele beweging, Ultra-graphics met live weer, een vernieuwde geluidsengine, optionele spelersaccounts en twee officiële EU-servers zijn live. Update 0.40.0 bouwt de interface opnieuw op en brengt een nieuwe generatie licht, de keuze tussen Remastered en Classic, locatiepings en een gloednieuwe map: Lockgate. <a href="#roadmap">Bekijk de roadmap</a></span>'),
+] + PAGES['index']
