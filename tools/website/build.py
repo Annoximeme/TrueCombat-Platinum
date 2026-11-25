@@ -745,7 +745,9 @@ DL = {
            "discord": "Discuss on Discord", "copy": "Copy link", "copied": "Link copied", "drag": "comparison divider position", "latest": "Latest",
            "rateQ": "Was this worth the read?", "rateGroup": "Rate this post", "star": "1 star", "stars": "{n} stars",
            "rateThanks": "Thanks for rating. You can change your rating until the end of the day.", "rateFail": "Your rating could not be sent. Please try again later.",
-           "ratePriv": "Anonymous. No account, no cookies.", "comments": "Comments"},
+           "ratePriv": "Anonymous. No account, no cookies.", "comments": "Comments",
+           "sign": "Written by the studio", "signBody": "Team Terminus is the independent studio behind TrueCombat: Platinum. We are TrueCombat: Elite veterans, rebuilding the game on the Platinum Engine.",
+           "signLink": "Meet the team"},
     "nl": {"read": "Lees het artikel", "feed": "TrueCombat: Platinum devlog", "back": "Alle devlogartikelen", "by": "Team Terminus", "more": "Meer uit de devlog",
            "months": "jan feb mrt apr mei jun jul aug sep okt nov dec".split(), "min": "{n} min lezen", "toc": "In dit artikel",
            "shipped": "Uitgebracht in v{v}", "testing": "Volgende update · in test", "all": "Alle artikelen", "filter": "Filter artikelen op onderwerp",
@@ -753,7 +755,9 @@ DL = {
            "discord": "Bespreek op Discord", "copy": "Link kopiëren", "copied": "Link gekopieerd", "drag": "positie van de vergelijkingslijn", "latest": "Nieuwste",
            "rateQ": "Was dit artikel de moeite waard?", "rateGroup": "Beoordeel dit artikel", "star": "1 ster", "stars": "{n} sterren",
            "rateThanks": "Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen.", "rateFail": "Je beoordeling kon niet worden verzonden. Probeer het later opnieuw.",
-           "ratePriv": "Anoniem. Geen account, geen cookies.", "comments": "Reacties"},
+           "ratePriv": "Anoniem. Geen account, geen cookies.", "comments": "Reacties",
+           "sign": "Geschreven door de studio", "signBody": "Team Terminus is de onafhankelijke studio achter TrueCombat: Platinum. Wij zijn veteranen van TrueCombat: Elite en bouwen het spel opnieuw op de Platinum Engine.",
+           "signLink": "Maak kennis met het team"},
 }
 DISCORD = "https://discord.gg/7Dg4yhhvGF"
 LATEST = None  # newest released version on the site, read from index.html
@@ -1204,6 +1208,10 @@ def devlog_page(lang, post, posts, template):
         </div>
         <p class="rate-note" aria-live="polite">{T['ratePriv']}</p>
       </div>
+      <aside class="post-sign" aria-label="{T['by']}">
+        <img src="img/team-terminus-horizontal.webp" alt="{T['by']}" width="900" height="257" loading="lazy">
+        <div><span class="eyebrow">{T['sign']}</span><p>{T['signBody']}</p><a href="studio.html">{T['signLink']}</a></div>
+      </aside>
       <div class="post-end">
         <p>{T['ask']}</p>
         <div class="news-tools">
