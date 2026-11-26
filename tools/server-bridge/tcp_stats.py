@@ -40,6 +40,7 @@ import pathlib
 import re
 import secrets
 import sqlite3
+import sys
 import threading
 import time
 
@@ -566,6 +567,7 @@ class StatsStore:
         self.ranked_accounts_only = os.environ.get("TCP_STATS_RANKED_ACCOUNTS_ONLY", "") == "1"
         self.require_anticheat = require_anticheat   # refuse reports without Easy Anti-Cheat on (live service)
         self.rate_window = {}
+        self.rejected_logged = set()   # (path, mtime) of report files whose rejection was already logged
         with self.lock:
             self.db.execute("PRAGMA journal_mode=WAL")
             self.db.executescript(DDL)
@@ -863,9 +865,20 @@ class StatsStore:
             try:
                 if self.ingest(report, server, trusted=True)[0] == "stored":
                     stored += 1
-            except Rejected:
-                pass
+            except Rejected as e:
+                self._log_rejected(path, server, e)
         return stored
+
+    def _log_rejected(self, path, server, reason):
+        """Logs a rejected report file once (per path and mtime), so the folder rescan does not repeat it."""
+        try:
+            key = (str(path), path.stat().st_mtime_ns)
+        except OSError:
+            key = (str(path), None)
+        if key in self.rejected_logged:
+            return
+        self.rejected_logged.add(key)
+        print("<4>stats: rejected %s (server %s): %s" % (path, server, reason), file=sys.stderr, flush=True)
 
     # ------------------------------------------------------------ queries
     def _player_json(self, r, extra=True):
