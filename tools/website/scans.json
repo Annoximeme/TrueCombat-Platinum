@@ -433,8 +433,8 @@
    "engines": 69,
    "analysed": "2026-11-25T23:50:09Z",
    "flagged_by": [],
-   "checked": "2026-11-26T03:55:44Z",
-   "settle": true
+   "checked": "2026-11-26T17:21:29Z",
+   "settle": false
   },
   "38eea3b4209afc455636ea372b5933d65fcc13becec6c84d101dcfc4d8648f75": {
    "name": "sl.common.dll",
@@ -465,8 +465,8 @@
    "engines": 68,
    "analysed": "2026-11-25T23:57:43Z",
    "flagged_by": [],
-   "checked": "2026-11-26T03:55:28Z",
-   "settle": true
+   "checked": "2026-11-26T17:21:13Z",
+   "settle": false
   },
   "3b68a332a0c115aed7127c567a4dec7827f9b96f9212d090fbec4aeeb53934b9": {
    "name": "qagame_mp_x64.dll",
@@ -495,8 +495,8 @@
    "malicious": 0,
    "suspicious": 0,
    "engines": 70,
-   "analysed": "2026-11-26T03:31:14Z",
-   "checked": "2026-11-26T03:54:40Z",
+   "analysed": "2026-11-26T14:35:22Z",
+   "checked": "2026-11-26T17:20:25Z",
    "settle": true,
    "flagged_by": []
   },
@@ -541,8 +541,8 @@
    "engines": 69,
    "analysed": "2026-11-25T23:56:08Z",
    "flagged_by": [],
-   "checked": "2026-11-26T03:55:12Z",
-   "settle": true
+   "checked": "2026-11-26T17:20:57Z",
+   "settle": false
   },
   "4353811500cde0829ddb70e1ab5d6180ebaf498559105f0644c1a029584eecae": {
    "name": "platinum-engine.bin",
@@ -689,8 +689,8 @@
    "flagged_by": [
     "Bkav: W32.Malware.59D06933"
    ],
-   "checked": "2026-11-26T03:57:33Z",
-   "settle": true
+   "checked": "2026-11-26T17:19:53Z",
+   "settle": false
   },
   "4e1cb37d967ebbd168b6f21a34db988085d02d4a2d9fbd44d9bc6414973c4960": {
    "name": "renderer_dx12_x64.dll",
@@ -1131,8 +1131,8 @@
    "engines": 70,
    "analysed": "2026-11-26T00:01:49Z",
    "flagged_by": [],
-   "checked": "2026-11-26T03:56:00Z",
-   "settle": true
+   "checked": "2026-11-26T17:21:45Z",
+   "settle": false
   },
   "74fda10b1c51640faec7c2272ea256580cec437cff8b9bfe96dfd5cfad004762": {
    "name": "ui_mp_x64.dll",
@@ -1213,9 +1213,9 @@
    "bytes": 643512,
    "malicious": 0,
    "suspicious": 0,
-   "engines": 70,
-   "analysed": "2026-11-26T03:31:12Z",
-   "checked": "2026-11-26T03:54:24Z",
+   "engines": 69,
+   "analysed": "2026-11-26T14:35:20Z",
+   "checked": "2026-11-26T17:20:09Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1726,8 +1726,8 @@
    "engines": 67,
    "analysed": "2026-11-26T00:03:23Z",
    "flagged_by": [],
-   "checked": "2026-11-26T03:56:16Z",
-   "settle": true
+   "checked": "2026-11-26T17:22:01Z",
+   "settle": false
   },
   "b48a0fda2d1c4bd37ad5202cf711a5feaa2303f978de3d56b5ad81b4e6793647": {
    "name": "cgame_mp_x64.dll",
@@ -1924,21 +1924,24 @@
   "ca8594f9b1af06bbc19e599e23cdf7681789899ba7afb8e5a5ea3d6caf528263": {
    "name": "platinum-engine.bin",
    "bytes": 4503552,
-   "malicious": 8,
+   "malicious": 11,
    "suspicious": 0,
-   "engines": 69,
-   "analysed": "2026-11-25T23:52:14Z",
+   "engines": 68,
+   "analysed": "2026-11-26T11:52:51Z",
    "flagged_by": [
     "ALYac: Gen:Variant.Yogi.138291",
     "Arcabit: Trojan.Yogi.D21C33",
     "BitDefender: Gen:Variant.Yogi.138291",
     "CTX: exe.unknown.yogi",
+    "DeepInstinct: MALICIOUS",
     "Emsisoft: Gen:Variant.Yogi.138291 (B)",
     "GData: Gen:Variant.Yogi.138291",
     "MicroWorld-eScan: Gen:Variant.Yogi.138291",
+    "Microsoft: Trojan:Win32/Wacatac.B!ml",
+    "TrendMicro-HouseCall: TROJ_GEN.R002H09KQ26",
     "VIPRE: Gen:Variant.Yogi.138291"
    ],
-   "checked": "2026-11-26T03:54:56Z",
+   "checked": "2026-11-26T17:20:42Z",
    "settle": true
   },
   "cc1f03cf2f2ff2d1b8a3866cb47972173c1a486264125375d87c0af0111a6e01": {
@@ -2374,8 +2377,8 @@
    "engines": 64,
    "analysed": "2026-11-26T00:06:59Z",
    "flagged_by": [],
-   "checked": "2026-11-26T03:56:32Z",
-   "settle": true
+   "checked": "2026-11-26T17:22:17Z",
+   "settle": false
   },
   "fa577da7a055cc96aeed494339996226544666f235dbe419f5c60e49cb01ae03": {
    "name": "platinum-engine.bin",
@@ -2444,8 +2447,8 @@
  },
  "releases": {
   "v0.40.0-sandbox45": {
-   "published": "",
-   "draft": true,
+   "published": "2026-11-26T03:59:06Z",
+   "draft": false,
    "setup": "4cf31f133169534ab2cb534e788a440a3738d93d6de1768c2b5740d2553cc68d",
    "files": {
     "TrueCombat-Platinum-Setup.exe": "4cf31f133169534ab2cb534e788a440a3738d93d6de1768c2b5740d2553cc68d",
