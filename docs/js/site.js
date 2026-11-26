@@ -310,7 +310,7 @@ var TCP_API = 'https://api.truecombat.eu';
   }
   /* same headings as tools/website/release_sync.py */
   var TITLES = { 'HUD': 'HUD', 'UI': 'UI', 'DX12': 'DirectX 12', 'DIRECTX 12': 'DirectX 12', 'STATUS': 'Known issues', 'KNOWN ISSUES': 'Known issues', 'FIXES': 'Fixes', 'BUG FIXES': 'Fixes' };
-  function sectionTitle(t) { var u = t.toUpperCase(); return TITLES[u] || (t.charAt(0).toUpperCase() + t.slice(1).toLowerCase()); }
+  function sectionTitle(t) { var u = t.toUpperCase(); return TITLES[u] || (t === u ? t.charAt(0) + t.slice(1).toLowerCase() : t); } /* all-caps headings become sentence case; mixed case ("New map: Lockgate", "CQB joins the core game") stays as written */
   function parseNotes(body) {
     var lines = (body || '').replace(/\r/g, '').split('\n');
     var out = { num: '', build: '', summary: '', sections: [] }, sec = null;

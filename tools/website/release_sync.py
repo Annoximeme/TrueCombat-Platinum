@@ -38,6 +38,8 @@ def section_title(t):
     t = t.strip()
     if t.upper() in TITLES:
         return TITLES[t.upper()]
+    if t != t.upper():
+        return t  # mixed case ("New map: Lockgate", "CQB joins the core game") stays as written
     return t[:1].upper() + t[1:].lower()
 
 
