@@ -494,9 +494,9 @@
    "bytes": 57792,
    "malicious": 0,
    "suspicious": 0,
-   "engines": 70,
-   "analysed": "2026-11-26T14:35:22Z",
-   "checked": "2026-11-26T17:20:25Z",
+   "engines": 68,
+   "analysed": "2026-11-27T14:27:03Z",
+   "checked": "2026-11-27T16:59:19Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1213,9 +1213,9 @@
    "bytes": 643512,
    "malicious": 0,
    "suspicious": 0,
-   "engines": 69,
-   "analysed": "2026-11-26T14:35:20Z",
-   "checked": "2026-11-26T17:20:09Z",
+   "engines": 68,
+   "analysed": "2026-11-27T14:27:00Z",
+   "checked": "2026-11-27T16:59:03Z",
    "settle": true,
    "flagged_by": []
   },
@@ -1606,10 +1606,10 @@
    "bytes": 50112,
    "malicious": 0,
    "suspicious": 0,
-   "engines": 71,
-   "analysed": "2026-11-23T08:35:17Z",
-   "checked": "2026-11-23T18:45:29Z",
-   "settle": false,
+   "engines": 66,
+   "analysed": "2026-11-27T14:27:22Z",
+   "checked": "2026-11-27T16:59:51Z",
+   "settle": true,
    "flagged_by": []
   },
   "a8ae2584f9b951ecd140f105809d607bc262e0e6c476a6118e95c5777d0b4fad": {
@@ -1941,8 +1941,8 @@
     "TrendMicro-HouseCall: TROJ_GEN.R002H09KQ26",
     "VIPRE: Gen:Variant.Yogi.138291"
    ],
-   "checked": "2026-11-26T17:20:42Z",
-   "settle": true
+   "checked": "2026-11-27T17:00:07Z",
+   "settle": false
   },
   "cc1f03cf2f2ff2d1b8a3866cb47972173c1a486264125375d87c0af0111a6e01": {
    "name": "platinum-server.bin",
@@ -2003,10 +2003,10 @@
    "bytes": 178616,
    "malicious": 0,
    "suspicious": 0,
-   "engines": 71,
-   "analysed": "2026-11-23T08:35:16Z",
-   "checked": "2026-11-23T18:45:13Z",
-   "settle": false,
+   "engines": 68,
+   "analysed": "2026-11-27T14:27:14Z",
+   "checked": "2026-11-27T16:59:35Z",
+   "settle": true,
    "flagged_by": []
   },
   "d23035ded0a542203e5be3efe9f73c6cb3dc11439302586b5439d782567cd3ec": {
