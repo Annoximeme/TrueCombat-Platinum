@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'sha256-RQHbOa0XrS2vvFK7APvDDxlWe5W0xJC2+8MgxnnMRpg='">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>De Platinum Engine · TrueCombat: Platinum</title>
+<meta name="description" content="Een levende lucht, zonlicht in realtime, nachten die echt donker zijn, glas dat breekt waar je schiet, raytracing, een vernieuwd grafisch menu, slimmere…">
+<meta name="theme-color" content="#0d1016">
+<link rel="canonical" href="https://truecombat.eu/nl/devlog-platinum-engine">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://truecombat.eu/nl/devlog-platinum-engine">
+<meta property="og:site_name" content="TrueCombat: Platinum">
+<meta property="og:locale" content="nl_NL">
+<meta property="og:title" content="De Platinum Engine">
+<meta property="og:description" content="Een levende lucht, zonlicht in realtime, nachten die echt donker zijn, glas dat breekt waar je schiet, raytracing, een vernieuwd grafisch menu, slimmere…">
+<meta property="og:image" content="https://truecombat.eu/img/og-devlog-platinum-engine.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://truecombat.eu/img/og-devlog-platinum-engine.jpg">
+<meta property="article:published_time" content="2026-11-28">
+<meta property="article:section" content="Update">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"De Platinum Engine","description":"Een levende lucht, zonlicht in realtime, nachten die echt donker zijn, glas dat breekt waar je schiet, raytracing, een vernieuwd grafisch menu, slimmere netcode, party's en nog veel meer. Update 0.41.0 bundelt alles wat we voor 0.40.1, 0.41 en 0.42 gepland hadden in één release. Dit is het volledige verhaal.","datePublished":"2026-11-28","dateModified":"2026-11-28","inLanguage":"nl","articleSection":"Update","timeRequired":"PT23M","image":"https://truecombat.eu/img/og-devlog-platinum-engine.jpg","mainEntityOfPage":"https://truecombat.eu/nl/devlog-platinum-engine","author":{"@type":"Organization","name":"Team Terminus","url":"https://truecombat.eu/studio"},"publisher":{"@type":"Organization","name":"Team Terminus","logo":{"@type":"ImageObject","url":"https://truecombat.eu/img/team-terminus.webp"}}}</script>
+<!--alt-->
+<link rel="preload" href="../fonts/ibm-plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../fonts/saira-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="apple-touch-icon" href="../img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<script type="speculationrules">{"prefetch":[{"where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":"/press/*"}},{"not":{"href_matches":"/devlog-stats*"}},{"not":{"selector_matches":"[download],[target=_blank]"}}]},"eagerness":"moderate"}]}</script>
+<meta name="twitter:title" content="De Platinum Engine">
+<meta name="twitter:description" content="Een levende lucht, zonlicht in realtime, nachten die echt donker zijn, glas dat breekt waar je schiet, raytracing, een vernieuwd grafisch menu, slimmere…">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TrueCombat: Platinum","item":"https://truecombat.eu/nl/"},{"@type":"ListItem","position":2,"name":"Devlog","item":"https://truecombat.eu/nl/devlog"},{"@type":"ListItem","position":3,"name":"De Platinum Engine","item":"https://truecombat.eu/nl/devlog-platinum-engine"}]}</script>
+<link rel="alternate" type="application/atom+xml" title="TrueCombat: Platinum devlog" href="https://truecombat.eu/nl/devlog.xml">
+<link rel="alternate" hreflang="en" href="https://truecombat.eu/devlog-platinum-engine">
+<link rel="alternate" hreflang="nl" href="https://truecombat.eu/nl/devlog-platinum-engine">
+<link rel="alternate" hreflang="x-default" href="https://truecombat.eu/devlog-platinum-engine">
+<link rel="alternate" type="application/atom+xml" title="Patchnotes (RSS)" href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">
+<!--/alt-->
+<link rel="icon" type="image/png" href="../img/favicon.png">
+<link rel="stylesheet" href="../style.css?v=970691946f">
+</head>
+<body>
+<!--nav-->
+<a class="skip" href="#top">Naar de inhoud</a>
+<header class="nav tb">
+  <div class="wrap">
+    <a class="tb-brand" href="./" aria-label="TrueCombat: Platinum home"><img class="tb-wm" src="../img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40"><i class="tb-shine" aria-hidden="true"></i></a>
+    <nav class="tg-row" aria-label="Onderdelen">
+      <div class="tg" data-g="play"><button type="button" aria-expanded="false" aria-controls="tp-play">Spelen<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-play"><div class="wrap"><div class="tp-list"><a class="pi" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span><b>Download</b><small>Gratis Windows-installatie</small></span></a><a class="pi" href="guide"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/></svg><span><b>Gids</b><small>Besturing, modi en tactiek</small></span></a><a class="pi" href="servers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span><b>Servers</b><small>Live servers, meedoen in één klik</small></span></a><a class="pi" href="faq"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span><b>Vragen</b><small>Antwoorden op veelgestelde vragen</small></span></a><a class="pi" href="truecombat-elite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span><b>TrueCombat: Elite</b><small>Waar het allemaal begon</small></span></a></div><div class="tp-art tp-play"><a class="pt pt-big" href="download"><img src="../img/hero-village-rooftop.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>v0.40.0 · Gratis</em><strong>TrueCombat: Platinum</strong><u>Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="servers"><img src="../img/hero-northport-gashouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Servers</span></a><a class="pt pt-sm" href="guide"><img src="../img/hero-railhouse-overlook-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Gids</span></a></div><div class="tp-foot"><span>Gratis · Windows 10 en 11, 64-bit</span><a href="download">Download <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg" data-g="game"><button type="button" aria-expanded="false" aria-controls="tp-game">Het spel<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-game"><div class="wrap"><div class="tp-list"><a class="pi" href="maps"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span><b>Maps</b><small>Elke map, met plattegronden in 3D</small></span></a><a class="pi" href="weapons"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg><span><b>Wapens</b><small>Het volledige arsenaal, vergeleken</small></span></a><a class="pi" href="./#graphics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span><b>Graphics</b><small>Low, High en Ultra naast elkaar</small></span></a><a class="pi" href="./#gallery"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg><span><b>Galerij</b><small>Screenshots uit het spel</small></span></a></div><div class="tp-art tp-game"><div class="pt-maps"><a class="pt" href="map-delta"><img src="../img/map-delta-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Delta</span></a><a class="pt" href="map-northport"><img src="../img/map-northport-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Northport</span></a><a class="pt" href="map-railhouse"><img src="../img/map-railhouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Railhouse</span></a><a class="pt" href="map-snow"><img src="../img/map-snow-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Snow</span></a><a class="pt" href="map-stadtrand"><img src="../img/map-stadtrand-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Stadtrand</span></a><a class="pt" href="map-village"><img src="../img/map-village-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Village</span></a></div></div><div class="tp-foot"><span>6 maps · 32 wapens</span><a href="maps">Maps <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg" data-g="compete"><button type="button" aria-expanded="false" aria-controls="tp-compete">Competitie<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-compete"><div class="wrap"><div class="tp-list"><a class="pi" href="leaderboards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Ranglijsten</b><small>Ratings, rangen en topspelers</small></span></a><a class="pi" href="competitive"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span><b>Competitief</b><small>Ranked spelen en de regels</small></span></a><a class="pi" href="account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span><b>Account</b><small>Je profiel, statistieken en vrienden</small></span></a></div><div class="tp-art tp-compete"><a class="pt pt-big" href="leaderboards"><img src="../img/hero-delta-night.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Ranked</em><strong>Ranglijsten</strong><u>Ranglijsten <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="competitive"><img src="../img/hero-stadtrand-canal-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Competitief</span></a><a class="pt pt-sm" href="account"><img src="../img/hero-snow-warehouse-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span>Account</span></a></div><div class="tp-foot"><span>Ranked spelen op de officiële servers</span><a href="leaderboards">Ranglijsten <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+      <div class="tg on" data-g="community"><button type="button" aria-expanded="false" aria-controls="tp-community">Community<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="tp" id="tp-community"><div class="wrap"><div class="tp-list"><a class="pi" href="devlog" aria-current="page" data-devlog-new="2026-11-28" data-new="Nieuw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg><span><b>Devlog<em>Nieuw</em></b><small>Hoe het spel gebouwd wordt</small></span></a><a class="pi" href="news"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/></svg><span><b>Nieuws</b><small>Patchnotes van elke release</small></span></a><a class="pi" href="media"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Media</b><small>Trailers, screenshots en wallpapers</small></span></a><a class="pi" href="https://discord.gg/7Dg4yhhvGF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/></svg><span><b>Discord</b><small>Zoek een potje, praat met het team</small></span></a><a class="pi" href="banners"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="2" y="7" width="20" height="10"/><path d="M6 12h.01M9 10.5h6M9 13.5h4M18 10v4"/></svg><span><b>Serverbanners</b><small>Live spelersaantallen voor je pagina</small></span></a><a class="pi" href="studio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/></svg><span><b>Studio</b><small>Het team achter het spel</small></span></a><a class="pi" href="press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/></svg><span><b>Perskit</b><small>Logo&#x27;s, key art en feiten</small></span></a></div><div class="tp-art tp-community"><a class="pt pt-big" href="devlog-platinum-engine"><img src="../img/devlog/pe-teaser-clean.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Nieuwe devlog · Update 0.41.0</em><strong>De Platinum Engine</strong><u>Lees de devlog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></span></a><a class="pt pt-sm" href="news"><img src="../img/hero-snow-yard-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>v0.40.0</em>Nieuws</span></a><a class="pt pt-sm" href="https://discord.gg/7Dg4yhhvGF"><img src="../img/hero-village-contact-640.webp" alt="" loading="lazy" decoding="async"><i class="br"></i><span><em>Discord</em>Word lid van de Discord</span></a></div><div class="tp-foot"><span>Al 32 devlogartikelen</span><a href="devlog">Devlog <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div></div></div>
+    </nav>
+    <div class="tl" data-img="../img/" data-maps="delta northport railhouse snow stadtrand village"><button class="tl-btn" type="button" aria-expanded="false" aria-controls="tl-pop" aria-label="Live servers" data-tpl-live="{p} spelers · {s} servers" data-tpl-idle="{s} servers online"><i></i><b>Servers</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="tl-pop" id="tl-pop"><b class="tl-h">Live servers</b><div class="tl-list"></div><a class="tl-all" href="servers">Alle servers <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a></div></div>
+    <div class="tu">
+      <button type="button" data-search-open aria-label="Zoeken" title="Zoeken (Ctrl K)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg><kbd>Ctrl K</kbd></button>
+      <details class="nav-langs"><summary aria-label="Taal" title="Taal">NL</summary><div><a href="../devlog-platinum-engine" hreflang="en" lang="en">English</a></div></details>
+      <a class="tu-heart" href="support" aria-label="Steun ons" title="Steun ons"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg></a>
+      <a href="account" aria-label="Account" title="Account" data-nav-account><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></a>
+    </div>
+    <a class="btn btn-play tb-dl" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span>Download</span><small>v0.40.0</small></a>
+    <button class="tb-burger" type="button" aria-expanded="false" aria-controls="ms" aria-label="Menu"><i></i><i></i><i></i></button>
+  </div>
+  <div class="tb-scrim" hidden></div>
+  <div class="ms" id="ms" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+    <div class="ms-top"><a class="tb-brand" href="./" aria-label="TrueCombat: Platinum home"><img class="tb-wm" src="../img/wordmark.webp" alt="TrueCombat: Platinum" width="220" height="40"><i class="tb-shine" aria-hidden="true"></i></a><button type="button" class="ms-search" data-search-open aria-label="Zoeken"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg></button><button type="button" class="ms-x" aria-label="Menu sluiten"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <a class="ms-live" href="servers"><i></i><b>Servers</b><u>Alle servers <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></u></a>
+    <a class="ms-dev" href="devlog-platinum-engine"><img src="../img/devlog/pe-teaser-clean-640.webp" alt="" loading="lazy" decoding="async"><span><em>Nieuwe devlog</em>De Platinum Engine</span></a>
+    <details class="ms-g"><summary>Spelen<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg><span><b>Download</b><small>Gratis Windows-installatie</small></span></a><a class="pi" href="guide"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h7a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4zM20 4h-6M20 4v15h-6"/></svg><span><b>Gids</b><small>Besturing, modi en tactiek</small></span></a><a class="pi" href="servers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="7"/><rect x="3" y="13" width="18" height="7"/><path d="M7 7.5h.01M7 16.5h.01"/></svg><span><b>Servers</b><small>Live servers, meedoen in één klik</small></span></a><a class="pi" href="faq"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17h.01"/></svg><span><b>Vragen</b><small>Antwoorden op veelgestelde vragen</small></span></a><a class="pi" href="truecombat-elite"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"/></svg><span><b>TrueCombat: Elite</b><small>Waar het allemaal begon</small></span></a></details><details class="ms-g"><summary>Het spel<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><div class="ms-maps"><a href="map-delta"><img src="../img/map-delta-640.webp" alt="" loading="lazy" decoding="async"><span>Delta</span></a><a href="map-northport"><img src="../img/map-northport-640.webp" alt="" loading="lazy" decoding="async"><span>Northport</span></a><a href="map-railhouse"><img src="../img/map-railhouse-640.webp" alt="" loading="lazy" decoding="async"><span>Railhouse</span></a><a href="map-snow"><img src="../img/map-snow-640.webp" alt="" loading="lazy" decoding="async"><span>Snow</span></a><a href="map-stadtrand"><img src="../img/map-stadtrand-640.webp" alt="" loading="lazy" decoding="async"><span>Stadtrand</span></a><a href="map-village"><img src="../img/map-village-640.webp" alt="" loading="lazy" decoding="async"><span>Village</span></a></div><a class="pi" href="maps"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span><b>Maps</b><small>Elke map, met plattegronden in 3D</small></span></a><a class="pi" href="weapons"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5M12 17v5M2 12h5M17 12h5"/></svg><span><b>Wapens</b><small>Het volledige arsenaal, vergeleken</small></span></a><a class="pi" href="./#graphics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg><span><b>Graphics</b><small>Low, High en Ultra naast elkaar</small></span></a><a class="pi" href="./#gallery"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5L5 20"/></svg><span><b>Galerij</b><small>Screenshots uit het spel</small></span></a></details><details class="ms-g"><summary>Competitie<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="leaderboards"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg><span><b>Ranglijsten</b><small>Ratings, rangen en topspelers</small></span></a><a class="pi" href="competitive"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span><b>Competitief</b><small>Ranked spelen en de regels</small></span></a><a class="pi" href="account"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span><b>Account</b><small>Je profiel, statistieken en vrienden</small></span></a></details><details class="ms-g" open><summary>Community<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary><a class="pi" href="devlog" aria-current="page" data-devlog-new="2026-11-28" data-new="Nieuw"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg><span><b>Devlog<em>Nieuw</em></b><small>Hoe het spel gebouwd wordt</small></span></a><a class="pi" href="news"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 11v2a1 1 0 0 0 1 1h3l6 5V5L7 10H4a1 1 0 0 0-1 1zM17 8a5 5 0 0 1 0 8"/></svg><span><b>Nieuws</b><small>Patchnotes van elke release</small></span></a><a class="pi" href="media"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="3" y="5" width="18" height="14"/><path d="m10 9 5 3-5 3z"/></svg><span><b>Media</b><small>Trailers, screenshots en wallpapers</small></span></a><a class="pi" href="https://discord.gg/7Dg4yhhvGF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M8 10h.01M16 10h.01M7 16c3 1.5 7 1.5 10 0M6 6c4-1.5 8-1.5 12 0 2 3 3 7 2 11-2 1.5-4 2-4 2l-1-2M6 6c-2 3-3 7-2 11 2 1.5 4 2 4 2l1-2"/></svg><span><b>Discord</b><small>Zoek een potje, praat met het team</small></span></a><a class="pi" href="banners"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><rect x="2" y="7" width="20" height="10"/><path d="M6 12h.01M9 10.5h6M9 13.5h4M18 10v4"/></svg><span><b>Serverbanners</b><small>Live spelersaantallen voor je pagina</small></span></a><a class="pi" href="studio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20v-1a5 5 0 0 1 10 0v1M16 11a3 3 0 1 0 0-6M21 20v-1a5 5 0 0 0-3.5-4.8"/></svg><span><b>Studio</b><small>Het team achter het spel</small></span></a><a class="pi" href="press"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4 4h12v16H6a2 2 0 0 1-2-2zM16 8h4v10a2 2 0 0 1-4 0M8 8h4M8 12h4M8 16h4"/></svg><span><b>Perskit</b><small>Logo&#x27;s, key art en feiten</small></span></a></details>
+    <div class="ms-langs"><b>NL</b><a href="../devlog-platinum-engine" hreflang="en" lang="en">EN</a><a class="ms-heart" href="support"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>Steun ons</a></div>
+    <div class="ms-foot"><a class="btn btn-play" href="download"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 21h16"/></svg>Download <small>v0.40.0</small></a></div>
+  </div>
+</header>
+<!--/nav-->
+
+<main id="top">
+<article class="post" data-post="platinum-engine" data-min="23">
+  <header class="page-head post-head cine-post">
+    <div class="head-art" style="--art: url(../img/devlog/pe-teaser-clean-1920.webp); --art-s: url(../img/devlog/pe-teaser-clean-640.webp)" aria-hidden="true"></div>
+    <div class="wrap">
+      <a class="back" href="devlog">Alle devlogartikelen</a>
+      <span class="cine-kicker">Update 0.41.0</span>
+      <p class="post-meta"><span class="tag">Update</span><span class="state testing">Volgende update · in test</span><time datetime="2026-11-28">28 nov 2026</time><span>23 min lezen</span><span>Team Terminus</span><span class="post-stat" data-post-stat="platinum-engine" hidden></span><span class="post-cmts" data-post-cmts="platinum-engine" hidden></span></p>
+      <h1>De Platinum Engine</h1>
+      <p class="lede">Een levende lucht, zonlicht in realtime, nachten die echt donker zijn, glas dat breekt waar je schiet, raytracing, een vernieuwd grafisch menu, slimmere netcode, party&#x27;s en nog veel meer. Update 0.41.0 bundelt alles wat we voor 0.40.1, 0.41 en 0.42 gepland hadden in één release. Dit is het volledige verhaal.</p>
+    </div>
+  </header>
+  <div class="band">
+    <div class="wrap post-body">
+      <nav class="post-toc" aria-label="In dit artikel">
+        <span class="eyebrow">In dit artikel</span>
+        <ol>
+          <li><a href="#de-platinum-engine">De Platinum Engine</a></li>
+          <li><a href="#een-lucht-die-beweegt">Een lucht die beweegt</a></li>
+          <li><a href="#zonlicht-in-realtime">Zonlicht in realtime</a></li>
+          <li><a href="#licht-dat-een-kamer-vult">Licht dat een kamer vult</a></li>
+          <li><a href="#ultra-rt">Ultra RT</a></li>
+          <li><a href="#oppervlakken-water-en-regen">Oppervlakken, water en regen</a></li>
+          <li><a href="#wanneer-de-nacht-valt">Wanneer de nacht valt</a></li>
+          <li><a href="#gemaakt-om-te-breken">Gemaakt om te breken</a></li>
+          <li><a href="#rook-schok-en-slijtage">Rook, schok en slijtage</a></li>
+          <li><a href="#deeltjes-en-fysica">Deeltjes en fysica</a></li>
+          <li><a href="#gras-bomen-en-soldaten">Gras, bomen en soldaten</a></li>
+          <li><a href="#camera-en-fotomodus">Camera en fotomodus</a></li>
+          <li><a href="#beeldkwaliteit-en-hdr">Beeldkwaliteit en HDR</a></li>
+          <li><a href="#een-nieuw-grafisch-menu">Een nieuw grafisch menu</a></li>
+          <li><a href="#geluid-dat-reist">Geluid dat reist</a></li>
+          <li><a href="#elk-schot-waar-het-hoort">Elk schot waar het hoort</a></li>
+          <li><a href="#samen-spelen">Samen spelen</a></li>
+          <li><a href="#slimmere-bots">Slimmere bots</a></li>
+          <li><a href="#interface">Interface</a></li>
+          <li><a href="#lockgate-opgewaardeerd">Lockgate, opgewaardeerd</a></li>
+          <li><a href="#realisme-eerst">Realisme eerst</a></li>
+          <li><a href="#fixes">Fixes</a></li>
+          <li><a href="#hoe-we-het-getest-hebben">Hoe we het getest hebben</a></li>
+          <li><a href="#wat-volgt">Wat volgt</a></li>
+        </ol>
+      </nav>
+      <div class="prose">
+<p>Een week geleden schreven we dat 0.40.0 een mijlpaal was, geen eindpunt. Dat meenden we. Terwijl 0.40.0 in de laatste testfase zat, kregen er achter de schermen al drie nieuwe updates vorm: een kleine 0.40.1 met fixes, een 0.41 rond gevoel, geluid en online spelen, en een 0.42 die de tweede grote stap zou zetten om de engine onder TrueCombat: Platinum om te bouwen tot iets nieuws.</p>
+<figure class="wide">
+  <img src="../img/devlog/pe-teaser.webp" alt="De Platinum Engine, update 0.41.0" width="1280" height="720" loading="lazy">
+  <figcaption>Update 0.41.0: de Platinum Engine. Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<p>We hadden de keuze. Ze de komende weken één na één uitbrengen, of ze tegenhouden en samen uitbrengen. We kozen voor het tweede. Veel van de nieuwe grafische features steunen op elkaar: de lucht stuurt het zonlicht, het zonlicht stuurt de schaduwen, de schaduwen en het weer sturen het water, en de duisternis 's nachts hangt van allemaal af. Ze in stukken uitbrengen zou betekenen dat we een half beeld afleveren. Daarom is 0.41.0 één update met alles erin.</p>
+<p>Het is de grootste update die we ooit gemaakt hebben. Deze post is lang omdat er veel te vertellen is, en omdat we willen dat je weet wat eraan komt voordat je het speelt.</p>
+<div class="callout"><p>Update 0.41.0 zit in de laatste testfase. Alles wat hier beschreven staat, zit in de release. Elk nieuw visueel effect staat standaard aan voor iedereen, Ranked inbegrepen, en bijna elk effect heeft een eigen schakelaar in het nieuwe grafische menu.</p></div>
+<h2 id="de-platinum-engine">De Platinum Engine</h2>
+<p>TrueCombat: Platinum draait op een engine die begon als ET: Legacy, de opensource-voortzetting van Wolfenstein: Enemy Territory. Het is een opmerkelijke basis: snel, stabiel en gebouwd voor precies het soort strakke, competitieve infanteriegevechten waar dit spel om draait. Ze werd ook ontworpen voor de hardware van twintig jaar geleden.</p>
+<p>In plaats van dat weg te gooien en opnieuw te beginnen, besloten we ze stap voor stap te upgraden: behouden wat goed aanvoelt en vervangen wat ons tegenhoudt. Het resultaat noemen we de Platinum Engine. De eerste fase legde de basis in de DirectX 12-renderer. 0.41.0 rondt de tweede fase af, en die ga je zien.</p>
+<p>Je merkt het meteen bij het opstarten: voor het Team Terminus-logo speelt nu een korte introkaart van de Platinum Engine. Ze zegt in stilte wat volgens ons de eerlijke omschrijving van deze engine is: een grondig herontworpen evolutie van ET: Legacy. Wil je ze liever overslaan, dan zet één instelling ze uit.</p>
+<h3>Een moderne renderer-kern</h3>
+<p>Het meeste werk in deze fase zit waar niemand het ziet. De DirectX 12-renderer bouwt en bewaart zijn shaderpipelines nu op voorhand, zodat de kleine haperingen die je voelde wanneer een effect voor het eerst op een map verscheen na de eerste keer laden verdwenen zijn. Een render graph plant elk frame als geheel, zodat de GPU minder op zichzelf moet wachten. Zwaar werk zoals belichting en de simulatie van deeltjes draait op de compute-wachtrij van de GPU, tegelijk met het tekenen in plaats van erna.</p>
+<p>De renderer stapte over op Shader Model 6.6 en kreeg ondersteuning voor mesh shaders, variable rate shading en DirectStorage. Eenvoudig gezegd: dichte geometrie zoals gras wordt op de grafische kaart zelf gemaakt in plaats van er stukje per stukje naartoe gestuurd, delen van het scherm die geen volle detail nodig hebben, zoals snelle bewegingen of diepe schaduw, kosten minder om te tekenen, en textures stromen rechtstreeks van de schijf naar de GPU. Virtual texturing bouwt daarop verder, zodat de grote nieuwe textures in 0.41.0 alleen videogeheugen innemen waar je ze echt kunt zien.</p>
+<p>Niets hiervan verandert hoe het spel speelt. Het is wat al de rest in deze post mogelijk maakte.</p>
+<h2 id="een-lucht-die-beweegt">Een lucht die beweegt</h2>
+<p>Sinds de eerste release had elke map in Platinum een geschilderde lucht: een afbeelding van wolken die nooit veranderde. Op DirectX 12 is het nu een echte lucht.</p>
+<p>Wolken zijn volumetrisch. Ze hebben diepte en volume, de zon belicht ze aan de juiste kant, ze drijven mee met de wind en ze groeien, dunnen uit en veranderen langzaam van vorm in de loop van een ronde. Ze werpen bewegende schaduwen over de map, en het licht op de grond volgt ze: een straat die een minuut geleden in de volle zon lag, wordt donkerder als er een wolk overdrijft en klaart daarna weer op. Waar de wolken openbreken, vallen er zonnestralen door de openingen. Daarboven zit een fysiek correcte atmosfeer, zodat een wazige namiddag de juiste kleur heeft, de horizon echte diepte krijgt en hoge, dunne cirrus op een heldere dag strepen trekt door de lucht.</p>
+<h3>Weer dat je ziet aankomen</h3>
+<p>Willekeurig weer kwam er in 0.39.4. In 0.41.0 laat de lucht het eindelijk zien. Regen valt uit de wolken die hem dragen, dus je kunt een bui over de map zien trekken die natte grond achterlaat. Natte grond droogt weer op nadat de regen voorbij is. Sneeuw blijft liggen. Onweer bouwt zich op als hoge buien aan de horizon voordat het aankomt, en bliksem verlicht de hele map voor een fractie van een seconde, schaduwen inbegrepen. Na een onweersbui, met de zon in je rug, zie je misschien een regenboog.</p>
+<p>Het weer kan ook tijdens een ronde veranderen. Er kan een weerfront binnenrollen, een heldere ochtend kan betrekken en een storm kan weer wegtrekken. De server beslist wanneer en hoe, zodat elke speler op de server op hetzelfde moment precies dezelfde lucht ziet. Ook de wind is gedeeld: dezelfde windstoten die de wolken voortduwen, buigen het gras, dragen de regen, verplaatsen de rook en laten de bomen zwaaien.</p>
+<p>De horizon van elke officiële map is opnieuw getekend in hogere resolutie, zodat de rand van de wereld standhoudt naast de nieuwe lucht.</p>
+<figure class="wide">
+  <div class="compare" data-compare style="--pos:50%; aspect-ratio: 16 / 9">
+    <img src="../img/devlog/pe-sky-after.webp" alt="0.41.0: Hetzelfde zicht op Village, voor en na." width="1280" height="720" loading="lazy">
+    <img class="top" src="../img/devlog/pe-sky-before.webp" alt="0.40.0: Hetzelfde zicht op Village, voor en na." width="1280" height="720" loading="lazy">
+    <span class="tag l">0.40.0</span>
+    <span class="tag r">0.41.0</span>
+    <span class="handle"></span>
+    <input type="range" min="0" max="100" value="50" aria-label="Hetzelfde zicht op Village, voor en na.: positie van de vergelijkingslijn">
+  </div>
+  <figcaption>Hetzelfde zicht op Village, voor en na.</figcaption>
+</figure>
+<h2 id="zonlicht-in-realtime">Zonlicht in realtime</h2>
+<p>Het zonlicht op de klassieke maps was gebakken: jaren geleden één keer berekend en als textuur in de wereld geschilderd. Het zag er goed uit, maar het stond stil. Spelers, wapens en alles wat bewoog kregen er alleen een ruwe benadering van, en niets kon ooit veranderen.</p>
+<p>In 0.41.0 wordt de zon op DirectX 12 in realtime berekend. We behielden het gebakken weerkaatste licht, dat de maps hun karakter geeft, en vervingen het directe zonlicht door een live versie voor elke pixel op het scherm. Schaduwen hebben zachte randen die zachter worden naarmate ze verder liggen van wat ze werpt, zoals echte schaduwen. Spelers werpen echte schaduwen op muren en vloeren en ontvangen ze ook correct. Je eigen wapen staat nu in hetzelfde licht als de wereld rondom: stap in de schaduw van een gebouw en de schaduw valt over je geweer.</p>
+<p>Zonlicht in realtime betekent ook dat het licht kan veranderen. Overdrijvende wolken dimmen het, bliksemflitsen werpen hun eigen schaduwen en rook tussen jou en de zon werpt zelf een schaduw. Schaduwen reiken veel verder dan vroeger, zodat een lange straat haar schaduwen tot helemaal achteraan houdt.</p>
+<figure class="wide">
+  <img src="../img/devlog/pe-sun-shadows.webp" alt="Zonschaduwen in realtime op Northport" width="1280" height="720" loading="lazy">
+  <figcaption>Zonschaduwen in realtime op Northport. Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<h2 id="licht-dat-een-kamer-vult">Licht dat een kamer vult</h2>
+<p>Zonlicht is maar de helft van het verhaal. De andere helft is hoe licht zich verplaatst zodra het aankomt.</p>
+<p><strong>Global illumination.</strong> Licht weerkaatst nu in realtime. Een muur in de zon gooit warm licht in de kamer ernaast, een rode deur kleurt de vloer ervoor en de flits van een granaat vult een gang in plaats van één plek te verlichten. Een raster van lichtprobes bedekt elke map en past zich aan als het licht verandert, zodat een overdrijvende wolk of een kapotgeschoten lamp ook de kamers eromheen verandert.</p>
+<p><strong>Ambient occlusion.</strong> Hoeken, naden en de plek waar een muur de vloer raakt worden nu donkerder zoals in het echt, met een moderne techniek die de vorm van de scène veel nauwkeuriger leest dan de oude. Soldaten staan echt op de grond waar ze staan.</p>
+<p><strong>Volumetrisch licht en mist.</strong> De lucht zelf vangt nu licht. Zonnestralen door een raam, de lichtbundel van een straatlamp in de regen en de gloed van een vuur door rook zijn allemaal echte volumes licht in plaats van platte sprites. Afstand weegt: lange zichtlijnen vervagen in de nevel, boven hete grond trilt de lucht op een zomerse namiddag, en zware regen slokt een gestalte aan het einde van een straat op.</p>
+<p><strong>Lampen met schaduwen.</strong> Elke lamp op elke officiële map is geplaatst, opgemeten en kreeg een echt licht met echte schaduwen. Tot acht lampen in je buurt werpen tegelijk schaduwen op Ultra, vier op High, en ze houden de kost laag door te onthouden wat niet beweegt.</p>
+<h2 id="ultra-rt">Ultra RT</h2>
+<p>Voor grafische kaarten met hardwarematige raytracing voegt 0.41.0 een nieuwe hoogste preset toe: Ultra RT.</p>
+<p>Raytracing volgt echte lichtpaden door de scène in plaats van ze te schatten op basis van wat er op het scherm staat. Reflecties tonen wat er echt is, ook dingen buiten je beeld: een speler die achter je de hoek om komt, verschijnt in een etalageruit voordat hij op je scherm verschijnt. Schaduwen van de zon en van lampen worden ook getraced, waardoor ze haarscherp zijn waar voorwerpen de grond raken en natuurlijk zacht verderop. Global illumination gebruikt getracete stralen om te vinden waar licht weerkaatst, wat interieurs merkbaar nauwkeuriger maakt. Een eigen denoiser houdt het resultaat zuiver en stabiel in beweging.</p>
+<p>Ultra RT is een keuze, geen vereiste. Elke map, elke modus en elk effect in deze post werkt zonder, en de andere presets werden eerst gebouwd.</p>
+<h2 id="oppervlakken-water-en-regen">Oppervlakken, water en regen</h2>
+<p>Elk oppervlak in het spel weet nu waaruit het bestaat. Baksteen, beton, hout, metaal, glas, tegels, asfalt, pleister en aarde hebben elk hun eigen fysiek correct materiaal, dat bepaalt hoe ruw ze zijn, hoe ze het licht vangen en wat er gebeurt als ze nat worden.</p>
+<p><strong>Reflecties.</strong> Screen-space reflecties horen nu bij elk glanzend oppervlak, niet alleen bij plassen. Glas, gepolijste vloeren, natte steen en metaal weerspiegelen de wereld rondom op High en Ultra, met getracete reflecties op Ultra RT.</p>
+<p><strong>Regen die intrekt.</strong> Als het regent, worden oppervlakken donkerder en beginnen ze te glanzen. Poreuze steen zuigt water op, gladde tegels laten het parelen, en plassen vormen zich waar de grond echt daalt, voor elke officiële map in kaart gebracht vanuit de geometrie van het level. Regendruppels rimpelen in de plassen en lopen langs muren naar beneden. Onder een dak of een diepe overkapping blijft de grond droog, met een zachte rand waar verwaaide regen net onder de dakrand komt. Als de regen stopt, droogt alles de minuten daarna weer op.</p>
+<p><strong>Water.</strong> De haven van Northport en het kanaal van Lockgate zijn nu echt water: bewegend, weerspiegelend, met de bodem die erdoor breekt, en reagerend als er iets in terechtkomt.</p>
+<p><strong>Diepte in elke baksteen.</strong> Kasseien, bakstenen muren en ruwe steen hebben nu echte diepte. Parallax en tessellation duwen het oppervlak uit de platte textuur, zodat een bakstenen muur die je in de lengte bekijkt randen heeft die je echt ziet.</p>
+<p><strong>Scherpere textures.</strong> 165 textures op de officiële maps zijn opnieuw opgebouwd op 2048 pixels, waaronder 48 die nog nooit geremasterd waren, en een optioneel 4K-pakket maakt de 40 grootste grond- en muurtextures nog scherper voor grafische kaarten met geheugen over.</p>
+<h2 id="wanneer-de-nacht-valt">Wanneer de nacht valt</h2>
+<p>Dit is de feature waar we het meest naar uitkijken, en die waar we het langst aan gewerkt hebben om ze goed te krijgen.</p>
+<p>Het tijdstip van de dag hoort nu bij elke ronde, net zoals het weer. Een ronde kan plaatsvinden bij vol daglicht, tijdens het gouden uur, in het koude blauwe licht voor de dageraad of 's nachts. De server bepaalt het, iedereen op de server speelt in hetzelfde licht, en het geldt voor elke modus, Ranked inbegrepen.</p>
+<p>En als het nacht is, is het donker. Geen blauwe filter over een map overdag: echte duisternis, waar het enige licht het licht is dat er echt is. Maanlicht, de gloed van de lucht, straatlampen, verlichte ramen, vuur en wat je zelf meebrengt.</p>
+<p>We weten wat je denkt, want het was ook onze eerste vraag: wordt het pikdonker? Zelden, en alleen waar het dat in het echt ook zou zijn. Een interieur zonder ramen met de lichten uit, 's nachts, is donker. Een straat onder lampen niet. Meestal kun je zien, en het plezier zit in wat je doet met de plekken waar dat niet lukt.</p>
+<h3>Licht als wapen</h3>
+<p>Duisternis werkt alleen als licht deel wordt van het gevecht, dus gaven we beide teams de middelen.</p>
+<ul>
+  <li><strong>Lampen en stroom.</strong> Lampen kun je kapotschieten, en ze blijven uit. Veel gebouwen hebben een stroomschakelaar: zet hem om en de lichten binnen gaan uit, luid genoeg zodat iedereen in de buurt het hoort. Noodverlichting blijft branden.</li>
+  <li><strong>Wapenlamp.</strong> Een lamp onder de loop, gratis mee te nemen en snel aan en uit te zetten. Ze verlicht alles waar je op richt en verblindt de speler die je ermee beschijnt. Ze verraadt ook precies waar jij bent.</li>
+  <li><strong>Fakkels.</strong> Handfakkels branden een halve minuut rood en rokerig. Eén parachutefakkel per team per ronde verlicht van bovenaf een heel stuk van de map.</li>
+  <li><strong>Nachtzicht.</strong> Nachtzicht neemt een uitrustingsslot in en is beperkt per team. Het maakt het donker groen en zichtbaar, maar heeft een smal blikveld en weinig diepte, het duurt een seconde om het neer te klappen en het wordt volledig overbelicht als een fakkel, een lamp, een flashbang of de wapenlamp van een tegenstander het raakt.</li>
+  <li><strong>Mondingsvuur.</strong> Elk schot verlicht even de wereld rond de schutter. 's Nachts zie je een vuurgevecht van over de hele map.</li>
+</ul>
+<p>Ook je ogen passen zich aan. Stap vanuit een verlichte kamer de nacht in en het duurt een paar seconden voor je weer goed kunt zien. Stap van het donker in het licht en je bent even verblind.</p>
+<h3>Balans eerst</h3>
+<p>Toen we dit alles intern voor het eerst lieten zien, was de eerste reactie niet "dat ziet er geweldig uit" maar "dat moet in balans". Dus balans kwam eerst. Elk van deze middelen heeft een prijs en een antwoord. Alles werd afgesteld met een duidelijk doel: een ronde 's nachts moet voor beide kanten even goed te winnen zijn als een ronde overdag, en er moeten verschillende goede manieren zijn om ze te spelen. Bots volgen dezelfde regels: ze zien bij hetzelfde licht als jij, ze gebruiken dezelfde middelen en ze trappen in dezelfde trucs.</p>
+<figure class="wide">
+  <img src="../img/devlog/pe-night.webp" alt="Een nachtronde op Snow onder een straatlamp" width="1280" height="720" loading="lazy">
+  <figcaption>Een nachtronde op Snow. Ultra-preset, DirectX 12.</figcaption>
+</figure>
+<h2 id="gemaakt-om-te-breken">Gemaakt om te breken</h2>
+<h3>Glas</h3>
+<p>Glas in Platinum was vroeger ofwel decoratie, ofwel één breekbaar paneel dat in één stuk verdween. In 0.41.0 is elke echte ruit op elke officiële map een ruit waar je doorheen kunt schieten.</p>
+<p>Een kogel laat een gat ter grootte van een kogel achter, omringd door barsten die zich in ringen en lijnen vanaf de inslag verspreiden. Blijf schieten en er komen stukken los die naar beneden vallen. Een granaat laat een gekartelde rand in het kozijn achter. Maak een gat groot genoeg en je kunt erdoor klimmen, en wie tegen een verzwakte ruit sprint of erover springt, breekt ze open. De server beslist over elke breuk, zodat elke speler exact dezelfde gaten op exact dezelfde plekken ziet, en een speler die halverwege de ronde instapt het raam ziet zoals het is. Het glas blijft gebroken tot de map herstart.</p>
+<h3>Muren, puin en de nasleep</h3>
+<p>Kogelgaten en schroeiplekken worden nu correct op de vorm van het geraakte oppervlak geprojecteerd en blijven de hele ronde, zodat een gevecht zijn sporen op de muren nalaat. Herhaald vuur op dezelfde plek hakt die in stappen weg. Kisten en planken breken in stukken die passen bij waaruit ze gemaakt zijn: houten planken splijten langs de nerf in latten en splinters, metalen kisten in verbogen platen. De stukken vallen op ieders scherm op dezelfde manier, tuimelen van trappen en worden door voorbijlopende voeten opzij geschopt, maar ze blokkeren nooit je weg.</p>
+<p>Na een explosie binnen vallen er stukken pleister van het plafond, hangt er een halve minuut stof in de lucht en tekent roet de muren. De maps zelf zijn ook verouderd: regen heeft strepen op de muren getrokken, vuil verzamelt zich waar muren de grond raken en waterstrepen lopen onder vensterbanken naar beneden.</p>
+<h3>Wapens die slijten</h3>
+<p>Elk wapen in eerste persoon heeft nu slijtage aan de randen waar handen en holsters erlangs zouden schuren, vuil in de uithollingen en een fijn laagje stof, voor elke familie wapens anders afgewerkt. Vuur ermee en er bouwt zich roet op rond de monding en de uitwerpopening, ronde na ronde. Lege hulzen hebben nu echte fysica en echt metaal: ze stuiteren, rollen van trappen, vangen het licht van mondingsvuur en blijven de rest van de ronde op de vloer liggen, samen met de lege magazijnen van je herlaadbeurten. Je wapen vangt ook het licht van zijn eigen mondingsvuur.</p>
+<h2 id="rook-schok-en-slijtage">Rook, schok en slijtage</h2>
+<p><strong>Rookgranaten</strong> zijn nu echte volumes rook, gesimuleerd in plaats van getekend als een handvol sprites. Ze vullen de ruimte waarin ze gegooid worden, rollen om hoeken, drijven mee met de wind en blokkeren het zicht volledig. Mondingsvuur en vuur verlichten ze van binnenuit. Rook ziet er voor elke speler op elke instelling hetzelfde uit.</p>
+<p><strong>Onderdrukking</strong> heeft meer gewicht. Kogels die langs je hoofd fluiten, vervagen de randen van je zicht en vernauwen je blik even. Een explosie dichtbij overbelicht het scherm, gooit stof rond je op en laat je oren suizen.</p>
+<p><strong>Uniformen vertellen het verhaal van een ronde.</strong> Soldaten worden stoffig als ze plat gaan liggen, doorweekt in de regen, modderig op natte grond en dragen zichtbare wonden nadat ze geraakt zijn. Aan het einde van een zware ronde zie je wie er in het gevecht stond.</p>
+<h2 id="deeltjes-en-fysica">Deeltjes en fysica</h2>
+<p>In 0.40.0 introduceerden we een nieuw deeltjessysteem. In 0.41.0 verhuisde het naar de grafische kaart, en daarna maakten we het massaal.</p>
+<p>Op DirectX 12 worden deeltjes nu op de GPU gesimuleerd, waardoor het spel er honderdduizenden tegelijk kan laten lopen. Explosies gooien op wat ze raken: kluiten aarde en een kolom bruin stof op gras, gruis en grijs stof op asfalt, splinters van hout. Scherven lichten even op terwijl ze vliegen. Bladeren en afval worden meegevoerd door dezelfde wind als al de rest. Deeltjes botsen met de wereld, werpen zachte schaduwen, worden belicht door de nieuwe lampen en mist en gaan vloeiend over van frame naar frame.</p>
+<p>Er kwamen veel kleine details mee:</p>
+<ul>
+  <li>Kogelinslagen verschillen per materiaal, en sommige effecten blijven hangen: stof blijft zweven, sintels gloeien na, sneeuwwolkjes drijven weg.</li>
+  <li>Vuur is nieuw en brandt met echte hittetrilling erboven.</li>
+  <li>Kogels en explosies in water gooien opspattend water en nevel op.</li>
+  <li>In de regen spatten druppels rond je laarzen als je over harde grond loopt. Sprinten door sneeuw schopt kluiten op.</li>
+  <li>Een moment nadat een kogel een stenen muur raakt, loopt er een dun straaltje gruis uit het gat.</li>
+  <li>Stofdeeltjes zweven in zonnige kamers, en bladeren en papier schuiven over open terrein.</li>
+  <li>Zeilen, luifels, vlaggen en netten in de wereld zijn echte stof die meebeweegt met de wind en reageert op explosies. Ook de kleding van soldaten beweegt: mouwen, broekspijpen en losse riemen zwaaien mee als ze lopen.</li>
+</ul>
+<p>Explosiestof is zwaarder dan vroeger en werpt een diepere schaduw. Het ziet eruit zoals een echte explosie eruitziet, ook als dat betekent dat het iemand even verbergt.</p>
+<h2 id="gras-bomen-en-soldaten">Gras, bomen en soldaten</h2>
+<p><strong>Gras</strong> is op DirectX 12 nu echte geometrie, op de grafische kaart gemaakt in dichte, natuurlijke plukken die buigen als je erdoor loopt en daarna terugveren. Bloemen en onkruid breken open terrein op.</p>
+<p><strong>Bomen</strong> zijn nieuw op Village, met dertien loofbomen, en op Snow, met kale winterbomen. Ze wiegen in de gedeelde wind, laten zonlicht door hun bladeren gloeien en schudden als er in de buurt een explosie afgaat, samen met het gras en de struiken eromheen.</p>
+<p><strong>De kijkafstand</strong> is groter en de overgang tussen detailniveaus vloeiender, zodat bomen, gras en objecten niet meer in beeld springen terwijl je beweegt.</p>
+<p><strong>Soldaten</strong> hebben nieuwe huid- en stofshading, met elk deel van een uniform belicht als wat het is: stof, leer, rubber, staal of kunststof. Animaties lopen vloeiender in elkaar over, en voeten staan nu echt op hellingen en trappen in plaats van erboven te zweven of erin weg te zakken.</p>
+<h2 id="camera-en-fotomodus">Camera en fotomodus</h2>
+<p>De camera gedraagt zich nu meer als een echte lens. Richten over het vizier geeft de wereld achter je vizier een subtiele scherptediepte. Motion blur, afgestemd op een echte camerasluiter, maakt snelle draaibewegingen vloeiender. Felle lichten geven lensflares en vuil op het glas vangt de zon. Elk hiervan heeft een eigen schakelaar.</p>
+<p>Voor screenshots is er nu een <strong>fotomodus</strong>. In replays, op je eigen server of als volledige toeschouwer pauzeer je de actie, beweeg je de camera vrij en stel je lens, focus, diafragma en motion blur in, en dan druk je af. Fotomodus is niet beschikbaar tijdens een live match op een server met andere spelers, zodat hij nooit als voordeel gebruikt kan worden.</p>
+<h2 id="beeldkwaliteit-en-hdr">Beeldkwaliteit en HDR</h2>
+<p>Het uiteindelijke beeld gaat nu door een nieuwe pipeline. De scène wordt gerenderd in echt hoog dynamisch bereik, belichting werkt zoals bij een camera, bloom komt van de werkelijke helderheid van een lichtbron, en een nieuwe filmische tooncurve maakt er een beeld van dat detail houdt in zowel heldere luchten als donkere interieurs. Op een HDR-monitor geeft het spel nu echte HDR10 weer, met hooglichten die echt helderder zijn dan de rest van het scherm.</p>
+<p><strong>Anti-aliasing en upscaling.</strong> Een nieuwe temporele anti-aliasing vervangt multisampling op High: scherper, stabieler en goedkoper. NVIDIA DLSS biedt nu zijn volledige reeks upscalingmodi, en AMD FSR 3.1 is beschikbaar op elke moderne grafische kaart. Dynamische resolutie kan je framerate stabiel houden door tijdens de zwaarste momenten de resolutie licht te verlagen.</p>
+<p><strong>Frame generation en latency.</strong> Frame generation van zowel DLSS als FSR wordt ondersteund, samen met NVIDIA Reflex en AMD Anti-Lag 2 om de invoervertraging laag te houden.</p>
+<h2 id="een-nieuw-grafisch-menu">Een nieuw grafisch menu</h2>
+<p>Met zoveel nieuwe opties zou het oude grafische menu onder het gewicht bezweken zijn. Dus bouwden we het opnieuw.</p>
+<p>Het nieuwe Opties &gt; Graphics is ingedeeld volgens wat een instelling doet, niet volgens waar ze in de engine zit. Elke instelling toont een live voorbeeld van wat ze verandert, en een meter toont hoeveel videogeheugen en prestaties je keuzes kosten voordat je ze toepast. Presets lopen nu van Low tot Ultra RT.</p>
+<p><strong>Auto-detect</strong> bekijkt je hardware en kiest er de beste instellingen voor. Haalt je pc geen vloeiende framerate, dan verlaagt het eerst resolutie en kwaliteitsstappen en zet het pas een effect uit als het moet, en het vertelt je welk.</p>
+<p><strong>Benchmark.</strong> Een ingebouwde benchmark volgt een vaste route door Village, in een snelle versie van 20 seconden of een volledige van 60 seconden, en houdt een geschiedenis van je resultaten bij, zodat je precies ziet wat een wijziging deed.</p>
+<p>OpenGL en de Low-preset houden de look die je kent uit 0.40.0, zodat oudere machines niet achterblijven.</p>
+<h2 id="geluid-dat-reist">Geluid dat reist</h2>
+<p>De audio-engine zette twee grote stappen in deze update.</p>
+<p>Ten eerste reist geluid nu door de map zoals door echte gebouwen. Het vindt zijn weg door deuropeningen en om hoeken in plaats van door muren te gaan, zodat een schot twee kamers verder klinkt alsof het komt uit de deuropening waardoor het je bereikt. Elke map wordt opgemeten de eerste keer dat je hem laadt en daarna onthouden, communitymaps inbegrepen. Galm heeft nu een richting: in een hal komt de echo terug van de verste muur.</p>
+<p>Ten tweede is er daarbovenop ray-traced audio. Het spel volgt geluid door de echte geometrie van de map, zodat de grootte, vorm en materialen van een ruimte bepalen hoe ze klinkt. Vroege reflecties kaatsen terug van muren dichtbij, een betegelde gang galmt terwijl een kamer vol kisten dof blijft, en een deur openen, een raam breken of een gat in een muur blazen verandert meteen hoe de ruimte eromheen klinkt. Het draait op de CPU of, op DirectX 12, op de grafische kaart, en heeft een eigen kwaliteitsinstelling.</p>
+<p>Realisme heeft zijn grenzen als het om geluid gaat, en we trokken er één: de nieuwe akoestiek maakt een geluid nooit meer dan 10 dB stiller dan het zonder zou zijn, zodat de geluiden waarop je rekent hoorbaar blijven.</p>
+<h2 id="elk-schot-waar-het-hoort">Elk schot waar het hoort</h2>
+<p>Hitregistratie is het deel van een shooter waar je nooit bij stil zou moeten staan. We hebben deze update gebruikt om ervoor te zorgen dat dat zo blijft.</p>
+<p><strong>Nauwkeuriger terugspoelen.</strong> Als je schiet, spoelt de server de andere spelers terug naar waar ze op jouw scherm stonden. Op een onstabiele verbinding kon de timing van de engine verschuiven, waardoor spelers net iets verder getekend werden dan waar de server ze terugspoelde. We meten nu precies wanneer elke speler op jouw scherm getekend werd en sturen dat exact door. Op een verbinding met schommelingen zoals bij wifi daalde het grootste verschil tussen waar jij een speler zag en waar de server je schot controleerde tot ongeveer een derde.</p>
+<p><strong>Hitboxen die het lichaam volgen.</strong> Hitboxen volgen nu de houding van het personage dat je ziet: leunen, hurken, sprinten en het moment waarop iemand van houding wisselt. Volgens onze metingen zit de hitbox van het hoofd nu ongeveer drie keer dichter bij het hoofd dat je op je scherm ziet.</p>
+<p><strong>Vloeiendere spelers.</strong> Andere spelers worden nu afgespeeld vanuit een korte, stabiele buffer die zich aan je verbinding aanpast, zodat ze niet meer een frame bevriezen en dan verspringen. Op een onstabiele verbinding daalde het aandeel frames waarin andere spelers haperden van ongeveer één op vijf naar nul, ten koste van ongeveer 20 milliseconden extra vertraging.</p>
+<p><strong>Minder correcties, betere herverbindingen.</strong> Je eigen beweging wordt veel minder vaak door de server gecorrigeerd als er pakketten verloren gaan, en opnieuw verbinden met een server over een slechte verbinding lukt nu bijna altijd in plaats van vast te lopen.</p>
+<p>De gratis serverkit voor communityservers draait nu standaard op 128 ticks per seconde, net als onze officiële servers.</p>
+<h2 id="samen-spelen">Samen spelen</h2>
+<p><strong>Party's.</strong> Vorm in de launcher een party met je vrienden en je blijft samen: Quick Play zoekt een server met plaats voor jullie allemaal en zet jullie in hetzelfde team, en partyleden kunnen de leider met één toets een server in volgen.</p>
+<p><strong>Vind de juiste server.</strong> Servers tonen nu hun regio, en de serverbrowser in het spel heeft je favorieten, recente servers en vrienden, net als de launcher. Quick Join in het hoofdmenu brengt je nu meteen in een goede match.</p>
+<h2 id="slimmere-bots">Slimmere bots</h2>
+<p>Bots vechten meer als een team. Ze zoeken dekking en duiken erachter om te herladen of nadat ze geraakt zijn, in plaats van in het open te blijven staan. Terroristische bots verzamelen zich voordat ze een bomlocatie aanvallen en gaan dan samen naar binnen. Verdedigende bots houden verstandige posities terwijl een teamgenoot ontmantelt en dekken de toegangen af. We stelden dit allemaal zo af dat rondes blijven doorlopen: rondes tegen bots duren maar een beetje langer dan vroeger, en bots sterven veel minder vaak in het open.</p>
+<h2 id="interface">Interface</h2>
+<ul>
+  <li><strong>Scorebord.</strong> Hou TAB en je richttoets ingedrukt om een cursor te krijgen. Klik op een speler om zijn spelerskaart te openen, met dempen en rapporteren.</li>
+  <li><strong>Killfeed.</strong> Headshots, wallbangs en multikills worden aangeduid.</li>
+  <li><strong>HUD-editor.</strong> Verplaats en schaal elk deel van de HUD.</li>
+  <li><strong>Laadschermen</strong> tonen nieuwe artwork voor elke officiële map, in de engine vastgelegd op Ultra, samen met het tactische overzicht van de map, de doelen en de echte laadvoortgang.</li>
+  <li><strong>Deployment</strong> toont je wapen en je soldaat in 3D, en laat je je look afwerken: kies een vest in olijfgroen, zandkleur, grijs of zwart, en een boonie, baseballpet, patrouillepet, muts of helemaal geen hoofddeksel.</li>
+  <li><strong>Menu's</strong> bewegen met vloeiendere animatie en geluid, elk icoon in het spel komt uit één consistente set, en de hele interface is scherp in 4K en correct opgebouwd op ultrabrede monitors.</li>
+</ul>
+<p>Op onze officiële servers dragen het laadscherm en het scorebord nu een handtekening van Team Terminus als officiële server. Communityservers blijven ongewijzigd.</p>
+<h2 id="lockgate-opgewaardeerd">Lockgate, opgewaardeerd</h2>
+<p>Lockgate, onze nieuwste map, kreeg een volledige visuele beurt: een skyline achter het kanaal, honderden nieuwe details op muren en vloeren, nieuwe lampen, een kraan, spanten in de pomphal, leidingen en waarschuwingsverf, grote A- en B-markeringen op de bomlocaties en plassen bij de sluizen. De map heeft nu ook een eigen geluidslandschap. De indeling en collision zijn exact hetzelfde, dus alles wat je over de map geleerd hebt, blijft gelden.</p>
+<h2 id="realisme-eerst">Realisme eerst</h2>
+<p>Tijdens de ontwikkeling namen we een beslissing die bijna alles in deze update vorm gaf. In veel games worden visuele effecten ingehouden zodat ze nooit een speler verbergen: gras dat rond personages uitdunt, mist die net te vroeg stopt, schaduwen die nooit echt donker zijn. Wij hebben besloten dat niet te doen.</p>
+<p>In 0.41.0 zien dingen eruit zoals ze eruit zouden zien. Gras verbergt iemand die erin ligt. Regen maakt een verre gestalte moeilijk te zien. Een nacht is donker. Rook blokkeert het zicht. Dat is niet altijd eerlijk, en de echte wereld is dat ook niet. Het beloont wel de spelers die het gebruiken, en het geldt voor iedereen gelijk, want het weer, het tijdstip, de rook en het gebroken glas zijn voor elke speler op de server hetzelfde.</p>
+<p>Wat niet verandert: hitboxen, collision, het gezag van de server over elk schot en alles wat het spel eerlijk houdt om te spelen. Elk visueel effect staat standaard aan, overal, en bijna elk effect heeft een eigen schakelaar. Weer, tijdstip en rook zijn de uitzonderingen, omdat ze deel zijn van de ronde en geen instelling.</p>
+<h2 id="fixes">Fixes</h2>
+<ul>
+  <li>Instellingen die Boot Camp en de benchmark gebruiken, worden niet meer meegenomen naar de matches die je daarna speelt.</li>
+  <li>Een zeldzaam probleem met de killkaart op het doodsscherm is opgelost.</li>
+  <li>Het rode-puntvizier volgt nu waar het geweer echt naartoe wijst, en de stip is alleen nog door het glas van het vizier te zien.</li>
+  <li>Veel kleinere fixes die tijdens het testen gevonden werden.</li>
+</ul>
+<p>We hebben onze beveiligingsmaatregelen aangescherpt en uitgebreid.</p>
+<h2 id="hoe-we-het-getest-hebben">Hoe we het getest hebben</h2>
+<p>Elk onderdeel van 0.41.0 ging eerst afzonderlijk door onze geautomatiseerde build- en testpipeline voordat het met de rest gecombineerd werd, en de gecombineerde update doorloopt nu onze volledige regressietest op echte hardware: het spel en de server, DirectX 12 en OpenGL, en de launcher. De nieuwe effecten zijn veeleisend, en we willen dat ze goed werken op jouw pc voordat ze aankomen. De screenshots in deze post komen uit die release candidate.</p>
+<h2 id="wat-volgt">Wat volgt</h2>
+<p>Met 0.41.0 is de tweede fase van de Platinum Engine af. Er blijft genoeg te doen, en je hoort er hier als eerste over.</p>
+<p>Zoals altijd staat elke wijziging in de patch notes op Discord wanneer de update live gaat. Bedankt om te lezen, te spelen en voor elk stukje feedback. Tot op het slagveld, dag of nacht.</p>
+      </div>
+      <div class="post-rate" data-rate="platinum-engine" data-thanks="Bedankt voor je beoordeling. Je kunt ze tot het einde van de dag nog aanpassen." data-fail="Je beoordeling kon niet worden verzonden. Probeer het later opnieuw." hidden>
+        <p class="rate-q" id="rate-q">Was dit artikel de moeite waard?</p>
+        <p class="rate-sum" hidden></p>
+        <div class="rate-stars" role="radiogroup" aria-labelledby="rate-q">
+          <button type="button" role="radio" aria-checked="false" data-stars="1" aria-label="1 ster"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="2" aria-label="2 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="3" aria-label="3 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="4" aria-label="4 sterren"></button>
+          <button type="button" role="radio" aria-checked="false" data-stars="5" aria-label="5 sterren"></button>
+        </div>
+        <p class="rate-note" aria-live="polite">Anoniem. Geen account, geen cookies.</p>
+      </div>
+      <aside class="post-sign" aria-label="Team Terminus">
+        <img src="../img/team-terminus-horizontal.webp" alt="Team Terminus" width="900" height="257" loading="lazy">
+        <div><span class="eyebrow">Geschreven door de studio</span><p>Team Terminus is de onafhankelijke studio achter TrueCombat: Platinum. Wij zijn veteranen van TrueCombat: Elite en bouwen het spel opnieuw op de Platinum Engine.</p><a href="studio">Maak kennis met het team</a></div>
+      </aside>
+      <div class="post-end">
+        <p>Vragen over dit artikel? Stel ze aan het team op Discord.</p>
+        <div class="news-tools">
+          <a class="btn btn-ghost" href="https://discord.gg/7Dg4yhhvGF">Bespreek op Discord</a>
+          <button type="button" class="btn btn-ghost" data-copy-link data-done="Link gekopieerd">Link kopiëren</button>
+        </div>
+      </div>
+      <section class="cmt" id="comments" data-cmt="platinum-engine" data-comments="on" aria-label="Reacties" hidden></section>
+      <nav class="post-pager">
+        <a class="prev" href="devlog-ground-up"><small>Vorig artikel</small>Van de grond af</a>
+        <span></span>
+      </nav>
+    </div>
+  </div>
+</article>
+
+<section class="band">
+  <div class="wrap">
+    <div class="section-head"><span class="eyebrow">Meer uit de devlog</span></div>
+    <div class="post-list">
+      <article class="post-card" data-tag="Update">
+        <a class="post-art" href="devlog-ground-up" tabindex="-1" aria-hidden="true"><img src="../img/devlog/ground-up-teaser-clean-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Update</span><span class="state shipped">Uitgebracht in v0.40.0</span><time datetime="2026-11-25">25 nov 2026</time><span>16 min lezen</span><span class="post-stat" data-post-stat="ground-up" hidden></span><span class="post-cmts" data-post-cmts="ground-up" hidden></span></p>
+          <h2><a href="devlog-ground-up">Van de grond af</a></h2>
+          <p>Een volledig nieuwe interface, een nieuwe generatie licht en effecten, de keuze tussen Remastered en Classic, Season 1, locatiepings, CQB in de kern van het spel, een gloednieuwe map genaamd Lockgate en een lange lijst wijzigingen op basis van jullie feedback. Het volledige verhaal van update 0.40.0, onze grootste tot nu toe.</p>
+          <a class="more" href="devlog-ground-up">Lees het artikel</a>
+        </div>
+      </article>
+      <article class="post-card" data-tag="Update">
+        <a class="post-art" href="devlog-sound-update" tabindex="-1" aria-hidden="true"><img src="../img/devlog/front-lines-blast-courtyard-640.webp" alt="" width="640" height="360" loading="lazy"></a>
+        <div>
+          <p class="post-meta"><span class="tag">Update</span><span class="state shipped">Uitgebracht in v0.39.3</span><time datetime="2026-11-19">19 nov 2026</time><span>8 min lezen</span><span class="post-stat" data-post-stat="sound-update" hidden></span><span class="post-cmts" data-post-cmts="sound-update" hidden></span></p>
+          <h2><a href="devlog-sound-update">Hoor het gevecht</a></h2>
+          <p>Elk wapen krijgt een eigen stem, inslagen krijgen twaalf variaties per oppervlak en de geluidsengine leert over kamers, deuropeningen en afstand. Plus free aim en AK&#x27;s weer met twee handen. Het volledige verhaal van update 0.39.3.</p>
+          <a class="more" href="devlog-sound-update">Lees het artikel</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+</main>
+
+<!--footer-->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="foot-brand">
+        <img src="../img/team-terminus-160.webp" alt="Team Terminus" width="84" height="84" loading="lazy">
+        <div class="who">
+          <b>Team Terminus</b>
+          <span>TrueCombat: Platinum wordt ontwikkeld door RaziC*.</span>
+          <div class="foot-social">
+            <a href="https://discord.gg/7Dg4yhhvGF" aria-label="Discord" title="Discord"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.7 15.7 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8c-.6-.2-1.2-.5-1.7-.8l.4-.3a12.2 12.2 0 0 0 10.4 0l.4.3c-.5.3-1.1.6-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.4-.7-8.3-3-11.7ZM8.7 14.7c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm6.6 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum" aria-label="GitHub" title="GitHub"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5Z"/></svg></a>
+            <a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom" aria-label="Patchnotes (RSS)" title="Patchnotes (RSS)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11a9 9 0 0 1 9 9" /><path d="M4 4a16 16 0 0 1 16 16" /><circle cx="5" cy="19" r="1" /></svg></a>
+          </div>
+        </div>
+      </div>
+      <nav aria-label="Voettekst" class="foot-cols">
+        <div><p class="foot-h">Spel</p><a href="download">Download</a><a href="maps">Maps</a><a href="weapons">Wapens</a><a href="guide">Gids</a><a href="media">Media</a><a href="faq">Vragen</a><a href="truecombat-elite">TrueCombat: Elite</a></div>
+        <div><p class="foot-h">Spelen</p><a href="servers">Servers</a><a href="leaderboards">Ranglijsten</a><a href="competitive">Competitief</a><a href="account">Account</a></div>
+        <div><p class="foot-h">Studio</p><a href="news">Nieuws</a><a href="devlog">Devlog</a><a href="studio">Studio</a><a href="press">Perskit</a><a href="support">Steun ons</a><a href="privacy">Privacy</a></div>
+        <div><p class="foot-h">Community</p><a href="https://discord.gg/7Dg4yhhvGF">Discord</a><a href="banners">Serverbanners</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum">GitHub</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases">Releases</a><a href="https://github.com/Annoximeme/TrueCombat-Platinum/releases.atom">Patchnotes (RSS)</a></div>
+      </nav>
+    </div>
+    <div class="legal">
+      <p>TrueCombat: Elite is gemaakt door Team Terminator. Wolfenstein: Enemy Territory is van Splash Damage en id Software, uitgegeven door Activision. TrueCombat: Platinum is een fanproject en is niet aan hen verbonden of door hen goedgekeurd.</p>
+      <p>De Platinum Engine is gebouwd op ET: Legacy en de broncode van Wolfenstein: Enemy Territory van id Software, en wordt uitgebracht onder de GNU GPL v3. Originele speldata en artwork houden hun oorspronkelijke voorwaarden; zie de map licenses in elke download.</p>
+    </div>
+  </div>
+</footer>
+<!--/footer-->
+
+<script src="../js/site.js?v=d7fd1a8238"></script>
+</body>
+</html>

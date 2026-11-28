@@ -8,10 +8,10 @@ button=Read patch notes
 url=https://truecombat.eu/news.html
 [slide]
 eyebrow=Devlog
-title=Ground|up.
-text=A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core game, a brand-new map called Lockgate and a long list…
+title=The Platinum|Engine.
+text=A living sky, real-time sunlight, nights that are truly dark, glass that breaks where you shoot it, ray tracing, a rebuilt graphics menu, smarter netcode, parties and much more.
 button=Read the devlog
-url=https://truecombat.eu/devlog-ground-up.html
+url=https://truecombat.eu/devlog-platinum-engine.html
 [slide]
 eyebrow=Ranked
 title=Climb the|ladder.
@@ -26,9 +26,9 @@ button=Join Discord
 url=https://discord.gg/7Dg4yhhvGF
 [news]
 tag=Devlog
-title=Ground up
-text=A rebuilt interface, a new generation of light and effects, the choice between Remastered and Classic, Season 1, location pings, CQB in the core…
-url=https://truecombat.eu/devlog-ground-up.html
+title=The Platinum Engine
+text=A living sky, real-time sunlight, nights that are truly dark, glass that breaks where you shoot it, ray tracing, a rebuilt graphics menu, smarter…
+url=https://truecombat.eu/devlog-platinum-engine.html
 [news]
 tag=Community
 title=Weekend ranked ladder
