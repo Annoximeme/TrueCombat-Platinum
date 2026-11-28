@@ -4,7 +4,17 @@
   <link href="https://truecombat.eu/devlog"/>
   <link rel="self" href="https://truecombat.eu/devlog.xml"/>
   <id>https://truecombat.eu/devlog</id>
-  <updated>2026-11-25T12:00:00Z</updated>
+  <updated>2026-11-28T12:00:00Z</updated>
+  <entry>
+    <title>The Platinum Engine</title>
+    <link href="https://truecombat.eu/devlog-platinum-engine"/>
+    <id>https://truecombat.eu/devlog-platinum-engine</id>
+    <published>2026-11-28T12:00:00Z</published>
+    <updated>2026-11-28T12:00:00Z</updated>
+    <category term="Update"/>
+    <summary>A living sky, real-time sunlight, nights that are truly dark, glass that breaks where you shoot it, ray tracing, a rebuilt graphics menu, smarter netcode, parties and much more. Update 0.41.0 brings everything we planned for 0.40.1, 0.41 and 0.42 in one release. This is the full story.</summary>
+    <author><name>Team Terminus</name></author>
+  </entry>
   <entry>
     <title>Ground up</title>
     <link href="https://truecombat.eu/devlog-ground-up"/>
